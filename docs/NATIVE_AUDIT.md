@@ -1689,3 +1689,30 @@ On the M4 Max, the complete first route measures 8.64 ms with about 1.68 MiB of
 initial allocations; a cached waypoint measures 2.70 microseconds with zero allocations.
 The search is bounded at 30,000 expanded nodes and 36,000 queued entries. These
 measurements do not establish Pixel frame rate or rendered combat performance.
+
+## Terrain and cannon source checks after route diagnosis
+
+A separate raw-source word oracle checks 10,016 positions around the third-stage
+band and three masked neighborhoods. It compares all 16 shifted 48-bit ship masks
+and native adjacent tile words with the exported PNG/stencil coverage, covering
+all fine-X/fine-Y alignments (X 16–304 in the band). All cases agree: 7,133 contacts
+and 2,883 clear. This confirms the interpretation without establishing a route.
+
+The compound cannon's two deaths also match the full 6,000-cell map after each
+stage: the first clears 14 cells, the second 8, with two footprint corners already
+zero. Its source row 93/column 2 placement cannot write to blocking row 91. The
+observed obstruction is resolved by targeting the right cannon elsewhere in the
+connected component, rather than changing terrain coverage or death patches.
+
+## Automatic title demonstration
+
+Sixty seconds of actual title inactivity now admits the practiced controller on
+desktop and Android, using ordinary level-one single-player setup with trainer
+options cleared. Manual menu selection and the desktop-demo flag choose the
+same profile. Held keys, mouse movement/buttons/wheel and touch activity restart
+the timer; an action during playback immediately disables the pilot and reaches
+the same live session. Fades, pause and other screens do not accrue title time.
+Eight focused frontend tests pass, including exact threshold/reset, normal READY
+admission and keyboard/touch takeover. The controller's full five-stage mastery
+and low-loss performance remain development requirements, not claims established
+by title admission or a two-stage win.
