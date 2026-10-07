@@ -1816,3 +1816,15 @@ sector. More precise movement forecasts do not by themselves establish mastery:
 strategic placement, reaction priorities and weapon use still need connected
 survival tests. The original projectile/player audit separately confirms contact
 with the pre-movement player prefix; that engine ordering is retained.
+
+The final combined engine/source race suite passes in 93.477 seconds. The full
+GPU/audio/frontend suite passes in 274.837 seconds with the known optional
+third-middle no-loss assertion explicitly excluded. Source preparation retains
+31 shield at the genuine opening checkpoint; the unfinished later route remains
+separate from these passing checks. Vet and the desktop rebuild pass.
+
+The ARM64 Android APK rebuild, signature and 16 KiB alignment pass. Replacement
+installation and cold launch succeed on the USB Pixel 10a; its process remains
+alive afterward. Device graphics were not rechecked while locked. The next
+full-world forecast work is described in [EXPERT_FORECAST.md](EXPERT_FORECAST.md); all five levels,
+very-low-loss play and integrated Amiga comparisons remain open.
