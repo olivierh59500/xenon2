@@ -9,7 +9,7 @@ type demoActorView struct {
 	Active, Visible bool
 }
 
-// demoActorPrediction copies ordinary path or world-anchored actor state.
+// demoActorPrediction copies ordinary paths, world anchors or sweeper callbacks.
 // cameraY is the camera at the future actor phase, before that pass scrolls.
 // Path positions are screen-relative; their source callback does not scroll them.
 // Random path branches use a copy of the current stream, without forecasting
@@ -19,6 +19,16 @@ func demoActorPrediction(w *World, actor *WorldActor, passes, cameraY int) (demo
 		return demoActorView{}, false
 	}
 	if actor.part.HeadingShift < 0 || len(actor.part.EntryAnimations) != 0 && len(actor.part.EntryAnimations) < 4 {
+		return demoActorView{}, false
+	}
+	// These source callbacks take priority over the generic or fixed fields.
+	if actor.firstGuardian || actor.secondGuardian || actor.firstSegment != 0 || actor.secondNode != nil || actor.secondSegment != nil || actor.secondMinion != nil || actor.firstMiddleSentinel || actor.firstMiddleAnchor != nil || actor.firstMiddleFollower != nil || actor.thirdMiddlePart != 0 || actor.thirdFinalMember != nil || actor.thirdCrawler != nil || actor.thirdCannon != nil || actor.thirdChainSentinel || actor.thirdChainPart != 0 || actor.fourthIndex != 0 || actor.fourthFalling != nil || actor.fourthChild != nil || actor.fourthCrawler != nil || actor.fifthIndex != 0 || actor.fifthFormation != nil || actor.fifthSeeking != nil || actor.fifthTile != nil || actor.fixedAiming != nil || actor.fixedTileState != nil || actor.fixedHatch != nil || actor.fixedPod != nil || actor.podCreature != nil || actor.hatchCreature != nil {
+		return demoActorView{}, false
+	}
+	if actor.fixedKind != nil {
+		if actor.fixed && actor.fixedKind.Behavior == "horizontal-sweeper" {
+			return demoSweeperPrediction(w, actor, passes, cameraY)
+		}
 		return demoActorView{}, false
 	}
 	path := false
@@ -33,10 +43,6 @@ func demoActorPrediction(w *World, actor *WorldActor, passes, cameraY int) (demo
 			return demoActorView{}, false
 		}
 	default:
-		return demoActorView{}, false
-	}
-	// These source callbacks take priority over the generic path fields.
-	if actor.firstGuardian || actor.secondGuardian || actor.firstSegment != 0 || actor.secondNode != nil || actor.secondSegment != nil || actor.secondMinion != nil || actor.firstMiddleSentinel || actor.firstMiddleAnchor != nil || actor.firstMiddleFollower != nil || actor.thirdMiddlePart != 0 || actor.thirdFinalMember != nil || actor.thirdCrawler != nil || actor.thirdCannon != nil || actor.thirdChainSentinel || actor.thirdChainPart != 0 || actor.fourthIndex != 0 || actor.fourthFalling != nil || actor.fourthChild != nil || actor.fourthCrawler != nil || actor.fifthIndex != 0 || actor.fifthFormation != nil || actor.fifthSeeking != nil || actor.fifthTile != nil || actor.fixedKind != nil || actor.fixedAiming != nil || actor.fixedTileState != nil || actor.fixedHatch != nil || actor.fixedPod != nil || actor.podCreature != nil || actor.hatchCreature != nil {
 		return demoActorView{}, false
 	}
 	state, random := *actor, w.RandomState()
@@ -75,4 +81,33 @@ func demoActorPrediction(w *World, actor *WorldActor, passes, cameraY int) (demo
 		}
 	}
 	return demoActorView{X: int(state.X), Y: int(state.Y), Sprite: state.Sprite, Bounds: state.Collision, Active: state.Active, Visible: state.Visible}, true
+}
+
+// demoSweeperPrediction copies the source stop, attack and reversal callbacks.
+// It assumes a constant current scroll delta between future actor phases and
+// the ordinary sixteen-pixel camera buffer. Shots do not change its motion.
+func demoSweeperPrediction(w *World, actor *WorldActor, passes, cameraY int) (demoActorView, bool) {
+	if passes > 0 && cameraY != w.ScrollY-(passes-1)*w.ScrollDelta {
+		return demoActorView{}, false
+	}
+	state, kind, random := actor.fixedState, *actor.fixedKind, w.RandomState()
+	view := demoActorView{X: int(actor.X), Y: int(actor.Y), Sprite: actor.Sprite, Bounds: actor.Collision, Active: actor.Active, Visible: actor.Visible}
+	camera := cameraY + (passes-1)*w.ScrollDelta
+	maximum := w.MaximumScrollY
+	for range passes {
+		if !view.Active {
+			break
+		}
+		maximum = demoScrollMaximum(w, camera, maximum)
+		StepFixedSpriteMotion(&state, kind, FixedSpriteInputs{ScrollDelta: w.ScrollDelta, ScrollY: camera, MaximumScrollY: maximum, PlayerX: w.Player.X, PlayerY: w.Player.Y}, &random)
+		sprite := state.Animation.Sprite(FixedSpriteAnimation(state, kind))
+		box, ok := w.movingSpriteBoxes[sprite]
+		if !ok {
+			return demoActorView{}, false
+		}
+		view = demoActorView{X: state.X, Y: state.Y, Sprite: sprite, Bounds: ActorCollisionRect(box, state.X, state.Y), Active: !state.Removed, Visible: true}
+		camera -= w.ScrollDelta
+		maximum = min(maximum, camera+16)
+	}
+	return view, true
 }

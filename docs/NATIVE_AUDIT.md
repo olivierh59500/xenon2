@@ -1800,3 +1800,19 @@ for all legal ship heights and mixed camera deltas; callback seven can activate
 again. The helper and original 6,400-state chain comparison pass under the race detector in
 1.672 seconds. Production movement integration still needs candidate-specific
 state and connected survival proof; a constant-player-height trial was not kept.
+
+## Sweeper callback planning
+
+The fixed horizontal sweeper forecast now copies its exact stop, attack clip,
+edge reversal and retirement callbacks. Four original-resource boundaries compare
+six subsequent World.Step passes, including asymmetric facing prefixes and
+x 136/x 184 attack stops. Live actor/art/pool/RNG/player state remains unchanged.
+Changing camera histories are explicitly unsupported; these moving fixed actors
+are excluded from the static world-anchor translation cache.
+
+The forecast and existing 4,824 native fixed callbacks pass. A carried diagnostic
+preserves the 31-shield opening but still loses the last ship in the sweeper
+sector. More precise movement forecasts do not by themselves establish mastery:
+strategic placement, reaction priorities and weapon use still need connected
+survival tests. The original projectile/player audit separately confirms contact
+with the pre-movement player prefix; that engine ordering is retained.

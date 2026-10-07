@@ -64,9 +64,13 @@ func demoRouteMotion(w *World, x, worldY int) MotionInput {
 
 func demoRouteMotionWithOptions(w *World, x, worldY, comfortY int, avoidShots bool) MotionInput {
 	if avoidShots {
-		return demoRouteMotionAvoidingShots(w, x, worldY, comfortY)
+		return demoRouteMotionAvoidingShots(w, x, worldY, comfortY, 0)
 	}
-	return demoRouteMotionSearch(w, x, worldY, comfortY, nil)
+	return demoRouteMotionSearch(w, x, worldY, comfortY, nil, 0)
+}
+
+func demoRouteMotionWithClearance(w *World, x, worldY, comfortY, clearance int) MotionInput {
+	return demoRouteMotionAvoidingShots(w, x, worldY, comfortY, clearance)
 }
 
 type demoRouteRisk struct {
@@ -79,11 +83,14 @@ type demoRouteRisks struct {
 }
 
 func demoRouteActorCacheable(actor *WorldActor) bool {
+	if actor.fixedKind != nil {
+		return false
+	}
 	// An unselected world-anchor entry clip can depend on the candidate camera.
 	return actor.part == nil || actor.part.MotionMode != "world-anchored" || actor.entrySelected || len(actor.part.EntryAnimations) == 0
 }
 
-func demoRouteMotionAvoidingShots(w *World, x, worldY, comfortY int) MotionInput {
+func demoRouteMotionAvoidingShots(w *World, x, worldY, comfortY, clearance int) MotionInput {
 	var actorRisks, shotRisks [6][ActorPoolCapacity]demoRouteRisk
 	risks := demoRouteRisks{actors: &actorRisks, shots: &shotRisks}
 	for index, actor := range w.Actors {
@@ -107,10 +114,10 @@ func demoRouteMotionAvoidingShots(w *World, x, worldY, comfortY int) MotionInput
 			risks.shots[depth][index] = demoRouteRisk{bounds: CollisionRect{Left: sx, Top: sy}, active: active, supported: true}
 		}
 	}
-	return demoRouteMotionSearch(w, x, worldY, comfortY, &risks)
+	return demoRouteMotionSearch(w, x, worldY, comfortY, &risks, clearance)
 }
 
-func demoRouteMotionSearch(w *World, x, worldY, comfortY int, risks *demoRouteRisks) MotionInput {
+func demoRouteMotionSearch(w *World, x, worldY, comfortY int, risks *demoRouteRisks, clearance int) MotionInput {
 	type branch struct {
 		motion demoMotionForecast
 		first  int
@@ -137,6 +144,12 @@ func demoRouteMotionSearch(w *World, x, worldY, comfortY int, risks *demoRouteRi
 					candidate.score += float64(absDemo(player.Y-comfortY) * 2)
 				}
 				bounds := thirdMiddlePlayerBounds(w, player)
+				if clearance > 0 && !bounds.Empty() {
+					// Preserve a small reaction clearance around the source ship
+					// prefix; gameplay still uses the unchanged exact collider.
+					bounds.Left, bounds.Right = bounds.Left-clearance, bounds.Right+clearance
+					bounds.Top, bounds.Bottom = bounds.Top-clearance, bounds.Bottom+clearance
+				}
 				for actorIndex, actor := range w.Actors {
 					if !actor.Active || actor.Collision.Empty() || actor.ActorList != "moving" && actor.ActorList != "scenery" {
 						continue

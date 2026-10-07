@@ -64,7 +64,7 @@ func (p *PresentationPilot) NormalInput(w *World) Input {
 		}
 		// Known opening formations need turns within the reaction horizon;
 		// holding one direction can collide after a path changes heading.
-		input.Motion = demoRouteMotionWithOptions(w, x, w.ScrollY+y, y, true)
+		input.Motion = demoRouteMotionWithClearance(w, x, w.ScrollY+y, y, 4)
 	}
 	input.Fire = p.selectiveFireForMotion(w, input.Motion)
 	if w.blockedFireUntilRelease || w.Dive.Phase != 0 {
