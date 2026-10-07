@@ -78,7 +78,34 @@ func decodeFifthFixedTiles(data []byte) (*FixedTiles, []uint16, error) {
 		}
 	}
 	result.Kinds = append(result.Kinds, radial)
+	// The persistent encounter shares the aiming turret's graphics and update
+	// rules, but records its destruction for checkpoint re-entry.
+	persistent := turret
+	persistent.Kind, persistent.Behavior = 9, "fifth-persistent-aiming-tile"
+	persistent.Variants = make([]FixedTileVariant, len(turret.Variants))
+	for i, source := range turret.Variants {
+		variant := source
+		variant.Initial.Tiles = append([]uint16(nil), source.Initial.Tiles...)
+		variant.Destroyed.Tiles = append([]uint16(nil), source.Destroyed.Tiles...)
+		variant.Frames = make([]TilePatch, len(source.Frames))
+		for j, frame := range source.Frames {
+			variant.Frames[j] = frame
+			variant.Frames[j].Tiles = append([]uint16(nil), frame.Tiles...)
+		}
+		persistent.Variants[i] = variant
+	}
+	persistent.InitialChanges = cloneFifthTileChanges(turret.InitialChanges)
+	persistent.DestroyedChanges = cloneFifthTileChanges(turret.DestroyedChanges)
+	result.Kinds = append(result.Kinds, persistent)
 	return result, codes, nil
+}
+
+func cloneFifthTileChanges(changes []ConditionalTileReplacement) []ConditionalTileReplacement {
+	result := append([]ConditionalTileReplacement(nil), changes...)
+	for i := range result {
+		result[i].After.Tiles = append([]uint16(nil), changes[i].After.Tiles...)
+	}
+	return result
 }
 
 func decodeFifthAimingTileShots(level []byte, add func(int) (string, error)) ([]string, error) {

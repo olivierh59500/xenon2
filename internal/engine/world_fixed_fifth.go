@@ -3,8 +3,11 @@ package engine
 import "xenon2/internal/visualassets"
 
 func (w *World) spawnFifthTile(record visualassets.FixedEncounter) bool {
-	if w.Level.Number != 5 || (record.EnemyKind != 1 && record.EnemyKind != 3 && record.EnemyKind != 4) || w.Level.FixedTiles == nil {
+	if w.Level.Number != 5 || (record.EnemyKind != 1 && record.EnemyKind != 3 && record.EnemyKind != 4 && record.EnemyKind != 9) || w.Level.FixedTiles == nil {
 		return false
+	}
+	if record.EnemyKind == 9 && w.fifthDestroyedTurrets[record.State2] {
+		return true
 	}
 	var kind *visualassets.FixedTileKind
 	for i := range w.Level.FixedTiles.Kinds {
@@ -50,6 +53,9 @@ func (w *World) spawnFifthTile(record visualassets.FixedEncounter) bool {
 	variant := &kind.Variants[variantID]
 	state := FifthTileState{X: record.X - 8, WorldY: record.Y - 8, Heading: uint8(variantID)}
 	actor := &WorldActor{Active: true, ActorList: "moving", Health: kind.Health, fifthTile: &state, fixedTileArt: kind, fixedTileVariant: variant, part: &visualassets.ActorPart{ResourceTag: variant.ResourceTag, DamageMode: "fifth-tile"}, Collision: CollisionRect{Left: 1000, Right: 1000}}
+	if kind.Kind == 9 {
+		actor.fifthPersistentSelector = record.State2
+	}
 	actor.X, actor.Y = float64(state.X), float64(state.WorldY-w.ScrollY)
 	actor.PreviousX, actor.PreviousY = actor.X, actor.Y
 	if err := w.bindWorldActor(actor); err != nil {
@@ -137,6 +143,12 @@ func (w *World) damageFifthTile(actor *WorldActor, amount uint16) {
 		return
 	}
 	actor.Active, actor.Visible = false, false
+	if kind.Kind == 9 {
+		if w.fifthDestroyedTurrets == nil {
+			w.fifthDestroyedTurrets = make(map[int]bool)
+		}
+		w.fifthDestroyedTurrets[actor.fifthPersistentSelector] = true
+	}
 	if kind.Kind == 1 {
 		w.spawnSecondNamedExplosion(state.X+8, state.WorldY-w.ScrollY+8, "explosion-small")
 		for _, part := range actor.fifthTileGroup {
@@ -165,7 +177,7 @@ func (w *World) storeFifthTileResidue(actor *WorldActor) {
 	r.X, r.Y = int16(state.X), int16(state.WorldY)
 	r.Counter, r.Health = int16(state.Phase), uint16(actor.Health)
 	if actor.fixedTileArt.Kind != 1 {
-		if actor.fixedTileArt.Kind == 3 {
+		if actor.fixedTileArt.Kind == 3 || actor.fixedTileArt.Kind == 9 {
 			r.Direction = int16(state.Heading)
 		}
 		r.SetFireState(state.Accumulator, r.FireRate())

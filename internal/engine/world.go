@@ -43,6 +43,8 @@ type WorldActor struct {
 	fifthSeeking               *FifthSeekingState
 	fifthColumn                *FifthLaserColumnState
 	fifthTile                  *FifthTileState
+	fifthFormation             *FifthFormationState
+	fifthPersistentSelector    int
 	fifthTileGroup             []*WorldActor
 	Binding                    ActorPoolBinding
 	ID                         int
@@ -198,6 +200,7 @@ type World struct {
 	ExitReady                        bool
 	ShopReady                        bool
 	LevelFinished                    bool
+	fifthDestroyedTurrets            map[int]bool
 	Checkpoint                       CheckpointState
 	WaveBonuses                      WaveBonusCache
 	Ready                            bool
@@ -1099,6 +1102,9 @@ func (w *World) spawnEnemyShot(x, y int, shot EnemyShot) {
 }
 
 func (w *World) spawnFixed(record visualassets.FixedEncounter) {
+	if w.spawnFifthFormation(record) {
+		return
+	}
 	if w.spawnFifthTile(record) {
 		return
 	}
