@@ -4,7 +4,6 @@ import (
 	"encoding/csv"
 	"io"
 	"os"
-	"path/filepath"
 	"strconv"
 	"testing"
 )
@@ -17,14 +16,10 @@ func TestFirstLevelPublicInputPlaythroughOptional(t *testing.T) {
 		t.Skip("set XENON2_RUNTIME_ASSET_DIR to local exported resources")
 	}
 	replay := os.Getenv("XENON2_INPUT_REPLAY")
-	explicitReplay := replay != ""
 	if replay == "" {
-		replay = filepath.Join(root, "..", "..", ".local", "native-playcheck", "grid-7-input.csv")
+		t.Skip("set XENON2_INPUT_REPLAY to an explicitly supplied current public-input playthrough")
 	}
 	file, err := os.Open(replay)
-	if os.IsNotExist(err) && !explicitReplay {
-		t.Skip("local public-input playthrough replay not supplied")
-	}
 	if err != nil {
 		t.Fatal(err)
 	}

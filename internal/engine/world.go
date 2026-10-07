@@ -553,6 +553,7 @@ func (w *World) Step(input Input) error {
 		deathFinished = w.deathState.Remaining == 0 && w.MaterializationFrames >= 16
 	}
 	w.updatePlayerCollision()
+	playerContactStopped := false
 	if w.PlayerAlive && w.Dive.Phase == 0 {
 		contactRect := w.playerCollision
 		if w.Equipment.ShadesFrames > 0 {
@@ -563,6 +564,10 @@ func (w *World) Step(input Input) error {
 			if actor.Active && actor.ActorList == "moving" && actor.Collision.Intersects(contactRect) {
 				if w.Equipment.ShadesFrames == 0 {
 					w.damagePlayer(ContactDamage(actor.part.StrongHealth))
+					if !w.PlayerAlive {
+						playerContactStopped = true
+						break
+					}
 				}
 				if w.Equipment.ShadesFrames != 0 && actor.firstGuardian {
 					w.strikeFirstGuardian(contactRect, 127)
@@ -573,7 +578,7 @@ func (w *World) Step(input Input) error {
 			}
 		}
 	}
-	if w.PlayerAlive {
+	if !playerContactStopped && w.PlayerAlive {
 		touching := false
 		if w.Coverage != nil && w.Dive.Phase == 0 {
 			touching = w.Coverage.Touches(w.Player.X, w.Player.Y, w.ScrollY, *w.Level.PlayerStencil)
@@ -597,14 +602,16 @@ func (w *World) Step(input Input) error {
 				}
 			}
 		}
-	} else {
+	} else if !playerContactStopped {
 		w.Player.ScrollStep = 0
 	}
-	if w.Dive.AdvancePhase() {
-		w.Rewind.Timer = -15
+	if !playerContactStopped {
+		if w.Dive.AdvancePhase() {
+			w.Rewind.Timer = -15
+		}
+		copy(w.shipTrail[:3], w.shipTrail[1:])
+		w.shipTrail[3] = w.PreviousPlayer
 	}
-	copy(w.shipTrail[:3], w.shipTrail[1:])
-	w.shipTrail[3] = w.PreviousPlayer
 	if err := w.advancePlayerShadows(input); err != nil {
 		return err
 	}

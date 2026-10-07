@@ -459,9 +459,10 @@ restart checks pass, and all fifty-six native beam layouts remain unchanged.
 Bounded runs using ordinary inputs exercised menu, loading, READY, ship losses,
 initials, accepted/refused continues, alternating players and return to attract.
 Separate shop fixtures verified sale, purchase, exit and ending presentation.
-They are not full-game wins. The best navigation trial reached the first
-middle-arena exit region, but did not cross into its shop; a complete normal-input
-five-level run and actual graphical comparisons remain required.
+They are not full-game wins. Early navigation trials reached the first
+middle-arena exit region; the subsequent first-level engine replay below
+reached both shop boundaries and victory. A complete normal-menu five-level
+run and integrated Amiga comparisons remain required.
 
 ## Actual desktop graphics verification
 
@@ -479,16 +480,17 @@ loading, READY, gameplay movement, pause and return to attract. Audio integratio
 checks verify immediate versus next-interrupt effect dispatch and delivery of
 voice-ownership flags to gameplay.
 
-A legal-input replay now reaches the first middle shop and final arena and
-reduces the final guardian's health from thirty to two before losing the last
+An earlier legal-input replay reached the first middle shop and final arena and
+reduced the final guardian's health from thirty to two before losing the last
 ship. No full-level or five-level victory is inferred from that result.
 
-A subsequent public-input replay completes level one: both shop boundaries,
+A historical public-input replay completed level one before the later contact
+correction: both shop boundaries,
 guardian destruction and exit-coin exhaustion are reached after 8,198 steps.
 The replay comparison checks every observed frame, camera, ship coordinate,
 life count, shield, score and wallet value. It uses normal Session input,
 continue APIs, actual terrain coverage and shop prices. The final state has one
-ship, seven shield points, 5,300 score and 2,000 cash. This proves the first-level
+ship, seven shield points, 5,300 score and 2,000 cash. This proved the earlier first-level
 engine route; it does not prove the four remaining levels or full frontend
 campaign. The replay is local and excluded from Git.
 
@@ -583,3 +585,19 @@ engine-path evidence. It does not exercise the application's PAL-before-logic
 dispatch at every display update, and must not be relabelled as profile 3 or
 normal-menu campaign evidence. Grouping the same three ticks after logic
 instead would delay supernova gameplay resumption by one logic slot.
+
+## Lethal contact returns before enemy rewards
+
+The original player callback returns immediately if moving-enemy contact kills
+the ship. It does not damage that enemy, consume its wave reward, draw explosion
+random values, move the ship, overwrite the one-pixel scroll request or shift
+the four ship-history poses. The remaining actor/shadow callbacks still run.
+The Go integration now preserves that boundary. 112 native branch comparisons
+cover lethal/nonlethal damage, protection, invulnerability and Shades; a world
+regression additionally checks the retained enemy slot, history, score and RNG.
+
+This fidelity correction invalidates the historical 8,198-step first-level
+observation CSV: its first mismatch is step 920, immediately after a lethal
+contact. The old local CSV is retained unchanged and no longer selected
+automatically by tests. Explicitly supplying it still reports the mismatch.
+A new current-engine first-level victory and full campaign remain unproven.
