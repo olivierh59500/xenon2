@@ -207,6 +207,10 @@ func (w *World) bindWorldActor(actor *WorldActor) error {
 }
 
 func (w *World) storeActorResidue(actor *WorldActor) {
+	if actor.thirdCrawler != nil {
+		w.storeThirdCrawlerResidue(actor)
+		return
+	}
 	if actor.fixedHatch != nil || actor.fixedPod != nil || actor.hatchCreature != nil || actor.podCreature != nil {
 		w.storeSecondSpecializedResidue(actor)
 		return

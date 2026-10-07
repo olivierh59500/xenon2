@@ -21,6 +21,9 @@ func (w *World) spawnThirdFixed(record visualassets.FixedEncounter) bool {
 			w.poolError = err
 			return true
 		}
+		actor.Binding.Residue.Counter = 0
+		actor.Binding.Residue.StrongHealth = false
+		actor.Binding.Residue.EmitterClock = 0
 		w.storeActorResidue(actor)
 		w.updateSecondActorCollision(actor)
 		w.Actors = append([]*WorldActor{actor}, w.Actors...)
@@ -45,6 +48,23 @@ func (w *World) spawnThirdFixed(record visualassets.FixedEncounter) bool {
 	}
 	return true
 }
+
+// The crawler uses whole-pixel motion. Its native callback writes direction and
+// the high emitter byte while retaining fractional coordinates and spare words.
+func (w *World) storeThirdCrawlerResidue(actor *WorldActor) {
+	if actor.Binding.EntityID == 0 {
+		return
+	}
+	s, r := actor.thirdCrawler, &actor.Binding.Residue
+	r.X, r.Y, r.Direction = int16(s.X), int16(s.Y), int16(s.Direction)
+	r.Health, r.PowerOrScore, r.WaveBonusToken = uint16(actor.Health), uint16(actor.Score), actor.WaveToken
+	r.SetFireState(s.FireAccumulator, r.FireRate())
+	w.storeWorldResidue(actor.Binding)
+	if !actor.Active {
+		w.retireWorldActor(actor.Binding)
+	}
+}
+
 func (w *World) advanceThirdCrawler(actor *WorldActor) {
 	actor.PreviousX, actor.PreviousY = actor.X, actor.Y
 	art := w.Level.FixedSprites.Third.Crawler

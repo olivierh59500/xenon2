@@ -1158,3 +1158,19 @@ reduces core health from 20 to 19, projects the owning tiled flash and compares
 its covered visible pixels with palette entry 15. The following pass removes
 the flash. This proves the integrated hit-to-drawing path for that fixture,
 not full final-arena victory.
+
+## Third terrain crawler physical state
+
+The constructor at 0x556f6–0x5578c preserves coordinate fractions but explicitly
+clears the phase, wave token, emitter word and strength byte. Its direction is
+stored at offset 0x2a. The whole-pixel update at 0x562b0 changes that direction
+when it turns and updates the high emitter byte at 0x563cc. Generic Go storage
+previously erased its fractions, retained stale phase/strength and omitted its
+live direction. Specialized storage now matches those field writes.
+
+Eight resource-backed regressions fail before this correction and pass afterward.
+They inspect birth, thirty-two live updates and actual off-screen expiry/release
+with nonzero retained values. The existing 3,200 native crawler passages still
+match position, direction, animation, shots and random state. The complete engine
+suite passes without changed expected outcomes. The correction does not claim
+to resolve the independently failing third-stage demonstration route.
