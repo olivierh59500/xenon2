@@ -56,6 +56,22 @@ complete-game recording. Generated MP4, PNG poster and chapter JSON files stay
 under locally excluded `recordings/`. The export command requires Go 1.26 or
 newer and FFmpeg. A different positive `-duration` records a longer excerpt.
 
+## Android
+
+```sh
+./scripts/run-android.sh
+```
+
+The landscape version keeps the original game canvas and adds a virtual joystick,
+FIRE/DIVE buttons and ENTER/MENU/PAUSE/CHEATS controls in the side margins.
+The joystick stays captured while dragging, supports diagonals and works with
+simultaneous fire and dive touches. Menus and merchant cells also accept direct
+taps. The activity keeps the screen awake while the game is visible.
+
+The script builds an ARM64 test APK, installs it on the authorized USB device
+and starts the app. See [Android build and controls](docs/ANDROID.md) for SDK,
+device and validation details. Generated APK/AAR/Gradle outputs remain excluded.
+
 ## Optional trainer settings
 
 Select CHEATS on the menu, use `-cheats` at launch, or press F3 during a game. The submenu provides
