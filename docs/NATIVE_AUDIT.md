@@ -988,3 +988,23 @@ capture-specific geometry, not a per-caption fit. These checks establish the
 sampled shapes and raw palette values, not full intro timing, every emulator
 viewport or color-managed display appearance. The inferred overscan denominator
 is not established by saved emulator metadata. No rendering change was needed.
+
+## Common fixed-actor contact inheritance
+
+Shared terrain constructors across all five levels leave the strength byte
+untouched, as do the fifth barrier posts/band and aiming/radial/persistent
+constructors. They now retain the allocated slot's value. Factories that
+explicitly set or clear strength keep their separate source behavior; the
+allocator and global binding rules are unchanged.
+
+Sixteen original-record cases reclaim strong sweeper/oscillator slots through
+their real off-screen expiration, create the corresponding tile family in those
+same physical slots, publish the real collision and apply ordinary player
+contact. Fresh slots retain eight-point contact; reused strong slots apply
+sixteen. Scores, damageable deaths, harmless armor callbacks and the persistent
+selector's destroyed flag remain required. All eight fresh cases passed before
+the fix; all eight reused cases failed with the incorrect shield debit.
+
+The complete source/resource engine suite and race suite pass. Both gameplay
+cadences still win stages one/two from the direct menu and full intro; the direct
+menu route still admits the third middle guardian with two ships and 19 shield.

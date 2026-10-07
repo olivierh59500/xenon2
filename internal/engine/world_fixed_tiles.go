@@ -28,6 +28,8 @@ func (w *World) spawnFixedTile(record visualassets.FixedEncounter) bool {
 				w.poolError = err
 				return true
 			}
+			// These terrain constructors leave the reused strength byte intact.
+			actor.part.StrongHealth = actor.Binding.Residue.StrongHealth
 			w.setSecondMapPatch(state.X/16, state.WorldY/16, variant.Initial)
 			w.Actors = append([]*WorldActor{actor}, w.Actors...)
 			return true

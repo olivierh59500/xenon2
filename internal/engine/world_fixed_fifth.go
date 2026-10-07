@@ -29,7 +29,7 @@ func (w *World) spawnFifthTile(record visualassets.FixedEncounter) bool {
 				w.poolError = err
 				return true
 			}
-			actor := &WorldActor{ID: binding.EntityID, Binding: binding, Active: true, ActorList: "moving", Health: kind.Health, fifthTile: &state, fixedTileArt: kind, part: &visualassets.ActorPart{ResourceTag: part.ResourceTag, DamageMode: "fifth-tile"}, Collision: CollisionRect{Left: 1000, Right: 1000}}
+			actor := &WorldActor{ID: binding.EntityID, Binding: binding, Active: true, ActorList: "moving", Health: kind.Health, fifthTile: &state, fixedTileArt: kind, part: &visualassets.ActorPart{ResourceTag: part.ResourceTag, StrongHealth: binding.Residue.StrongHealth, DamageMode: "fifth-tile"}, Collision: CollisionRect{Left: 1000, Right: 1000}}
 			actor.X, actor.Y = float64(state.X), float64(state.WorldY-w.ScrollY)
 			actor.PreviousX, actor.PreviousY = actor.X, actor.Y
 			w.poolActors[binding.Slot] = actor
@@ -62,6 +62,8 @@ func (w *World) spawnFifthTile(record visualassets.FixedEncounter) bool {
 		w.poolError = err
 		return true
 	}
+	// The shared aiming/radial constructors preserve the reused strength byte.
+	actor.part.StrongHealth = actor.Binding.Residue.StrongHealth
 	actor.Binding.Residue.EmitterClock = 0
 	w.storeActorResidue(actor)
 	w.replaceFifthAdjacentTiles(state.X/16, state.WorldY/16, kind.InitialChanges)
