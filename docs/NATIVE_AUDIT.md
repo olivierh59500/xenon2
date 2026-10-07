@@ -678,3 +678,20 @@ extra ship selected on the second page before affordable optional first-page
 items. These fixtures do not claim guardian victories. The updated normal-menu
 pilot still completes level one after 28,354 display updates; next-stage survival
 and a complete autonomous campaign remain under validation.
+
+## Ordinary targeting of the second middle arena
+
+The pilot targets visible defense-stream heads while both stream flags shield
+the nodes. After an actual head destruction, it crosses to each surviving node
+using its semantic tile position, including when the current player side keeps
+that node's collider closed. A visible firing window can be retained through
+the game's normal reverse-scroll controls. No node health or flag is assigned
+by the pilot.
+
+A basic-equipment level-two public-session regression destroys all three nodes
+through 36 observed hits and reaches the actual middle shop after 4,291 commands,
+with one surviving ship, 31 shield points, 3,100 score and 1,100 cash. It consumes
+one legal continue after five ship losses. The first opening checkpoint remains
+unchanged at 578 commands. A normal-menu carried-loadout run also passes the
+middle arena, but currently needs corridor recovery near camera 910 and a
+validated final-barrier/guardian strategy. This is not a second-level victory.

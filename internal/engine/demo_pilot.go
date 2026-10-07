@@ -27,7 +27,18 @@ func (p *DemoPilot) NormalInput(w *World) Input {
 	if w.Ready {
 		return Input{Fire: true}
 	}
+	if input, handled := p.StageInput(w); handled {
+		return input
+	}
 	c := p.Config
+	if w.Level.Number == 2 && w.Checkpoint.ScrollY <= 4032 {
+		if c.TargetY == 0 {
+			c.TargetY = 166
+		}
+		if c.FireReleasePeriod == 0 {
+			c.FireReleasePeriod = 2
+		}
+	}
 	if c.Lookahead <= 0 {
 		c.Lookahead = 5
 	}
