@@ -133,9 +133,17 @@ equipment pointer belongs to the current world; input and phase fields are
 rebuilt. Forecast and copied-runtime contexts rebind to their new world. Tests
 verify current RNG, sound routing, changed phase flags and source isolation.
 Together these changes reduce the measured warm M4 Max boss decision to about
-3.05 ms, 63.8 KiB and 792 allocations. The full-intro boss victory is unchanged
+3.05 ms, 63.8 KB and 792 allocations. The full-intro boss victory is unchanged
 at frame 2448 with all 19 admission shield points intact. Pixel measurements
 remain separate from host measurements and from rendered frame pacing.
+
+The combined implementation's Pixel sample measures 63.4 ms over three
+decisions, 169,330 bytes and 807 allocations. A subsequent 20-decision CPU-profiled
+sample measures 35.1 ms, 76,884 bytes and 794 allocations. Initialization and
+device scheduling affect these short samples; they must not be compared as a
+rendered FPS result. The device reports no active thermal cap, but idle frequency
+readings do not establish its clocks during simulation. The profile identifies
+the continuation policy and its terrain queries as major remaining costs.
 
 The connected post-merchant third-stage route remains under validation.
 Third-stage completion, levels four and five, ending and near-lossless campaign

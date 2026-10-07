@@ -56,7 +56,7 @@ func (n *demoNavigation) touching(x, y int) bool {
 		if mask == 0 || y+index < 0 || y+index >= 4800 {
 			continue
 		}
-		row := n.rows[y+index]
+		row := &n.rows[y+index]
 		pixels := row[word] << shift
 		if shift != 0 {
 			pixels |= row[word+1] >> (32 - shift)
