@@ -1764,3 +1764,22 @@ USB Pixel 10a and cold-launches successfully; its process remains alive afterwar
 Device graphics were not rechecked while locked. These milestones keep the full
 conversion and near-lossless five-stage expert route open; they do not replace
 the required complete campaign and integrated Amiga comparisons.
+
+## Preparing the opposite chain lane
+
+Opening chip damage was traced to the source extending chains. Before their
+player-height activation band, the practiced controller prepares the opposite
+lane using the actual head anchor and extended tail width. The left target is
+head X + 160 (192 for opening chains and 208 for the later offset); right targets
+use 128. A covered target is declined, preserving the normal terrain route.
+The planning collider also retains four pixels of reaction clearance during the
+opening; the game's contact boxes, stencil and damage remain unchanged.
+
+Original maximum-extension cases show why center 160 can intersect both tails.
+All five steering boxes verify the selected side. Four 129-camera preparation
+bands cover read-only selection and terrain refusal: both opening sides and the
+later right are clear throughout; the later left declines its 105 covered cases.
+The permanent actual-intro route now keeps 31 shield at checkpoint 4,032, compared
+with 19 after lane preparation alone and 7 before it. It retains its carried ship
+and credits. A later bounded run still loses the ship in the sweeper sector;
+this is progress toward low-loss play, not a complete third-stage victory.

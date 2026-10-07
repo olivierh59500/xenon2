@@ -272,8 +272,8 @@ func TestExpertThirdOpeningKeepsCarriedShipsThroughFirstCheckpointOptional(t *te
 			t.Fatal("expert opening consumed a carried ship or changed ordinary rules")
 		}
 		if w.Checkpoint.ScrollY <= 4032 {
-			if w.ScrollY > 4032 || w.Equipment.Shield <= 0 {
-				t.Fatal("expert did not actually cross the living checkpoint boundary")
+			if w.ScrollY > 4032 || w.Equipment.Shield < 31 {
+				t.Fatal("expert did not cross the checkpoint with its prepared-route shield reserve")
 			}
 			t.Logf("Expert opening retains%d ships/credits%d at frame%d camera%d shield%d", ships, credits, w.Frame, w.ScrollY, w.Equipment.Shield)
 			return

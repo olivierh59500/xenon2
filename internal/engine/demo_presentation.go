@@ -59,6 +59,9 @@ func (p *PresentationPilot) NormalInput(w *World) Input {
 		if p.goal.valid(w) {
 			x, y = p.goal.x, p.goal.y
 		}
+		if preparedX, preparedY, found := thirdChainPreparation(w); found {
+			x, y = preparedX, preparedY
+		}
 		// Known opening formations need turns within the reaction horizon;
 		// holding one direction can collide after a path changes heading.
 		input.Motion = demoRouteMotionWithOptions(w, x, w.ScrollY+y, y, true)
