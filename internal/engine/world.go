@@ -76,8 +76,17 @@ type WorldActor struct {
 	firstMiddleAnchor          *FirstMiddleAnchor
 	firstMiddleFollower        *FirstMiddleFollower
 	firstMiddleFragment        *FirstMiddleFragment
+	thirdCrawler               *ThirdCrawlerState
+	thirdChain                 *ThirdChainState
+	thirdChainPart             int
+	thirdChainSentinel         bool
+	thirdCannon                *ThirdCannonState
+	thirdScenery               bool
+	thirdChainMembers          [8]*WorldActor
 	thirdMiddlePart            int
 	thirdFinalMember           *ThirdFinalMember
+	fourthIndex                int
+	fourthFinal                bool
 	thirdPart                  *visualassets.GuardianComponent
 	firstMiddleSentinel        bool
 	firstMiddleStream          int
@@ -177,6 +186,12 @@ type World struct {
 	ThirdMiddle                      *ThirdGuardianState
 	ThirdFinal                       *ThirdFinalState
 	ThirdStage                       ThirdStageState
+	FourthMiddle                     *FourthMiddleGuardian
+	FourthFinal                      *FourthFinalGuardian
+	fourthMiddleArt                  *visualassets.GuardianGroup
+	fourthFinalArt                   *visualassets.GuardianGroup
+	fourthMiddleActors               [20]*WorldActor
+	fourthFinalActors                [19]*WorldActor
 	thirdMiddleArt                   *visualassets.GuardianGroup
 	thirdFinalArt                    *visualassets.GuardianGroup
 	thirdMiddleActors                [17]*WorldActor
@@ -384,6 +399,9 @@ func NewWorld(data LevelData) (*World, error) {
 		return nil, err
 	}
 	if err := w.initializeThirdStage(); err != nil {
+		return nil, err
+	}
+	if err := w.initializeFourthStage(); err != nil {
 		return nil, err
 	}
 	if err := w.initializeFirstMiddle(); err != nil {
@@ -933,6 +951,15 @@ func (w *World) destroyPlayer() {
 }
 
 func (w *World) damageActor(actor *WorldActor, amount uint16) {
+	if actor.fourthIndex > 0 {
+		x, y := (actor.Collision.Left+actor.Collision.Right)/2, (actor.Collision.Top+actor.Collision.Bottom)/2
+		w.damageFourthGuardian(actor, CollisionRect{Left: x, Top: y, Right: x, Bottom: y}, amount)
+		return
+	}
+	if actor.thirdCannon != nil {
+		w.damageThirdCannon(actor, amount)
+		return
+	}
 	if actor.thirdMiddlePart > 0 {
 		w.damageThirdMiddle(actor, amount)
 		return
@@ -1039,6 +1066,15 @@ func (w *World) spawnEnemyShot(x, y int, shot EnemyShot) {
 }
 
 func (w *World) spawnFixed(record visualassets.FixedEncounter) {
+	if w.Level.Number == 4 && (record.EnemyKind == 2 || record.EnemyKind == 4) && w.fourthMiddleArt != nil {
+		if err := w.activateFourthGuardian(record.EnemyKind == 4); err != nil {
+			w.poolError = err
+		}
+		return
+	}
+	if w.spawnThirdFixed(record) {
+		return
+	}
 	if w.Level.Number == 3 && record.EnemyKind == 3 && w.thirdMiddleArt != nil {
 		if err := w.activateThirdMiddle(); err != nil {
 			w.poolError = err

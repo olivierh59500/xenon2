@@ -32,6 +32,7 @@ type GuardianComponent struct {
 	ActiveAnimation      ActorAnimation    `json:"active_animation"`
 	DestroyedSprite      string            `json:"destroyed_sprite,omitempty"`
 	TileFrames           []TilePatch       `json:"tile_frames,omitempty"`
+	DestroyedTiles       *TilePatch        `json:"destroyed_tiles,omitempty"`
 	DamageFlash          *TilePatch        `json:"damage_flash,omitempty"`
 	FlashOffsetX         int               `json:"flash_offset_x,omitempty"`
 	FlashOffsetY         int               `json:"flash_offset_y,omitempty"`
@@ -60,6 +61,7 @@ type GuardianGroup struct {
 	DestructibleCells []GuardianTerrainCell `json:"destructible_cells,omitempty"`
 	Gates             []GuardianGate        `json:"gates,omitempty"`
 	MotionParameters  map[string]int        `json:"motion_parameters,omitempty"`
+	MotionTables      map[string][]int      `json:"motion_tables,omitempty"`
 	Animations        []NamedActorAnimation `json:"animations,omitempty"`
 }
 
@@ -196,6 +198,9 @@ func DecodeCompoundGuardianArt(number int, level []byte, palette [16][4]uint8) (
 				part.ParentIndex = index - 1
 			}
 			final.Components = append(final.Components, part)
+		}
+		if err := decodeFourthGuardianControllerData(level, &groups[0], &final, add); err != nil {
+			return nil, SpriteAtlas{}, err
 		}
 		groups = append(groups, final)
 	}
@@ -411,6 +416,9 @@ func GuardianGroupTileCodes(groups []GuardianGroup) []uint16 {
 			codes = append(codes, cell.RestoredTile)
 		}
 		for _, part := range group.Components {
+			if part.DestroyedTiles != nil {
+				codes = append(codes, part.DestroyedTiles.Tiles...)
+			}
 			if part.DamageFlash != nil {
 				codes = append(codes, part.DamageFlash.Tiles...)
 			}
@@ -443,6 +451,15 @@ func RemapGuardianGroupTiles(groups []GuardianGroup, ids map[uint16]uint16) erro
 			groups[i].DestructibleCells[j].RestoredTile = id
 		}
 		for j := range groups[i].Components {
+			if patch := groups[i].Components[j].DestroyedTiles; patch != nil {
+				for n, code := range patch.Tiles {
+					id, ok := ids[code]
+					if !ok && code != 0 {
+						return fmt.Errorf("guardian destroyed tile is missing")
+					}
+					patch.Tiles[n] = id
+				}
+			}
 			if patch := groups[i].Components[j].DamageFlash; patch != nil {
 				for n, code := range patch.Tiles {
 					id, ok := ids[code]

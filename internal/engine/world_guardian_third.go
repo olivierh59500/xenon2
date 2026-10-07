@@ -28,6 +28,7 @@ func (w *World) initializeThirdStage() error {
 			w.movingSpriteBoxes[sprite.Name] = *sprite.Collision
 		}
 	}
+	w.initializeThirdScenery()
 	return nil
 }
 

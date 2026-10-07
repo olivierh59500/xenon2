@@ -148,6 +148,13 @@ func (w *World) bindWorldActor(actor *WorldActor) error {
 }
 
 func (w *World) storeActorResidue(actor *WorldActor) {
+	if actor.fourthIndex > 0 {
+		w.storeFourthPartResidue(actor)
+		if !actor.Active {
+			w.retireWorldActor(actor.Binding)
+		}
+		return
+	}
 	if actor.Binding.EntityID == 0 {
 		return
 	}

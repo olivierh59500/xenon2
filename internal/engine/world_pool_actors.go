@@ -50,6 +50,26 @@ func (w *World) advanceActorPhase(list ActorPoolList, input Input) error {
 }
 
 func (w *World) advanceMovingActor(actor *WorldActor) error {
+	if actor.fourthIndex > 0 {
+		return w.advanceFourthPart(actor)
+	}
+	if actor.thirdChainSentinel {
+		return nil
+	}
+	if actor.thirdChainPart > 0 {
+		if actor.thirdChainPart == 1 {
+			w.advanceThirdChain(actor)
+		}
+		return nil
+	}
+	if actor.thirdCrawler != nil {
+		w.advanceThirdCrawler(actor)
+		return nil
+	}
+	if actor.thirdCannon != nil {
+		w.advanceThirdCannon(actor)
+		return nil
+	}
 	if actor.podCreature != nil {
 		w.advancePodCreature(actor)
 		return nil
@@ -166,6 +186,11 @@ func (w *World) advanceMovingActor(actor *WorldActor) error {
 }
 
 func (w *World) advanceSceneryActor(actor *WorldActor) error {
+	if actor.thirdScenery {
+		actor.Visible = w.thirdFinalUpdated
+		actor.X, actor.Y = 0, float64(-w.ScrollY)
+		return nil
+	}
 	if actor.fixedPod != nil {
 		w.advanceFixedPod(actor)
 		return nil

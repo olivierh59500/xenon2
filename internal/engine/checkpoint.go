@@ -74,6 +74,7 @@ func (w *World) RestartCheckpoint() {
 	}
 	w.restoreSecondArenaActors()
 	w.restoreThirdMiddleActors()
+	w.restoreFourthGuardianActors(scrollChange)
 	if w.FirstMiddle != nil {
 		w.FirstMiddle.Updated = [5]bool{}
 		w.FirstMiddle.GateCounters = [16]int{}

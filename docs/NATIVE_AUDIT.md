@@ -300,3 +300,20 @@ over seventeen camera offsets. The comparison supplies both the map row and
 fine-scroll offset, and reads the original collision condition rather than the
 loop-count register left by the routine. This verifies terrain contact, not a
 complete wall-sliding/crushing playthrough or every guardian's custom collider.
+
+## Remaining third-level encounters and fourth-level guardians
+
+All third-level fixed selectors now have semantic Go controllers. The extending
+chain matches 6,400 source part states, the tile-edge crawler matches 3,200 passes,
+and the compound terrain cannon matches 2,000 passes through both damage stages.
+The single initialized scenery actor displays its sparse original tile composite
+only while the final tail requests it. Actual-resource tests exercise these
+selectors, the cannon's two score awards and its final map removal.
+
+The fourth-level middle and final guardians match 24,000 and 11,400 source part
+states, respectively, including firing and shared random consumption. Twenty-two
+source damage operations establish their outer targets, core locks, satellite
+edge restrictions, closed eye poses, rewards and terrain changes. World tests
+verify both original constructors, persistent checkpoint bindings, the middle
+corridor and twenty final reward coins before stage exit. Full scene comparisons
+remain necessary beyond these controller and integration checks.

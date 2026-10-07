@@ -41,6 +41,7 @@ type FixedSpriteKind struct {
 }
 
 type FixedSprites struct {
+	Third          *ThirdFixedArt          `json:"third,omitempty"`
 	Kinds          []FixedSpriteKind       `json:"kinds"`
 	Atlas          SpriteAtlas             `json:"atlas"`
 	Projectile     *FixedProjectileArtwork `json:"projectile,omitempty"`
@@ -239,6 +240,13 @@ func DecodeFixedSprites(levelNumber int, level []byte, palette [16][4]uint8) (*F
 	result.Projectile, err = decodeFixedProjectileArtwork(levelNumber, level, add)
 	if err != nil {
 		return nil, err
+	}
+	if levelNumber == 3 {
+		var err error
+		result.Third, err = decodeThirdFixedArt(level, add)
+		if err != nil {
+			return nil, err
+		}
 	}
 	result.Atlas = packSprites(images)
 	result.Atlas.SourceSpriteNames = names

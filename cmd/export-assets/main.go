@@ -74,6 +74,11 @@ func main() {
 			fail(err)
 		}
 		extraTiles = append(extraTiles, visualassets.GuardianGroupTileCodes(groups)...)
+		fixedSprites, err := visualassets.DecodeFixedSprites(index+1, data, baseTerrain.Palette)
+		if err != nil {
+			fail(err)
+		}
+		extraTiles = append(extraTiles, visualassets.ThirdFixedTileCodes(fixedSprites.Third)...)
 		terrain, err := visualassets.DecodeTerrainWithTiles(data, extraTiles)
 		if err != nil {
 			fail(fmt.Errorf("level %d: %w", index+1, err))
@@ -155,8 +160,7 @@ func main() {
 		if err := writePNG(prefix+"-actors.png", actors.Atlas.Image); err != nil {
 			fail(err)
 		}
-		fixedSprites, err := visualassets.DecodeFixedSprites(index+1, data, terrain.Palette)
-		if err != nil {
+		if err := visualassets.RemapThirdFixedTiles(fixedSprites.Third, terrain.SourceTileIDs); err != nil {
 			fail(err)
 		}
 		if err := writeJSON(prefix+"-fixed-sprites.json", fixedSprites); err != nil {

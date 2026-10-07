@@ -11,8 +11,8 @@ establish that the corresponding encounter is playable.
 | --- | --- | --- |
 | 1 | Three terrain cannon types, bouncing attackers, five-stream middle arena, final body and articulated chain | Complete damage/removal effects and checkpoint/playthrough comparisons |
 | 2 | Terrain cannon, bouncing attackers, hatches, both pod emitters and their creatures, middle defense waves/nodes, final body and transforming minions | Complete source effects and full playthrough comparisons |
-| 3 | Terrain cannon, sweeping attacker, turning projectile, middle flying guardian and final worm | Three additional fixed families and initial scenery renderer |
-| 4 | Terrain cannon and extending beam | Middle and final compound guardians; ground encounter family |
+| 3 | Terrain cannons, sweeping attacker, turning projectile, extending chain, tile-edge crawler, middle flying guardian, final worm and conditional scenery | Full phase-order and playthrough comparisons |
+| 4 | Terrain cannon, extending beam, twenty-part middle guardian and nineteen-part final guardian | Ground encounter family; full playthrough comparisons |
 | 5 | Terrain cannon and vertical attacker with aiming projectile | Middle and final compound guardians; six additional fixed families |
 
 The supplied encounter streams contain respectively 5, 6, 7, 6 and 10 selectors,

@@ -95,7 +95,9 @@ func (w *World) weaponHitRect(area CollisionRect, damage uint16, all bool) bool 
 			count++
 		}
 		hit = true
-		if actor.firstGuardian {
+		if actor.fourthIndex > 0 {
+			w.damageFourthGuardian(actor, area, damage)
+		} else if actor.firstGuardian {
 			w.strikeFirstGuardian(area, damage)
 		} else {
 			w.damageActor(actor, damage)
