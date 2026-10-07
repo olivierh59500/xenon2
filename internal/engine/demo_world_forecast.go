@@ -1,9 +1,12 @@
 package engine
 
-// forecastOpeningGuard scores ordinary controls through isolated World.Step callbacks.
-// It keeps the practiced action unless a short exact lookahead predicts damage.
+// forecastOpeningGuard guards the third opening and post-merchant corridor
+// through isolated World.Step callbacks. It keeps the practiced action unless
+// a short exact lookahead predicts damage from a turn, birth or weapon callback.
 func (p *PresentationPilot) forecastOpeningGuard(w *World, planned Input) Input {
-	if w.Level.Number != 3 || w.Checkpoint.ScrollY <= 3408 || w.ThirdMiddle != nil || w.Ready || !w.PlayerAlive {
+	opening := w.Checkpoint.ScrollY > 3408 && w.ThirdMiddle == nil
+	corridor := w.ThirdMiddle != nil && w.ThirdMiddle.Defeated && w.PendingExitDrops == 0 && !w.ShopReady && w.ScrollY > 208
+	if w.Level.Number != 3 || (!opening && !corridor) || w.Ready || !w.PlayerAlive {
 		return planned
 	}
 	forecast := &p.forecast

@@ -145,7 +145,12 @@ rendered FPS result. The device reports no active thermal cap, but idle frequenc
 readings do not establish its clocks during simulation. The profile identifies
 the continuation policy and its terrain queries as major remaining costs.
 
-The connected post-merchant third-stage route remains under validation.
-Third-stage completion, levels four and five, ending and near-lossless campaign
-play are not established by this boss result. A diagnostic time limit must be
-reported separately from a genuine lack of camera progress.
+The six-pass exact guard also protects the post-merchant third corridor. Cannon
+preparation derives firing lanes from each live source instance, selects the
+nearest passed row and tries another reachable target when a neighboring gun is
+behind solid terrain. The full-intro route now reaches checkpoint 1696 with the
+same ship and credits and at least 27 shield after the ordinary merchant repair.
+Later cannon combat remains under validation. Third-stage completion, levels
+four and five, ending and near-lossless campaign play are not established by
+these results. A diagnostic time limit must be reported separately from a genuine
+lack of camera progress.
