@@ -41,6 +41,7 @@ type graphics struct {
 	fadeAmount                                   []float32
 	fadeUniforms                                 map[string]any
 	materialShader                               *ebiten.Shader
+	materialSprite                               *ebiten.Image
 	terrainMask                                  *ebiten.Image
 	terrainMaskTiles                             [5]map[uint16]*ebiten.Image
 	materialUniforms                             map[string]any
@@ -81,6 +82,7 @@ func prepareGraphics(b *Bundle) graphics {
 	g.fadeAmount = make([]float32, 1)
 	g.fadeUniforms = map[string]any{"Deduction": g.fadeAmount}
 	g.terrainMask = ebiten.NewImage(ScreenWidth, PlayfieldHeight)
+	g.materialSprite = ebiten.NewImage(ScreenWidth, PlayfieldHeight)
 	g.materialPosition = make([]float32, 2)
 	g.materialUniforms = map[string]any{"Position": g.materialPosition}
 	g.backgroundStarBackdrop = ebiten.NewImage(ScreenWidth, PlayfieldHeight)
@@ -512,11 +514,14 @@ func (g *Game) drawSprite(destination *ebiten.Image, sprite SpriteView, level in
 		picture = image.flash
 	}
 	if sprite.Materializing {
-		g.graphics.materialPosition[0], g.graphics.materialPosition[1] = float32(x), float32(y)
+		// Rect shaders require equal source dimensions. Position the masked
+		// sprite in a playfield-sized scratch image before testing terrain.
+		g.graphics.materialSprite.Clear()
+		g.graphics.materialSprite.DrawImage(picture, &op)
+		g.graphics.materialPosition[0], g.graphics.materialPosition[1] = 0, 0
 		shaderOp := ebiten.DrawRectShaderOptions{Uniforms: g.graphics.materialUniforms}
-		shaderOp.Images[0], shaderOp.Images[1] = picture, g.graphics.terrainMask
-		shaderOp.GeoM.Translate(x, y)
-		destination.DrawRectShader(image.width, image.height, g.graphics.materialShader, &shaderOp)
+		shaderOp.Images[0], shaderOp.Images[1] = g.graphics.materialSprite, g.graphics.terrainMask
+		destination.DrawRectShader(ScreenWidth, PlayfieldHeight, g.graphics.materialShader, &shaderOp)
 	} else {
 		destination.DrawImage(picture, &op)
 	}
