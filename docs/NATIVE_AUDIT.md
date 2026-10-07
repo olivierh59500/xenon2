@@ -1025,3 +1025,23 @@ gameplay times, then replaced. It retains one genuine ship loss and checkpoint
 recovery. Complete-stage and expert-campaign success are not established by
 this profile. The existing reference controller remains available separately
 and its two-stage victories still pass unchanged.
+
+## Finite common explosion lifetime
+
+Common explosion creation copied the inner animation but lost the named
+sequence's terminal callback. Small and large explosions consequently restarted
+after their last frame and occupied actor slots indefinitely. Creation now
+retains the exported `remove` ending. The existing transient traversal retires
+each explosion and releases its physical slot on the following pass.
+
+Both original-resource regressions fail before the change and pass afterward:
+the six-pass small explosion and five-pass large explosion become inactive,
+release their slots and do not reappear. Restored pool capacity also changes the
+bounded first-middle-shop score from 11,300 to 13,150; the 2,025-pass arrival,
+camera position, money, three ships, full shield and two credits are unchanged.
+
+The three-minute presentation was regenerated from this correction separately
+from other pending engine changes. Full MP4 decoding passes. Gameplay samples
+at 90 and 120 seconds show the persistent explosion disks removed, while live
+shots and ordinary finite explosions remain visible. The export retains its
+original 180-second duration, synchronized audio and genuine checkpoint loss.
