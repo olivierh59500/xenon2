@@ -1101,3 +1101,19 @@ player contact, no-op callbacks, retained wrecks and screen-clear traversal.
 They pass with the full resource/native engine and race suite. These checks
 do not establish every middle-body artwork choice during firing-clock changes;
 the existing masked tile GPU test separately covers palette and coverage.
+
+## Campaign checks after finite-effect correction
+
+The normal-menu controller still defeats both first guardians, visits all four
+merchants, collects the exit drops and enters stage three without cheats. At
+both gameplay cadences it now arrives with one ship and full shield. Reverting
+only the common explosion-ending correction restores the former two-ship
+outcome; reverting the weapon lifecycle correction alone does not. The test
+retains genuine victory and exit requirements and now records the live arrival.
+
+The separate third-middle no-loss regression remains an unresolved controller
+failure: the carried ship is lost at stage-three pass 1,457, camera 3,167, before
+the middle guardian. Its assertion still requires preserving the carried ship
+and reports the precise state. This changes the earlier third-middle success
+claim; it is not hidden by adding lives, skipping collisions or weakening the
+survival requirement. Full-campaign automatic completion remains unproven.

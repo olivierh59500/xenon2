@@ -206,12 +206,8 @@ func verifyDemoFirstTwoLevelsFromStart(t *testing.T, refreshes int, attract bool
 			}
 		}
 		if level == 3 {
-			minimumShips := 2
-			if attract {
-				minimumShips = 1
-			}
-			if shops[1] != ([2]bool{true, true}) || shops[2] != ([2]bool{true, true}) || !defeated[1] || !defeated[2] || w.Cheats.Enabled() || w.GameOver || d.diagnostic || w.Equipment.Lives < minimumShips {
-				t.Fatalf("two-stage route incomplete: shops%v defeated%v", shops, defeated)
+			if shops[1] != ([2]bool{true, true}) || shops[2] != ([2]bool{true, true}) || !defeated[1] || !defeated[2] || w.Cheats.Enabled() || w.GameOver || d.diagnostic || w.Equipment.Lives < 1 {
+				t.Fatalf("two-stage route incomplete: shops%v defeated%v ships%d shield%d cheats%v gameover%v diagnostic%v", shops, defeated, w.Equipment.Lives, w.Equipment.Shield, w.Cheats.Enabled(), w.GameOver, d.diagnostic)
 			}
 			if attract && (lastCreditPair != 5 || !sawMenu) {
 				t.Fatal("default demo skipped credit pairs or the real menu")
@@ -229,18 +225,19 @@ func TestDemoThirdMiddleAdmissionFromNormalMenuOptional(t *testing.T) {
 		t.Skip("enable connected third-stage admission explicitly")
 	}
 	g := verifyDemoFirstTwoLevels(t, 3)
+	startingShips := g.Driver.(*worldDriver).world.Equipment.Lives
 	for update := 0; update < 60*600; update++ {
 		advanceFrontend(t, g, inputFrame{})
 		d := g.Driver.(*worldDriver)
 		w := d.world
-		if w.Level.Number != 3 || w.GameOver || w.Equipment.Lives < 2 || w.Cheats.Enabled() || d.diagnostic {
-			t.Fatal("third-stage traversal consumed a ship or bypassed ordinary admission")
+		if w.Level.Number != 3 || w.GameOver || w.Equipment.Lives != startingShips || w.Cheats.Enabled() || d.diagnostic {
+			t.Fatalf("third-stage traversal changed ordinary admission: frame%d camera%d level%d ships%d starting%d shield%d credits%d gameover%v cheats%v diagnostic%v", w.Frame, w.ScrollY, w.Level.Number, w.Equipment.Lives, startingShips, w.Equipment.Shield, w.ContinueCredits, w.GameOver, w.Cheats.Enabled(), d.diagnostic)
 		}
 		if w.ThirdMiddle != nil {
 			if w.ThirdMiddle.Defeated || w.Checkpoint.ScrollY > 2832 || w.Equipment.Shield <= 0 || w.ContinueCredits != 0 {
 				t.Fatal("third middle admission omitted its checkpoint or living ship")
 			}
-			t.Logf("Connected third middle reached at frame%d camera%d with two ships and shield%d", w.Frame, w.ScrollY, w.Equipment.Shield)
+			t.Logf("Connected third middle reached at frame%d camera%d with%d ships and shield%d", w.Frame, w.ScrollY, w.Equipment.Lives, w.Equipment.Shield)
 			return
 		}
 	}
