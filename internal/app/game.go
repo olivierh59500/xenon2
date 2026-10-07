@@ -135,8 +135,8 @@ type Game struct {
 	err                      error
 }
 
-// New creates a resource viewer until a verified simulation driver is attached.
-// It does not introduce substitute enemies, weapon rules or guardian behavior.
+// New prepares the original artwork, audio and presentation directors and
+// attaches an independent gameplay driver for the initial reference level.
 func New(bundle *Bundle) (*Game, error) {
 	if err := bundle.Validate(); err != nil {
 		return nil, err
