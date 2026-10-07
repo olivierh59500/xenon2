@@ -41,6 +41,21 @@ separate second-stage opening reaches its first checkpoint with all three ships.
 The remaining stages and full campaign still need validated pilot strategies;
 this is not yet a completed five-level demonstration.
 
+## MP4 recording
+
+```sh
+GOWORK=off go run ./cmd/video -duration 3m -output recordings/xenon2-presentation.mp4
+```
+
+The recorder captures the original game canvas at 1280 × 800 and 60 FPS, with
+the game's own stereo soundtrack and effects. It uses DCK v1.0.14's offline
+video/audio route and FFmpeg for H.264/AAC encoding; other windows and system
+audio are never captured. The default three-minute presentation follows the
+intro, menu, first-level play and the intermediate merchant. It is not a
+complete-game recording. Generated MP4, PNG poster and chapter JSON files stay
+under locally excluded `recordings/`. The export command requires Go 1.26 or
+newer and FFmpeg. A different positive `-duration` records a longer excerpt.
+
 ## Optional trainer settings
 
 Select CHEATS on the menu, use `-cheats` at launch, or press F3 during a game. The submenu provides

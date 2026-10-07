@@ -9,7 +9,7 @@ import (
 	"sync"
 
 	"github.com/hajimehoshi/ebiten/v2"
-	ebitenaudio "github.com/hajimehoshi/ebiten/v2/audio"
+	"github.com/olivierh59500/democonstructionkit/sound/output"
 
 	"xenon2/internal/audio"
 	"xenon2/internal/engine"
@@ -134,7 +134,7 @@ type Game struct {
 	clock                    engine.FrameClock
 	graphics                 graphics
 	stream                   *audio.Stream
-	player                   *ebitenaudio.Player
+	player                   *output.Player
 	music                    bool
 	soundtrack               string
 	gameMusicRunning         bool
@@ -555,14 +555,14 @@ func (g *Game) activateMenu() {
 
 var audioContext struct {
 	sync.Once
-	context *ebitenaudio.Context
+	context *output.Context
 }
 
 func (g *Game) EnableAudio() error {
 	if g.Config.Mute {
 		return nil
 	}
-	audioContext.Do(func() { audioContext.context = ebitenaudio.NewContext(44100) })
+	audioContext.Do(func() { audioContext.context = output.NewContext(44100) })
 	player, err := audioContext.context.NewPlayer(g.stream)
 	if err != nil {
 		return err
@@ -609,8 +609,19 @@ func saveScreenshot(screen *ebiten.Image, path string) error {
 	return file.Close()
 }
 
-// Run keeps display updates at sixty per second; driver steps use their own clock.
-func Run(bundle *Bundle, config Config) error {
+// NewGameFromConfig loads local embedded resources without opening a device or
+// starting an engine loop. Mobile hosts call it after their graphics setup.
+func NewGameFromConfig(config Config) (*Game, error) {
+	bundle, err := LoadEmbedded()
+	if err != nil {
+		return nil, err
+	}
+	return NewConfiguredGame(bundle, config)
+}
+
+// NewConfiguredGame shares ordinary scene/session initialization between the
+// desktop, Android and offline recorder. Audio activation belongs to the host.
+func NewConfiguredGame(bundle *Bundle, config Config) (*Game, error) {
 	if config.Demo && (config.StartScreen == LevelScreen || config.StartScreen == ShopScreen) {
 		config.StartScreen = TitleScreen
 	}
@@ -618,16 +629,16 @@ func Run(bundle *Bundle, config Config) error {
 		config.Level = 1
 	}
 	if config.Level < 1 || config.Level > 5 || config.Frames < 0 || config.LogicPALRefreshes < 0 || config.LogicPALRefreshes > 5 {
-		return fmt.Errorf("invalid level or frame limit")
+		return nil, fmt.Errorf("invalid level or frame limit")
 	}
 	g, err := New(bundle)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	g.Config = config
 	g.ResetDiagnosticLevel(config.Level)
 	if err = g.StartLevel(config.Level); err != nil {
-		return err
+		return nil, err
 	}
 	if driver, ok := g.Driver.(*worldDriver); ok {
 		driver.diagnostic = config.StartScreen == LevelScreen || config.StartScreen == ShopScreen
@@ -646,15 +657,32 @@ func Run(bundle *Bundle, config Config) error {
 	}
 	if config.StartScreen == ShopScreen {
 		if err = g.EnterShop(false); err != nil {
-			return err
+			return nil, err
 		}
+	}
+	return g, nil
+}
+
+// Close releases the game's device or offline PCM player.
+func (g *Game) Close() error {
+	if g.player == nil {
+		return nil
+	}
+	err := g.player.Close()
+	g.player = nil
+	return err
+}
+
+// Run keeps display updates at sixty per second; driver steps use their own clock.
+func Run(bundle *Bundle, config Config) error {
+	g, err := NewConfiguredGame(bundle, config)
+	if err != nil {
+		return err
 	}
 	if err = g.EnableAudio(); err != nil {
 		return err
 	}
-	if g.player != nil {
-		defer g.player.Close()
-	}
+	defer g.Close()
 	ebiten.SetTPS(60)
 	ebiten.SetWindowSize(ScreenWidth*3, ScreenHeight*3)
 	ebiten.SetWindowTitle("Xenon 2 Go")
