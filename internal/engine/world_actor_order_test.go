@@ -24,3 +24,23 @@ func TestWorldWeaponCollisionUsesPhysicalListOrder(t *testing.T) {
 		t.Fatal("homing candidate order differs from physical moving list")
 	}
 }
+
+func TestWorldDrawOrderKeepsProjectileTailRewardsAfterNewHeads(t *testing.T) {
+	w := testWorld(t)
+	first, err := w.reserveWorldActor(20, ActorPoolProjectile, false)
+	if err != nil {
+		t.Fatal(err)
+	}
+	tail, err := w.reserveWorldActor(96, ActorPoolProjectile, true)
+	if err != nil {
+		t.Fatal(err)
+	}
+	head, err := w.reserveWorldActor(16, ActorPoolProjectile, false)
+	if err != nil {
+		t.Fatal(err)
+	}
+	order := w.ActorDrawOrder(nil)
+	if order[head.EntityID] <= order[first.EntityID] || order[first.EntityID] <= order[tail.EntityID] {
+		t.Fatal("render order does not preserve physical head/tail insertion")
+	}
+}

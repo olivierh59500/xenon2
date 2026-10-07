@@ -8,6 +8,7 @@ import (
 
 // worldDriver translates snapshots without owning or approximating game rules.
 type worldDriver struct {
+	drawOrder   map[int]int
 	effects     []SpriteView
 	sparks      []SpriteView
 	weapons     []engine.WeaponRenderItem
@@ -66,6 +67,7 @@ func (d *worldDriver) AdvancePALTick() { d.world.AdvancePALTick() }
 
 func (d *worldDriver) Frame() SceneFrame {
 	w := d.world
+	d.drawOrder = w.ActorDrawOrder(d.drawOrder)
 	d.sprites = d.sprites[:0]
 	for index, shadow := range w.Shadows {
 		if shadow.Visible {
@@ -73,7 +75,7 @@ func (d *worldDriver) Frame() SceneFrame {
 		}
 	}
 	for _, actor := range w.Actors {
-		if actor.Active && actor.Visible && (actor.Sprite != "" || actor.Patch != nil) {
+		if actor.Active && actor.Visible && (actor.Sprite != "" || actor.Patch != nil || actor.DrawKind != "") {
 			layer := actor.ActorList
 			if layer == "transient" {
 				layer = "effects"
@@ -83,11 +85,21 @@ func (d *worldDriver) Frame() SceneFrame {
 				order = actor.ID
 			}
 			view := SpriteView{ID: actor.ID, Order: order, Layer: layer, Atlas: actor.Atlas, Sprite: actor.Sprite, X: actor.X, Y: actor.Y, PreviousX: actor.PreviousX, PreviousY: actor.PreviousY, Interpolate: true, Flash: actor.Flash, Materializing: actor.Materializing}
+			if actor.DrawKind != "" {
+				view.Kind = actor.DrawKind
+				view.Length = actor.DrawLength
+				if actor.DrawUp {
+					view.Tier = 1
+				}
+			}
 			if actor.Patch != nil {
 				view.Kind = "tiles"
 				view.Patch = *actor.Patch
 			}
 			d.sprites = append(d.sprites, view)
+			for _, overlay := range actor.TileOverlays {
+				d.sprites = append(d.sprites, SpriteView{ID: actor.ID, Layer: layer, Kind: "tiles", Patch: overlay.Patch, X: overlay.X, Y: overlay.Y})
+			}
 			for _, extra := range actor.Extras {
 				d.sprites = append(d.sprites, SpriteView{ID: actor.ID, Layer: layer, Atlas: extra.Atlas, Sprite: extra.Sprite, X: extra.X, Y: extra.Y})
 			}
@@ -126,6 +138,39 @@ func (d *worldDriver) Frame() SceneFrame {
 			}
 		}
 	}
+	for i := range d.sprites {
+		if order, ok := d.drawOrder[d.sprites[i].ID]; ok {
+			d.sprites[i].Order = order
+		}
+	}
+	// Compound bodies use physical moving-list order even when their storage
+	// slices were appended during construction.
+	slices.SortStableFunc(d.sprites, func(a, b SpriteView) int {
+		rank := func(layer string) int {
+			switch layer {
+			case "shadows":
+				return 0
+			case "equipment":
+				return 1
+			case "moving":
+				return 2
+			case "effects":
+				return 3
+			case "scenery":
+				return 4
+			case "sparks":
+				return 5
+			}
+			return 6
+		}
+		if a.Layer != b.Layer {
+			return rank(a.Layer) - rank(b.Layer)
+		}
+		if a.Layer != "sparks" && a.Layer != "shadows" {
+			return b.Order - a.Order
+		}
+		return 0
+	})
 	d.effects = d.effects[:0]
 	d.sparks = d.sparks[:0]
 	kept := d.sprites[:0]

@@ -772,7 +772,11 @@ func (r *WeaponRuntime) RenderState(dst []WeaponRenderItem) []WeaponRenderItem {
 		}
 		sprite := m.Animation.Sprite(m.AnimationData.Animation)
 		if sprite != "" {
-			dst = append(dst, WeaponRenderItem{ID: -i - 1, Kind: "attachment", Sprite: sprite, X: float64(m.X), Y: float64(m.Y), PreviousX: float64(m.PreviousX), PreviousY: float64(m.PreviousY), Active: true})
+			id := m.Binding.EntityID
+			if id == 0 {
+				id = -i - 1
+			}
+			dst = append(dst, WeaponRenderItem{ID: id, Kind: "attachment", Sprite: sprite, X: float64(m.X), Y: float64(m.Y), PreviousX: float64(m.PreviousX), PreviousY: float64(m.PreviousY), Active: true})
 		}
 	}
 	for _, p := range r.projectiles {
@@ -781,7 +785,11 @@ func (r *WeaponRuntime) RenderState(dst []WeaponRenderItem) []WeaponRenderItem {
 	for i, m := range r.mounts {
 		if m.Item == ItemCannon && m.SupportActive && m.SupportVisible {
 			if sprite := m.SupportAnimation.Sprite(m.SupportData.Animation); sprite != "" {
-				dst = append(dst, WeaponRenderItem{ID: -100 - i, Kind: "cannon-support", Sprite: sprite, X: float64(m.SupportX), Y: float64(m.SupportY), PreviousX: float64(m.PreviousSupportX), PreviousY: float64(m.PreviousSupportY), Active: true})
+				id := m.SupportBinding.EntityID
+				if id == 0 {
+					id = -100 - i
+				}
+				dst = append(dst, WeaponRenderItem{ID: id, Kind: "cannon-support", Sprite: sprite, X: float64(m.SupportX), Y: float64(m.SupportY), PreviousX: float64(m.PreviousSupportX), PreviousY: float64(m.PreviousSupportY), Active: true})
 			}
 		}
 	}

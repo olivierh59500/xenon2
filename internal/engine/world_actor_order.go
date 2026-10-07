@@ -21,3 +21,23 @@ func (w *World) orderedMovingActors(storage *[ActorPoolCapacity]*WorldActor) []*
 	}
 	return storage[:count]
 }
+
+// ActorDrawOrder returns the order of current entities within their owning
+// lists. The renderer applies the separate player/equipment/moving/effect layers.
+func (w *World) ActorDrawOrder(dst map[int]int) map[int]int {
+	if dst == nil {
+		dst = make(map[int]int, ActorPoolCapacity)
+	}
+	clear(dst)
+	if w.Pool == nil {
+		return dst
+	}
+	for _, list := range []ActorPoolList{ActorPoolPlayer, ActorPoolEquipment, ActorPoolMoving, ActorPoolProjectile, ActorPoolScenery} {
+		order := ActorPoolCapacity
+		for index := w.Pool.First(list); index != NoActorSlot; index = w.Pool.Next(index) {
+			dst[w.Pool.Slot(index).EntityID] = order
+			order--
+		}
+	}
+	return dst
+}
