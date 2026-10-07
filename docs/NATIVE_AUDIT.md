@@ -859,8 +859,13 @@ travel and removal boundary. Ordinary linear-shot forecasts retain their
 existing conservative behavior. General and arena planning share this lookup.
 Synthetic threshold, fractional-motion and retirement cases verify that live
 shots and their state remain unchanged. Connected frontend validation of the
-third-stage route remains open. Both first/second-stage normal-menu regressions
+third-stage victory remains open. Both first/second-stage normal-menu regressions
 still pass after this correction, with unchanged outcomes at both cadences.
+The carried campaign now reaches the actual third middle guardian at frame
+1,793/camera 2815 with both ships and 19 shield. A frontend regression requires
+the living ship, checkpoint and genuine encounter admission. The first death
+in the separate causal trace occurs in that arena rather than the earlier
+turning-shot passage; arena survival still needs refinement.
 
 ## Fourth final eye/core pilot
 

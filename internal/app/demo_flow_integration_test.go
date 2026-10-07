@@ -140,7 +140,7 @@ func TestDemoCompletesFirstTwoLevelsFromNormalMenuOptional(t *testing.T) {
 	}
 }
 
-func verifyDemoFirstTwoLevels(t *testing.T, refreshes int) {
+func verifyDemoFirstTwoLevels(t *testing.T, refreshes int) *Game {
 	t.Helper()
 	g := frontendGame(t)
 	g.Config.Demo = true
@@ -183,10 +183,34 @@ func verifyDemoFirstTwoLevels(t *testing.T, refreshes int) {
 				t.Fatalf("two-stage route incomplete: shops%v defeated%v", shops, defeated)
 			}
 			t.Logf("Normal-menu pilot completed levels1 and2 after%d display updates; next stage ships%d shield%d cash%d", update+1, w.Equipment.Lives, w.Equipment.Shield, w.Money)
-			return
+			return g
 		}
 	}
 	t.Fatal("normal-input pilot did not complete both original stages")
+	return nil
+}
+
+func TestDemoThirdMiddleAdmissionFromNormalMenuOptional(t *testing.T) {
+	if os.Getenv("XENON2_DEMO_PROGRESS_CHECK") == "" {
+		t.Skip("enable connected third-stage admission explicitly")
+	}
+	g := verifyDemoFirstTwoLevels(t, 3)
+	for update := 0; update < 60*600; update++ {
+		advanceFrontend(t, g, inputFrame{})
+		d := g.Driver.(*worldDriver)
+		w := d.world
+		if w.Level.Number != 3 || w.GameOver || w.Equipment.Lives < 2 || w.Cheats.Enabled() || d.diagnostic {
+			t.Fatal("third-stage traversal consumed a ship or bypassed ordinary admission")
+		}
+		if w.ThirdMiddle != nil {
+			if w.ThirdMiddle.Defeated || w.Checkpoint.ScrollY > 2832 || w.Equipment.Shield <= 0 || w.ContinueCredits != 0 {
+				t.Fatal("third middle admission omitted its checkpoint or living ship")
+			}
+			t.Logf("Connected third middle reached at frame%d camera%d with two ships and shield%d", w.Frame, w.ScrollY, w.Equipment.Shield)
+			return
+		}
+	}
+	t.Fatal("ordinary campaign did not reach the third middle guardian")
 }
 
 func TestDemoMenuStartsAnUnaidedSinglePlayerSession(t *testing.T) {
