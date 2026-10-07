@@ -42,7 +42,7 @@ masked tile atlases, 320 × 192 backgrounds and the original palettes. The commo
 font retains its 38-character order and 16 × 16 dimensions. The player's ship
 retains all five banking images, its thirteen steering lookup positions and
 the exact positioning anchors and collision boxes. Common actor artwork and
-equipment previews and ordinary shot tiers are collected in one 210-image atlas. The shop catalogue
+equipment previews and ordinary shot tiers are collected in a shared named atlas. The shop catalogue
 contains all 25 original English item names, prices and looping preview images.
 
 Moving actor resources retain linked parts, animation durations, collision boxes,
@@ -53,7 +53,8 @@ order and contain the complete moving and fixed placement streams.
 
 Audio resources are exported separately by `cmd/export-audio`. They include
 signed eight-bit PCM samples, the recovered score, sample periods and named
-effect-envelope data. The preparation script runs both exporters.
+effect-envelope data. The preparation script runs gameplay, shop and presentation
+exporters, plus the separate gameplay and shop audio exporters.
 Verified fixed-tile graphics are exported for cannons and gates in level one,
 cannons and hatches in level two, small cannons in levels three and five, and
 cannons in level four. Each frame includes stable tile IDs, dimensions and
@@ -71,8 +72,7 @@ then imports the original containers and runs the graphics/data exporter. The
 only the exports after an exporter update:
 
 ```sh
-GOWORK=off go run ./cmd/export-assets
-GOWORK=off go run ./cmd/export-audio -analysis .local/imported -output assets/runtime/audio
+./scripts/prepare-assets.sh -adf "/path/to/Xenon 2.adf"
 ```
 
 ## Disk inspection

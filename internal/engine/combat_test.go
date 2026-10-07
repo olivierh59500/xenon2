@@ -82,6 +82,9 @@ func nativeCombatRows(t *testing.T, name string, visit func([]int64)) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	if len(rows) < 2 {
+		t.Fatalf("native trace %s has no comparison rows", name)
+	}
 	for _, row := range rows[1:] {
 		values := make([]int64, len(row))
 		for i, field := range row {
