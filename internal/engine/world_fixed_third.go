@@ -38,6 +38,8 @@ func (w *World) spawnThirdFixed(record visualassets.FixedEncounter) bool {
 		}
 		// The common terrain constructor preserves the reused slot's strength.
 		actor.part.StrongHealth = actor.Binding.Residue.StrongHealth
+		actor.Binding.Residue.Counter, actor.Binding.Residue.VerticalVelocity = 0, 0
+		actor.Binding.Residue.EmitterClock = 0
 		w.storeActorResidue(actor)
 		w.setSecondMapPatch(state.X/16, state.WorldY/16, art.Cannon.Base)
 		w.Actors = append([]*WorldActor{actor}, w.Actors...)
@@ -47,6 +49,21 @@ func (w *World) spawnThirdFixed(record visualassets.FixedEncounter) bool {
 		return false
 	}
 	return true
+}
+
+func (w *World) storeThirdCannonResidue(actor *WorldActor) {
+	if actor.Binding.EntityID == 0 {
+		return
+	}
+	s, r := actor.thirdCannon, &actor.Binding.Residue
+	// Drawing uses a screen anchor, but native terrain actors retain world Y.
+	// The fixed reward belongs to the callback and does not overwrite 0x42.
+	r.X, r.Y, r.Counter, r.Health = int16(s.X), int16(s.WorldY), int16(s.Phase), s.Health
+	r.SetFireState(s.FireAccumulator, r.FireRate())
+	w.storeWorldResidue(actor.Binding)
+	if !actor.Active {
+		w.retireWorldActor(actor.Binding)
+	}
 }
 
 // The crawler uses whole-pixel motion. Its native callback writes direction and

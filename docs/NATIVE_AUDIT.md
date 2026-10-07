@@ -1174,3 +1174,17 @@ with nonzero retained values. The existing 3,200 native crawler passages still
 match position, direction, animation, shots and random state. The complete engine
 suite passes without changed expected outcomes. The correction does not claim
 to resolve the independently failing third-stage demonstration route.
+
+## Third compound cannon world-coordinate residue
+
+The terrain constructor at 0x345e/0x34a0 stores whole world coordinates and clears
+its phase, secondary motion word and emitter. The compound callback retains the
+fractions, spare reward/token words and inherited strength. Generic Go storage
+previously replaced world Y with the drawing anchor, erased fractions and wrote
+the callback's fixed 500-point reward into the retained score word. Specialized
+storage now publishes world position, live phase, health and emitter only.
+
+The original-resource regression fails before this correction and passes through
+birth, changing camera positions, first-stage destruction, second-stage updates,
+final destruction and physical release. Existing native compound-cannon traces,
+fresh/reused contact-strength cases and the final-worm boundary still pass.

@@ -207,6 +207,10 @@ func (w *World) bindWorldActor(actor *WorldActor) error {
 }
 
 func (w *World) storeActorResidue(actor *WorldActor) {
+	if actor.thirdCannon != nil {
+		w.storeThirdCannonResidue(actor)
+		return
+	}
 	if actor.thirdCrawler != nil {
 		w.storeThirdCrawlerResidue(actor)
 		return
