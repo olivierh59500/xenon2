@@ -739,3 +739,17 @@ and 80 HP shared guardian health. Ordinary commands defeat the head, drain all
 shield points and one legal continue. The regression requires actual defeat,
 ExitReady and zero pending drops. It is a final-boundary victory, not proof
 of the unverified middle eyes, preceding terrain or complete third stage.
+
+## Ordinary third middle-eye control
+
+The pilot follows an intact eye during its animation's firing windows and
+moves toward a safe side when the articulated body descends. Six copied
+controller passes predict the actual body rectangles without changing source
+RNG, poses or health.
+
+An original encounter/checkpoint fixture reaches the genuine intermediate
+merchant after 1,082 ordinary commands: both 20 HP eyes destroyed, two surviving
+ships, two legal continues, no pending middle coins and no final-level flags.
+The exact final-worm fixture still completes its separate arena. Neither
+fixture proves the ordinary stage-three route from the previous merchant;
+the full five-level campaign remains under validation.
