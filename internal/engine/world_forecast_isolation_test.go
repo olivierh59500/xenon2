@@ -149,3 +149,35 @@ func TestWorldForecastOwnsMutableSourceStateAcrossFiveLevelsOptional(t *testing.
 		})
 	}
 }
+
+func TestWorldForecastTerrainPatchOwnsCoverageAliasOptional(t *testing.T) {
+	live := forecastOriginalScene(t, 2, false)
+	if live.Coverage == nil {
+		t.Fatal("original playable scene omitted tile coverage")
+	}
+	before, tile, solid := forecastIsolationDigest(live), live.Level.Terrain.Map[0], live.Coverage.Solid(8, 8)
+	var forecast WorldForecast
+	if err := forecast.Load(live); err != nil {
+		t.Fatal(err)
+	}
+	state := forecast.State()
+	replacement := uint16(0)
+	if !solid {
+		for _, original := range state.Level.Terrain.Tiles {
+			if !original.Masked {
+				replacement = original.ID
+				break
+			}
+		}
+		if replacement == 0 {
+			t.Fatal("original scene lacks an opaque replacement tile")
+		}
+	}
+	state.setSecondMapCell(0, 0, replacement)
+	if state.Level.Terrain.Map[0] != replacement || state.Coverage.Map[0] != replacement || state.Coverage.Solid(8, 8) == solid {
+		t.Fatal("forecast terrain callback did not update its aliased coverage")
+	}
+	if live.Level.Terrain.Map[0] != tile || live.Coverage.Map[0] != tile || live.Coverage.Solid(8, 8) != solid || forecastIsolationDigest(live) != before {
+		t.Fatal("forecast terrain callback changed the live map or coverage")
+	}
+}

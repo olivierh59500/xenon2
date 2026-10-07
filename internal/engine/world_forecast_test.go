@@ -169,6 +169,8 @@ func forecastOriginalScene(t testing.TB, level int, arena bool) *World {
 				t.Fatal(err)
 			}
 		case 5:
+			w.ScrollY, w.MaximumScrollY, w.VisitedScrollY = 2336, 2352, 2352
+			w.cursor = RestartEncounterCursor(w.ScrollY)
 			if err := w.activateFifthGuardian(visualassets.FixedEncounter{Y: 2336}, false); err != nil {
 				t.Fatal(err)
 			}
