@@ -98,7 +98,9 @@ func (d *worldDriver) Frame() SceneFrame {
 				view.Kind = "tiles"
 				view.Patch = *actor.Patch
 			}
-			d.sprites = append(d.sprites, view)
+			if actor.DrawKind != "assembly" {
+				d.sprites = append(d.sprites, view)
+			}
 			for _, overlay := range actor.TileOverlays {
 				d.sprites = append(d.sprites, SpriteView{ID: actor.ID, Layer: layer, Kind: "tiles", Patch: overlay.Patch, X: overlay.X, Y: overlay.Y})
 			}
