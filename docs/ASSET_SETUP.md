@@ -26,6 +26,11 @@ XENON2_RUNTIME_OUTPUT=.local/rebuild/runtime ./scripts/prepare-assets.sh \
   -output .local/rebuild/original -analysis .local/rebuild/imported
 ```
 
+On 7 October 2026, this separate export rebuilt all 169 production files from
+the supplied ADF. Their SHA-256 values matched the active runtime export byte
+for byte, including graphics/data, presentation, gameplay audio and shop audio.
+This verifies resource reproducibility; it does not establish full-game fidelity.
+
 This rebuild leaves the embedded runtime resource directory untouched. Use
 `go run ./cmd/xenon2 -data .local/rebuild/runtime` to load the separate export.
 
