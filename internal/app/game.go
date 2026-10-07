@@ -89,11 +89,12 @@ type Driver interface {
 }
 
 type Config struct {
-	Level       int
-	Frames      int
-	Screenshot  string
-	Mute        bool
-	StartScreen Screen
+	Level             int
+	Frames            int
+	Screenshot        string
+	Mute              bool
+	StartScreen       Screen
+	LogicPALRefreshes int
 }
 
 type Game struct {
@@ -202,7 +203,7 @@ func (g *Game) ResetDiagnosticLevel(level int) {
 	l := g.Bundle.Levels[level-1]
 	g.View = SceneFrame{Level: level, CameraY: float64(l.Terrain.Rows*l.Terrain.TileSize - PlayfieldHeight), Player: engine.PlayerMotionState{X: 160, Y: 176}, Shield: 39, Lives: 3, Diagnostic: true, PlayerAlive: true}
 	g.rememberFrameHistory()
-	g.clock = engine.NewFrameClock(25, 60)
+	g.clock = g.newLogicClock()
 }
 
 func (g *Game) Update() error { return g.advanceWithInput(sampleInput()) }
@@ -573,7 +574,7 @@ func Run(bundle *Bundle, config Config) error {
 	if config.Level == 0 {
 		config.Level = 1
 	}
-	if config.Level < 1 || config.Level > 5 || config.Frames < 0 {
+	if config.Level < 1 || config.Level > 5 || config.Frames < 0 || config.LogicPALRefreshes < 0 || config.LogicPALRefreshes > 5 {
 		return fmt.Errorf("invalid level or frame limit")
 	}
 	g, err := New(bundle)

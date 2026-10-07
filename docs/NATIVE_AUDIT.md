@@ -540,3 +540,19 @@ install their next scene or fade. A terminal fade without a callback still
 retains its black palette. New READY and final-loss states enter their original
 presentation directors before the next draw, eliminating a one-frame static
 logo and player-one caption on player-two admission.
+
+A separate normal-menu run reached READY and started level one with an ordinary
+fire edge. Matching opaque original terrain pixels against the exported map
+locates camera positions 4604 and 4504 at timestamps 1.5447 and 7.5426 seconds
+after capture start. The 100-pixel displacement over 5.9979 seconds gives
+approximately 16.67 source pixels per second, or 50/3 gameplay passes per second
+with the original one-pixel base step. Twelve half-second samples consistently
+advance by eight or nine pixels. The interval ends before the passive ship's
+collision death. A second attempted capture did not leave READY and provides no
+confirming gameplay measurement.
+
+The optional `-logic-pal-refreshes 3` profile represents this early A500 cadence
+with an exact rational accumulator. It preserves the independent 60 Hz display
+and 50 Hz audio/effect/fade clocks. The default remains the original two-refresh
+maximum until further gameplay intervals establish the appropriate rates for
+dense combat and other levels. Presentation and shop clocks are unaffected.

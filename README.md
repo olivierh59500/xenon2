@@ -49,6 +49,13 @@ Rendering runs at 60 display updates per second. Ship motion, paths, firing and
 scrolling use a separate simulation clock; interpolation does not speed up the
 game. Audio follows its own original 50 Hz replay clock.
 
+The first native A500 gameplay capture scrolls about 16.7 source pixels per
+second, corresponding to three PAL refreshes per pass. To compare that measured
+early-game profile, use `-logic-pal-refreshes 3`. The default remains the source
+two-refresh maximum (`2`, 25 passes/s) while dense-scene and later-level cadence
+comparisons continue. This option affects gameplay only; it does not retime
+the audio, palette fades, menu or shop.
+
 See [implementation coverage](docs/IMPLEMENTATION_COVERAGE.md),
 [reference notes](docs/REFERENCE_NOTES.md) and the
 [native-data audit](docs/NATIVE_AUDIT.md) for verified findings and comparison

@@ -131,7 +131,7 @@ func (g *Game) advanceCompletedStage() error {
 	g.rememberFrameHistory()
 	g.readyRunning, g.gameOverRunning = false, false
 	g.Screen = LevelScreen
-	g.clock = engine.NewFrameClock(25, 60)
+	g.clock = g.newLogicClock()
 	g.palClock = engine.NewFrameClock(50, 60)
 	g.beginPendingWorldPresentation()
 	return nil
@@ -145,5 +145,5 @@ func (g *Game) startFade(fade presentation.PaletteFade, after func() error) {
 
 func (g *Game) startLevelFade() {
 	g.backdropOnly = true
-	g.startFade(presentation.NewPaletteFadeIn(), func() error { g.backdropOnly = false; g.clock = engine.NewFrameClock(25, 60); return nil })
+	g.startFade(presentation.NewPaletteFadeIn(), func() error { g.backdropOnly = false; g.clock = g.newLogicClock(); return nil })
 }

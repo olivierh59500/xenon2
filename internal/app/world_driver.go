@@ -252,7 +252,7 @@ func (g *Game) StartLevel(level int) error {
 		g.rememberFrameHistory()
 		return nil
 	}
-	g.clock = engine.NewFrameClock(25, 60)
+	g.clock = g.newLogicClock()
 	g.palClock = engine.NewFrameClock(50, 60)
 	return nil
 }
@@ -266,7 +266,7 @@ func (g *Game) StartSession(level, players int) error {
 	}
 	driver := &worldDriver{world: session.ActiveWorld(), session: session}
 	g.SetDriver(driver)
-	g.clock = engine.NewFrameClock(25, 60)
+	g.clock = g.newLogicClock()
 	g.palClock = engine.NewFrameClock(50, 60)
 	g.readyRunning, g.gameOverRunning = false, false
 	g.onContinue = func() error {
