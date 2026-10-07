@@ -23,6 +23,8 @@ type demoNavigation struct {
 	frame                uint64
 	retreat              bool
 	targetX, pathTargetX int
+	pointTargetX         int
+	pointClosed          map[demoNavPoint]bool
 	practiced            bool
 }
 

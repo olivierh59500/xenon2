@@ -59,6 +59,10 @@ func (s *demoMotionForecast) advance(w *World, input MotionInput) bool {
 // demoRouteMotion can turn within the horizon instead of requiring one held
 // direction to clear a narrow corner. The small fixed beam bounds planner work.
 func demoRouteMotion(w *World, x, worldY int) MotionInput {
+	return demoRouteMotionWithOptions(w, x, worldY, 0, false)
+}
+
+func demoRouteMotionWithOptions(w *World, x, worldY, comfortY int, avoidShots bool) MotionInput {
 	type branch struct {
 		motion demoMotionForecast
 		first  int
@@ -81,6 +85,9 @@ func demoRouteMotion(w *World, x, worldY int) MotionInput {
 				}
 				player, scroll := candidate.motion.player, candidate.motion.scroll
 				candidate.score += float64(absDemo(player.X-x) + absDemo(player.Y+scroll.Y-worldY)*2)
+				if comfortY != 0 {
+					candidate.score += float64(absDemo(player.Y-comfortY) * 2)
+				}
 				bounds := thirdMiddlePlayerBounds(w, player)
 				for _, actor := range w.Actors {
 					if !actor.Active || actor.Collision.Empty() || actor.ActorList != "moving" && actor.ActorList != "scenery" {
@@ -98,6 +105,14 @@ func demoRouteMotion(w *World, x, worldY int) MotionInput {
 					}
 					if bounds.Intersects(other) {
 						candidate.score += 100000
+					}
+				}
+				if avoidShots {
+					for _, shot := range w.Projectiles {
+						sx, sy, active := demoProjectilePosition(w, shot, depth+1, w.ScrollDelta)
+						if active && sx >= bounds.Left-5 && sx <= bounds.Right+5 && sy >= bounds.Top-5 && sy <= bounds.Bottom+5 {
+							candidate.score += 100000
+						}
 					}
 				}
 				position := nextCount

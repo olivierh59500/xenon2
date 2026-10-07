@@ -39,7 +39,7 @@ an active demo; that same action is passed to the game. Fades, pause, the cheat
 menu and merchants do not count as title idle time. The controller remains in
 development; its complete five-level route is not yet validated.
 
-Full-game autonomous playback is still in development. The current pilot
+Full-game autonomous playback is still in development. The reference validation controller
 completes levels one and two from the normal menu, including guardian destruction
 and both merchants on each stage, and starts level three. The full-intro startup
 also traverses all six credit pairs and wins both stages, carrying two ships into

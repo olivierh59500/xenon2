@@ -44,6 +44,9 @@ func (p *DemoPilot) NormalInput(w *World) Input {
 	if input, handled := p.ThirdGuardianInput(w); handled {
 		return input
 	}
+	if input, handled := p.ThirdCorridorInput(w); handled {
+		return input
+	}
 	if input, handled := p.SecondCorridorInput(w); handled {
 		return input
 	}

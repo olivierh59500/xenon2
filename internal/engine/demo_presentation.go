@@ -65,7 +65,7 @@ func (p *PresentationPilot) NormalInput(w *World) Input {
 // Trigger decisions still require a live shot opportunity in those arenas.
 func presentationSpecialist(w *World) bool {
 	return w.Level.Number == 2 && (w.secondScheduler != nil && w.ScrollY >= 2512 && w.ScrollY <= 2896 || w.secondMiddleReleased && w.ScrollY <= 1280) ||
-		w.Level.Number == 3 && (w.ThirdMiddle != nil && !w.ThirdMiddle.Defeated || w.ThirdFinal != nil && !w.ThirdFinal.Defeated && w.ScrollY <= 208) ||
+		w.Level.Number == 3 && (w.ThirdMiddle != nil || w.ThirdFinal != nil && !w.ThirdFinal.Defeated && w.ScrollY <= 208) ||
 		w.Level.Number == 4 && w.ScrollY <= 176 ||
 		w.Level.Number == 1 && (w.FirstMiddle != nil && !w.FirstMiddle.Crossed && w.ScrollY < 3456 || w.FirstGuardian != nil && w.FirstGuardian.Active && !w.FirstGuardian.Defeated)
 }
@@ -291,6 +291,9 @@ func presentationMotionScore(w *World, motion MotionInput, x, y int) (risk, dist
 // Target selection follows the same moving-list callbacks as player weapons.
 // Body sections that consume hits without taking damage are poor aim targets.
 func presentationTargetBounds(w *World, actor *WorldActor) (CollisionRect, bool) {
+	if actor != nil && actor.Active && actor.thirdCannon != nil {
+		return actor.Collision, actor.Health > 0 && !actor.Collision.Empty()
+	}
 	if actor != nil && actor.Active && actor.secondNode != nil {
 		return actor.Collision, w.secondScheduler != nil && w.secondScheduler.DefenseFlags != 3 && actor.Health > 0 && !actor.Collision.Empty()
 	}

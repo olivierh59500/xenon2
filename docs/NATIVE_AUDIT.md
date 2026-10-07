@@ -1662,3 +1662,30 @@ Vet and the desktop build pass. The ARM64 Android rebuild, APK signature and
 16 KiB alignment pass; installation and a confirmed cold launch succeed on the
 Pixel 10a, with its process alive afterward. Device graphics were not rechecked
 while locked. The unfinished third corridor strategy stays outside production.
+
+## Prepared cannon firing routes
+
+The third corridor has two source terrain cannons whose destruction opens the
+forward passage. Point navigation now searches a bounded route to the actual
+firing lane, retaining the necessary rearward legs rather than accepting any
+position on the target row. A closed-node cache prevents repeated expansion;
+unchanged clear paths survive irrelevant tile-animation changes. The planner
+copies source camera allowances and never edits terrain or gameplay state.
+
+Original-resource tests retain the full approach from (77,2204) to (256,1832),
+including its turn back toward world 2076. A separate source encounter fixture
+verifies both 24-point damage stages and their real map opening. Target recognition
+also handles terrain-only cannon colliders; an actual one-point shot reduces
+health, while an off-axis ray correctly releases fire. The previous targeting
+code fails that regression because the actor's sprite visibility is false.
+
+The permanent full-intro reference route defeats the first two stages, visits
+the third middle merchant, and destroys the blocking cannon with ordinary shots
+at frame 4606/camera 1694, retaining one ship and 11 shield. This proves that
+specific carried obstruction was opened, not an expert no-loss or third-stage
+victory. Earlier opening losses and later threats still require improved policies.
+
+On the M4 Max, the complete first route measures 8.64 ms with about 1.68 MiB of
+initial allocations; a cached waypoint measures 2.70 microseconds with zero allocations.
+The search is bounded at 30,000 expanded nodes and 36,000 queued entries. These
+measurements do not establish Pixel frame rate or rendered combat performance.
