@@ -1517,3 +1517,18 @@ desktop build pass. The Android ARM64 APK rebuild, signature and 16 KiB alignmen
 checks pass; replacement installation and a cold launch succeed on the USB
 Pixel 10a, with its process alive afterward. Device graphics were not rechecked
 while locked. The existing complete-level-one MP4 still decodes without error.
+
+## Corridor planner allocation control
+
+The second corridor's twelve-branch/eight-pass search now uses fixed candidate
+and retained-beam buffers. Selection order and scoring remain unchanged: 555
+real-map decisions across six camera positions and four ship heights match the
+previous planner exactly. The existing ordinary-input corridor traversal retains
+its 909-command result, and the guarded rear-corner regression still passes.
+A source-map regression verifies read-only state and zero allocations per call.
+
+On the M4 Max, the clear corridor fixture at camera 1,100/ship(56,136) measures
+about 0.86 ms per decision before and after; allocations fall from 80,896 bytes in
+eight objects to zero. This reduces recurring garbage collection pressure,
+not the arithmetic cost or a measured rendered-frame rate. The maintained
+benchmark uses the same original map, stencil and actor data.

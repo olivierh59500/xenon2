@@ -37,9 +37,12 @@ func secondCorridorRouteMotion(w *World, x, y int) MotionInput {
 		first  int
 		score  float64
 	}
-	current := []branch{{player: w.Player, scroll: ScrollState{Y: w.ScrollY, Minimum: w.MinimumScrollY, Maximum: w.MaximumScrollY, DeviationPasses: w.ScrollDeviationPasses}, first: -1}}
+	var beam [12]branch
+	var candidates [12 * len(demoDirections)]branch
+	beam[0] = branch{player: w.Player, scroll: ScrollState{Y: w.ScrollY, Minimum: w.MinimumScrollY, Maximum: w.MaximumScrollY, DeviationPasses: w.ScrollDeviationPasses}, first: -1}
+	current := beam[:1]
 	for depth := 0; depth < 8; depth++ {
-		next := make([]branch, 0, len(current)*9)
+		next := candidates[:0]
 		for _, before := range current {
 			for action, motion := range demoDirections {
 				b := before
@@ -104,7 +107,9 @@ func secondCorridorRouteMotion(w *World, x, y int) MotionInput {
 			}
 			next[i], next[best] = next[best], next[i]
 		}
-		current = next[:min(12, len(next))]
+		count := min(len(beam), len(next))
+		copy(beam[:count], next[:count])
+		current = beam[:count]
 	}
 	return demoDirections[current[0].first]
 }
