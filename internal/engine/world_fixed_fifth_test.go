@@ -31,6 +31,16 @@ func TestFifthFixedTileNativeDamageOptional(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	radialFile, err := os.Open(filepath.Join(root, "fixed-fifth-radial-damage.csv"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	radialRows, err := csv.NewReader(radialFile).ReadAll()
+	radialFile.Close()
+	if err != nil {
+		t.Fatal(err)
+	}
+	rows = append(rows, radialRows[1:]...)
 	for _, row := range rows[1:] {
 		n := func(i int) int {
 			value, err := strconv.Atoi(row[i])
@@ -49,6 +59,10 @@ func TestFifthFixedTileNativeDamageOptional(t *testing.T) {
 		kind := 1
 		if n(0) == 1 {
 			kind = 3
+		} else if n(0) == 2 {
+			kind = 4
+			w.setSecondMapCell(position%20-1, position/20, 0x8669)
+			w.setSecondMapCell(position%20+2, position/20, 0x8673)
 		}
 		w.spawnFixed(visualassets.FixedEncounter{EnemyKind: kind, X: 104, Y: 1008, Variant: n(1)})
 		var actor *WorldActor
@@ -97,7 +111,7 @@ func TestFifthFixedTileNativeDamageOptional(t *testing.T) {
 			t.Fatal("nonlethal hit lost its one-pass source tile flash")
 		}
 	}
-	if len(rows)-1 != 60 {
+	if len(rows)-1 != 66 {
 		t.Fatal("incomplete damage comparisons")
 	}
 	t.Logf("Compared %d original fifth tile damage and neighbour-map changes.", len(rows)-1)
@@ -105,7 +119,7 @@ func TestFifthFixedTileNativeDamageOptional(t *testing.T) {
 
 func TestFifthFixedFamiliesUseOriginalResourcesOptional(t *testing.T) {
 	data := originalWorldData(t, 5)
-	for _, kind := range []int{1, 3} {
+	for _, kind := range []int{1, 3, 4} {
 		w, err := NewWorld(data)
 		if err != nil {
 			t.Fatal(err)
@@ -148,7 +162,7 @@ func TestFifthFixedFamiliesUseOriginalResourcesOptional(t *testing.T) {
 				t.Fatal(err)
 			}
 		}
-		if kind == 3 {
+		if kind == 3 || kind == 4 {
 			if len(w.Projectiles) == 0 {
 				t.Fatal("source aiming turret never emitted")
 			}

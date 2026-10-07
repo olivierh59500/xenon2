@@ -64,6 +64,20 @@ func decodeFifthFixedTiles(data []byte) (*FixedTiles, []uint16, error) {
 		}
 	}
 	result.Kinds = append(result.Kinds, turret)
+	radial := FixedTileKind{Kind: 4, Behavior: "fifth-radial-tile", Health: int(binary.BigEndian.Uint16(data[0x60:])), Collision: CollisionBox{X: 4, Y: 4, Width: 25, Height: 25}, Mode: "radial-cycle", FireRate: int(data[0x73]), ShotSpeed: int(binary.BigEndian.Uint16(data[0x74:]))}
+	variant := FixedTileVariant{ID: 0, ResourceTag: 248, OriginOffsetX: -8, OriginOffsetY: -8, Initial: read(0x56ea2, 2, 2), Destroyed: patch(2, 2, 0, 0, 0, 0)}
+	for i := 0; i < 8; i++ {
+		variant.Frames = append(variant.Frames, read(0x56ea2+i*8, 2, 2))
+	}
+	radial.Variants = []FixedTileVariant{variant}
+	radial.InitialChanges = []ConditionalTileReplacement{{ColumnOffset: -1, Before: 0x8669, After: patch(1, 2, 0x00c7, 0x0177)}, {ColumnOffset: 2, Before: 0x8673, After: patch(1, 2, 0x00c7, 0x0177)}}
+	radial.DestroyedChanges = []ConditionalTileReplacement{{ColumnOffset: -1, Before: 0x00c7, After: patch(1, 2, 0x8669, 0x8707)}, {ColumnOffset: 2, Before: 0x00c7, After: patch(1, 2, 0x8673, 0x8711)}}
+	for _, changes := range [][]ConditionalTileReplacement{radial.InitialChanges, radial.DestroyedChanges} {
+		for _, change := range changes {
+			codes = append(codes, change.Before)
+		}
+	}
+	result.Kinds = append(result.Kinds, radial)
 	return result, codes, nil
 }
 

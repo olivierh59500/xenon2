@@ -1,6 +1,7 @@
 package engine
 
 import (
+	"encoding/binary"
 	"encoding/csv"
 	"os"
 	"path/filepath"
@@ -102,4 +103,70 @@ func TestFifthFixedTileNativeTraceOptional(t *testing.T) {
 		t.Fatalf("incomplete source comparison: %d", len(rows)-1)
 	}
 	t.Logf("Compared %d original fifth fixed-tile states.", len(rows)-1)
+}
+
+func TestFifthRadialTileNativeTraceOptional(t *testing.T) {
+	root := os.Getenv("XENON2_NATIVE_TRACE_DIR")
+	if root == "" {
+		t.Skip("local fifth radial tile reference not supplied")
+	}
+	raw, err := os.ReadFile(filepath.Join(filepath.Dir(root), "imported", "04820138.decoded"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	art, _, err := visualassets.DecodeFixedTiles(5, raw)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var kind visualassets.FixedTileKind
+	for _, k := range art.Kinds {
+		if k.Kind == 4 {
+			kind = k
+		}
+	}
+	f, err := os.Open(filepath.Join(root, "fixed-fifth-radial-trace.csv"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer f.Close()
+	rows, err := csv.NewReader(f).ReadAll()
+	if err != nil {
+		t.Fatal(err)
+	}
+	state := FifthTileState{X: 96, WorldY: 1000}
+	random := NewRandomState()
+	for _, row := range rows[1:] {
+		n := func(i int) int {
+			value, err := strconv.Atoi(row[i])
+			if err != nil {
+				t.Fatal(err)
+			}
+			return value
+		}
+		event := state.AdvanceRadialTurret(kind, n(3), n(4), &random)
+		if state.Phase != n(9) || int(state.Accumulator) != n(11) || state.Removed != (n(12) != 248) || uint64(random.A) != uint64(n(23)) || uint64(random.B) != uint64(n(24)) {
+			t.Fatalf("state Go%+v random%+v native%v", state, random, row)
+		}
+		if !state.Removed && (event.Collision.Left != n(13) || event.Collision.Top != n(14) || event.Collision.Right != n(15) || event.Collision.Bottom != n(16)) {
+			t.Fatalf("bounds Go%+v native%v", event, row)
+		}
+		if event.Shot != (n(17) == 8) || event.Shot && (event.ShotX != n(18) || event.ShotY != n(19) || event.ShotSpeed != n(21)) {
+			t.Fatalf("burst Go%+v native%v", event, row)
+		}
+		if event.Shot && (row[30] != "7:6:5:4:3:2:1:0:" || n(22) != int(binary.BigEndian.Uint32(raw[0x56fb8-0x54e00:]))) {
+			t.Fatalf("burst directions or animation differ: %v", row)
+		}
+		if event.WriteTiles {
+			patch := kind.Variants[0].Frames[event.Frame]
+			for i, tile := range patch.Tiles {
+				if int(tile) != n(25+i) {
+					t.Fatalf("frame Go%+v native%v", patch, row)
+				}
+			}
+		}
+	}
+	if len(rows)-1 != 920 {
+		t.Fatal("incomplete original radial turret comparisons")
+	}
+	t.Logf("Compared %d original radial turret states and eight-way shot bursts.", len(rows)-1)
 }

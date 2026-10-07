@@ -70,3 +70,26 @@ func (s *FifthTileState) AdvanceAimingTurret(kind visualassets.FixedTileKind, sc
 	e.Frame = int(s.Heading)
 	return e
 }
+
+func (s *FifthTileState) AdvanceRadialTurret(kind visualassets.FixedTileKind, scroll, maximum int, random *RandomState) FixedTileEvents {
+	e := FixedTileEvents{Collision: CollisionRect{Right: -1, Bottom: -1}}
+	if s.Removed {
+		return e
+	}
+	if int(int16(maximum+208)) < s.WorldY {
+		s.Removed = true
+		return e
+	}
+	s.Phase = (s.Phase + 1) & 15
+	e.Frame, e.WriteTiles = s.Phase/2, true
+	e.Collision = ActorCollisionRect(kind.Collision, s.X, s.WorldY-scroll)
+	sum := int(s.Accumulator) + kind.FireRate
+	s.Accumulator = uint8(sum)
+	if sum >= 256 {
+		s.Accumulator = uint8(random.Next() & 63)
+		e.Shot = true
+		e.ShotX, e.ShotY = s.X+16, s.WorldY-scroll+16
+		e.ShotSpeed = kind.ShotSpeed
+	}
+	return e
+}

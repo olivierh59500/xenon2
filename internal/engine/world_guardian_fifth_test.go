@@ -75,3 +75,35 @@ func TestFifthWorldGuardiansUseOriginalPartsAndArena(t *testing.T) {
 		}
 	}
 }
+
+func TestFifthOffspringKeepSourceListEndsAndExpiryOptional(t *testing.T) {
+	w := fifthResourceWorld(t)
+	if err := w.activateFifthGuardian(visualassets.FixedEncounter{}, true); err != nil {
+		t.Fatal(err)
+	}
+	w.spawnFifthMouth(FifthMouthCreature{X: 150, Y: 40})
+	var mouth, side *WorldActor
+	for _, actor := range w.Actors {
+		if actor.fifthSeeking != nil && actor.fifthMouth {
+			mouth = actor
+		}
+	}
+	if mouth == nil || w.Pool.Last(ActorPoolMoving) != mouth.Binding.Slot || mouth.Binding.Residue.Counter != 1 || mouth.Binding.Residue.PowerOrScore != 150 {
+		t.Fatal("mouth constructor must append its initialized150-point actor at the moving-list tail")
+	}
+	w.spawnFifthSide(FifthGuardianShot{X: 150, Y: 40, Heading: 2, InitialClock: 7})
+	for _, actor := range w.Actors {
+		if actor.fifthSeeking != nil && !actor.fifthMouth {
+			side = actor
+		}
+	}
+	if side == nil || w.Pool.First(ActorPoolMoving) != side.Binding.Slot || side.Binding.Residue.Counter != 7 || side.Binding.Residue.PowerOrScore != 100 {
+		t.Fatal("side constructor must prepend its initialized100-point actor")
+	}
+	side.fifthSeeking.Clock = w.fifthMiddleArt.MotionParameters["side_lifetime"] - 1
+	before := len(w.Actors)
+	w.advanceFifthSeeking(side)
+	if side.Active || len(w.Actors) != before+1 || w.Actors[0].ActorList != "transient" || w.SoundRequests[2] != "sampled-effect-05" {
+		t.Fatal("expired side seeker must create the original small explosion in the effect list")
+	}
+}

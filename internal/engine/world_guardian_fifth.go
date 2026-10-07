@@ -272,11 +272,23 @@ func (w *World) addFifthSeeking(state FifthSeekingState, mouth bool) {
 		actor.Health = w.fifthFinalArt.MotionParameters["mouth_creature_health"]
 		actor.Score = 150
 	}
-	if err := w.bindWorldActor(actor); err != nil {
-		w.poolError = err
-		return
+	if mouth {
+		binding, err := w.reserveWorldActor(236, ActorPoolMoving, true)
+		if err != nil {
+			w.poolError = err
+			return
+		}
+		actor.ID, actor.Binding = binding.EntityID, binding
+		w.poolActors[binding.Slot] = actor
+		w.Actors = append(w.Actors, actor)
+	} else {
+		if err := w.bindWorldActor(actor); err != nil {
+			w.poolError = err
+			return
+		}
+		w.Actors = append([]*WorldActor{actor}, w.Actors...)
 	}
-	w.Actors = append([]*WorldActor{actor}, w.Actors...)
+	w.storeActorResidue(actor)
 }
 func (w *World) advanceFifthSeeking(actor *WorldActor) {
 	actor.PreviousX, actor.PreviousY = actor.X, actor.Y

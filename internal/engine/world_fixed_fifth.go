@@ -3,7 +3,7 @@ package engine
 import "xenon2/internal/visualassets"
 
 func (w *World) spawnFifthTile(record visualassets.FixedEncounter) bool {
-	if w.Level.Number != 5 || (record.EnemyKind != 1 && record.EnemyKind != 3) || w.Level.FixedTiles == nil {
+	if w.Level.Number != 5 || (record.EnemyKind != 1 && record.EnemyKind != 3 && record.EnemyKind != 4) || w.Level.FixedTiles == nil {
 		return false
 	}
 	var kind *visualassets.FixedTileKind
@@ -40,11 +40,15 @@ func (w *World) spawnFifthTile(record visualassets.FixedEncounter) bool {
 		w.setSecondMapPatch((record.X-8)/16, (record.Y-8)/16, kind.Variants[0].Initial)
 		return true
 	}
-	if record.Variant < 0 || record.Variant >= len(kind.Variants) {
+	variantID := record.Variant
+	if kind.Kind == 4 {
+		variantID = 0
+	}
+	if variantID < 0 || variantID >= len(kind.Variants) {
 		return true
 	}
-	variant := &kind.Variants[record.Variant]
-	state := FifthTileState{X: record.X - 8, WorldY: record.Y - 8, Heading: uint8(record.Variant)}
+	variant := &kind.Variants[variantID]
+	state := FifthTileState{X: record.X - 8, WorldY: record.Y - 8, Heading: uint8(variantID)}
 	actor := &WorldActor{Active: true, ActorList: "moving", Health: kind.Health, fifthTile: &state, fixedTileArt: kind, fixedTileVariant: variant, part: &visualassets.ActorPart{ResourceTag: variant.ResourceTag, DamageMode: "fifth-tile"}, Collision: CollisionRect{Left: 1000, Right: 1000}}
 	actor.X, actor.Y = float64(state.X), float64(state.WorldY-w.ScrollY)
 	actor.PreviousX, actor.PreviousY = actor.X, actor.Y
@@ -74,6 +78,8 @@ func (w *World) advanceFifthTile(actor *WorldActor) {
 	var event FixedTileEvents
 	if kind.Kind == 1 {
 		event = state.AdvanceBarrier(*kind, w.ScrollY)
+	} else if kind.Kind == 4 {
+		event = state.AdvanceRadialTurret(*kind, w.ScrollY, w.MaximumScrollY, &w.random)
 	} else {
 		event = state.AdvanceAimingTurret(*kind, w.ScrollY, w.MaximumScrollY, w.Player.X, w.Player.Y, &w.random)
 	}
@@ -91,6 +97,18 @@ func (w *World) advanceFifthTile(actor *WorldActor) {
 		w.setSecondMapPatch(state.X/16, state.WorldY/16, patch)
 	}
 	if event.Shot {
+		if kind.Kind == 4 {
+			for direction := 7; direction >= 0; direction-- {
+				w.spawnEnemyShot(event.ShotX, event.ShotY, EnemyShot{Direction: uint8(direction), Speed: event.ShotSpeed})
+				if w.Level.Rules != nil && len(w.Projectiles) != 0 && len(w.Level.Rules.RadialTileShotAnimation.Frames) != 0 {
+					clip := w.Level.Rules.RadialTileShotAnimation
+					shot := w.Projectiles[0]
+					shot.animation, shot.animationState = clip, NewAnimation(clip)
+					shot.Sprite = clip.Frames[0].Sprite
+				}
+			}
+			return
+		}
 		w.spawnEnemyShot(event.ShotX, event.ShotY, EnemyShot{Direction: event.ShotDirection, Speed: event.ShotSpeed})
 		if w.Level.Rules != nil && len(w.Level.Rules.AimingTileShotSprites) == 8 && len(w.Projectiles) != 0 {
 			choice := int(state.Heading) & 3
@@ -132,7 +150,11 @@ func (w *World) damageFifthTile(actor *WorldActor, amount uint16) {
 		w.spawnSecondNamedExplosion(state.X+16, state.WorldY-w.ScrollY+16, "explosion-large")
 		w.replaceFifthAdjacentTiles(state.X/16, state.WorldY/16, kind.DestroyedChanges)
 		w.setSecondMapPatch(state.X/16, state.WorldY/16, actor.fixedTileVariant.Destroyed)
-		w.Score += 400
+		if kind.Kind == 4 {
+			w.Score += 500
+		} else {
+			w.Score += 400
+		}
 		w.storeActorResidue(actor)
 	}
 }
@@ -142,8 +164,10 @@ func (w *World) storeFifthTileResidue(actor *WorldActor) {
 	r := &actor.Binding.Residue
 	r.X, r.Y = int16(state.X), int16(state.WorldY)
 	r.Counter, r.Health = int16(state.Phase), uint16(actor.Health)
-	if actor.fixedTileArt.Kind == 3 {
-		r.Direction = int16(state.Heading)
+	if actor.fixedTileArt.Kind != 1 {
+		if actor.fixedTileArt.Kind == 3 {
+			r.Direction = int16(state.Heading)
+		}
 		r.SetFireState(state.Accumulator, r.FireRate())
 	}
 	w.storeWorldResidue(actor.Binding)
