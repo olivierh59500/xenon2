@@ -43,8 +43,8 @@ func TestSecondWorldPodsCreateBothOriginalCreatureVariantsOptional(t *testing.T)
 	}
 }
 
-func TestFirstTwoWorldsConsumeEveryFixedEncounterSelectorOptional(t *testing.T) {
-	for number := 1; number <= 2; number++ {
+func TestFirstThreeWorldsConsumeEveryFixedEncounterSelectorOptional(t *testing.T) {
+	for number := 1; number <= 3; number++ {
 		t.Run(fmt.Sprint(number), func(t *testing.T) {
 			w, err := NewWorld(originalWorldData(t, number))
 			if err != nil {
