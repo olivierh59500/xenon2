@@ -9,11 +9,11 @@ establish that the corresponding encounter is playable.
 
 | Level | Integrated families | Remaining work |
 | --- | --- | --- |
-| 1 | Three terrain cannon types, bouncing attackers, five-stream middle arena, final body and articulated chain | Complete damage/removal effects and checkpoint/playthrough comparisons |
-| 2 | Terrain cannon, bouncing attackers, hatches, both pod emitters and their creatures, middle defense waves/nodes, final body and transforming minions | Complete source effects and full playthrough comparisons |
-| 3 | Terrain cannons, sweeping attacker, turning projectile, extending chain, tile-edge crawler, middle flying guardian, final worm and conditional scenery | Full phase-order and playthrough comparisons |
-| 4 | Terrain cannon, extending beam, nest crawler, twenty-part middle guardian and nineteen-part final guardian | Two stage-generated encounter families; full playthrough comparisons |
-| 5 | Terrain cannon, destructible barrier, aiming turret, vertical attacker, aiming projectile, both compound guardians, growing laser columns and mouth creatures | Three additional fixed selector families; full playthrough comparisons |
+| 1 | Three terrain cannon types, bouncing attackers, five-stream middle arena, final body and articulated chain | Integrated scene and complete playthrough comparisons |
+| 2 | Terrain cannon, bouncing attackers, hatches, both pod emitters and their creatures, middle defense waves/nodes, final body and transforming minions | Integrated scene and complete playthrough comparisons |
+| 3 | Terrain cannons, sweeping attacker, turning projectile, extending chain, tile-edge crawler, middle flying guardian, final worm and conditional scenery | Integrated scene and complete playthrough comparisons |
+| 4 | Terrain cannon, extending beam, nest crawler, falling hatches and guns, capsule offspring, twenty-part middle guardian and nineteen-part final guardian | Beam composition audit; integrated scene and complete playthrough comparisons |
+| 5 | Terrain cannon, destructible barrier, aiming and radial turrets, vertical attacker, aiming projectile, both compound guardians, growing laser columns and mouth creatures | Two additional fixed selector families; integrated scene and complete playthrough comparisons |
 
 The supplied encounter streams contain respectively 5, 6, 7, 6 and 10 selectors,
 including the checkpoint selector in each level. Every selector requires an
@@ -31,6 +31,11 @@ The session has explicit intermediate-shop and stage-completion boundaries.
 The two-player stage gate preserves each saved game; level five increases
 difficulty and loops to level one. Frontend loading, shop and ending routes are
 connected. Live scene comparisons remain separate from simulation tests.
+
+Stage scripts execute before actor updates. New stage actors therefore move in
+their construction pass; encounter-table actors are created afterward and move
+on the following pass. Enemy counting includes pending-removal entries until
+their owning list releases them. Damage and rendering use physical list order.
 
 ## Validation boundaries
 

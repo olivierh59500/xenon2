@@ -29,7 +29,9 @@ describes these features:
 - Initials are entered for a ten-entry high-score table.
 
 The manual's description of horizontal scrolling is inconsistent with the
-game itself. The Amiga playfield scrolls vertically, with lateral camera movement.
+verified Amiga movement and terrain data: the 20-column playfield fills the
+320-pixel screen and scrolls vertically. Horizontal input moves the ship within
+that playfield.
 The manual also describes only part of the equipment catalogue; it is not a
 complete list of weapon slots, tiers or prices.
 
