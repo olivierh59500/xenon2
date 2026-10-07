@@ -1554,3 +1554,21 @@ The two-side regression and six existing capsule, child, spawner, flamer and
 launcher/native trace tests pass under the race detector in 1.596 seconds.
 The complete engine suite also passes in 4.810 seconds. This is a constructor
 and natural slot-reuse proof; it does not establish a full campaign victory.
+
+## Practiced second final preparation
+
+An app-test-only observation traced the practiced route's first post-middle fatal
+contact at 928.533 seconds: camera 326, ship(172,136), shield 7 and an approaching
+small pod creature. Terrain was clear and rewind/dive were inactive. The old
+preparation helper scored only terrain and distance, letting the ship wait under
+the creature. The practiced profile now uses the existing copied-motion,
+changing-direction hazard planner while keeping its world 464 admission goal.
+The reference policy and all game rules remain unchanged.
+
+The permanent real-intro regression completes both stages with all four genuine
+merchants, guardian defeat and collected exit rewards. Its second final merchant
+arrives at 1,066.72 seconds; stage three starts at 1,080 seconds with one ship,
+shield 39 and no credits. No health, money or inventory is assigned by the pilot.
+A further bounded observation loses that ship in the third opening; this proof
+covers two stages, not a complete campaign. The existing first-level MP4 remains
+unchanged because this correction applies only to second-final preparation.

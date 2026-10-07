@@ -67,7 +67,9 @@ The complete-first-level option includes the intro, both merchants, final guardi
 and exit drops, then stops before playing level two. Its real frontend regression
 completes that route in about 6 minutes 53 seconds with two ships remaining.
 Ordinary damage and purchases still apply. The broader five-level presentation
-controller remains in development.
+controller now also completes stages one and two from the full intro, visiting
+all four merchants and entering stage three with one ship after ordinary
+recovery. Connected victory through stages three to five remains unverified.
 Generated MP4, PNG poster and chapter JSON files stay
 under locally excluded `recordings/`. The export command requires Go 1.26 or
 newer and FFmpeg. A different positive `-duration` records a longer excerpt.

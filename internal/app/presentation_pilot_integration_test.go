@@ -198,3 +198,55 @@ func TestPresentationPilotCarriesFirstLevelIntoSecondMiddleShopOptional(t *testi
 	}
 	t.Fatal("bounded carried presentation did not defeat the second arena and collect its merchant drops")
 }
+
+func TestPresentationPilotCompletesFirstTwoLevelsFromDefaultIntroOptional(t *testing.T) {
+	if os.Getenv("XENON2_HUMAN_PRESENTATION_CHECK") == "" {
+		t.Skip("enable the complete carried presentation route explicitly")
+	}
+	g := presentationFrontendGame(t)
+	shops := [3][2]bool{}
+	defeated := [3]bool{}
+	var lastShop *shopui.State
+	for update := 0; update < 60*1200; update++ {
+		advanceFrontend(t, g, inputFrame{})
+		d, ok := g.Driver.(*worldDriver)
+		if !ok || d.session == nil {
+			continue
+		}
+		w := d.world
+		if w.Cheats.Enabled() || d.diagnostic || !g.DemoActive() {
+			t.Fatal("presentation left ordinary gameplay")
+		}
+		level := w.Level.Number
+		if level == 1 && w.FirstGuardian != nil && w.FirstGuardian.Defeated {
+			defeated[1] = true
+		} else if level == 2 && w.LevelFinished {
+			defeated[2] = true
+		}
+		if g.Screen == ShopScreen && g.shop != nil && g.shop != lastShop {
+			lastShop = g.shop
+			if level <= 2 {
+				index := 0
+				if g.shopFinal {
+					index = 1
+					if !defeated[level] || !w.ExitReady || w.PendingExitDrops != 0 {
+						t.Fatal("final merchant bypassed guardian defeat or exit rewards")
+					}
+				}
+				shops[level][index] = true
+				t.Logf("Real merchant level%d final%v at%.2fs: ships%d shield%d cash%d", level, g.shopFinal, float64(update+1)/60, w.Equipment.Lives, w.Equipment.Shield, w.Money)
+			}
+		}
+		if level == 3 {
+			if shops[1] != ([2]bool{true, true}) || shops[2] != ([2]bool{true, true}) || !defeated[1] || !defeated[2] || w.GameOver || w.Equipment.Lives < 1 {
+				t.Fatal("carried presentation omitted genuine two-stage completion gates")
+			}
+			t.Logf("Complete carried presentation enters stage3 at%.2fs: ships%d shield%d credits%d", float64(update+1)/60, w.Equipment.Lives, w.Equipment.Shield, w.ContinueCredits)
+			return
+		}
+		if w.GameOver && w.ContinueCredits == 0 {
+			t.Fatal("presentation exhausted ordinary recovery before stage3")
+		}
+	}
+	t.Fatal("bounded presentation did not complete both stages")
+}

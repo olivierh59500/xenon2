@@ -109,10 +109,12 @@ from the production intro: known left junction, both genuine merchants, final
 guardian destruction and collected exit drops. Its exported MP4 is 413.05 seconds
 and ends before playing level two. The practiced controller now carries the
 real first-stage result through the second arena and enters its middle merchant,
-with ordinary deaths and one continue. A bounded continuation crosses the next
-corridor but still loses its remaining ships before completing stage two;
-the reference controller's two-stage proof does not establish that profile's
-campaign completion.
+with ordinary deaths and one continue. Hazard-aware final preparation now also
+completes stage two, its final merchant and exit rewards, then admits stage three
+with one ship after ordinary recovery. A permanent real-intro regression covers
+that entire route. The separate reference controller and practiced presentation
+have distinct survival results; connected victory through stages three to five
+remains unverified.
 
 Fifth guardian/column creation and updates now preserve the physical emitter,
 phase, direction and untouched fields written or retained by the native callbacks.
