@@ -192,11 +192,11 @@ func (w *World) spawnThirdFinal() error {
 		state.Motion.X |= int32(binding.Residue.XFraction)
 		state.Motion.Y |= int32(binding.Residue.YFraction)
 		state.Motion.AngleFixed |= int32(uint16(binding.Residue.Direction))
-		state.ResidualFireRate = binding.Residue.FireRate()
 		actor := &WorldActor{ID: binding.EntityID, Binding: binding, X: float64(state.Motion.X >> 16), Y: float64(state.Motion.Y >> 16), ActorList: "moving", Atlas: "guardian-parts", Active: true, Score: 2000, Health: int(binding.Residue.Health), Sprite: state.Sprite, thirdFinalMember: &state, thirdPart: descriptor, path: path, motion: state.Motion,
 			part: &visualassets.ActorPart{ResourceTag: 80, MotionMode: "third-final", DamageMode: "block-shot"}, Collision: CollisionRect{Right: -1, Bottom: -1}}
 		actor.PreviousX, actor.PreviousY = actor.X, actor.Y
-		actor.Binding.Residue.SetFireState(0, state.ResidualFireRate)
+		// Native 0x553b8 clears both emitter bytes for every worm member.
+		actor.Binding.Residue.EmitterClock = 0
 		w.poolActors[binding.Slot] = actor
 		w.storeActorResidue(actor)
 		w.Actors = append([]*WorldActor{actor}, w.Actors...)

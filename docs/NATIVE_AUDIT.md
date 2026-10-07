@@ -1618,3 +1618,19 @@ Separate trials reach farther through the real third stage but have not complete
 it. This corrects the planner's copied rule without modifying game camera limits,
 terrain, health or encounter timing. Live-middle heartbeat forecasting remains
 outside that motion helper's supported scope.
+
+## Third final worm emitter reset
+
+The shared worm constructor clears both emitter bytes at 0x553b8 (4268005e) for
+all eleven delayed members. Go previously inherited the reused slot's low firing
+rate and added ordinary enemy firing before the source head burst. The constructor
+now clears the whole physical word while still retaining its source coordinate
+fractions and direction.
+
+A real level-three cannon purchase and sale leaves emitter 0xffff in a released
+slot. Actual World.Step final admission reuses it for the head. Four callbacks
+now accumulate 80 without a shot or random draw, as the source head rate requires.
+Restoring only the old constructor emits an extra projectile, leaves 49 and changes
+RNG. The existing eleven-member fraction/completion fixture now expects the native
+clear rather than erroneous inheritance. Five focused source tests pass under
+-race, including 13,627 member passes across all eight launches.

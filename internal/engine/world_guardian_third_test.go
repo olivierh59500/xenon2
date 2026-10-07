@@ -94,8 +94,8 @@ func TestThirdWorldFinalWormPreservesFractionsAndCompletesOptional(t *testing.T)
 			}
 		}
 	}
-	if count != 11 || head == nil || uint16(head.thirdFinalMember.Motion.X) != 0x1234 || uint16(head.thirdFinalMember.Motion.Y) != 0x5678 || head.thirdFinalMember.ResidualFireRate != 17 {
-		t.Fatal("final constructor must create eleven independent delayed members and retain reused fractions/rate")
+	if count != 11 || head == nil || uint16(head.thirdFinalMember.Motion.X) != 0x1234 || uint16(head.thirdFinalMember.Motion.Y) != 0x5678 || head.thirdFinalMember.ResidualFireRate != 0 || head.Binding.Residue.EmitterClock != 0 {
+		t.Fatal("final constructor must create eleven independent delayed members, retain reused fractions and clear the emitter word")
 	}
 	w.damageActor(head, w.ThirdFinal.Health-1)
 	if w.ThirdFinal.Defeated || w.ThirdFinal.Health != 1 || w.LevelFinished {
