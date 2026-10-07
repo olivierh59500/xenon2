@@ -268,7 +268,7 @@ value for per-object wobble; native addresses are never used at runtime.
 The third-level middle guardian has seventeen independently allocated parts
 and two shared eye health values. Its controller matches 20,400 part updates.
 The final eleven-member worm matches 13,627 member updates; its creation retains
-reused fractional positions and the inherited firing-rate value. Stage-boundary
+reused fractional positions and clears the emitter word. Stage-boundary
 logic matches 60 original decisions. Integrated tests verify source activation,
 checkpoint preservation, middle rewards/shop admission and final delayed exit.
 
