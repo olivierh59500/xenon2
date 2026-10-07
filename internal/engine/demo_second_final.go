@@ -15,11 +15,12 @@ func (p *DemoPilot) SecondFinalInput(w *World) (Input, bool) {
 		if !found {
 			return Input{}, false
 		}
-		input.Motion = secondFinalRouteMotion(w, x, y)
 		if p.practicedRoute {
 			// Approaching the barrier still crosses live pod-creature traffic.
 			// Preserve the route goal while forecasting terrain and body contact.
 			input.Motion = demoRouteMotion(w, x, y)
+		} else {
+			input.Motion = secondFinalRouteMotion(w, x, y)
 		}
 		return input, true
 	}
