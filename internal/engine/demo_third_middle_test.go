@@ -30,7 +30,7 @@ func TestDemoThirdMiddleShopThroughOrdinaryControlsOptional(t *testing.T) {
 			w = session.ActiveWorld()
 		}
 		if w.ShopReady {
-			if !checkedReadOnly || pass != 1082 || w.ThirdMiddle == nil || !w.ThirdMiddle.Defeated || w.ThirdMiddle.EyeHealth != [2]uint16{} || w.Equipment.Lives != 2 || continues != 2 || w.LevelFinished || w.ExitReady || w.PendingExitDrops != 0 {
+			if !checkedReadOnly || pass != 1021 || w.ThirdMiddle == nil || !w.ThirdMiddle.Defeated || w.ThirdMiddle.EyeHealth != [2]uint16{} || w.Equipment.Lives != 2 || w.Equipment.Shield != 39 || continues != 2 || w.LevelFinished || w.ExitReady || w.PendingExitDrops != 0 {
 				t.Fatalf("middle outcome changed: pass%d lives%d shield%d continues%d pending%d", pass, w.Equipment.Lives, w.Equipment.Shield, continues, w.PendingExitDrops)
 			}
 			t.Logf("Genuine middle shop after %d ordinary commands: both eyes destroyed, 2 lives and 2 legal continues", pass)

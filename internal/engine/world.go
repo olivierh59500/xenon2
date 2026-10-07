@@ -832,7 +832,7 @@ func (w *World) advanceEnemyShot(projectile *WorldProjectile) error {
 	projectile.X, projectile.Y = float64(projectile.Motion.X>>16), float64(projectile.Motion.Y>>16)
 	if projectile.Active && w.PlayerAlive && w.Dive.Phase == 0 {
 		box, ok := w.shotSpriteBoxes[projectile.Sprite]
-		if !ok && projectile.Atlas == "fixed" {
+		if !ok && (projectile.Atlas == "fixed" || projectile.Atlas == "guardian-parts") {
 			box, ok = w.movingSpriteBoxes[projectile.Sprite]
 		}
 		if !ok && projectile.Atlas == "guardians" && w.Level.Guardians != nil {

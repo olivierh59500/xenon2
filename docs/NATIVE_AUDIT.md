@@ -802,3 +802,22 @@ health, score and RNG. Runtime tests also verify no damage behind a blocker,
 proper compaction, no active rendered beam and a nonconsuming no-op route.
 The full source/resource engine suite and the connected first-two-stage frontend
 regression pass after this correction.
+
+## Animated guardian projectile collision
+
+Third- and fourth-stage shot factories use the guardian-parts image bank. The
+ordinary projectile phase previously looked up only default/fixed/guardian
+images, leaving these visible shots without a damage prefix. It now reads the
+already exported guardian-parts prefixes as the native current-sprite collision
+routine does. Colliding shots apply the original four-point damage and retire
+their physical pool entry; diving skips contact and invulnerability suppresses
+damage while still consuming the shot.
+
+A real factory regression and 69 World.Step cases cover all 21 unique recovered
+shot frames, including duplicate eye animations and normal/invulnerable/diving
+states. The historical third middle/final victory counts preceded this fix.
+Re-running them with real bullet damage still reaches the genuine merchants:
+third middle after 1,021 commands with both eyes destroyed, two lives/full
+shield and two continues; final worm after 1,848 commands with three lives, 35
+shield and two continues. Every defeat/drop/exit gate remains required. The
+counts were updated only after these current ordinary-input outcomes passed.
