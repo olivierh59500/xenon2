@@ -883,3 +883,19 @@ guards and prediction immutability are also tested. The source/resource engine
 suite passes; the excluded overlay race suite passes. Steady decision work
 measures about 59 microseconds with zero allocations on the M4 Max. This is an
 arena proof, not a complete fourth-stage or five-stage campaign victory.
+
+## Remaining newborn collision constructors
+
+The 43 production actor/projectile constructor literals were classified by
+their admission and contact routes: 30 set explicit birth rectangles, six set
+sprite-derived rectangles before insertion, four create transient actors outside
+moving-target scans, and three create point/motion projectiles without target
+rectangles. The ten generic fixed variants have collision prefixes for all 48
+animation frames. All 22 initial hatch, pod, falling and aiming images also have
+their recovered prefixes. No further origin-collider defect was confirmed with
+the supplied resource graph.
+
+Ordinary waves deliberately compute their collision before the first display
+callback. The original constructor's rectangle call confirms this behavior;
+a global Visible filter would incorrectly change those waves. The fifth hidden
+seeker correction therefore remains specific to its distinct constructor.
