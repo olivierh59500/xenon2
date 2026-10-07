@@ -8,7 +8,7 @@ all interactions between births, firing, combat, terrain and shared actor slots.
 
 ## Isolated full-world lookahead
 
-A reusable typed state copy can run the same Go `World.Step` callbacks against a
+The typed `WorldForecast` state copy runs the same Go `World.Step` callbacks against a
 forecast world. The live game remains unchanged. Immutable images, animation
 and path descriptors and terrain coverage lookup masks may be shared. Mutable
 terrain, the 159-slot pool, weapons, entities, controllers, RNG, encounter cursor,
@@ -22,7 +22,7 @@ must reference the same copied storage. Weapon ID/context callbacks must be
 rebuilt against the forecast world rather than retaining closures over the live
 world.
 
-A candidate API is `WorldForecast.Load(*World) error`, followed by explicit PAL
+The API is `WorldForecast.Load(*World) error`, followed by explicit PAL
 ticks and `Advance(Input) (ForecastResult, error)`. A forecast stops at ship loss,
 READY, merchant admission or stage completion; it must not silently cross a
 frontend/session transition. Audio channel activity is an external input to
@@ -40,3 +40,29 @@ future callbacks on dense source scenes, then on the Pixel. A budget of a few
 milliseconds per decision is a design target, not an established device result.
 Prepared routes and trigger timing remain necessary: a short risk horizon alone
 can knowingly trade immediate damage for an easier later position.
+
+## Current validation and pilot use
+
+Ten original-resource scenes cover the openings and compound arenas of all five
+levels. Up to 24 exact gameplay passes after explicit 3-PAL-tick scheduling match
+the full semantic state, while the live game remains unchanged. A 31-tick palette
+strobe, reload/unloaded rejection and actual lethal contact exercise timing and
+lifecycle boundaries. Independent mutation tests cover actor parts, patches,
+shared chains/markers, physical slots, maps, controllers and weapon callbacks.
+Metadata identity is excluded from value comparison; mutable identity is checked
+separately by the isolation assertions.
+
+The practiced controller uses a six-pass guard in the verified third opening
+window. It retains its prepared command unless the full callback simulation
+predicts damage, then ranks ordinary movements by survival and remaining shield.
+The guard advances the host-configured PAL cadence and does not enter a frontend.
+The genuine carried route reaches checkpoints 4032 and 3408 without another ship
+loss, retaining 39 and 31 shield respectively. Later middle-guardian victory is
+not established; an unrestricted trial can choose a stationary safe position.
+
+This first implementation prioritizes correct ownership over allocation reuse.
+On the M4 Max, arena Load measures 17–41 microseconds and 91–147 KiB of allocations;
+Load plus 6 passes measures 52–142 microseconds with 126–275 KiB. The tested safe-opening
+guard measures 46 microseconds/133 KiB; searching nine alternatives costs more.
+These are scene-specific measurements, not Pixel frame-rate guarantees. Reusable
+branch storage and mobile measurements remain required before broadening use.

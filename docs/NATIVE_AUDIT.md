@@ -1828,3 +1828,25 @@ installation and cold launch succeed on the USB Pixel 10a; its process remains
 alive afterward. Device graphics were not rechecked while locked. The next
 full-world forecast work is described in [EXPERT_FORECAST.md](EXPERT_FORECAST.md); all five levels,
 very-low-loss play and integrated Amiga comparisons remain open.
+
+## Isolated whole-world forecast
+
+A typed Go copy now retains all five levels' mutable world graph: terrain and
+coverage map aliases, physical pool state, active/dormant entities, shared chain
+and marker links, guardian controllers, weapons and rebound callbacks. Images
+and immutable semantic descriptors remain shared. No original program executes
+inside the game or forecast. Prediction stops at READY, death, merchant and
+stage-completion boundaries and advances PAL-timed effects explicitly.
+
+Ten source scenes pass exact semantic comparisons through up to 24 gameplay
+passes each. The palette strobe, lifecycle boundaries and load/reload cases pass.
+Independent mutations and actual forecast-only firing leave the live world,
+equipment, IDs, RNG, maps and linked actors unchanged. Ordinary constructor
+births and callback updates are included; these fixtures do not prove campaign
+victory or every future scene.
+
+A bounded six-pass guard improves the actual practiced third route: checkpoint
+4032 is reached with 39 shield and checkpoint 3408 with 31, retaining the carried
+ship and credits. A further diagnostic reaches the real middle guardian with
+19 shield but still loses there. The guard remains limited to its validated
+opening window; later strategy and branch allocation reuse are still open.
