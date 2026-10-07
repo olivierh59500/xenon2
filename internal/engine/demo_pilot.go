@@ -42,7 +42,7 @@ func (p *DemoPilot) NormalInput(w *World) Input {
 	if input, handled := p.StageInput(w); handled {
 		return input
 	}
-	c := p.Config
+	c := thirdOpeningConfig(w, p.Config)
 	if w.Level.Number == 2 && w.Checkpoint.ScrollY <= 4032 {
 		if c.TargetY == 0 {
 			c.TargetY = 166

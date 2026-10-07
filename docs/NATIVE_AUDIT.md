@@ -771,3 +771,17 @@ single named explosion does not consume randomness, and both admitted and
 rejected routes preserve the native RNG state. The lethal-player early return
 remains unchanged. Synthetic fixtures use the actual source tag rather than
 a normal-enemy tag that would exercise a different branch.
+
+## Third-stage opening policy
+
+A temporary pilot configuration targets the verified first-checkpoint window
+with faster ordinary trigger releases and postpones risky bonus pursuit. It
+returns to the general controller after the checkpoint and never changes
+health, equipment or the shared random stream.
+
+A fresh original-resource session reaches checkpoint 4032 after 578 public
+commands with all three ships and both continues; shield is 3. An independent
+CSV replay checks every observation. In the carried frontend campaign, this
+policy improves third-stage reach from camera 3644 to 3192 before the last ship
+is lost. The normal-menu victories of stages one and two remain intact.
+Neither result establishes completion of stage three or the five-stage pilot.
