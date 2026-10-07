@@ -67,7 +67,10 @@ moving wave over 64 passes, verifying animation images, emitted shots, body
 patches and overlays against the exported atlases. They do not replace an actual
 renderer comparison or a complete game played through its normal controls.
 
-Actual Ebitengine GPU tests render six guardian/beam scenes. Pixel comparisons
+Actual Ebitengine GPU tests render all ten middle/final arena families and the
+fourth-level extending beam. These fixtures use original stage/encounter births
+and production drawing; their arrangements isolate composition rather than
+establishing complete-stage victories. Pixel comparisons
 cover aura alpha, terrain materialization, body tile placement and damage flash,
 moving/effect layer order, all five palette strobes and Shades, and the 48-point
 background starfield. A shader source-size panic and double source-origin
@@ -84,6 +87,20 @@ levels one and two through the corrected engine, including all four merchants
 and guardian/exit-coin gates, then admit level three. The third opening, middle
 and final arenas have separate ordinary-input resource proofs. The remaining
 connected stages and complete campaign require current validation.
+
+Finite common explosions and converted fourth-stage pods now retire and release
+their physical slots. Animation-only effects preserve untouched slot fields;
+third terrain crawlers and compound cannons publish their native physical state.
+Resource regressions cover actual slot release/reuse. Fifth core hits flash
+their owning tiled body, and the middle body retains its last normal muzzle
+table during flash callbacks. A real basic-gun hit also passes the production
+GPU pixel check for the final body.
+
+After finite explosions were corrected, the current direct-menu route enters
+stage three with one ship. Its separate no-loss third-middle regression fails
+before the arena; a bounded legal-continue probe also exhausts the remaining
+ships before admission. The regression is retained and this controller limitation
+remains open. Isolated arena wins are not substitutes for that carried route.
 
 The remaining live checks are:
 

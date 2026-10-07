@@ -136,17 +136,27 @@ func TestIntegratedGuardianAndBeamGPUFixturesOptional(t *testing.T) {
 		name                        string
 		level, kind, scroll, passes int
 	}{
+		{"guardian-1-middle-defense-streams", 1, -1, 3000, 30},
 		{"guardian-1-body-eye-chain", 1, -1, 0, 60},
+		{"guardian-2-middle-defense-streams", 2, -1, 2600, 30},
 		{"guardian-2-body-hatch", 2, -1, 80, 3},
 		{"guardian-3-articulated-middle", 3, 3, 2816, 80},
+		{"guardian-3-final-worm", 3, -1, 160, 60},
+		{"guardian-4-articulated-middle", 4, 2, 2672, 80},
 		{"guardian-4-tiled-eyes-arms", 4, 4, 144, 180},
 		{"level-4-extending-beam", 4, 5, 2096, 80},
+		{"guardian-5-tiled-middle", 5, 5, 2448, 240},
 		{"guardian-5-body-mouth", 5, 6, 0, 160},
 	} {
 		t.Run(fixture.name, func(t *testing.T) {
 			d := renderFixtureWorld(t, b, fixture.level, fixture.kind, fixture.scroll)
 			if fixture.level == 2 {
 				d.world.Player.Y = 80
+			}
+			if fixture.level == 5 && fixture.kind == 5 {
+				// Keep the ship outside the core: invulnerable player contact still
+				// damages the guardian through its original collision callback.
+				d.world.Player.X = 24
 			}
 			for pass := 0; pass < fixture.passes; pass++ {
 				if err := d.world.Step(engine.Input{}); err != nil {
@@ -160,6 +170,15 @@ func TestIntegratedGuardianAndBeamGPUFixturesOptional(t *testing.T) {
 				}
 			}
 			g.View = d.Frame()
+			if fixture.level == 5 && fixture.kind == 5 {
+				visibleBody := false
+				for _, sprite := range g.View.Sprites {
+					visibleBody = visibleBody || sprite.Kind == "tiles" && sprite.Y >= 0 && sprite.Y < PlayfieldHeight
+				}
+				if d.world.FifthMiddle.Defeated || !visibleBody {
+					t.Fatal("middle fixture omitted its living tiled body")
+				}
+			}
 			g.rememberFrameHistory()
 			if len(g.View.Sprites) == 0 {
 				t.Fatal("source world produced no visible fixture actors")

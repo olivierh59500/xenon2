@@ -1206,3 +1206,13 @@ fifth source/resource race run passes. These positive opaque muzzle codes may
 produce the same palette-15 flash pixels; this correction proves retained table
 state rather than a visible difference at those exact cells. The earlier
 middle-body firing-clock caveat is resolved for these boundaries.
+
+## All arena families in production GPU fixtures
+
+The GPU inventory now includes both arena families in every level, plus the
+fourth-stage extending beam: eleven bounded fixtures. The added scenes activate
+the real stage/encounter callbacks for the third final worm, fourth articulated
+middle guardian, fifth tiled middle guardian and both early defense streams.
+Their composed frames differ from the same backdrop and are captured locally.
+These are rendering/constructor checks with fixture invulnerability and isolated
+coverage; they do not prove full arena victories or a complete playthrough.
