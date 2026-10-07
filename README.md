@@ -10,8 +10,9 @@ original menu and five level maps, moves the ship and enemy formations, and
 replays the original soundtrack. It includes source-derived weapons,
 carrier rewards, checkpoint recovery, alternating players, and both sections
 of the five levels, including their compound guardians. Original shop, attract,
-HUD, loading and ending presentation are connected. Two fifth-level encounter
-families, a final artwork audit and full-game validation remain in progress;
+HUD, loading and ending presentation are connected. All fixed encounter families
+are implemented. Shared-state and artwork audits and full-game validation remain
+in progress;
 this build is not yet the complete playable game.
 
 ## Local resources
