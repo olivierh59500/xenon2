@@ -726,3 +726,16 @@ both guardians defeated, all final drops drained, both merchants on each stage,
 no diagnostic route and no trainer options. Level three starts with one ship,
 39 shield points and zero cash after real purchases. This is a reproducible
 two-stage route, not the requested complete five-stage autonomous run.
+
+## Ordinary final-worm targeting in the third stage
+
+The pilot selects the real worm head; neck, body and tail remain armored shot
+blockers. Lead prediction copies path and random state without advancing the
+world's RNG, and nearby body contacts retain a movement safety check.
+
+An original final-checkpoint fixture retains basic equipment, terrain, paths
+and 80 HP shared guardian health. Ordinary commands defeat the head, drain all
+20 exit coins and reach the final shop after 1,614 commands with one ship, 23
+shield points and one legal continue. The regression requires actual defeat,
+ExitReady and zero pending drops. It is a final-boundary victory, not proof
+of the unverified middle eyes, preceding terrain or complete third stage.
