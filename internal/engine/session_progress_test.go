@@ -104,3 +104,40 @@ func TestCompletedPlayerWaitsThroughOtherPlayersNonfinalLoss(t *testing.T) {
 		t.Fatal("a ship loss reopened the already completed player's stage")
 	}
 }
+
+// This checks stage admission with complete exported resources. It deliberately
+// does not claim a guardian victory or a complete gameplay playthrough.
+func TestOriginalResourcesAdmitTwoPlayersAcrossAllFiveStagesOptional(t *testing.T) {
+	s, err := NewSession(playableOriginalWorldData(t, 1), 2, NewRandomState())
+	if err != nil {
+		t.Fatal(err)
+	}
+	s.Players[0].Equipment.ApplyItem(ItemDoubleShot)
+	s.Players[0].Equipment.Primary.Tier = 2
+	for level := 1; level <= 5; level++ {
+		next := playableOriginalWorldData(t, level%5+1)
+		current := s.Current
+		s.Players[current].LevelFinished = true
+		state, err := s.CompleteStage(next)
+		if err != nil || state != WaitForOtherPlayer {
+			t.Fatalf("level%d first player admission:%v %v", level, state, err)
+		}
+		s.ActiveWorld().LevelFinished = true
+		state, err = s.CompleteStage(next)
+		if err != nil || state != LoadedNextStage {
+			t.Fatalf("level%d shared admission:%v %v", level, state, err)
+		}
+		for index, w := range s.Players {
+			if w.Level.Number != next.Number || w.Coverage == nil || !w.Ready || w.Equipment.Lives != 3 {
+				t.Fatalf("level%d player%d lost source game state", level, index)
+			}
+			w.Ready = false
+			if err := w.Step(Input{}); err != nil {
+				t.Fatalf("level%d player%d first pass:%v", next.Number, index, err)
+			}
+		}
+	}
+	if s.Difficulty != 2 || s.Players[0].ContinueCredits != 3 || s.Players[1].ContinueCredits != 3 {
+		t.Fatal("original difficulty loop or victory credits differ")
+	}
+}
