@@ -79,6 +79,13 @@ func main() {
 			fail(err)
 		}
 		extraTiles = append(extraTiles, visualassets.ThirdFixedTileCodes(fixedSprites.Third)...)
+		if index == 3 {
+			codes, err := visualassets.FourthCrawlerTileCodes(data)
+			if err != nil {
+				fail(err)
+			}
+			extraTiles = append(extraTiles, codes...)
+		}
 		terrain, err := visualassets.DecodeTerrainWithTiles(data, extraTiles)
 		if err != nil {
 			fail(fmt.Errorf("level %d: %w", index+1, err))
@@ -161,6 +168,9 @@ func main() {
 			fail(err)
 		}
 		if err := visualassets.RemapThirdFixedTiles(fixedSprites.Third, terrain.SourceTileIDs); err != nil {
+			fail(err)
+		}
+		if err := visualassets.RemapFixedSpriteTiles(fixedSprites, terrain.SourceTileIDs); err != nil {
 			fail(err)
 		}
 		if err := writeJSON(prefix+"-fixed-sprites.json", fixedSprites); err != nil {

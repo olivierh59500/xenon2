@@ -22,6 +22,7 @@ type FixedSpriteVariant struct {
 	ShotOffsetY      int            `json:"shot_offset_y,omitempty"`
 	ShotMotionBudget int            `json:"shot_motion_budget,omitempty"`
 	ShotAnimation    ActorAnimation `json:"shot_animation"`
+	Cover            *TilePatch     `json:"cover,omitempty"`
 }
 
 type FixedSpriteKind struct {
@@ -37,6 +38,7 @@ type FixedSpriteKind struct {
 	ContactDamage     int                  `json:"contact_damage,omitempty"`
 	Behavior          string               `json:"behavior"`
 	MotionParameters  map[string]int       `json:"motion_parameters,omitempty"`
+	MotionTables      map[string][]int     `json:"motion_tables,omitempty"`
 	Variants          []FixedSpriteVariant `json:"variants"`
 }
 
@@ -225,6 +227,13 @@ func DecodeFixedSprites(levelNumber int, level []byte, palette [16][4]uint8) (*F
 			kind.Variants = append(kind.Variants, v)
 		}
 		result.Kinds = append(result.Kinds, kind)
+	}
+	if levelNumber == 4 {
+		crawler, err := decodeFourthCrawlerKind(level, add)
+		if err != nil {
+			return nil, err
+		}
+		result.Kinds = append(result.Kinds, crawler)
 	}
 	var err error
 	if levelNumber == 2 {

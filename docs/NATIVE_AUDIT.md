@@ -322,3 +322,19 @@ edge restrictions, closed eye poses, rewards and terrain changes. World tests
 verify both original constructors, persistent checkpoint bindings, the middle
 corridor and twenty final reward coins before stage exit. Full scene comparisons
 remain necessary beyond these controller and integration checks.
+
+## Fourth-level nest crawler and fifth-level guardians
+
+The nest crawler matches 1,600 source updates and six damage operations. It
+keeps world coordinates, the opening animation's held poses and its vertical
+escape choice. Destruction awards score and a large coin before restoring its
+nest and original health. The renderer carries its original three-tile cover.
+
+The fifth-level middle and final guardians match 15,000 and 26,400 source part
+states, plus 144 damage cases. Their growing columns, side shots and mouth
+creatures match 1,867 additional source states. World integration retains
+noncollidable wrecks, eighteen outer defenses before core exposure, mutable
+arena tiles, persistent checkpoint damage and twenty final cash coins. Column
+render descriptors preserve the source cap artwork and twelve-pixel palette
+pattern. The ordinary fixed encounter families and complete runtime comparisons
+remain separate unfinished work.

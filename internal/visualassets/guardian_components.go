@@ -338,6 +338,9 @@ func DecodeCompoundGuardianArt(number int, level []byte, palette [16][4]uint8) (
 			}
 			group.Components = append(group.Components, part)
 		}
+		if err := enrichFifthGuardianArt(level, &group, add); err != nil {
+			return nil, SpriteAtlas{}, err
+		}
 		groups = append(groups, group)
 		const finalTable, finalCount = 0x5594e - levelBase, 22
 		if len(level) < finalTable+finalCount*24 {
@@ -396,6 +399,9 @@ func DecodeCompoundGuardianArt(number int, level []byte, palette [16][4]uint8) (
 				part.Animation = animation
 			}
 			final.Components = append(final.Components, part)
+		}
+		if err := enrichFifthGuardianArt(level, &final, add); err != nil {
+			return nil, SpriteAtlas{}, err
 		}
 		groups = append(groups, final)
 	}

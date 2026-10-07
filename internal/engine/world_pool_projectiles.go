@@ -52,7 +52,9 @@ func (w *World) advancePoolProjectileEntity(id int, context WeaponContext) error
 
 func (w *World) advanceTransientActor(actor *WorldActor) error {
 	actor.PreviousX, actor.PreviousY = actor.X, actor.Y
-	if actor.firstMiddleFragment != nil {
+	if actor.fifthColumn != nil {
+		w.advanceFifthColumn(actor)
+	} else if actor.firstMiddleFragment != nil {
 		w.advanceFirstMiddleFragment(actor)
 	} else if actor.secondFragment != nil {
 		w.advanceSecondFragment(actor)

@@ -148,6 +148,10 @@ func (w *World) bindWorldActor(actor *WorldActor) error {
 }
 
 func (w *World) storeActorResidue(actor *WorldActor) {
+	if actor.fourthCrawler != nil {
+		w.storeFourthCrawlerResidue(actor)
+		return
+	}
 	if actor.fourthIndex > 0 {
 		w.storeFourthPartResidue(actor)
 		if !actor.Active {

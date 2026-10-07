@@ -50,6 +50,19 @@ func (w *World) advanceActorPhase(list ActorPoolList, input Input) error {
 }
 
 func (w *World) advanceMovingActor(actor *WorldActor) error {
+	if actor.fourthCrawler != nil {
+		return w.advanceFourthCrawler(actor)
+	}
+	if actor.fifthIndex > 0 {
+		if actor.fifthIndex == 1 {
+			w.advanceFifthGuardian(actor.fifthFinal)
+		}
+		return w.poolError
+	}
+	if actor.fifthSeeking != nil {
+		w.advanceFifthSeeking(actor)
+		return nil
+	}
 	if actor.fourthIndex > 0 {
 		return w.advanceFourthPart(actor)
 	}

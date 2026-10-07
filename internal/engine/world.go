@@ -37,6 +37,11 @@ type WorldActor struct {
 	DrawKind                   string
 	DrawLength                 int
 	DrawUp                     bool
+	fifthIndex                 int
+	fifthFinal, fifthMouth     bool
+	fifthPart                  *visualassets.GuardianComponent
+	fifthSeeking               *FifthSeekingState
+	fifthColumn                *FifthLaserColumnState
 	Binding                    ActorPoolBinding
 	ID                         int
 	Order                      int
@@ -64,6 +69,8 @@ type WorldActor struct {
 	Flash                      bool
 	Extras                     []WorldSpriteAttachment
 	TileOverlays               []WorldTileOverlay
+	fourthCrawler              *FourthCrawlerState
+	fourthCrawlerArt           *visualassets.FixedSpriteKind
 	firstGuardian              bool
 	secondGuardian             bool
 	firstSegment               int
@@ -151,6 +158,11 @@ type WorldCollectible struct {
 // World is the independent game simulation. Scenery mechanisms, weapons and
 // stage transitions are integrated as their original rules are verified.
 type World struct {
+	FifthMiddle                      *FifthMiddleGuardianState
+	FifthFinal                       *FifthFinalGuardianState
+	fifthMiddleArt, fifthFinalArt    *visualassets.GuardianGroup
+	fifthMiddleActors                [10]*WorldActor
+	fifthFinalActors                 [22]*WorldActor
 	Level                            LevelData
 	Player, PreviousPlayer           PlayerMotionState
 	Shadows                          [4]PlayerShadowState
@@ -420,6 +432,9 @@ func NewWorld(data LevelData) (*World, error) {
 		if err := w.bindWorldActor(w.Actors[i]); err != nil {
 			return nil, err
 		}
+	}
+	if err := w.initializeFifthStage(); err != nil {
+		return nil, err
 	}
 	return w, nil
 }
@@ -960,6 +975,14 @@ func (w *World) destroyPlayer() {
 }
 
 func (w *World) damageActor(actor *WorldActor, amount uint16) {
+	if actor.fourthCrawler != nil {
+		w.damageFourthCrawler(actor, amount)
+		return
+	}
+	if actor.fifthIndex > 0 {
+		w.damageFifthGuardian(actor, amount)
+		return
+	}
 	if actor.fourthIndex > 0 {
 		x, y := (actor.Collision.Left+actor.Collision.Right)/2, (actor.Collision.Top+actor.Collision.Bottom)/2
 		w.damageFourthGuardian(actor, CollisionRect{Left: x, Top: y, Right: x, Bottom: y}, amount)
@@ -1075,6 +1098,15 @@ func (w *World) spawnEnemyShot(x, y int, shot EnemyShot) {
 }
 
 func (w *World) spawnFixed(record visualassets.FixedEncounter) {
+	if w.spawnFourthCrawler(record) {
+		return
+	}
+	if w.Level.Number == 5 && (record.EnemyKind == 5 || record.EnemyKind == 6) && w.fifthMiddleArt != nil {
+		if err := w.activateFifthGuardian(record, record.EnemyKind == 6); err != nil {
+			w.poolError = err
+		}
+		return
+	}
 	if w.Level.Number == 4 && (record.EnemyKind == 2 || record.EnemyKind == 4) && w.fourthMiddleArt != nil {
 		if err := w.activateFourthGuardian(record.EnemyKind == 4); err != nil {
 			w.poolError = err

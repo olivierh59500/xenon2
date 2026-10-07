@@ -436,6 +436,10 @@ func (g *Game) drawOriginalMessage(screen *ebiten.Image, text string) {
 }
 
 func (g *Game) drawSprite(destination *ebiten.Image, sprite SpriteView, level int, alpha float64) {
+	if sprite.Kind == "fifth-column" {
+		g.drawFifthColumn(destination, sprite, level, alpha)
+		return
+	}
 	if sprite.Kind == "laser" {
 		g.drawLaser(destination, sprite, level, alpha)
 		return
@@ -814,4 +818,38 @@ func (g *Game) drawAnchoredAtlasSprite(destination *ebiten.Image, atlas atlasGra
 		return
 	}
 	g.drawAtlasSprite(destination, atlas, name, x-float64(sprite.anchorX), y-float64(sprite.anchorY))
+}
+
+func (g *Game) drawFifthColumn(destination *ebiten.Image, view SpriteView, level int, alpha float64) {
+	x, y := view.X, view.Y
+	if view.Interpolate {
+		x = lerp(view.PreviousX, x, alpha)
+		y = lerp(view.PreviousY, y, alpha)
+	}
+	atlas := g.graphics.levels[level-1].guardianParts
+	var top, bottom string
+	for _, group := range g.Bundle.Levels[level-1].GuardianGroups {
+		if group.ID != "middle-guardian" {
+			continue
+		}
+		for _, clip := range group.Animations {
+			if clip.ID == "fifth-laser-top" {
+				top = clip.Animation.Frames[0].Sprite
+			}
+			if clip.ID == "fifth-laser-bottom" {
+				bottom = clip.Animation.Frames[0].Sprite
+			}
+		}
+	}
+	if view.Tier != 0 || view.Length == 48 {
+		g.drawAnchoredAtlasSprite(destination, atlas, top, x, y)
+	}
+	if view.Tier == 0 || view.Length == 48 {
+		g.drawAnchoredAtlasSprite(destination, atlas, bottom, x, y+float64(view.Length)-1)
+	}
+	colors := [12]uint8{15, 7, 14, 14, 14, 14, 14, 14, 14, 14, 7, 15}
+	for column, index := range colors {
+		c := g.Bundle.Levels[level-1].Terrain.Palette[index]
+		vector.FillRect(destination, float32(x)+float32(column), float32(y), 1, float32(view.Length), color.RGBA{c[0], c[1], c[2], c[3]}, false)
+	}
 }
