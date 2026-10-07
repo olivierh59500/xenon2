@@ -41,7 +41,8 @@ type graphics struct {
 	fadeAmount                                   []float32
 	fadeUniforms                                 map[string]any
 	materialShader                               *ebiten.Shader
-	materialSprite                               *ebiten.Image
+	materialVertices                             [4]ebiten.Vertex
+	materialIndices                              [6]uint16
 	terrainMask                                  *ebiten.Image
 	terrainMaskTiles                             [5]map[uint16]*ebiten.Image
 	materialUniforms                             map[string]any
@@ -82,7 +83,7 @@ func prepareGraphics(b *Bundle) graphics {
 	g.fadeAmount = make([]float32, 1)
 	g.fadeUniforms = map[string]any{"Deduction": g.fadeAmount}
 	g.terrainMask = ebiten.NewImage(ScreenWidth, PlayfieldHeight)
-	g.materialSprite = ebiten.NewImage(ScreenWidth, PlayfieldHeight)
+	g.materialIndices = [6]uint16{0, 1, 2, 1, 2, 3}
 	g.materialPosition = make([]float32, 2)
 	g.materialUniforms = map[string]any{"Position": g.materialPosition}
 	g.backgroundStarBackdrop = ebiten.NewImage(ScreenWidth, PlayfieldHeight)
@@ -514,14 +515,23 @@ func (g *Game) drawSprite(destination *ebiten.Image, sprite SpriteView, level in
 		picture = image.flash
 	}
 	if sprite.Materializing {
-		// Rect shaders require equal source dimensions. Position the masked
-		// sprite in a playfield-sized scratch image before testing terrain.
-		g.graphics.materialSprite.Clear()
-		g.graphics.materialSprite.DrawImage(picture, &op)
-		g.graphics.materialPosition[0], g.graphics.materialPosition[1] = 0, 0
-		shaderOp := ebiten.DrawRectShaderOptions{Uniforms: g.graphics.materialUniforms}
-		shaderOp.Images[0], shaderOp.Images[1] = g.graphics.materialSprite, g.graphics.terrainMask
-		destination.DrawRectShader(ScreenWidth, PlayfieldHeight, g.graphics.materialShader, &shaderOp)
+		// Pixel-unit triangle shaders allow a sprite and playfield mask of
+		// different sizes, avoiding a scratch render pass for every actor.
+		bounds := picture.Bounds()
+		left, top := float32(bounds.Min.X), float32(bounds.Min.Y)
+		right, bottom := float32(bounds.Max.X), float32(bounds.Max.Y)
+		x0, y0 := float32(x), float32(y)
+		x1, y1 := x0+float32(image.width), y0+float32(image.height)
+		g.graphics.materialVertices = [4]ebiten.Vertex{
+			{DstX: x0, DstY: y0, SrcX: left, SrcY: top, ColorR: 1, ColorG: 1, ColorB: 1, ColorA: 1},
+			{DstX: x1, DstY: y0, SrcX: right, SrcY: top, ColorR: 1, ColorG: 1, ColorB: 1, ColorA: 1},
+			{DstX: x0, DstY: y1, SrcX: left, SrcY: bottom, ColorR: 1, ColorG: 1, ColorB: 1, ColorA: 1},
+			{DstX: x1, DstY: y1, SrcX: right, SrcY: bottom, ColorR: 1, ColorG: 1, ColorB: 1, ColorA: 1},
+		}
+		g.graphics.materialPosition[0], g.graphics.materialPosition[1] = x0, y0
+		shaderOp := ebiten.DrawTrianglesShaderOptions{Uniforms: g.graphics.materialUniforms}
+		shaderOp.Images[0], shaderOp.Images[1] = picture, g.graphics.terrainMask
+		destination.DrawTrianglesShader(g.graphics.materialVertices[:], g.graphics.materialIndices[:], g.graphics.materialShader, &shaderOp)
 	} else {
 		destination.DrawImage(picture, &op)
 	}
