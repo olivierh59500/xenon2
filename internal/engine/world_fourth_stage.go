@@ -130,8 +130,10 @@ func (w *World) storeFourthStageResidue(actor *WorldActor) {
 	}
 	r := &actor.Binding.Residue
 	r.X, r.Y = int16(actor.X), int16(actor.Y)
-	r.Health, r.PowerOrScore = uint16(actor.Health), uint16(actor.Score)
-	r.WaveBonusToken = actor.WaveToken
+	if actor.fourthFalling != nil || actor.fourthChild != nil {
+		r.Health, r.PowerOrScore = uint16(actor.Health), uint16(actor.Score)
+		r.WaveBonusToken = actor.WaveToken
+	}
 	if s := actor.fourthFalling; s != nil {
 		r.Counter = int16(s.Phase)
 		r.SetFireState(s.PrimaryClock, s.SecondaryClock)

@@ -2,6 +2,43 @@ package engine
 
 import "testing"
 
+// Common explosion creation at 0x31ec and update at 0x57b6 only touch position
+// and animation. Unrelated physical values survive for the next constructor.
+func TestOriginalExplosionRetainsPhysicalResidueThroughExpiryOptional(t *testing.T) {
+	w, err := NewWorld(originalWorldData(t, 3))
+	if err != nil {
+		t.Fatal(err)
+	}
+	slot := w.Pool.FreeFirst()
+	want := secondResidueFixture()
+	want.OwnerSlot, want.LeaderSlot, want.FollowingSlot = 19, 20, 21
+	want.X, want.Y = 160, 80
+	w.Pool.Slot(slot).Residue = want
+	w.spawnSecondNamedExplosion(160, 80, "explosion-small")
+	actor := w.Actors[0]
+	if actor.Binding.Slot != slot {
+		t.Fatal("explosion did not reclaim the expected physical slot")
+	}
+	for range 7 {
+		if err := w.advancePooledProjectiles(Input{}); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if actor.Active || w.Pool.Slot(slot).allocated {
+		t.Fatal("finite explosion did not release its slot")
+	}
+	if got := w.Pool.Slot(slot).Residue; got != want {
+		t.Fatalf("animation-only effect overwrote physical residue: got %+v want %+v", got, want)
+	}
+	if err := w.activateThirdMiddle(); err != nil {
+		t.Fatal(err)
+	}
+	body := w.thirdMiddleActors[0]
+	if body.Binding.Slot != slot || body.Health != int(want.Health) || w.ThirdMiddle.ResidualFireRate != want.FireRate() {
+		t.Fatal("middle guardian did not inherit the expired explosion slot's health and firing rate")
+	}
+}
+
 // The original common explosion descriptors are finite named sequences. Birth
 // must retain that ending when storing the underlying actor animation.
 func TestOriginalCommonExplosionsRetireAfterTheirFinalFrameOptional(t *testing.T) {

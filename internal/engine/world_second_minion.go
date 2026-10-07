@@ -102,7 +102,7 @@ func (w *World) spawnSecondNamedExplosion(x, y int, name string) {
 	// The named sequence owns its terminal callback. Retain it when creating
 	// the actor, so finite explosions retire rather than replaying forever.
 	clip.Ending = animation.Ending
-	actor := &WorldActor{X: float64(x), Y: float64(y), PreviousX: float64(x), PreviousY: float64(y), Active: true, Visible: true, Atlas: "common", ActorList: "transient", animation: clip, animationState: NewAnimation(clip), part: &visualassets.ActorPart{ResourceTag: 12, DamageMode: "block-shot"}}
+	actor := &WorldActor{X: float64(x), Y: float64(y), PreviousX: float64(x), PreviousY: float64(y), Active: true, Visible: true, Atlas: "common", ActorList: "transient", animation: clip, animationState: NewAnimation(clip), part: &visualassets.ActorPart{ResourceTag: 12, MotionMode: "finite-effect", DamageMode: "block-shot"}}
 	actor.Sprite = actor.animationState.Sprite(actor.animation)
 	if err := w.bindWorldActor(actor); err != nil {
 		w.poolError = err

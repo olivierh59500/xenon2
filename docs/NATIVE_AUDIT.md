@@ -1126,3 +1126,25 @@ The corrected ARM64 debug APK verifies its signature, installs on the USB
 Pixel 10a and cold-launches successfully. Its process remains alive and the
 device crash log contains no Xenon 2 entry; on-device visual/touch inspection
 was not repeated while locked. Generated APK and recordings remain excluded.
+
+## Animation-only effect residue
+
+The common explosion constructor at 0x31ec changes position, animation and
+callbacks. Its updater at 0x57b6 only runs the animator at 0x2c5a. Neither clears
+health, reward, wave token, coordinate fractions or emitter state. Generic Go
+bookkeeping incorrectly zeroed several of these fields before returning the
+slot to the pool. Common finite effects now store only their position, retaining
+the other physical values. The fourth-stage pod updater also retains its
+unrelated health/reward fields through conversion.
+
+A resource regression fails before the correction, observes the explosion's
+complete expiry/release, then constructs the third middle guardian in that same
+slot. The guardian inherits the retained health and emitter rate. A second
+regression observes the fourth pod's in-place conversion, finite ending and
+untouched physical values while its independently looping child remains live.
+The original random-explosion factories and existing native pod traces pass.
+
+One genuine frontend probe separately permits the existing third-stage continue
+UI to run after the carried ship is lost. It consumes the final credit and
+restores three ships at checkpoint 3,408. Those ships are also lost before middle
+admission; allowing ordinary continues does not establish that route's victory.

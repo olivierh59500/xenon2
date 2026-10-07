@@ -67,6 +67,9 @@ func TestFourthWorldPodConvertsInPlaceAndSpawnsLoopingChildOptional(t *testing.T
 	w.spawnFourthPod(0, 32, 40)
 	actor := w.Actors[0]
 	slot, id := actor.Binding.Slot, actor.ID
+	actor.Binding.Residue = secondResidueFixture()
+	w.storeWorldResidue(actor.Binding)
+	wantResidue := actor.Binding.Residue
 	for pass := 0; actor.fourthPod != nil && pass < 30; pass++ {
 		if err := w.advancePooledProjectiles(Input{}); err != nil {
 			t.Fatal(err)
@@ -74,6 +77,12 @@ func TestFourthWorldPodConvertsInPlaceAndSpawnsLoopingChildOptional(t *testing.T
 	}
 	if actor.ID != id || actor.Binding.Slot != slot || actor.fourthPod != nil || actor.part.ResourceTag != 12 || actor.Atlas != "common" {
 		t.Fatal("pod did not become its finite explosion in the same physical slot")
+	}
+	wantResidue.X, wantResidue.Y = int16(actor.X), int16(actor.Y)
+	// The pod updater publishes its phase before switching callbacks.
+	wantResidue.Counter = actor.Binding.Residue.Counter
+	if actor.Binding.Residue != wantResidue {
+		t.Fatalf("pod conversion overwrote values not touched by the original callback: got %+v want %+v", actor.Binding.Residue, wantResidue)
 	}
 	frames := 0
 	for _, frame := range w.commonAnimations["explosion-small"].Animation.Frames {
@@ -92,6 +101,9 @@ func TestFourthWorldPodConvertsInPlaceAndSpawnsLoopingChildOptional(t *testing.T
 	}
 	if w.Pool.Slot(slot).allocated {
 		t.Fatal("converted pod explosion retained its physical slot")
+	}
+	if w.Pool.Slot(slot).Residue != wantResidue {
+		t.Fatal("converted pod explosion erased retained values before releasing its slot")
 	}
 	var child *WorldActor
 	for _, candidate := range w.Actors {

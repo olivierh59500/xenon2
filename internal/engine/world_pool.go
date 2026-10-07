@@ -251,6 +251,15 @@ func (w *World) storeActorResidue(actor *WorldActor) {
 	}
 	r := &actor.Binding.Residue
 	r.X, r.Y = int16(actor.X), int16(actor.Y)
+	if actor.part != nil && actor.part.MotionMode == "finite-effect" {
+		// Common explosions only animate. Their constructors and updater leave
+		// health, rewards, fractions and emitter state in physical memory.
+		w.storeWorldResidue(actor.Binding)
+		if !actor.Active {
+			w.retireWorldActor(actor.Binding)
+		}
+		return
+	}
 	r.Health, r.PowerOrScore = uint16(actor.Health), uint16(actor.Score)
 	r.WaveBonusToken = actor.WaveToken
 	r.XFraction, r.YFraction = uint16(actor.motion.X), uint16(actor.motion.Y)
