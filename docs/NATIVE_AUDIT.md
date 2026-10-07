@@ -1445,3 +1445,10 @@ Six real World.Step comparisons verify that bound and the player/camera result.
 An excluded collision-aware movement trial survived farther but still exhausted
 recovery without damaging the three nodes; it is not retained as a completed
 arena strategy. The presentation's carried second-level victory remains open.
+
+The final combined engine/source suite passes, including its 55.469-second race
+run. The production GPU/audio suite passes in 90.709 seconds with the previously
+known optional third-stage no-loss check excluded explicitly. The reference
+first/two-stage routes and the completed first-level presentation still pass.
+Vet and the desktop rebuild also pass; the worktree is clean after milestone
+commits. Original resources and generated recordings remain locally excluded.
