@@ -143,7 +143,7 @@ func decodeCommonAnimation(common []byte, start int, resolve func(int) (string, 
 		}
 		duration := int(binary.BigEndian.Uint16(common[cursor+4:]))
 		offsets[cursor] = len(animation.Frames)
-		animation.Frames = append(animation.Frames, AnimationFrame{Sprite: name, Duration: duration})
+		animation.Frames = append(animation.Frames, AnimationFrame{Sprite: name, Duration: duration, ReverseWhenAdvanced: image&0x4000 != 0})
 		cursor += 6
 		if duration == 0 {
 			animation.Static = len(animation.Frames) == 1

@@ -23,6 +23,7 @@ type FixedSpriteInputs struct {
 // FixedSpriteEvents separates actor state from effects owned by World. ShotMode
 // identifies point shots, the sweeper's turning shot, or an animated actor shot.
 type FixedSpriteEvents struct {
+	callbackTurnBias              callbackTurnBias
 	AttackStarted, VariantChanged bool
 	MoveToTransientList           bool
 	ShotMode, ShotSprite          string
@@ -92,11 +93,13 @@ func StepFixedSpriteMotion(state *FixedSpriteState, kind visualassets.FixedSprit
 	}
 	if kind.Behavior == "scroll-bounce-attack" {
 		if input.MaximumScrollY+kind.MotionParameters["clip_margin"]-input.ScrollY < state.Y {
+			result.callbackTurnBias = callbackTurnFromWhole(input.MaximumScrollY + kind.MotionParameters["clip_margin"] - input.ScrollY)
 			state.Removed = true
 			return result
 		}
 		advanceFixedAnimation(state, FixedSpriteAnimation(*state, kind))
 		state.Y += input.ScrollDelta
+		result.callbackTurnBias = callbackTurnFromWhole(input.ScrollDelta)
 	} else {
 		state.Y += input.ScrollDelta
 		switch kind.Behavior {
@@ -123,10 +126,16 @@ func StepFixedSpriteMotion(state *FixedSpriteState, kind visualassets.FixedSprit
 			state.Animation = NewAnimation(variant.AttackAnimation)
 			result.AttackStarted, result.MoveToTransientList = true, true
 			setFixedShots(&result, *state, variant)
+			result.callbackTurnBias = callbackTurnFromWhole(result.ShotX)
 			break
 		}
-		state.Y += state.VelocityY
+		velocity := state.VelocityY
+		state.Y += velocity
 		state.Distance += state.VelocityY
+		result.callbackTurnBias = callbackTurnFromWhole(state.Distance)
+		if state.Distance == 0 {
+			result.callbackTurnBias = callbackTurnFromWhole(velocity)
+		}
 		if state.Distance == 0 || state.Distance == state.Amplitude {
 			state.VelocityY = -state.VelocityY
 		}

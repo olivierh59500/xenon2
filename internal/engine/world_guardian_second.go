@@ -4,7 +4,8 @@ func (w *World) advanceSecondGuardian() {
 	actor, art := w.secondGuardianActor, w.secondGuardianArt
 	event := w.SecondGuardian.Advance(SecondGuardianInput{Frame: w.Frame, ScrollY: w.ScrollY, MaximumScrollY: w.MaximumScrollY,
 		PlayerX: w.Player.X, PlayerY: w.Player.Y, ActorCount: w.MovingEnemyCount,
-		FireRate: uint8(art.MotionParameters["fire_rate"]), ShotSpeed: art.MotionParameters["shot_speed"]}, &w.random)
+		ReverseWhenCrowded: w.secondCrowdedReverse,
+		FireRate:           uint8(art.MotionParameters["fire_rate"]), ShotSpeed: art.MotionParameters["shot_speed"]}, &w.random)
 	w.MaximumScrollY, w.VisitedScrollY = event.MaximumScrollY, event.MaximumScrollY
 	actor.X, actor.Y = float64(art.BodyX), float64(w.SecondGuardian.BodyWorldY-w.ScrollY)
 	actor.Visible = w.ScrollY < 352

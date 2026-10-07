@@ -65,7 +65,7 @@ func TestSecondGuardianNativeTraceOptional(t *testing.T) {
 			tiles = append([]uint16(nil), visual.Body.Tiles...)
 			cases++
 		}
-		event := state.Advance(SecondGuardianInput{Frame: uint64(values[1]), ScrollY: int(values[2]), MaximumScrollY: maximum, PlayerX: int(values[4]), PlayerY: int(values[5]), ActorCount: int(values[6]), CrowdedDecisionValue: uint16(values[7]), FireRate: uint8(visual.MotionParameters["fire_rate"]), ShotSpeed: visual.MotionParameters["shot_speed"]}, &random)
+		event := state.Advance(SecondGuardianInput{Frame: uint64(values[1]), ScrollY: int(values[2]), MaximumScrollY: maximum, PlayerX: int(values[4]), PlayerY: int(values[5]), ActorCount: int(values[6]), ReverseWhenCrowded: values[7]&0x4000 != 0, FireRate: uint8(visual.MotionParameters["fire_rate"]), ShotSpeed: visual.MotionParameters["shot_speed"]}, &random)
 		maximum = event.MaximumScrollY
 		if state.BodyWorldY != int(values[8]) || state.Velocity != int(values[9]) || state.WaitTimer != int(values[10]) || state.MotionRemaining != int(values[11]) || state.HatchCountdown != int(values[12]) || state.HatchFrame != int(values[13]) || int(state.FireAccumulator) != int(values[14]) || random.A != uint32(values[15]) || random.B != uint32(values[16]) || maximum != int(values[3]) || event.ShotCount != int(values[21]) || event.SpawnMinion != (values[26] != 0) || event.MovementSound != (values[28] != 0) {
 			t.Fatalf("case%d frame%d: state%+v event%+v random%+v expected%v", values[0], values[1], state, event, random, row)
@@ -125,7 +125,7 @@ func TestSecondGuardianEntryAndCrowdedDecision(t *testing.T) {
 	state.MotionRemaining = 0
 	state.WaitTimer = 100
 	state.BodyWorldY = 144
-	state.Advance(SecondGuardianInput{PlayerX: 160, PlayerY: 160, ActorCount: 20, FireRate: 10, CrowdedDecisionValue: 0x4000}, &random)
+	state.Advance(SecondGuardianInput{PlayerX: 160, PlayerY: 160, ActorCount: 20, FireRate: 10, ReverseWhenCrowded: true}, &random)
 	if state.Velocity != -3 || state.MotionRemaining != 10 || random != before {
 		t.Fatalf("crowded decision must preserve its source value without drawing random: %+v", state)
 	}

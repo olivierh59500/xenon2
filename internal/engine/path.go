@@ -27,6 +27,7 @@ type PathMotionState struct {
 	Remaining           int
 	Budget              int
 	Active              bool
+	callbackTurnBias    callbackTurnBias
 }
 
 // NewPathMotion initializes a path without retaining its original byte layout.
@@ -92,6 +93,7 @@ func ValidatePath(path *visualassets.Path) error {
 // Advance consumes one gameplay pass while preserving substep and branch
 // timing. nextRandom supplies the same shared random sequence as the world.
 func (s *PathMotionState) Advance(path *visualassets.Path, sine *[256]int8, nextRandom func() uint16) error {
+	s.callbackTurnBias = preserveCallbackTurn
 	if !s.Active || s.Budget == 0 {
 		return nil
 	}
@@ -114,6 +116,7 @@ func (s *PathMotionState) Advance(path *visualassets.Path, sine *[256]int8, next
 			for budget > 0 && s.Remaining > 0 {
 				heading := uint8(uint32(s.AngleFixed) >> 16)
 				s.X += int32(sine[uint8(heading+64)]) << 10
+				s.callbackTurnBias = callbackTurnFromFraction(uint16(s.X))
 				s.Y += int32(sine[heading]) << 10
 				s.AngleFixed = (s.AngleFixed + s.AngularVelocity) & 0x00ffffff
 				s.AngularVelocity += s.AngularAcceleration
@@ -162,6 +165,7 @@ func (s *PathMotionState) Advance(path *visualassets.Path, sine *[256]int8, next
 			chosen := false
 			for attempts := 0; attempts < 256; attempts++ {
 				index := int(nextRandom()&14) / 2
+				s.callbackTurnBias = forwardCallbackTurn
 				if index >= len(command.Targets) {
 					return fmt.Errorf("path %d random branch has missing candidates", s.PathID)
 				}

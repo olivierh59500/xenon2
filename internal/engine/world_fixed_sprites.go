@@ -7,6 +7,9 @@ func (w *World) advanceFixedSprite(actor *WorldActor) {
 		ScrollDelta: w.ScrollDelta, ScrollY: w.ScrollY, MaximumScrollY: w.MaximumScrollY,
 		PlayerX: w.Player.X, PlayerY: w.Player.Y,
 	}, &w.random)
+	if w.Level.Number == 2 {
+		w.secondCrowdedReverse = events.callbackTurnBias.apply(w.secondCrowdedReverse)
+	}
 	actor.Active = !state.Removed
 	actor.X, actor.Y = float64(state.X), float64(state.Y)
 	actor.animation = FixedSpriteAnimation(*state, *kind)

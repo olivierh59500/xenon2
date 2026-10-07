@@ -10,6 +10,9 @@ import (
 type AnimationFrame struct {
 	Sprite   string `json:"sprite"`
 	Duration int    `json:"duration"`
+	// The second guardian inherits this source animator decision when its
+	// preceding path member is still waiting to enter.
+	ReverseWhenAdvanced bool `json:"reverse_when_advanced,omitempty"`
 }
 
 type ActorAnimation struct {
@@ -221,6 +224,7 @@ func decodeActorAnimation(level []byte, start int, addImage func(int) (string, e
 	}
 	offsets := map[int]int{}
 	cursor := start
+	joined := false
 	for len(animation.Frames) < 256 {
 		if cursor+6 > len(level) {
 			return animation, fmt.Errorf("animation is truncated")
@@ -246,6 +250,7 @@ func decodeActorAnimation(level []byte, start int, addImage func(int) (string, e
 				// Some directed lists join a shared animation tail. Flatten
 				// that tail into named frames until its loop or held ending.
 				cursor = loop
+				joined = true
 				continue
 			}
 			animation.LoopFrom = index
@@ -258,7 +263,8 @@ func decodeActorAnimation(level []byte, start int, addImage func(int) (string, e
 		}
 		duration := int(binary.BigEndian.Uint16(level[cursor+4:]))
 		offsets[cursor] = len(animation.Frames)
-		animation.Frames = append(animation.Frames, AnimationFrame{Sprite: name, Duration: duration})
+		animation.Frames = append(animation.Frames, AnimationFrame{Sprite: name, Duration: duration, ReverseWhenAdvanced: !joined && address&0x4000 != 0})
+		joined = false
 		cursor += 6
 		if duration == 0 {
 			animation.Static = len(animation.Frames) == 1

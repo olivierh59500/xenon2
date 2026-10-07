@@ -205,6 +205,7 @@ type World struct {
 	ShopReady                        bool
 	LevelFinished                    bool
 	fifthDestroyedTurrets            map[int]bool
+	secondCrowdedReverse             bool
 	Checkpoint                       CheckpointState
 	WaveBonuses                      WaveBonusCache
 	Ready                            bool

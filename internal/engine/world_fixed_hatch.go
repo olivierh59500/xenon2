@@ -70,16 +70,20 @@ func (w *World) advanceHatchCreature(actor *WorldActor) {
 	actor.Flash = false
 	actor.PreviousX, actor.PreviousY = actor.X, actor.Y
 	state := actor.hatchCreature
+	previousX := state.X
 	event := state.Advance(w.Level.FixedSprites.HatchCreatures, w.fixedProjectileInputs(), func(name string) visualassets.CollisionBox { return w.movingSpriteBoxes[name] })
+	w.secondCrowdedReverse = callbackTurnFromWhole(previousX + w.Level.FixedSprites.HatchCreatures.StepX[state.Direction]).apply(w.secondCrowdedReverse)
 	actor.Active, actor.Visible = !state.Removed, !state.Removed
 	actor.X, actor.Y = float64(state.X), float64(state.Y)
 	actor.Sprite = state.Animation.Sprite(state.Clip)
 	w.updateSecondActorCollision(actor)
 	if event.Explosion {
 		region := w.fixedProjectileRegion(actor.Sprite)
+		w.secondCrowdedReverse = callbackTurnFromWhole(state.X - region.AnchorX + region.Width/2).apply(w.secondCrowdedReverse)
 		w.spawnSecondExplosion(state.X-region.AnchorX+region.Width/2, state.Y-region.AnchorY+(region.Height-1)/2)
 	}
 	if event.PlayerDamage != 0 {
+		w.secondCrowdedReverse = false
 		w.damagePlayer(event.PlayerDamage)
 	}
 }

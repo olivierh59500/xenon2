@@ -71,9 +71,11 @@ type PodCreatureState struct {
 	AllocationPhase      int
 	Animation            AnimationState
 	Clip                 visualassets.ActorAnimation
+	callbackTurnBias     callbackTurnBias
 }
 
 func (s *PodCreatureState) Advance(frame uint64, playerX int, art *visualassets.PodCreatureArtwork) {
+	s.callbackTurnBias = animationCallbackTurn(s.Animation, s.Clip)
 	s.Animation.Advance(s.Clip)
 	selectClip := func(attack bool) {
 		s.Clip = art.Idle[s.Variant]
@@ -92,7 +94,9 @@ func (s *PodCreatureState) Advance(frame uint64, playerX int, art *visualassets.
 	}
 	if s.Y > 50 {
 		s.Y -= 5
-		s.X += art.Wobble[(((int(frame)+s.AllocationPhase)>>1)&14)/2]
+		wobble := art.Wobble[(((int(frame)+s.AllocationPhase)>>1)&14)/2]
+		s.X += wobble
+		s.callbackTurnBias = callbackTurnFromWhole(wobble)
 		return
 	}
 	difference := s.X - playerX
@@ -100,6 +104,7 @@ func (s *PodCreatureState) Advance(frame uint64, playerX int, art *visualassets.
 		difference = -difference
 	}
 	if difference < 10 {
+		s.callbackTurnBias = forwardCallbackTurn
 		s.Phase = 1
 		selectClip(true)
 		return
@@ -113,4 +118,5 @@ func (s *PodCreatureState) Advance(frame uint64, playerX int, art *visualassets.
 	if s.Y > 50 {
 		s.Y = 50
 	}
+	s.callbackTurnBias = callbackTurnFromWhole(s.Y)
 }

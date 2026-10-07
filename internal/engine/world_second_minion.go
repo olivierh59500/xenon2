@@ -35,6 +35,9 @@ func (w *World) updateSecondActorCollision(actor *WorldActor) {
 }
 func (w *World) advanceSecondMinion(actor *WorldActor) {
 	event := actor.secondMinion.Advance(SecondMinionInput{Frame: w.Frame, ScrollY: w.ScrollY, ScrollDelta: w.ScrollDelta, PlayerX: w.Player.X, PlayerY: w.Player.Y}, *w.secondMinionConfig, &w.random)
+	// Every source branch finishes with a bounded direction, clamped X or the
+	// terrain-contact rectangle's left edge, all in the guardian's arena.
+	w.secondCrowdedReverse = false
 	actor.X, actor.Y = float64(actor.secondMinion.X), float64(actor.secondMinion.Y)
 	actor.Active = !actor.secondMinion.Removed
 	actor.animation = actor.secondMinion.Clip(*w.secondMinionConfig)

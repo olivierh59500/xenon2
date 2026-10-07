@@ -17,10 +17,9 @@ type SecondGuardianInput struct {
 	ActorCount              int
 	FireRate                uint8
 	ShotSpeed               int
-	// The crowded branch preserves the high byte of the preceding callback's
-	// working value, then replaces its low byte with FireRate. Normal decisions
-	// consume a new random value instead.
-	CrowdedDecisionValue uint16
+	// The crowded branch inherits the preceding updater's directional bias.
+	// Normal decisions consume a new shared random value instead.
+	ReverseWhenCrowded bool
 }
 
 type SecondGuardianEvents struct {
@@ -64,7 +63,10 @@ func (s *SecondGuardianState) Advance(input SecondGuardianInput, random *RandomS
 			s.MotionRemaining, s.Velocity = 1000, -3
 		}
 	}
-	work := uint32(input.CrowdedDecisionValue&0xff00) | uint32(input.FireRate)
+	work := uint32(input.FireRate)
+	if input.ReverseWhenCrowded {
+		work |= 0x4000
+	}
 	sum := int(s.FireAccumulator) + int(input.FireRate)
 	s.FireAccumulator = uint8(sum)
 	if sum >= 256 && random != nil {

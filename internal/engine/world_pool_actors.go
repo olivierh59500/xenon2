@@ -4,6 +4,10 @@ package engine
 // New heads wait for the next traversal; an already-dead later entry is freed
 // when reached, while an actor marking itself dead remains linked this pass.
 func (w *World) advanceActorPhase(list ActorPoolList, input Input) error {
+	if list == ActorPoolMoving && w.Level.Number == 2 {
+		// The last player-list callback is the fourth static ship shadow.
+		w.secondCrowdedReverse = int16(w.Shadows[3].X) < 0
+	}
 	if w.Pool != nil {
 		for index := w.Pool.First(list); index != NoActorSlot; {
 			next := w.Pool.Next(index)
@@ -172,6 +176,9 @@ func (w *World) advanceMovingActor(actor *WorldActor) error {
 		w.advanceFixedSprite(actor)
 		return nil
 	}
+	if w.Level.Number == 2 {
+		w.secondCrowdedReverse = animationCallbackTurn(actor.animationState, actor.animation).apply(w.secondCrowdedReverse)
+	}
 	actor.animationState.Advance(actor.animation)
 	if actor.fixed {
 		actor.Y = float64(actor.mapY - w.ScrollY)
@@ -182,9 +189,15 @@ func (w *World) advanceMovingActor(actor *WorldActor) error {
 		if err := actor.motion.Advance(actor.path, &w.Level.Paths.SineTable, func() uint16 { return uint16(w.random.Next()) }); err != nil {
 			return err
 		}
+		if w.Level.Number == 2 {
+			w.secondCrowdedReverse = actor.motion.callbackTurnBias.apply(w.secondCrowdedReverse)
+		}
 		actor.X, actor.Y = float64(actor.motion.X>>16), float64(actor.motion.Y>>16)
 		actor.Active = actor.motion.Active
 		if !actor.Active {
+			if w.Level.Number == 2 {
+				w.secondCrowdedReverse = !actor.part.Linked && actor.WaveToken&0x4000 != 0
+			}
 			w.WaveBonuses.Escape(actor.WaveToken)
 			if actor.part.Linked {
 				w.despawnGroup(actor)
@@ -206,6 +219,9 @@ func (w *World) advanceMovingActor(actor *WorldActor) error {
 			return err
 		}
 		if fired {
+			if w.Level.Number == 2 {
+				w.secondCrowdedReverse = callbackTurnFromWhole(int(actor.X)).apply(w.secondCrowdedReverse)
+			}
 			w.spawnEnemyShot(int(actor.X), int(actor.Y), shot)
 		}
 	}

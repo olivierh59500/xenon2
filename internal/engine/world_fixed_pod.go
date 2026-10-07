@@ -68,6 +68,7 @@ func (w *World) advancePodCreature(actor *WorldActor) {
 	actor.PreviousX, actor.PreviousY = actor.X, actor.Y
 	state := actor.podCreature
 	state.Advance(w.Frame, w.Player.X, w.Level.FixedSprites.PodCreatures)
+	w.secondCrowdedReverse = state.callbackTurnBias.apply(w.secondCrowdedReverse)
 	actor.X, actor.Y = float64(state.X), float64(state.Y)
 	actor.Sprite = state.Animation.Sprite(state.Clip)
 	actor.Visible = true
