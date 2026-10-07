@@ -363,3 +363,8 @@ random state. Middle defeat creates explosions before cash; final defeat creates
 cash first. Nonlethal final-core damage selects the original health-dependent
 image from its twelve-entry table. The common explosion factory also retains
 its immediate audio dispatch alongside the two queued requests.
+
+HUD pixel comparisons now cover four score/lives/shield combinations under all
+five level palettes, including the second player's layout. The renderer
+prepares separate recolored HUD images and fonts for each level; it no longer
+retains level-one colors when the playfield palette changes.

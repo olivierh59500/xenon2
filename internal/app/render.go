@@ -22,6 +22,8 @@ type spriteGraphic struct {
 }
 type atlasGraphics map[string]spriteGraphic
 type levelGraphics struct {
+	hudBase                             *ebiten.Image
+	hudScore, hudLives                  map[rune]*ebiten.Image
 	sparkUniforms                       map[string]any
 	flashTiles                          map[uint16]*ebiten.Image
 	guardians                           atlasGraphics
@@ -53,8 +55,6 @@ type graphics struct {
 	transitionStrips                             map[string]*ebiten.Image
 	shopTransition                               atlasGraphics
 	textZoomRegions                              map[string]visualassets.SpriteRegion
-	hudBase                                      *ebiten.Image
-	hudScore, hudLives                           map[rune]*ebiten.Image
 	logoZoom, textZoom                           atlasGraphics
 	presentationFont                             map[rune]*ebiten.Image
 	shopNoise                                    [20]*ebiten.Image
@@ -72,7 +72,7 @@ type graphics struct {
 
 func prepareGraphics(b *Bundle) graphics {
 	g := graphics{title: ebiten.NewImageFromImage(b.Title.Image), font: make(map[rune]*ebiten.Image), ships: prepareAtlas(b.Ships.Atlas), common: prepareAtlas(b.Common), shop: prepareAtlas(b.ShopArt.Atlas), playfield: ebiten.NewImage(ScreenWidth, ScreenHeight)}
-	font := ebiten.NewImageFromImage(remapPalette(b.Font.Image, b.Levels[0].Terrain.Palette, b.Title.Palette))
+	font := ebiten.NewImageFromImage(visualassets.RemapPalette(b.Font.Image, b.Levels[0].Terrain.Palette, b.Title.Palette))
 	for index, char := range b.Font.Characters {
 		x, y := (index%b.Font.Columns)*b.Font.Width, (index/b.Font.Columns)*b.Font.Height
 		g.font[char] = font.SubImage(image.Rect(x, y, x+b.Font.Width, y+b.Font.Height)).(*ebiten.Image)
@@ -107,9 +107,6 @@ func prepareGraphics(b *Bundle) graphics {
 		}
 	}
 	g.presentationFont = prepareFont(b.Presentation.Font)
-	g.hudBase = ebiten.NewImageFromImage(b.PlayerPresentation.HUD)
-	g.hudScore = prepareFont(b.PlayerPresentation.ScoreFont)
-	g.hudLives = prepareFont(b.PlayerPresentation.LivesFont)
 	g.logoZoom = prepareAtlas(b.Presentation.LogoZoom)
 	g.textZoom = prepareAtlas(b.Presentation.TextZoom)
 	g.creditOverlaps = make(map[string]*ebiten.Image, 6)
@@ -148,11 +145,16 @@ func prepareGraphics(b *Bundle) graphics {
 		v.uniforms = map[string]any{"Palette": palette, "Mask": v.paletteMask, "Shades": v.shades}
 		v.sparkUniforms = map[string]any{"Palette": palette}
 		ships, common := b.Ships.Atlas, b.Common
-		ships.Image = remapPalette(ships.Image, b.Levels[0].Terrain.Palette, l.Terrain.Palette)
-		common.Image = remapPalette(common.Image, b.Levels[0].Terrain.Palette, l.Terrain.Palette)
+		ships.Image = visualassets.RemapPalette(ships.Image, b.Levels[0].Terrain.Palette, l.Terrain.Palette)
+		common.Image = visualassets.RemapPalette(common.Image, b.Levels[0].Terrain.Palette, l.Terrain.Palette)
 		v.ships, v.common = prepareAtlas(ships), prepareAtlas(common)
+		v.hudBase = ebiten.NewImageFromImage(visualassets.RemapPalette(b.PlayerPresentation.HUD, b.Levels[0].Terrain.Palette, l.Terrain.Palette))
+		scoreFont, livesFont := b.PlayerPresentation.ScoreFont, b.PlayerPresentation.LivesFont
+		scoreFont.Image = visualassets.RemapPalette(scoreFont.Image, b.Levels[0].Terrain.Palette, l.Terrain.Palette)
+		livesFont.Image = visualassets.RemapPalette(livesFont.Image, b.Levels[0].Terrain.Palette, l.Terrain.Palette)
+		v.hudScore, v.hudLives = prepareFont(scoreFont), prepareFont(livesFont)
 		dive := b.PlayerPresentation.Atlas
-		dive.Image = remapPalette(dive.Image, b.Levels[0].Terrain.Palette, l.Terrain.Palette)
+		dive.Image = visualassets.RemapPalette(dive.Image, b.Levels[0].Terrain.Palette, l.Terrain.Palette)
 		v.dive = prepareAtlas(dive)
 		for _, tile := range l.Terrain.Tiles {
 			v.tiles[tile.ID] = atlas.SubImage(image.Rect(tile.X, tile.Y, tile.X+16, tile.Y+16)).(*ebiten.Image)
@@ -380,9 +382,10 @@ func (g *Game) drawLevel(screen *ebiten.Image) {
 
 func (g *Game) drawOriginalHUD(screen *ebiten.Image) {
 	p := &g.Bundle.PlayerPresentation
+	gpu := &g.graphics.levels[g.View.Level-1]
 	op := ebiten.DrawImageOptions{}
 	op.GeoM.Translate(0, 192)
-	screen.DrawImage(g.graphics.hudBase, &op)
+	screen.DrawImage(gpu.hudBase, &op)
 	count := max(1, g.View.PlayerCount)
 	for player := 0; player < count; player++ {
 		score, lives, shield := g.View.PlayerScores[player], g.View.PlayerLives[player], g.View.PlayerShields[player]
@@ -393,8 +396,8 @@ func (g *Game) drawOriginalHUD(screen *ebiten.Image) {
 		if player == 1 {
 			xscore, xlives, xshield = 240, 176, 190
 		}
-		g.drawGlyphs(screen, g.graphics.hudScore, fmt.Sprintf("%07d", score), xscore, p.ScoreY, 8)
-		g.drawGlyphs(screen, g.graphics.hudLives, fmt.Sprint(min(9, max(0, lives))), xlives, p.LivesY, 8)
+		g.drawGlyphs(screen, gpu.hudScore, fmt.Sprintf("%07d", score), xscore, p.ScoreY, 8)
+		g.drawGlyphs(screen, gpu.hudLives, fmt.Sprint(min(9, max(0, lives))), xlives, p.LivesY, 8)
 		for column := 0; column < p.ShieldColumns; column++ {
 			c := color.NRGBA{A: 255}
 			if column < min(p.ShieldColumns, max(0, shield)) {
@@ -788,28 +791,6 @@ func wrapLerp(a, b, t, period float64) float64 {
 		result += period
 	}
 	return result
-}
-
-func remapPalette(picture *image.NRGBA, from, to [16][4]uint8) *image.NRGBA {
-	if from == to {
-		return picture
-	}
-	colors := make(map[color.NRGBA]color.NRGBA, 16)
-	for i, a := range from {
-		b := to[i]
-		colors[color.NRGBA{R: a[0], G: a[1], B: a[2], A: a[3]}] = color.NRGBA{R: b[0], G: b[1], B: b[2], A: b[3]}
-	}
-	out := image.NewNRGBA(picture.Bounds())
-	for y := picture.Bounds().Min.Y; y < picture.Bounds().Max.Y; y++ {
-		for x := picture.Bounds().Min.X; x < picture.Bounds().Max.X; x++ {
-			c := picture.NRGBAAt(x, y)
-			if mapped, ok := colors[c]; ok {
-				c = mapped
-			}
-			out.SetNRGBA(x, y, c)
-		}
-	}
-	return out
 }
 
 func (g *Game) drawAnchoredAtlasSprite(destination *ebiten.Image, atlas atlasGraphics, name string, x, y float64) {
