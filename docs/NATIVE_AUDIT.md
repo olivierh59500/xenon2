@@ -1750,3 +1750,17 @@ allocate zero objects per decision. Sequential 500 ms M4 Max samples measure 0.9
 before and 0.707 ms after (about 25% lower fixture cost). This is not a Pixel FPS
 measurement. The connected opening survival, real cannon destruction and title
 idle checks pass after the optimization.
+
+The combined engine/source race suite passes in 56.481 seconds before the final
+cache refactor; the final complete engine suite passes in 4.943 seconds and the
+focused optimized risk/reverse race checks in 3.094 seconds. GPU/audio/frontend
+checks pass in 159.021 seconds, explicitly excluding the known optional third-middle
+no-loss assertion. Subsequent targeted checks of automatic title admission,
+carried opening survival and genuine blocking-cannon defeat pass in 11.810 seconds
+with the optimized implementation. Vet and the desktop rebuild pass.
+
+The final ARM64 APK verifies its signature and 16 KiB alignment, installs on the
+USB Pixel 10a and cold-launches successfully; its process remains alive afterward.
+Device graphics were not rechecked while locked. These milestones keep the full
+conversion and near-lossless five-stage expert route open; they do not replace
+the required complete campaign and integrated Amiga comparisons.
