@@ -6,6 +6,7 @@ import (
 	"image/color"
 	"os"
 	"testing"
+	"xenon2/internal/engine"
 )
 
 func TestOriginalPaletteShaderCompiles(t *testing.T) {
@@ -19,6 +20,30 @@ func TestOriginalPaletteShaderCompiles(t *testing.T) {
 		if _, err := ebiten.NewShader([]byte(source)); err != nil {
 			t.Fatal(err)
 		}
+	}
+}
+
+func TestNormalSessionSnapshotDisablesReferenceShortcuts(t *testing.T) {
+	dir := os.Getenv("XENON2_RUNTIME_TEST_DIR")
+	if dir == "" {
+		t.Skip("local exported resources not supplied")
+	}
+	bundle, err := LoadFS(os.DirFS(dir))
+	if err != nil {
+		t.Fatal(err)
+	}
+	game := &Game{Bundle: bundle}
+	session, err := engine.NewSession(game.levelData(1), 1, engine.NewRandomState())
+	if err != nil {
+		t.Fatal(err)
+	}
+	driver := &worldDriver{world: session.ActiveWorld(), session: session}
+	if driver.Frame().Diagnostic {
+		t.Fatal("normal game exposed reference-level and shop shortcuts")
+	}
+	driver.diagnostic = true
+	if !driver.Frame().Diagnostic {
+		t.Fatal("reference views must retain their inspection shortcuts")
 	}
 }
 

@@ -299,7 +299,7 @@ func (g *Game) Update() error {
 				}
 			}
 		}
-		if inpututil.IsKeyJustPressed(ebiten.KeyF2) {
+		if g.View.Diagnostic && inpututil.IsKeyJustPressed(ebiten.KeyF2) {
 			if err := g.EnterShop(false); err != nil {
 				return err
 			}
