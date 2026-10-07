@@ -137,7 +137,7 @@ func TestPrivateLevelArtworkOptional(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(commonArt.Sprites) != 198 || len(commonArt.Equipment) != 25 {
+	if len(commonArt.Sprites) != 210 || len(commonArt.Equipment) != 25 {
 		t.Fatal("common equipment image bank differs")
 	}
 }

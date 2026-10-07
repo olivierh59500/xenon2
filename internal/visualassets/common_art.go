@@ -88,6 +88,11 @@ func DecodeCommonActorArtWithEquipment(common, shop []byte, catalogue *ShopCatal
 			equipment = append(equipment, animation)
 		}
 	}
+	shots, err := decodePlayerShotSprites(common, palette)
+	if err != nil {
+		return SpriteAtlas{}, err
+	}
+	images = append(images, shots...)
 	atlas := packSprites(images)
 	atlas.Equipment = equipment
 	return atlas, nil

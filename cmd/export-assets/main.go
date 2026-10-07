@@ -76,6 +76,16 @@ func main() {
 		if err := writeJSON(prefix+"-encounters.json", encounters); err != nil {
 			fail(err)
 		}
+		rules, err := visualassets.DecodeLevelRules(index+1, data, executable, terrain.Palette, encounters)
+		if err != nil {
+			fail(fmt.Errorf("level %d rules: %w", index+1, err))
+		}
+		if err := writeJSON(prefix+"-rules.json", rules); err != nil {
+			fail(err)
+		}
+		if err := writePNG(prefix+"-shots.png", rules.EnemyShots.Image); err != nil {
+			fail(err)
+		}
 		actors, err := visualassets.DecodeWaveActors(data, terrain.Palette, encounters)
 		if err != nil {
 			fail(fmt.Errorf("level %d actors: %w", index+1, err))
@@ -152,6 +162,16 @@ func main() {
 	if err := writePNG(filepath.Join(*output, "common-actors.png"), commonArt.Image); err != nil {
 		fail(err)
 	}
+	playerShots, err := visualassets.DecodePlayerShotArt(executable, palette)
+	if err != nil {
+		fail(err)
+	}
+	if err := writeJSON(filepath.Join(*output, "player-shots.json"), playerShots); err != nil {
+		fail(err)
+	}
+	if err := writePNG(filepath.Join(*output, "player-shots.png"), playerShots.Image); err != nil {
+		fail(err)
+	}
 	shopArt, err := visualassets.DecodeShopArt(shopData, executable, shop)
 	if err != nil {
 		fail(err)
@@ -170,6 +190,16 @@ func main() {
 		fail(err)
 	}
 	if err := writePNG(filepath.Join(*output, "title.png"), title.Image); err != nil {
+		fail(err)
+	}
+	stencil, err := visualassets.DecodePlayerTerrainStencil(executable)
+	if err != nil {
+		fail(err)
+	}
+	if err := writeJSON(filepath.Join(*output, "player-terrain-stencil.json"), stencil); err != nil {
+		fail(err)
+	}
+	if err := writePNG(filepath.Join(*output, "player-terrain-stencil.png"), stencil.Image); err != nil {
 		fail(err)
 	}
 	fmt.Println("Exported the original common font. No executable bytes were exported.")

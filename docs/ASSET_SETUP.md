@@ -42,7 +42,7 @@ masked tile atlases, 320 × 192 backgrounds and the original palettes. The commo
 font retains its 38-character order and 16 × 16 dimensions. The player's ship
 retains all five banking images, its thirteen steering lookup positions and
 the exact positioning anchors and collision boxes. Common actor artwork and
-equipment previews are deduplicated into one 198-image atlas. The shop catalogue
+equipment previews and ordinary shot tiers are collected in one 210-image atlas. The shop catalogue
 contains all 25 original English item names, prices and looping preview images.
 
 Moving actor resources retain linked parts, animation durations, collision boxes,
