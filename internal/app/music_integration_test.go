@@ -15,7 +15,7 @@ func TestGameplayMusicPCMContinuesThroughCollisionDeathAndContinue(t *testing.T)
 	w := g.Driver.(*worldDriver).world
 	w.Equipment.Lives = 1
 	w.Score, w.DisplayScore = 500, 500
-	reference, err := audio.NewStream(g.Bundle.AudioBank, g.Bundle.Waveforms, 44100)
+	reference, err := audio.NewA500Stream(g.Bundle.AudioBank, g.Bundle.Waveforms, 44100)
 	if err != nil {
 		t.Fatal(err)
 	}

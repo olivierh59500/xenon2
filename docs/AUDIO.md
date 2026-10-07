@@ -47,7 +47,7 @@ bank, samples, err := audio.LoadFS(os.DirFS(resourceDirectory), "audio")
 if err != nil {
     return err
 }
-stream, err := audio.NewStream(bank, samples, 44100)
+stream, err := audio.NewA500Stream(bank, samples, 44100)
 if err != nil {
     return err
 }
@@ -64,10 +64,19 @@ and the cached musical reload buffer is restored when an effect ends.
 
 Channels zero and three feed the left output; channels one and two feed
 the right output. Signed sample values and hardware volume masking are
-preserved. The digital mixer uses sample-and-hold output; it does not yet
-model the Amiga's analogue reconstruction filter or front-panel audio filter.
-The PAL clock and volume masking also agree with the
+preserved. The digital mixer uses sample-and-hold output. The game then applies
+the permanent A500 reconstruction response: two RC stages at 6,200 and 20,000 Hz
+using the bilinear-corrected coefficients described by the
 [WinUAE Paula implementation](https://github.com/tonioni/WinUAE/blob/master/audio.cpp).
+The two stereo outputs retain independent history across voice and music changes.
+The original main and shop initializers disable the separate LED low-pass, so
+the game leaves it off. This is a hardware-response model, not a measured analog
+capture or a band-limited reconstruction of every DAC transition.
+
+`NewStream` still returns raw digital PCM for register and dispatch diagnostics;
+`NewA500Stream` is the game output. Impulse vectors at three sample rates,
+frequency response, stereo isolation, silence decay and arbitrary reader chunks
+are tested. Filtering does not change voice state, effect admission or PAL time.
 
 ## Comparisons
 
@@ -121,7 +130,7 @@ match an independent uninterrupted score stream. Effect-stop tests also verify
 that terminating inactive effect records does not restart music DMA positions.
 Termination queued for the 50 Hz tick preserves pending dispatch order and only
 restores channels that an effect actually owns. These checks open no audio
-device and do not establish the unmodelled Amiga analogue filter response.
+device and do not establish a measured physical Amiga output response.
 
 Merchant cues carry explicit channel and dispatch timing. Speech and the
 headphone sample directly acquire voice zero; navigation, confirmation and

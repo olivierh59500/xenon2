@@ -16,7 +16,7 @@ func shopAudioStreams(t *testing.T) (*Game, *audio.Stream) {
 	}
 	awaitFrontendBoundary(t, g, 160, "merchant entrance fade", func() bool { return g.fade == nil || g.fade.Done })
 	g.Config.Mute = false
-	reference, err := audio.NewStream(g.Bundle.AudioBank, g.Bundle.Waveforms, 44100)
+	reference, err := audio.NewA500Stream(g.Bundle.AudioBank, g.Bundle.Waveforms, 44100)
 	if err != nil {
 		t.Fatal(err)
 	}

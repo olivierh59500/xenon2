@@ -152,7 +152,7 @@ func New(bundle *Bundle) (*Game, error) {
 	if err := bundle.Validate(); err != nil {
 		return nil, err
 	}
-	stream, err := audio.NewStream(bundle.AudioBank, bundle.Waveforms, 44100)
+	stream, err := audio.NewA500Stream(bundle.AudioBank, bundle.Waveforms, 44100)
 	if err != nil {
 		return nil, err
 	}

@@ -36,6 +36,7 @@ type Stream struct {
 	queued                    [4]*Sequence
 	queuedStop                bool
 	shadow, voices            [4]voice
+	filter                    *a500Filter
 }
 
 func NewStream(bank *Bank, waveforms map[string][]byte, sampleRate int) (*Stream, error) {
@@ -46,6 +47,17 @@ func NewStream(bank *Bank, waveforms map[string][]byte, sampleRate int) (*Stream
 		return nil, err
 	}
 	return &Stream{bank: bank, waveforms: waveforms, sampleRate: sampleRate}, nil
+}
+
+// NewA500Stream adds the permanent Amiga 500 output response to the digital
+// voice mixer. NewStream retains raw PCM for register/dispatch comparisons.
+func NewA500Stream(bank *Bank, waveforms map[string][]byte, sampleRate int) (*Stream, error) {
+	stream, err := NewStream(bank, waveforms, sampleRate)
+	if err != nil {
+		return nil, err
+	}
+	stream.filter = newA500Filter(sampleRate)
+	return stream, nil
 }
 
 // PlayMusic restarts a named soundtrack without exposing source driver state.
@@ -183,6 +195,9 @@ func (s *Stream) Read(p []byte) (int, error) {
 			} else {
 				right += v
 			}
+		}
+		if s.filter != nil {
+			left, right = s.filter.sample(0, left), s.filter.sample(1, right)
 		}
 		binary.LittleEndian.PutUint16(p[off:], uint16(int16(left)))
 		binary.LittleEndian.PutUint16(p[off+2:], uint16(int16(right)))
