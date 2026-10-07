@@ -122,3 +122,15 @@ that terminating inactive effect records does not restart music DMA positions.
 Termination queued for the 50 Hz tick preserves pending dispatch order and only
 restores channels that an effect actually owns. These checks open no audio
 device and do not establish the unmodelled Amiga analogue filter response.
+
+Merchant cues carry explicit channel and dispatch timing. Speech and the
+headphone sample directly acquire voice zero; navigation, confirmation and
+ending requests remain queued on voice two. The merchant's effect termination
+waits for the next replay tick rather than clearing voices immediately. A
+mid-tick PCM test preserves the 383 remaining output frames before termination.
+
+Direct sampled setup still has a known latency: its initial sample registers
+are applied at the next tick instead of at the direct call. Exporting separate
+start events is required to distinguish immediate sample setup from synthesized
+effect envelopes. This remaining limitation is not covered by comparing two
+instances of the current Stream at the same direct-call boundary.

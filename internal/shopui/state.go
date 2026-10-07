@@ -38,6 +38,14 @@ type Glyph struct {
 	Word      bool
 }
 
+// Cue preserves whether the original caller dispatches a voice directly or
+// leaves a request for the next audio interrupt.
+type Cue struct {
+	ID        string
+	Channel   int
+	Immediate bool
+}
+
 // State preserves equipment and cash owned by the active game world.
 type State struct {
 	Ending                   bool
@@ -78,7 +86,7 @@ type State struct {
 	Mouth                    int
 	Frame                    int
 	Done                     bool
-	cues                     []string
+	cues                     []Cue
 }
 
 func New(equipment *engine.Equipment, money *int, rules engine.ShopRules, catalogue *visualassets.ShopCatalogue, scene *visualassets.ShopScene, random func() uint16) *State {
@@ -149,7 +157,7 @@ func (s *State) Move(dx, dy int) {
 			s.Column = 1
 		}
 	}
-	s.cues = append(s.cues, "shop-synthesized-effect-12")
+	s.cues = append(s.cues, Cue{ID: "shop-synthesized-effect-12", Channel: 2})
 }
 
 func (s *State) Confirm() error {
@@ -167,7 +175,7 @@ func (s *State) Confirm() error {
 	if s.DisplayMoney != *s.Money {
 		return nil
 	}
-	s.cues = append(s.cues, "shop-synthesized-effect-13")
+	s.cues = append(s.cues, Cue{ID: "shop-synthesized-effect-13", Channel: 2})
 	if s.Row == 4 {
 		if s.Column == 0 {
 			if s.Selling {
@@ -342,7 +350,7 @@ func (s *State) Advance() {
 			for value == 0 {
 				value = s.random() & 3
 			}
-			s.cues = append(s.cues, fmt.Sprintf("shop-sampled-effect-%02d", value-1))
+			s.cues = append(s.cues, Cue{ID: fmt.Sprintf("shop-sampled-effect-%02d", value-1), Channel: 0, Immediate: true})
 		}
 		s.Revealed++
 	}
@@ -383,7 +391,7 @@ func TelevisionPixels(words [28]uint16, palette [16][4]uint8) [32 * 28 * 4]byte 
 	return pixels
 }
 
-func (s *State) TakeCues() []string { cues := s.cues; s.cues = nil; return cues }
+func (s *State) TakeCues() []Cue { cues := s.cues; s.cues = nil; return cues }
 
 func (s *State) beginTelevisionsOff(next Phase) {
 	s.Phase, s.PhasePass, s.afterTelevisions = TelevisionsOff, 0, next
@@ -399,7 +407,7 @@ func (s *State) advanceTransition() bool {
 		s.LowerOverlay = max(0, s.LowerOverlay-4)
 		s.Entrance--
 		if s.Headphones == 0 && s.Entrance == 5 {
-			s.cues = append(s.cues, "shop-sampled-effect-03")
+			s.cues = append(s.cues, Cue{ID: "shop-sampled-effect-03", Channel: 0, Immediate: true})
 		}
 		if s.Entrance == 0 {
 			s.Phase, s.PhasePass = TelevisionsOn, 0
@@ -569,7 +577,7 @@ func (s *State) advanceTelevisions() {
 func (s *State) BeginEndingDot() {
 	s.Phase, s.PhasePass = EndingDot, 0
 	s.Dialogue = nil
-	s.cues = append(s.cues, "shop-synthesized-effect-18")
+	s.cues = append(s.cues, Cue{ID: "shop-synthesized-effect-18", Channel: 2})
 }
 func (s *State) BeginEndingWait() {
 	s.Phase, s.PhasePass = EndingWait, 0

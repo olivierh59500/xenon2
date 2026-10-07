@@ -86,15 +86,17 @@ func (g *Game) updateShop(controls inputFrame) error {
 	}
 	if g.shop.StopEffectsRequested {
 		g.shop.StopEffectsRequested = false
-		g.stream.StopEffects()
+		g.stream.QueueStopEffects()
 	}
-	for _, id := range g.shop.TakeCues() {
-		channel := 2
-		if len(id) >= len("shop-sampled") && id[:len("shop-sampled")] == "shop-sampled" {
-			channel = 0
-		}
+	for _, cue := range g.shop.TakeCues() {
 		if !g.Config.Mute {
-			if err := g.stream.QueueEffect(id, channel); err != nil {
+			var err error
+			if cue.Immediate {
+				err = g.stream.PlayEffect(cue.ID, cue.Channel)
+			} else {
+				err = g.stream.QueueEffect(cue.ID, cue.Channel)
+			}
+			if err != nil {
 				return err
 			}
 		}
