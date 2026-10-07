@@ -971,3 +971,20 @@ contact. That contact now costs sixteen shield points rather than eight. A fresh
 slot still costs eight. Both cases retain the stage-one transition, 24 HP,
 500-point reward and source pool residue. The resource/native engine suite and
 race suite pass. Other common-constructor inheritance is audited separately.
+
+## Native attract captures and production GPU output
+
+Three window-only reference images match production Game.Draw at their
+source-identified presentation passes: native frames 10, 25 and 65 against Go
+passes 155, 177 and 239. One shared viewport calibration gives zero differing
+orange caption-mask pixels in all three cases. Native flat 3-by-3 patches also
+match all 592 sampled caption palette values exactly. Earlier apparent vertical
+errors came from an underconstrained short-logo sampling fit; a small scale
+difference accumulated farther down the image.
+
+The optional GPU regression reads locally supplied captures through
+XENON2_NATIVE_ATTRACT_DIR; original images remain excluded. It uses a fixed
+capture-specific geometry, not a per-caption fit. These checks establish the
+sampled shapes and raw palette values, not full intro timing, every emulator
+viewport or color-managed display appearance. The inferred overscan denominator
+is not established by saved emulator metadata. No rendering change was needed.
