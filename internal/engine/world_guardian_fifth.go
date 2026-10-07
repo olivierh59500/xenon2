@@ -281,18 +281,43 @@ func (w *World) addFifthSeeking(state FifthSeekingState, mouth bool) {
 func (w *World) advanceFifthSeeking(actor *WorldActor) {
 	actor.PreviousX, actor.PreviousY = actor.X, actor.Y
 	state := actor.fifthSeeking
+	group, outer := w.fifthMiddleArt, 18
 	if actor.fifthMouth {
-		state.AdvanceMouth(w.fifthFinalArt, w.Player.X, w.Player.Y, w.FifthFinal.OuterRemaining)
-	} else {
-		state.AdvanceSide(w.fifthMiddleArt, w.Player.X, w.Player.Y, w.ScrollDelta)
+		group, outer = w.fifthFinalArt, w.FifthFinal.OuterRemaining
 	}
+	event := state.AdvanceContact(group, actor.fifthMouth, w.fixedProjectileInputs(), outer, func(name string) visualassets.CollisionBox { return w.movingSpriteBoxes[name] }, func(name string) visualassets.SpriteRegion {
+		if w.Level.GuardianParts != nil {
+			for _, region := range w.Level.GuardianParts.Sprites {
+				if region.Name == name {
+					return region
+				}
+			}
+		}
+		return visualassets.SpriteRegion{}
+	})
 	actor.X, actor.Y = float64(state.X), float64(state.Y)
 	actor.Active, actor.Visible = state.Active, state.Active
 	actor.Sprite = state.Sprite
-	w.updateSecondActorCollision(actor)
-	if actor.Active && w.PlayerAlive && w.Dive.Phase == 0 && actor.Collision.Intersects(w.playerCollision) {
-		w.damagePlayer(4)
-		actor.Active = false
+	actor.Collision = event.Collision
+	if event.Explosion {
+		w.spawnSecondExplosion(event.ExplosionX, event.ExplosionY)
+	}
+	if event.PlayerDamage != 0 {
+		w.damagePlayer(event.PlayerDamage)
+	}
+}
+
+func (w *World) storeFifthSeekingResidue(actor *WorldActor) {
+	state := actor.fifthSeeking
+	r := &actor.Binding.Residue
+	r.X, r.Y = int16(state.X), int16(state.Y)
+	r.Counter, r.Direction = int16(state.Clock), int16(state.Heading)
+	r.Health, r.PowerOrScore = uint16(actor.Health), uint16(actor.Score)
+	r.StrongHealth = false
+	r.WaveBonusToken = 0
+	w.storeWorldResidue(actor.Binding)
+	if !actor.Active {
+		w.retireWorldActor(actor.Binding)
 	}
 }
 func (w *World) spawnFifthColumn(event FifthGuardianLaser) {

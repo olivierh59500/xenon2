@@ -90,3 +90,66 @@ func TestFifthGuardianProjectileNativeTraceOptional(t *testing.T) {
 	}
 	t.Logf("Compared %d original fifth guardian projectile states.", len(rows)-1)
 }
+
+func TestFifthSeekingContactNativeTraceOptional(t *testing.T) {
+	dir := os.Getenv("XENON2_NATIVE_TRACE_DIR")
+	if dir == "" {
+		t.Skip("local fifth seeker contact reference not supplied")
+	}
+	raw, err := os.ReadFile(filepath.Join(filepath.Dir(dir), "imported", "04820138.decoded"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	terrain, err := visualassets.DecodeTerrain(raw)
+	if err != nil {
+		t.Fatal(err)
+	}
+	groups, atlas, err := visualassets.DecodeCompoundGuardianArt(5, raw, terrain.Palette)
+	if err != nil {
+		t.Fatal(err)
+	}
+	regions := map[string]visualassets.SpriteRegion{}
+	for _, region := range atlas.Sprites {
+		regions[region.Name] = region
+	}
+	f, err := os.Open(filepath.Join(dir, "fifth-seeking-contact-trace.csv"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer f.Close()
+	rows, err := csv.NewReader(f).ReadAll()
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, row := range rows[1:] {
+		n := func(i int) int {
+			value, err := strconv.Atoi(row[i])
+			if err != nil {
+				t.Fatal(err)
+			}
+			return value
+		}
+		mouth := n(0) == 1
+		group := &groups[n(0)]
+		heading := uint8(n(1))
+		clip := group.Components[0].HeadingAnimations[heading]
+		state := FifthSeekingState{X: 150, Y: 40, Clock: n(6), Heading: heading, Animation: NewAnimation(clip), Sprite: clip.Frames[0].Sprite, Active: true}
+		input := FixedProjectileInputs{ScrollDelta: 1, PlayerX: 200, PlayerY: 100, CanHitPlayer: n(5) == 0, Invulnerable: n(4) != 0, PlayerBounds: CollisionRect{Left: n(20), Top: n(21), Right: n(22), Bottom: n(23)}}
+		event := state.AdvanceContact(group, mouth, input, 18, func(name string) visualassets.CollisionBox { return *regions[name].Collision }, func(name string) visualassets.SpriteRegion { return regions[name] })
+		if state.X != n(7) || state.Y != n(8) || state.Clock != n(9) || state.Sprite != atlas.SourceSpriteNames[n(10)] || state.Active != (n(11) != 0) {
+			t.Fatalf("state Go%+v native%v", state, row)
+		}
+		if event.Explosion != (n(12) != 0) || event.PlayerDamage != n(15) || event.Explosion && (event.ExplosionX != n(13) || event.ExplosionY != n(14)) {
+			t.Fatalf("contact Go%+v native%v", event, row)
+		}
+		if n(0) == 1 || n(2) == 0 {
+			if event.Collision.Left != n(16) || event.Collision.Top != n(17) || event.Collision.Right != n(18) || event.Collision.Bottom != n(19) {
+				t.Fatalf("bounds Go%+v native%v", event, row)
+			}
+		}
+	}
+	if len(rows)-1 != 512 {
+		t.Fatal("incomplete original contact comparisons")
+	}
+	t.Logf("Compared %d original side/mouth contact, invulnerability, dive and expiry states.", len(rows)-1)
+}

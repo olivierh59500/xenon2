@@ -148,6 +148,10 @@ func (w *World) bindWorldActor(actor *WorldActor) error {
 }
 
 func (w *World) storeActorResidue(actor *WorldActor) {
+	if actor.fifthSeeking != nil {
+		w.storeFifthSeekingResidue(actor)
+		return
+	}
 	if actor.fifthTile != nil {
 		w.storeFifthTileResidue(actor)
 		return
