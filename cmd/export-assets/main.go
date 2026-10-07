@@ -1,0 +1,142 @@
+// Command export-assets converts local decoded artwork into code-free PNG/JSON.
+package main
+
+import (
+	"encoding/json"
+	"flag"
+	"fmt"
+	"image"
+	"image/png"
+	"os"
+	"path/filepath"
+
+	"xenon2/internal/assetimport"
+	"xenon2/internal/visualassets"
+)
+
+func main() {
+	input := flag.String("analysis", ".local/imported", "excluded decoded source directory")
+	output := flag.String("output", "assets/runtime", "excluded exported resource directory")
+	flag.Parse()
+	if flag.NArg() != 0 {
+		fail(fmt.Errorf("unexpected positional arguments"))
+	}
+	if err := os.MkdirAll(*output, 0755); err != nil {
+		fail(err)
+	}
+	var palette [16][4]uint8
+	executable, err := os.ReadFile(filepath.Join(*input, assetimport.Executable.Name+".decoded"))
+	if err != nil {
+		fail(err)
+	}
+	for index, resource := range assetimport.Levels[:5] {
+		data, err := os.ReadFile(filepath.Join(*input, resource.Name+".decoded"))
+		if err != nil {
+			fail(err)
+		}
+		terrain, err := visualassets.DecodeTerrain(data)
+		if err != nil {
+			fail(fmt.Errorf("level %d: %w", index+1, err))
+		}
+		prefix := filepath.Join(*output, fmt.Sprintf("level-%d", index+1))
+		if err := writeJSON(prefix+".json", terrain); err != nil {
+			fail(err)
+		}
+		if err := writePNG(prefix+"-tiles.png", terrain.Atlas); err != nil {
+			fail(err)
+		}
+		if err := writePNG(prefix+"-background.png", terrain.Background); err != nil {
+			fail(err)
+		}
+		paths, err := visualassets.DecodePaths(data, executable)
+		if err != nil {
+			fail(fmt.Errorf("level %d paths: %w", index+1, err))
+		}
+		if err := writeJSON(prefix+"-paths.json", paths); err != nil {
+			fail(err)
+		}
+		encounters, err := visualassets.DecodeEncounters(data, paths)
+		if err != nil {
+			fail(fmt.Errorf("level %d encounters: %w", index+1, err))
+		}
+		if err := writeJSON(prefix+"-encounters.json", encounters); err != nil {
+			fail(err)
+		}
+		fmt.Printf("Exported level %d: %d tiles, %d map rows.\n", index+1, len(terrain.Tiles), terrain.Rows)
+		if index == 0 {
+			palette = terrain.Palette
+		}
+	}
+	font, err := visualassets.DecodeFont(executable, palette)
+	if err != nil {
+		fail(err)
+	}
+	if err := writeJSON(filepath.Join(*output, "font.json"), font); err != nil {
+		fail(err)
+	}
+	if err := writePNG(filepath.Join(*output, "font.png"), font.Image); err != nil {
+		fail(err)
+	}
+	ship, err := visualassets.DecodeActorSprite(executable, 0xebe2, "player-ship", palette)
+	if err != nil {
+		fail(err)
+	}
+	if err := writeJSON(filepath.Join(*output, "player-ship.json"), ship); err != nil {
+		fail(err)
+	}
+	if err := writePNG(filepath.Join(*output, "player-ship.png"), ship.Image); err != nil {
+		fail(err)
+	}
+	shopData, err := os.ReadFile(filepath.Join(*input, assetimport.Levels[5].Name+".decoded"))
+	if err != nil {
+		fail(err)
+	}
+	shop, err := visualassets.DecodeShopCatalogue(shopData)
+	if err != nil {
+		fail(err)
+	}
+	if err := writeJSON(filepath.Join(*output, "shop.json"), shop); err != nil {
+		fail(err)
+	}
+	shipArt, err := visualassets.DecodeShipArt(executable, palette)
+	if err != nil {
+		fail(err)
+	}
+	if err := writeJSON(filepath.Join(*output, "ships.json"), shipArt); err != nil {
+		fail(err)
+	}
+	if err := writePNG(filepath.Join(*output, "ships.png"), shipArt.Atlas.Image); err != nil {
+		fail(err)
+	}
+	shopArt, err := visualassets.DecodeShopArt(shopData, executable, shop)
+	if err != nil {
+		fail(err)
+	}
+	if err := writeJSON(filepath.Join(*output, "shop-art.json"), shopArt); err != nil {
+		fail(err)
+	}
+	if err := writePNG(filepath.Join(*output, "shop-art.png"), shopArt.Atlas.Image); err != nil {
+		fail(err)
+	}
+	fmt.Println("Exported the original common font. No executable bytes were exported.")
+}
+
+func writeJSON(path string, value any) error {
+	data, err := json.MarshalIndent(value, "", "  ")
+	if err != nil {
+		return err
+	}
+	return os.WriteFile(path, append(data, '\n'), 0644)
+}
+func writePNG(path string, picture image.Image) error {
+	file, err := os.Create(path)
+	if err != nil {
+		return err
+	}
+	if err := png.Encode(file, picture); err != nil {
+		file.Close()
+		return err
+	}
+	return file.Close()
+}
+func fail(err error) { fmt.Fprintln(os.Stderr, err); os.Exit(1) }
