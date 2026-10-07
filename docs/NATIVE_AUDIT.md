@@ -1864,3 +1864,20 @@ counts and allocation limits. The updated APK installs and cold-launches on the
 Pixel 10a, with its process alive afterward. Device graphics were not rechecked
 while locked. Full-campaign mastery, later boss strategy and branch storage reuse
 remain required; this work does not establish completed conversion.
+
+## Third middle guardian emitter reset
+
+The middle constructor's shared seventeen-part loop clears the full emitter word
+at 0x55e68 (4268005e). Go previously retained the low firing rate and installed it
+as an extra ordinary head emitter. Construction now clears both bytes while
+preserving source slot health and the original two 20-point eyes.
+
+A legal cannon purchase/sale leaves ffff, then actual World.Step fixed-kind 3
+admission reuses that physical slot for the head. Before the correction it keeps
+00ff, produces an extra offscreen projectile birth, leaves fire 82 rather than 80
+and changes RNG. The isolated old-constructor overlay reproduces this behavior.
+The corrected constructor and 20,400 native part passes pass the focused race
+run. Existing middle boundary validation remains 1004 commands/one life/two
+continues under both constructors. The carried exact-lookahead fight now reaches
+its real middle merchant with 19 shield unchanged from admission; the later level
+route remains incomplete.

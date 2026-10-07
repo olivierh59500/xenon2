@@ -52,10 +52,8 @@ func (w *World) activateThirdMiddle() error {
 		actor := &WorldActor{ID: binding.EntityID, Binding: binding, X: float64(descriptor.InitialX), Y: float64(descriptor.InitialWorldY), PreviousX: float64(descriptor.InitialX), PreviousY: float64(descriptor.InitialWorldY), ActorList: "moving", Atlas: "guardian-parts", Active: true, Score: 1000, Health: int(binding.Residue.Health), Sprite: state.Parts[index].Sprite, thirdMiddlePart: index + 1, thirdPart: descriptor,
 			part: &visualassets.ActorPart{ResourceTag: 84, StrongHealth: true, MotionMode: "third-middle", DamageMode: "block-shot"}, Collision: CollisionRect{Right: -1, Bottom: -1}}
 		actor.motion.X, actor.motion.Y = int32(descriptor.InitialX)<<16, int32(descriptor.InitialWorldY)<<16
-		actor.Binding.Residue.SetFireState(0, binding.Residue.FireRate())
-		if index == 0 {
-			state.ResidualFireRate = binding.Residue.FireRate()
-		}
+		// Native 0x55e68 clears the whole emitter word for all seventeen parts.
+		actor.Binding.Residue.EmitterClock = 0
 		w.poolActors[binding.Slot] = actor
 		w.storeActorResidue(actor)
 		w.thirdMiddleActors[index] = actor

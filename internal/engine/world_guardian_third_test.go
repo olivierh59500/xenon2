@@ -22,11 +22,11 @@ func TestThirdWorldGuardiansActivateAtSourceSelectorsOptional(t *testing.T) {
 			break
 		}
 	}
-	if !found || w.ThirdMiddle == nil || w.ThirdMiddle.ResidualFireRate != 23 {
-		t.Fatal("fixed kind3 must activate the source middle constructor and its inherited firing rate")
+	if !found || w.ThirdMiddle == nil || w.ThirdMiddle.ResidualFireRate != 0 {
+		t.Fatal("fixed kind3 must activate the source middle constructor with a cleared firing rate")
 	}
-	if w.thirdMiddleActors[0].Health != 13 || w.thirdMiddleActors[0].Binding.Residue.Health != 13 || w.thirdMiddleActors[0].Binding.Residue.FireAccumulator() != 0 {
-		t.Fatal("middle constructor must preserve slot health and clear only its firing accumulator")
+	if w.thirdMiddleActors[0].Health != 13 || w.thirdMiddleActors[0].Binding.Residue.Health != 13 || w.thirdMiddleActors[0].Binding.Residue.EmitterClock != 0 {
+		t.Fatal("middle constructor must preserve slot health and clear the whole emitter word")
 	}
 	if len(w.thirdMiddleActors) != 17 || w.Pool.last[ActorPoolMoving] != w.thirdMiddleActors[16].Binding.Slot {
 		t.Fatal("middle body must allocate seventeen parts at the list tail")
