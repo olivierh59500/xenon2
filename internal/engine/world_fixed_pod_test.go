@@ -44,8 +44,8 @@ func TestSecondWorldPodsCreateBothOriginalCreatureVariantsOptional(t *testing.T)
 }
 
 // Encounter coverage does not include objects created by level-stage callbacks.
-func TestFirstFourWorldsConsumeEveryFixedEncounterSelectorOptional(t *testing.T) {
-	for number := 1; number <= 4; number++ {
+func TestFiveWorldsConsumeEveryFixedEncounterSelectorOptional(t *testing.T) {
+	for number := 1; number <= 5; number++ {
 		t.Run(fmt.Sprint(number), func(t *testing.T) {
 			w, err := NewWorld(originalWorldData(t, number))
 			if err != nil {
