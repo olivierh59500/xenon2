@@ -23,6 +23,7 @@ type WeaponContext struct {
 	Targets                                           []WeaponTarget
 	HitPoint                                          func(int, int, uint16) bool
 	HitRect                                           func(CollisionRect, uint16, bool) bool
+	HitLaser                                          func(CollisionRect, uint16) bool
 	Sound                                             func(string)
 	SoundVoice                                        func(int, string)
 	SoundVoiceIfEmpty                                 func(int, string)
@@ -742,10 +743,16 @@ func (r *WeaponRuntime) advanceProjectiles(c WeaponContext, onlyID int) error {
 		if queryPoint && c.HitPoint != nil && c.HitPoint(int(p.Render.X), int(p.Render.Y), damage) {
 			p.Render.Active = false
 		}
-		if queryRect && c.HitRect != nil && !area.Empty() {
-			hit := c.HitRect(area, damage, p.Render.Kind == "laser" || p.Render.Kind == "mine" || p.Render.Kind == "bomb")
-			if hit && (p.Render.Kind == "cannon-ball" || p.Render.Kind == "flame") {
-				p.Render.Active = false
+		if queryRect && (c.HitRect != nil || p.Render.Kind == "laser" && c.HitLaser != nil) && !area.Empty() {
+			if p.Render.Kind == "laser" && c.HitLaser != nil {
+				if c.HitLaser(area, damage) {
+					p.Render.Active = false
+				}
+			} else {
+				hit := c.HitRect(area, damage, p.Render.Kind == "laser" || p.Render.Kind == "mine" || p.Render.Kind == "bomb")
+				if hit && (p.Render.Kind == "cannon-ball" || p.Render.Kind == "flame") {
+					p.Render.Active = false
+				}
 			}
 		}
 		r.storeProjectile(c, p, true)

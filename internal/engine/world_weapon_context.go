@@ -29,7 +29,7 @@ func (w *World) weaponContext(input Input, pulse bool) WeaponContext {
 		NextID:       func() int { w.nextActorID++; return w.nextActorID },
 		ReserveActor: w.reserveWorldActor, RetireActor: w.retireWorldActor,
 		StoreActorResidue: w.storeWorldResidue, ReadActorResidue: w.readWorldResidue,
-		HitPoint: w.weaponHitPoint, HitRect: w.weaponHitRect,
+		HitPoint: w.weaponHitPoint, HitRect: w.weaponHitRect, HitLaser: w.weaponHitLaser,
 		Sound: func(effect string) { w.SoundRequests[2] = effect },
 		SoundVoice: func(voice int, effect string) {
 			if voice >= 0 && voice < len(w.SoundRequests) {
@@ -61,8 +61,17 @@ func (w *World) weaponHitPoint(x, y int, damage uint16) bool {
 // weaponHitRect retains the newest-first order and skips linked body pieces
 // after one damage call on their shared leader during a multi-target attack.
 func (w *World) weaponHitRect(area CollisionRect, damage uint16, all bool) bool {
+	return w.weaponHitRectOutcome(area, damage, all, false).Hit
+}
+
+type weaponHitOutcome struct {
+	Hit, StopProjectile bool
+}
+
+func (w *World) weaponHitRectOutcome(area CollisionRect, damage uint16, all, laser bool) weaponHitOutcome {
 	var groups [159]int
-	count, hit := 0, false
+	count := 0
+	var outcome weaponHitOutcome
 	var ordered [ActorPoolCapacity]*WorldActor
 	for _, actor := range w.orderedMovingActors(&ordered) {
 		if !actor.Active || actor.ActorList != "moving" || !actor.Collision.Intersects(area) {
@@ -83,7 +92,8 @@ func (w *World) weaponHitRect(area CollisionRect, damage uint16, all bool) bool 
 			groups[count] = leader.ID
 			count++
 		}
-		hit = true
+		outcome.Hit = true
+		absorbed := laser && w.laserCallbackConsumes(actor, area)
 		if actor.fourthIndex > 0 {
 			w.damageFourthGuardian(actor, area, damage)
 		} else if actor.firstGuardian {
@@ -91,12 +101,16 @@ func (w *World) weaponHitRect(area CollisionRect, damage uint16, all bool) bool 
 		} else {
 			w.damageActor(actor, damage)
 		}
+		if absorbed {
+			outcome.StopProjectile = true
+			return outcome
+		}
 		if !all {
-			return true
+			return outcome
 		}
 	}
 	if w.strikeSecondTerrain(area) {
-		return true
+		outcome.Hit = true
 	}
-	return hit
+	return outcome
 }

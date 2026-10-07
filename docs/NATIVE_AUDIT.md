@@ -785,3 +785,20 @@ CSV replay checks every observation. In the carried frontend campaign, this
 policy improves third-stage reach from camera 3644 to 3192 before the last ship
 is lost. The normal-menu victories of stages one and two remain intact.
 Neither result establishes completion of stage three or the five-stage pilot.
+
+## Consumed laser traversal
+
+The laser has a dedicated damage result for source callbacks that retire the
+projectile. Ordered traversal stops immediately after those callbacks, and the
+beam's physical slot becomes the pending-removal tag before its draw boundary.
+Verified absorbing identities include first-guardian links, worm body links,
+fourth-final arms, fifth-final barriers and rejected fourth-satellite armored
+borders. Closed scalar cores and no-op callbacks are not classified by unchanged
+HP or by a generic block-shot label. Mines and bombs keep their separate
+multi-target behavior.
+
+Four original ordered three-target cases compare beam retirement, each target's
+health, score and RNG. Runtime tests also verify no damage behind a blocker,
+proper compaction, no active rendered beam and a nonconsuming no-op route.
+The full source/resource engine suite and the connected first-two-stage frontend
+regression pass after this correction.
