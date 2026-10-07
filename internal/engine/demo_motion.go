@@ -20,6 +20,9 @@ func newDemoMotionForecast(w *World) demoMotionForecast {
 }
 
 func (s *demoMotionForecast) advance(w *World, input MotionInput) bool {
+	if w.Level.Number == 3 && s.scroll.Y > 208 && (w.ThirdMiddle == nil || w.ThirdMiddle.Defeated) {
+		s.scroll.Maximum = demoScrollMaximum(w, s.scroll.Y, s.scroll.Maximum)
+	}
 	if w.Level.Number == 2 && w.secondBackward && w.secondDefenseRemaining > 0 {
 		// Living source node callbacks reopen this reverse bound every pass.
 		s.scroll.Maximum = max(s.scroll.Maximum, 2880)
