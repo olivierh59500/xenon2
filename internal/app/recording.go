@@ -7,7 +7,10 @@ import (
 
 // RecordingGame retains ordinary simulation and the demo pilot while ignoring
 // unrelated desktop input. The DCK recorder consumes the game's own PCM stream.
-type RecordingGame struct{ *Game }
+type RecordingGame struct {
+	*Game
+	completeLevel int
+}
 
 func NewRecordingGame() (*RecordingGame, error) {
 	g, err := NewGameFromConfig(Config{Level: 1, StartScreen: PresentationScreen, Demo: true, HumanDemo: true})
@@ -21,7 +24,34 @@ func NewRecordingGame() (*RecordingGame, error) {
 	return &RecordingGame{Game: g}, nil
 }
 
-func (g *RecordingGame) Update() error { return g.advanceWithInput(inputFrame{}) }
+func NewFirstLevelRecordingGame() (*RecordingGame, error) {
+	g, err := NewRecordingGame()
+	if err != nil {
+		return nil, err
+	}
+	g.completeLevel = 1
+	return g, nil
+}
+
+func (g *RecordingGame) Update() error {
+	if err := g.advanceWithInput(inputFrame{}); err != nil {
+		return err
+	}
+	if g.completeLevel != 0 {
+		if driver, ok := g.Driver.(*worldDriver); ok && driver.session != nil {
+			if driver.world.Level.Number > g.completeLevel {
+				return ebiten.Termination
+			}
+			if driver.world.GameOver && driver.world.ContinueCredits == 0 {
+				return fmt.Errorf("presentation exhausted ordinary recovery before completing level %d", g.completeLevel)
+			}
+		}
+		if g.updates >= 60*1200 {
+			return fmt.Errorf("presentation did not complete level %d within twenty minutes", g.completeLevel)
+		}
+	}
+	return nil
+}
 
 func (g *RecordingGame) Draw(screen *ebiten.Image) { g.Game.Draw(screen) }
 

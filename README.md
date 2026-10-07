@@ -48,6 +48,7 @@ this is not yet a completed five-level demonstration.
 
 ```sh
 GOWORK=off go run ./cmd/video -duration 3m -output recordings/xenon2-presentation.mp4
+GOWORK=off go run ./cmd/video -complete-level1 -output recordings/xenon2-level1-presentation.mp4
 ```
 
 The recorder captures the original game canvas at 1280 × 800 and 60 FPS, with
@@ -56,8 +57,17 @@ video/audio route and FFmpeg for H.264/AAC encoding; other windows and system
 audio are never captured. The default three-minute presentation follows the
 intro, menu and first-level play. Its presentation controller approaches actual
 enemies and reachable bonuses, commits to short tactical routes and holds aimed
-firing bursts with reassessment pauses. It retains ordinary damage and can lose
-a ship; complete-stage and campaign success remain unproven for this controller.
+firing bursts with reassessment pauses. Known terrain junctions guide the route
+before a wrong branch closes. A trapped ship can reverse to the junction and
+rejoin its forward route. Targeting forecasts the source paths and the next gun
+position; reward collection follows the moving coin rather than its old anchor.
+Upcoming formations can also guide preparatory movement, without firing early.
+
+The complete-first-level option includes the intro, both merchants, final guardian
+and exit drops, then stops before playing level two. Its real frontend regression
+completes that route in about 6 minutes 53 seconds with two ships remaining.
+Ordinary damage and purchases still apply. The broader five-level presentation
+controller remains in development.
 Generated MP4, PNG poster and chapter JSON files stay
 under locally excluded `recordings/`. The export command requires Go 1.26 or
 newer and FFmpeg. A different positive `-duration` records a longer excerpt.
