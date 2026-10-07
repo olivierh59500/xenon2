@@ -28,8 +28,12 @@ func (w *World) weaponContext(input Input, pulse bool) WeaponContext {
 		ShipDestroyed: !w.PlayerAlive, NextRandom: w.random.Next, Targets: w.weaponTargets,
 		NextID:       func() int { w.nextActorID++; return w.nextActorID },
 		ReserveActor: w.reserveWorldActor, RetireActor: w.retireWorldActor,
-		StoreActorResidue: w.storeWorldResidue, ReadActorResidue: w.readWorldResidue,
-		HitPoint: w.weaponHitPoint, HitRect: w.weaponHitRect, HitLaser: w.weaponHitLaser,
+		ReleaseActor: w.releaseWorldActor, MoveActor: w.moveWorldActor,
+		ReleaseEquipmentActors: w.releaseEquipmentActors,
+		MoveEquipmentActors:    w.moveEquipmentActors,
+		StoreActorResidue:      w.storeWorldResidue, ReadActorResidue: w.readWorldResidue,
+		ReadWeaponOwnerResidue: w.readWeaponOwnerResidue,
+		HitPoint:               w.weaponHitPoint, HitRect: w.weaponHitRect, HitLaser: w.weaponHitLaser,
 		Sound: func(effect string) { w.SoundRequests[2] = effect },
 		SoundVoice: func(voice int, effect string) {
 			if voice >= 0 && voice < len(w.SoundRequests) {

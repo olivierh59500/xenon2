@@ -1045,3 +1045,31 @@ from other pending engine changes. Full MP4 decoding passes. Gameplay samples
 at 90 and 120 seconds show the persistent explosion disks removed, while live
 shots and ordinary finite explosions remain visible. The export retains its
 original 180-second duration, synchronized audio and genuine checkpoint loss.
+
+## Saved Nashwan equipment and physical weapon owners
+
+The source at 0x4a0a detaches the complete equipment list without releasing its
+actors. The Go runtime now retains that protected list, including pending dead
+entries, throughout the temporary suite. The original mounts preserve their
+identity, cooldown, animation and mine cursor. Cannon supports remain on the
+projectile list and continue following the ship. At 0x644e, expiry releases the
+temporary list and restores the saved actors rather than constructing new ones.
+The completed expiry frame still draws the suite before the next equipment pass.
+
+Laser update at 0x3fea reads its physical owner even after release. This one
+weapon-specific read now retains that memory behavior; ordinary entity reads
+continue to reject released allocations. Fresh mine creation resets LastX as
+at 0x5150/0x51fe, while restored equipment keeps its previous planting anchor.
+
+Checkpoint cleanup follows the original list order at 0x6d22–0x6d5e, including
+support-before-owner removal. This determines the next free-slot stack. A
+separate comparison reverting only that cleanup order restores the former
+second/third final-boundary outcomes. With the corrected order, their ordinary
+input fixtures reach the final shops at passes 752 and 1,540 respectively. They
+retain actual defeated guardians, terrain clearing, drop collection and exit
+gates. These arranged boundaries do not establish complete-stage victories.
+
+Seven resource-backed lifecycle regressions and native weapon traces pass.
+The complete engine suite passes, including the reconciled boundary snapshots;
+its race run also passes. Temporary invulnerability in the isolated lifetime
+fixtures separates weapon restoration from unrelated enemy contact.

@@ -32,8 +32,13 @@ type WeaponContext struct {
 	StopEffects                                       func()
 	ReserveActor                                      func(int16, ActorPoolList, bool) (ActorPoolBinding, error)
 	RetireActor                                       func(ActorPoolBinding)
+	ReleaseActor                                      func(ActorPoolBinding)
+	ReleaseEquipmentActors                            func()
+	MoveActor                                         func(ActorPoolBinding, ActorPoolList, bool) error
+	MoveEquipmentActors                               func(ActorPoolList, ActorPoolList) error
 	StoreActorResidue                                 func(ActorPoolBinding)
 	ReadActorResidue                                  func(int) (ActorResidue, bool)
+	ReadWeaponOwnerResidue                            func(int) (ActorResidue, bool)
 }
 
 // WeaponRenderItem is a named attachment or projectile at a display anchor.
@@ -93,19 +98,24 @@ type runtimeWeaponProjectile struct {
 // Equipment and projectile phases are separate so the world can retain its
 // player/enemy/equipment/projectile ordering.
 type WeaponRuntime struct {
-	mounts          [7]runtimeMount
-	projectiles     []runtimeWeaponProjectile
-	animations      map[string]visualassets.NamedActorAnimation
-	boxes           map[string]visualassets.CollisionBox
-	regions         map[string]visualassets.SpriteRegion
-	MineContext     MineContext
-	nextID          int
-	newID           func() int
-	available       int
-	limited         bool
-	order           [7]int
-	context         WeaponContext
-	allocationError error
+	mounts                            [7]runtimeMount
+	savedMounts                       [7]runtimeMount
+	savedMountsActive                 bool
+	expiryMounts, expirySavedMounts   [7]runtimeMount
+	expiryOrder                       [7]int
+	expiryRender, captureExpiryRender bool
+	projectiles                       []runtimeWeaponProjectile
+	animations                        map[string]visualassets.NamedActorAnimation
+	boxes                             map[string]visualassets.CollisionBox
+	regions                           map[string]visualassets.SpriteRegion
+	MineContext                       MineContext
+	nextID                            int
+	newID                             func() int
+	available                         int
+	limited                           bool
+	order                             [7]int
+	context                           WeaponContext
+	allocationError                   error
 }
 
 func equipmentResourceTag(item Item) int16 {
@@ -219,7 +229,127 @@ func weaponAnimation(item Item) string {
 	return ""
 }
 
+func emptyWeaponMounts() (mounts [7]runtimeMount) {
+	for i := range mounts {
+		mounts[i].Binding.Slot, mounts[i].SupportBinding.Slot = NoActorSlot, NoActorSlot
+	}
+	return mounts
+}
+
+func orderedWeaponMounts(mounts *[7]runtimeMount, newestFirst bool) [7]int {
+	order := [7]int{0, 1, 2, 3, 4, 5, 6}
+	for i := 1; i < len(order); i++ {
+		for j := i; j > 0; j-- {
+			before := mounts[order[j]].Serial < mounts[order[j-1]].Serial
+			if newestFirst {
+				before = mounts[order[j]].Serial > mounts[order[j-1]].Serial
+			}
+			if !before {
+				break
+			}
+			order[j], order[j-1] = order[j-1], order[j]
+		}
+	}
+	return order
+}
+
+func (r *WeaponRuntime) moveMounts(c WeaponContext, list ActorPoolList) error {
+	if c.MoveEquipmentActors != nil {
+		from := ActorPoolEquipment
+		if list == ActorPoolEquipment {
+			from = ActorPoolDormantEquipment
+		}
+		return c.MoveEquipmentActors(from, list)
+	}
+	if c.MoveActor == nil {
+		return nil
+	}
+	for _, i := range orderedWeaponMounts(&r.mounts, false) {
+		if binding := r.mounts[i].Binding; binding.EntityID != 0 {
+			if err := c.MoveActor(binding, list, false); err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
+func (r *WeaponRuntime) releaseMounts(c WeaponContext) {
+	if c.ReleaseEquipmentActors != nil {
+		c.ReleaseEquipmentActors()
+		return
+	}
+	for _, i := range orderedWeaponMounts(&r.mounts, true) {
+		m := &r.mounts[i]
+		for _, binding := range []ActorPoolBinding{m.SupportBinding, m.Binding} {
+			if binding.EntityID == 0 {
+				continue
+			}
+			if c.ReleaseActor != nil {
+				c.ReleaseActor(binding)
+			} else if c.RetireActor != nil {
+				c.RetireActor(binding)
+			}
+		}
+	}
+}
+
 func (r *WeaponRuntime) synchronize(c WeaponContext) error {
+	if c.Equipment.SuperLoadoutActive && !r.savedMountsActive {
+		ordinary := *c.Equipment
+		ordinary.WeaponLoadout, ordinary.SuperLoadoutActive = ordinary.SavedLoadout, false
+		ordinaryContext := c
+		ordinaryContext.Equipment = &ordinary
+		if err := r.synchronizeLoadout(ordinaryContext); err != nil {
+			return err
+		}
+		if err := r.moveMounts(c, ActorPoolDormantEquipment); err != nil {
+			return err
+		}
+		r.savedMounts, r.savedMountsActive = r.mounts, true
+		r.mounts = emptyWeaponMounts()
+		// The suite constructs a basic gun before replacing it with double
+		// shots. Its dead allocation remains on the equipment list until visited.
+		if c.ReserveActor != nil {
+			binding, err := c.ReserveActor(equipmentResourceTag(ItemForwardShot), ActorPoolEquipment, false)
+			if err != nil {
+				return err
+			}
+			binding.Residue.EmitterClock = 0xffff
+			basic := runtimeMount{Binding: binding, X: c.ShipX, Y: c.ShipY}
+			r.storeMount(c, &basic, WeaponSlot{Item: ItemForwardShot, MaxTier: 2})
+			if c.RetireActor != nil {
+				c.RetireActor(binding)
+			}
+		}
+	}
+	if !c.Equipment.SuperLoadoutActive && r.savedMountsActive {
+		if err := r.restoreSavedMounts(c); err != nil {
+			return err
+		}
+	}
+	return r.synchronizeLoadout(c)
+}
+
+func (r *WeaponRuntime) restoreSavedMounts(c WeaponContext) error {
+	if r.captureExpiryRender {
+		r.expiryMounts, r.expirySavedMounts, r.expiryOrder = r.mounts, r.savedMounts, r.order
+		r.expiryRender = true
+	}
+	r.releaseMounts(c)
+	r.mounts, r.savedMounts, r.savedMountsActive = r.savedMounts, emptyWeaponMounts(), false
+	return r.moveMounts(c, ActorPoolEquipment)
+}
+
+// RestoreSuperEquipment restores the saved actors after the drawing phase.
+// That completed frame still shows the temporary suite until the next pass.
+func (r *WeaponRuntime) RestoreSuperEquipment(c WeaponContext) error {
+	r.captureExpiryRender = true
+	defer func() { r.captureExpiryRender = false }()
+	return r.SynchronizeEquipment(c)
+}
+
+func (r *WeaponRuntime) synchronizeLoadout(c WeaponContext) error {
 	slots := c.Equipment.slots()
 	order := [7]int{0, 1, 2, 3, 4, 5, 6}
 	for i := 1; i < len(order); i++ {
@@ -275,10 +405,16 @@ func (r *WeaponRuntime) synchronize(c WeaponContext) error {
 		}
 		m.Electro.X, m.Electro.Y = c.ShipX, c.ShipY+25
 		m.Mine.X, m.Mine.Y = c.ShipX, c.ShipY+25
+		if slot.Item == ItemMineSmall || slot.Item == ItemMineLarge {
+			// Fresh mine construction resets only the last horizontal planting
+			// anchor. Upgrades and restoration of saved actors retain it.
+			r.MineContext.LastX = -100
+		}
 		m.X, m.Y = c.ShipX, c.ShipY
 		if i >= 1 && i <= 4 {
 			m.X += WeaponMountOffset[i-1].X
 			m.Y += WeaponMountOffset[i-1].Y
+			m.Binding.Residue.MountOffsetX, m.Binding.Residue.MountOffsetY = int16(WeaponMountOffset[i-1].X), int16(WeaponMountOffset[i-1].Y)
 		}
 		if slot.Item == ItemDrone || slot.Item == ItemElectroBall || slot.Item == ItemMineSmall || slot.Item == ItemMineLarge {
 			m.Y += 25
@@ -379,6 +515,7 @@ func (r *WeaponRuntime) AdvanceEquipment(c WeaponContext) error {
 		return fmt.Errorf("weapon phase needs equipment")
 	}
 	r.context, r.allocationError = c, nil
+	r.expiryRender = false
 	if err := r.synchronize(c); err != nil {
 		return err
 	}
@@ -441,13 +578,8 @@ func (r *WeaponRuntime) AdvanceEquipment(c WeaponContext) error {
 				weaponSound(c, 2, "sampled-effect-09")
 			}
 		case ItemCannon:
-			m.PreviousSupportX, m.PreviousSupportY = m.SupportX, m.SupportY
-			m.SupportX, m.SupportY, m.SupportVisible = m.X, m.Y, m.SupportActive
-			m.SupportAnimation.Advance(m.SupportData.Animation)
-			if c.MaterializationFrames != 0 {
-				if region, ok := r.regions[m.SupportAnimation.Sprite(m.SupportData.Animation)]; ok {
-					m.SupportX, m.SupportY, m.SupportVisible = MaterializeAttachment(m.SupportX, m.SupportY, region, c.ShipCenterX, c.ShipCenterY, c.MaterializationFrames)
-				}
+			if c.ReserveActor == nil {
+				r.advanceSupport(m, c)
 			}
 			fired := m.Cannon.Tick(c.Pulse, c.Materializing)
 			if m.Cannon.Phase == 1 {
@@ -613,6 +745,26 @@ func (r *WeaponRuntime) actorRect(sprite string, x, y int) CollisionRect {
 	return ActorCollisionRect(box, x, y)
 }
 
+func (r *WeaponRuntime) advanceSupport(m *runtimeMount, c WeaponContext) {
+	if !m.SupportActive {
+		return
+	}
+	m.PreviousSupportX, m.PreviousSupportY = m.SupportX, m.SupportY
+	m.SupportX = c.ShipX + int(m.Binding.Residue.MountOffsetX)
+	m.SupportY = c.ShipY + int(m.Binding.Residue.MountOffsetY)
+	m.SupportVisible = true
+	m.SupportAnimation.Advance(m.SupportData.Animation)
+	if c.MaterializationFrames != 0 {
+		if region, ok := r.regions[m.SupportAnimation.Sprite(m.SupportData.Animation)]; ok {
+			m.SupportX, m.SupportY, m.SupportVisible = MaterializeAttachment(m.SupportX, m.SupportY, region, c.ShipCenterX, c.ShipCenterY, c.MaterializationFrames)
+		}
+	}
+	m.SupportBinding.Residue.X, m.SupportBinding.Residue.Y = int16(m.SupportX), int16(m.SupportY)
+	if c.StoreActorResidue != nil && m.SupportBinding.EntityID != 0 {
+		c.StoreActorResidue(m.SupportBinding)
+	}
+}
+
 // AdvanceProjectiles queries current enemy bounds in newest-first order. The
 // callbacks preserve the world's individual and linked-group damage behavior.
 func (r *WeaponRuntime) AdvanceProjectiles(c WeaponContext) error {
@@ -660,8 +812,12 @@ func (r *WeaponRuntime) advanceProjectiles(c WeaponContext, onlyID int) error {
 		case "laser":
 			m := &r.mounts[p.Owner]
 			x, y := m.X, m.Y
-			if c.ReadActorResidue != nil && p.Binding.Residue.OwnerSlot != NoActorSlot {
-				if owner, ok := c.ReadActorResidue(p.Binding.Residue.OwnerSlot); ok {
+			readOwner := c.ReadWeaponOwnerResidue
+			if readOwner == nil {
+				readOwner = c.ReadActorResidue
+			}
+			if readOwner != nil && p.Binding.Residue.OwnerSlot != NoActorSlot {
+				if owner, ok := readOwner(p.Binding.Residue.OwnerSlot); ok {
 					x, y = int(owner.X), int(owner.Y)
 				}
 			}
@@ -772,8 +928,12 @@ func (r *WeaponRuntime) advanceProjectiles(c WeaponContext, onlyID int) error {
 
 // RenderState appends active named weapon state to caller-owned storage.
 func (r *WeaponRuntime) RenderState(dst []WeaponRenderItem) []WeaponRenderItem {
-	for _, i := range r.order {
-		m := r.mounts[i]
+	mounts, savedMounts, order := &r.mounts, &r.savedMounts, r.order
+	if r.expiryRender {
+		mounts, savedMounts, order = &r.expiryMounts, &r.expirySavedMounts, r.expiryOrder
+	}
+	for _, i := range order {
+		m := mounts[i]
 		if m.Item == ItemNone || !m.Visible {
 			continue
 		}
@@ -789,7 +949,15 @@ func (r *WeaponRuntime) RenderState(dst []WeaponRenderItem) []WeaponRenderItem {
 	for _, p := range r.projectiles {
 		dst = append(dst, p.Render)
 	}
-	for i, m := range r.mounts {
+	dst = appendCannonSupports(dst, mounts)
+	if r.savedMountsActive || r.expiryRender {
+		dst = appendCannonSupports(dst, savedMounts)
+	}
+	return dst
+}
+
+func appendCannonSupports(dst []WeaponRenderItem, mounts *[7]runtimeMount) []WeaponRenderItem {
+	for i, m := range mounts {
 		if m.Item == ItemCannon && m.SupportActive && m.SupportVisible {
 			if sprite := m.SupportAnimation.Sprite(m.SupportData.Animation); sprite != "" {
 				id := m.SupportBinding.EntityID
@@ -814,6 +982,15 @@ func (r *WeaponRuntime) ProjectileIDs(dst []int) []int {
 }
 
 func (r *WeaponRuntime) AdvanceProjectile(id int, c WeaponContext) error {
+	for _, mounts := range []*[7]runtimeMount{&r.mounts, &r.savedMounts} {
+		for i := range mounts {
+			m := &mounts[i]
+			if m.SupportActive && m.SupportBinding.EntityID == id {
+				r.advanceSupport(m, c)
+				return nil
+			}
+		}
+	}
 	return r.advanceProjectiles(c, id)
 }
 
@@ -853,4 +1030,10 @@ func (r *WeaponRuntime) Compact() {
 func (r *WeaponRuntime) ResetProjectiles() {
 	r.projectiles = r.projectiles[:0]
 	r.MineContext = MineContext{LastX: -100}
+}
+
+func (r *WeaponRuntime) resetMounts() {
+	r.mounts, r.savedMounts = emptyWeaponMounts(), emptyWeaponMounts()
+	r.savedMountsActive, r.expiryRender = false, false
+	r.expiryMounts, r.expirySavedMounts = emptyWeaponMounts(), emptyWeaponMounts()
 }

@@ -14,6 +14,7 @@ const (
 	ActorPoolMoving
 	ActorPoolProjectile
 	ActorPoolScenery
+	ActorPoolDormantEquipment
 )
 
 // ActorResidue contains named gameplay values that survive slot reuse. It is
@@ -74,7 +75,7 @@ type ActorAllocation struct {
 // Player/equipment entries use capacity but are never selected for stealing.
 type ActorPool struct {
 	slots       [ActorPoolCapacity]ActorPoolSlot
-	first, last [6]int
+	first, last [7]int
 	freeFirst   int
 }
 
@@ -203,6 +204,21 @@ func (p *ActorPool) AttachTail(index int, list ActorPoolList, entityID int, tag 
 // AttachAfter preserves descriptor order for linked enemy body components.
 func (p *ActorPool) AttachAfter(index int, list ActorPoolList, entityID int, tag int16, predecessor int) error {
 	return p.attach(index, list, entityID, tag, predecessor)
+}
+
+// Move retains an allocation while changing its list. Nashwan equipment stays
+// protected in its saved list until the original actors are restored.
+func (p *ActorPool) Move(index int, list ActorPoolList, tail bool) error {
+	n := p.Slot(index)
+	if n == nil || !n.allocated || list == ActorPoolNone || int(list) >= len(p.first) {
+		return fmt.Errorf("invalid actor list move")
+	}
+	entityID, tag := n.EntityID, n.ResourceTag
+	p.unlink(index)
+	if tail {
+		return p.AttachTail(index, list, entityID, tag)
+	}
+	return p.AttachHead(index, list, entityID, tag)
 }
 
 func (p *ActorPool) attach(index int, list ActorPoolList, entityID int, tag int16, predecessor int) error {

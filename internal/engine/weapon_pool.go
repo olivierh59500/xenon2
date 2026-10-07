@@ -77,10 +77,12 @@ func (r *WeaponRuntime) DropActor(entityID int) {
 			p.Render.Active, p.Binding.EntityID = false, 0
 		}
 	}
-	for i := range r.mounts {
-		m := &r.mounts[i]
-		if m.SupportBinding.EntityID == entityID {
-			m.SupportActive, m.SupportVisible, m.SupportBinding.EntityID = false, false, 0
+	for _, mounts := range []*[7]runtimeMount{&r.mounts, &r.savedMounts} {
+		for i := range mounts {
+			m := &mounts[i]
+			if m.SupportBinding.EntityID == entityID {
+				m.SupportActive, m.SupportVisible, m.SupportBinding.EntityID = false, false, 0
+			}
 		}
 	}
 }

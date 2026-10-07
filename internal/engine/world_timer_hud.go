@@ -19,8 +19,14 @@ func (w *World) appendTimerMeter(remaining, maximum, x, y int) {
 
 func (w *World) advanceTimedEquipment() {
 	superWasActive := w.Equipment.SuperFrames != 0
+	suiteWasInstalled := w.Equipment.SuperLoadoutActive
 	diveWasActive := w.Dive.Remaining != 0
 	w.Equipment.AdvanceTimers()
+	if suiteWasInstalled && !w.Equipment.SuperLoadoutActive && w.Weapons != nil {
+		if err := w.Weapons.RestoreSuperEquipment(w.weaponContext(Input{}, false)); err != nil {
+			w.poolError = err
+		}
+	}
 	w.Dive.Tick()
 	if diveWasActive {
 		w.appendTimerMeter(w.Dive.Remaining, 136, 152, 8)

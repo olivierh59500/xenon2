@@ -96,6 +96,65 @@ func (w *World) retireWorldActor(binding ActorPoolBinding) {
 	}
 }
 
+func (w *World) releaseWorldActor(binding ActorPoolBinding) {
+	if slot := w.Pool.Slot(binding.Slot); slot != nil && slot.allocated && slot.EntityID == binding.EntityID {
+		delete(w.poolBindings, binding.EntityID)
+		if err := w.Pool.Release(binding.Slot); err != nil {
+			w.poolError = err
+		}
+		w.clearPoolReferences(binding.Slot)
+	}
+}
+
+// Equipment removal visits the current head first and releases a cannon's
+// projectile support before its owner, matching the source's direct removal.
+func (w *World) releaseEquipmentActors() {
+	for index := w.Pool.First(ActorPoolEquipment); index != NoActorSlot; {
+		next := w.Pool.Next(index)
+		slot := w.Pool.Slot(index)
+		if slot.ResourceTag == 52 {
+			for support := w.Pool.First(ActorPoolProjectile); support != NoActorSlot; support = w.Pool.Next(support) {
+				n := w.Pool.Slot(support)
+				if n.ResourceTag == 64 && n.Residue.OwnerSlot == index {
+					w.releaseWorldActor(ActorPoolBinding{Slot: support, EntityID: n.EntityID})
+					break
+				}
+			}
+		}
+		w.releaseWorldActor(ActorPoolBinding{Slot: index, EntityID: slot.EntityID})
+		index = next
+	}
+}
+
+func (w *World) moveWorldActor(binding ActorPoolBinding, list ActorPoolList, tail bool) error {
+	if slot := w.Pool.Slot(binding.Slot); slot != nil && slot.allocated && slot.EntityID == binding.EntityID {
+		return w.Pool.Move(binding.Slot, list, tail)
+	}
+	return nil
+}
+
+// Saving the equipment head retains pending dead entries as well as installed
+// records. The source restores the entire list before its next removal pass.
+func (w *World) moveEquipmentActors(from, to ActorPoolList) error {
+	for index := w.Pool.First(from); index != NoActorSlot; {
+		next := w.Pool.Next(index)
+		if err := w.Pool.Move(index, to, true); err != nil {
+			return err
+		}
+		index = next
+	}
+	return nil
+}
+
+// Laser owner pointers refer to physical memory even after the equipment has
+// been released. The slot's residue survives release and subsequent reuse.
+func (w *World) readWeaponOwnerResidue(index int) (ActorResidue, bool) {
+	if slot := w.Pool.Slot(index); slot != nil {
+		return slot.Residue, true
+	}
+	return ActorResidue{}, false
+}
+
 func (w *World) readWorldResidue(index int) (ActorResidue, bool) {
 	if slot := w.Pool.Slot(index); slot != nil && slot.allocated {
 		return slot.Residue, true
@@ -307,6 +366,11 @@ func (w *World) restoreCheckpointPool() error {
 }
 
 func (w *World) prepareCheckpointPool(rebuildEquipment bool) error {
+	if w.Weapons != nil && w.Weapons.savedMountsActive {
+		if err := w.Weapons.restoreSavedMounts(w.weaponContext(Input{}, false)); err != nil {
+			return err
+		}
+	}
 	keep := make(map[int]bool, len(w.Actors)+4)
 	for _, binding := range w.poolShadows {
 		keep[binding.EntityID] = true
@@ -314,20 +378,27 @@ func (w *World) prepareCheckpointPool(rebuildEquipment bool) error {
 	for _, actor := range w.Actors {
 		keep[actor.ID] = true
 	}
-	for index := range ActorPoolCapacity {
-		slot := w.Pool.Slot(index)
-		if slot.allocated && !keep[slot.EntityID] {
-			w.poolActors[index] = nil
-			delete(w.poolBindings, slot.EntityID)
-			if err := w.Pool.Release(index); err != nil {
-				return err
+	// The outgoing turn restores Nashwan's saved list before visiting scenery,
+	// projectiles, moving actors and finally equipment. Released slots form the
+	// next turn's free stack in that order.
+	for _, list := range []ActorPoolList{ActorPoolScenery, ActorPoolProjectile, ActorPoolMoving} {
+		for index := w.Pool.First(list); index != NoActorSlot; {
+			next := w.Pool.Next(index)
+			slot := w.Pool.Slot(index)
+			cannonSupport := false
+			if list == ActorPoolProjectile && slot.ResourceTag == 64 {
+				owner := w.Pool.Slot(slot.Residue.OwnerSlot)
+				cannonSupport = owner != nil && owner.allocated && owner.list == ActorPoolEquipment && owner.ResourceTag == 52
 			}
+			if !keep[slot.EntityID] && !cannonSupport {
+				w.releaseWorldActor(ActorPoolBinding{Slot: index, EntityID: slot.EntityID})
+			}
+			index = next
 		}
 	}
+	w.releaseEquipmentActors()
 	if w.Weapons != nil {
-		for i := range w.Weapons.mounts {
-			w.Weapons.mounts[i] = runtimeMount{Binding: ActorPoolBinding{Slot: NoActorSlot}, SupportBinding: ActorPoolBinding{Slot: NoActorSlot}}
-		}
+		w.Weapons.resetMounts()
 		w.Weapons.ResetProjectiles()
 		if rebuildEquipment {
 			return w.Weapons.SynchronizeEquipment(w.weaponContext(Input{}, false))
