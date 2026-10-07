@@ -74,6 +74,7 @@ func (w *World) activateFifthGuardian(record visualassets.FixedEncounter, final 
 		}
 		w.FifthMiddle = &state
 	}
+	bodySlot := NoActorSlot
 	for index, descriptor := range group.Components {
 		binding, err := w.reserveWorldActor(int16(descriptor.ResourceTag), ActorPoolMoving, true)
 		if err != nil {
@@ -81,6 +82,21 @@ func (w *World) activateFifthGuardian(record visualassets.FixedEncounter, final 
 		}
 		actor := &WorldActor{ID: binding.EntityID, Binding: binding, Active: true, Visible: false, ActorList: "moving", Atlas: "guardian-parts", fifthIndex: index + 1, fifthFinal: final, fifthPart: &group.Components[index], Health: descriptor.Health, Collision: CollisionRect{Right: -1, Bottom: -1}, part: &visualassets.ActorPart{ResourceTag: descriptor.ResourceTag, StrongHealth: descriptor.StrongHealth, DamageMode: "fifth-guardian"}}
 		state := w.fifthPartState(actor)
+		if index == 0 {
+			bodySlot = binding.Slot
+		}
+		actor.Binding.Residue.OwnerSlot = bodySlot
+		// These whole-pixel constructors retain both emitter bytes and spare
+		// physical words while initializing phase, direction and component data.
+		state.FireAccumulator, state.SecondaryAccumulator = binding.Residue.FireAccumulator(), binding.Residue.FireRate()
+		actor.Binding.Residue.Counter, actor.Binding.Residue.Direction = 0, 4
+		actor.Binding.Residue.MountOffsetX, actor.Binding.Residue.MountOffsetY = int16(descriptor.OffsetX), int16(descriptor.OffsetY)
+		actor.Binding.Residue.WaveBonusToken = 0
+		if final {
+			actor.Binding.Residue.StrongHealth = descriptor.StrongHealth
+		} else {
+			actor.part.StrongHealth = binding.Residue.StrongHealth
+		}
 		actor.X, actor.Y = float64(state.X), float64(state.Y)
 		actor.PreviousX, actor.PreviousY = actor.X, actor.Y
 		actor.Sprite = state.Sprite
@@ -94,6 +110,25 @@ func (w *World) activateFifthGuardian(record visualassets.FixedEncounter, final 
 		w.Actors = append(w.Actors, actor)
 	}
 	return nil
+}
+
+func (w *World) storeFifthGuardianResidue(actor *WorldActor) {
+	if actor.Binding.EntityID == 0 {
+		return
+	}
+	s, r := w.fifthPartState(actor), &actor.Binding.Residue
+	r.X, r.Y, r.Health, r.Counter = int16(s.X), int16(s.Y), uint16(s.Health), int16(s.Clock)
+	switch actor.fifthPart.Behavior {
+	case "middle-body-controller":
+		r.Direction = int16(s.MoveRemaining)
+	case "follow-middle-body", "final-mount":
+		r.Direction = int16(s.Heading)
+	}
+	r.SetFireState(s.FireAccumulator, s.SecondaryAccumulator)
+	w.storeWorldResidue(actor.Binding)
+	if !actor.Active {
+		w.retireWorldActor(actor.Binding)
+	}
 }
 
 func (w *World) fifthPartState(actor *WorldActor) *FifthGuardianPartState {
@@ -419,7 +454,21 @@ func (w *World) spawnFifthColumn(event FifthGuardianLaser) {
 	actor := &WorldActor{ID: binding.EntityID, Binding: binding, X: float64(state.X), Y: float64(state.Y), PreviousX: float64(state.X), PreviousY: float64(state.Y), Active: true, ActorList: "transient", Atlas: "guardian-parts", fifthColumn: &state, part: &visualassets.ActorPart{ResourceTag: 272, DamageMode: "block-shot"}}
 	w.poolActors[binding.Slot] = actor
 	w.Actors = append(w.Actors, actor)
+	w.storeFifthColumnResidue(actor)
 }
+
+func (w *World) storeFifthColumnResidue(actor *WorldActor) {
+	if actor.Binding.EntityID == 0 {
+		return
+	}
+	s, r := actor.fifthColumn, &actor.Binding.Residue
+	r.X, r.Y, r.Counter, r.Direction = int16(s.X), int16(s.Y), int16(s.Length), int16(s.Speed)
+	w.storeWorldResidue(actor.Binding)
+	if !actor.Active {
+		w.retireWorldActor(actor.Binding)
+	}
+}
+
 func (w *World) advanceFifthColumn(actor *WorldActor) {
 	actor.PreviousX, actor.PreviousY = actor.X, actor.Y
 	state := actor.fifthColumn

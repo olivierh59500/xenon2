@@ -1354,3 +1354,28 @@ The corresponding Android ARM64 APK rebuild, signature, 16 KiB alignment and
 touch lifecycle checks pass. The connected Pixel 10a accepts replacement
 installation and cold launch; its process remains active afterward. Device
 graphics were not rechecked while locked. The generated APK remains excluded.
+
+## Fifth column and guardian physical-state callbacks
+
+The growing column constructors at 0x56144/0x5679e publish whole X/Y, zero length
+at 0x28 and signed speed at 0x2a. Updater 0x56940 changes length/Y while retaining
+fractions, health, reward and emitter words. Go birth omitted those values and
+generic storage erased unrelated data. Column-specific storage now matches the
+native writes. Both directions pass growth, full travel, expiry/release and
+same-slot flamer admission; the inherited length 48 correctly triggers its
+release-time effect cleanup. The pre-fix regressions fail, and existing 1,867
+projectile-state/512 contact comparisons still pass.
+
+Both compound guardian constructors at 0x56448/0x55c8a leave emitter bytes 0x5e
+and 0x5f intact. State initialization now inherits them; specialized storage
+publishes native phase, direction, owner slot, component offsets and live emitter
+bytes without clearing coordinate fractions or spare reward words. An original
+cannon mount is bought, sold and released, then the actual guardian body reuses
+its slot and 0xffff emitter. Its first callback now performs the expected carry
+and random draws; the middle body emits its side pair.
+
+The middle constructor also leaves the contact-strength byte untouched. Fresh
+slots retain eight-point contact; slots reclaimed through real strong oscillator
+expiry retain sixteen. Actual mount/core contact tests fail before that change
+and pass afterward. The final constructor still writes its explicit strength.
+No health, movement, reward or source-clock rule is relaxed by these fixes.

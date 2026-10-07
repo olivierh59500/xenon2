@@ -207,6 +207,14 @@ func (w *World) bindWorldActor(actor *WorldActor) error {
 }
 
 func (w *World) storeActorResidue(actor *WorldActor) {
+	if actor.fifthIndex > 0 {
+		w.storeFifthGuardianResidue(actor)
+		return
+	}
+	if actor.fifthColumn != nil {
+		w.storeFifthColumnResidue(actor)
+		return
+	}
 	if actor.thirdCannon != nil {
 		w.storeThirdCannonResidue(actor)
 		return
