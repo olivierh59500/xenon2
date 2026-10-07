@@ -127,3 +127,51 @@ func TestDemoCompletesFirstLevelFromNormalMenuOptional(t *testing.T) {
 	}
 	t.Fatal("bounded normal-menu pilot did not complete the first level")
 }
+
+func TestDemoCompletesFirstTwoLevelsFromNormalMenuOptional(t *testing.T) {
+	if os.Getenv("XENON2_DEMO_PROGRESS_CHECK") == "" {
+		t.Skip("enable current-engine normal-menu campaign check explicitly")
+	}
+	g := frontendGame(t)
+	g.Config.Demo = true
+	g.Config.LogicPALRefreshes = 3
+	shops := [3][2]bool{}
+	defeated := [3]bool{}
+	var lastShop *shopui.State
+	for update := 0; update < 60*1200; update++ {
+		advanceFrontend(t, g, inputFrame{})
+		d, ok := g.Driver.(*worldDriver)
+		if !ok || d.session == nil {
+			continue
+		}
+		w := d.world
+		level := w.Level.Number
+		if level == 1 && w.FirstGuardian != nil && w.FirstGuardian.Defeated {
+			defeated[1] = true
+		}
+		if level == 2 && w.LevelFinished {
+			defeated[2] = true
+		}
+		if g.Screen == ShopScreen && g.shop != nil && g.shop != lastShop {
+			lastShop = g.shop
+			if level <= 2 {
+				slot := 0
+				if g.shopFinal {
+					slot = 1
+					if !defeated[level] || w.PendingExitDrops != 0 || !w.ExitReady {
+						t.Fatal("final merchant bypassed actual guardian/exit drops")
+					}
+				}
+				shops[level][slot] = true
+			}
+		}
+		if level == 3 {
+			if shops[1] != ([2]bool{true, true}) || shops[2] != ([2]bool{true, true}) || !defeated[1] || !defeated[2] || w.Cheats.Enabled() || w.GameOver || d.diagnostic {
+				t.Fatalf("two-stage route incomplete: shops%v defeated%v", shops, defeated)
+			}
+			t.Logf("Normal-menu pilot completed levels1 and2 after%d display updates; next stage ships%d shield%d cash%d", update+1, w.Equipment.Lives, w.Equipment.Shield, w.Money)
+			return
+		}
+	}
+	t.Fatal("normal-input pilot did not complete both original stages")
+}

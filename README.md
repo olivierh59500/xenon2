@@ -30,8 +30,8 @@ A key or click immediately returns control of the current game to the player.
 It does not grant health, equipment or money, skip guardians or change terrain.
 
 Full-game autonomous playback is still in development. The current pilot
-completes level one from the normal menu, including guardian destruction and
-both merchants, and starts level two. Cached terrain routes, ordinary bonus
+completes levels one and two from the normal menu, including guardian destruction
+and both merchants on each stage, and starts level three. Cached terrain routes, ordinary bonus
 collection, dive requests and shop purchases retain normal game rules. A
 separate second-stage opening reaches its first checkpoint with all three ships.
 The remaining stages and full campaign still need validated pilot strategies;

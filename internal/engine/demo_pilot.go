@@ -27,6 +27,9 @@ func (p *DemoPilot) NormalInput(w *World) Input {
 	if w.Ready {
 		return Input{Fire: true}
 	}
+	if input, handled := p.SecondCorridorInput(w); handled {
+		return input
+	}
 	if input, handled := p.SecondFinalInput(w); handled {
 		return input
 	}

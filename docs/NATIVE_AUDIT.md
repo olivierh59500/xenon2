@@ -710,3 +710,19 @@ and all 20 exit coins collected or expired. It also checks that a negative wait
 during active guardian travel is not mistaken for the initial dormant phase.
 This proves the arranged final-arena route, not a completed second stage or
 five-stage campaign. Corridor recovery before this arena remains open.
+
+## Connected first two stages through the normal frontend
+
+The second-stage corridor policy plans beyond the right-hand dead end and
+uses a short changing-command beam with a margin around predicted enemy
+collisions. An original checkpoint fixture traverses it in 909 public commands
+with one ship and 7 shield points. The final guardian controller now first
+reaches its legal preparation position from cameras above 288 before opening
+the barrier, rather than starting from a fixture-only pose.
+
+A current frontend regression completes both original stages from the ordinary
+menu after 55,330 display updates at the measured gameplay profile. It requires
+both guardians defeated, all final drops drained, both merchants on each stage,
+no diagnostic route and no trainer options. Level three starts with one ship,
+39 shield points and zero cash after real purchases. This is a reproducible
+two-stage route, not the requested complete five-stage autonomous run.

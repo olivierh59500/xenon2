@@ -10,6 +10,14 @@ func (p *DemoPilot) SecondFinalInput(w *World) (Input, bool) {
 		return Input{}, false
 	}
 	input := Input{Fire: (w.Frame+1)%2 != 0 && !w.blockedFireUntilRelease}
+	if w.ScrollY > 288 {
+		x, y, found := p.secondFinalWaypoint(w, 464)
+		if !found {
+			return Input{}, false
+		}
+		input.Motion = secondFinalRouteMotion(w, x, y)
+		return input, true
+	}
 	worldY := w.Player.Y + w.ScrollY
 	if w.SecondGuardian.WaitTimer < 0 && w.SecondGuardian.MotionRemaining == 0 && w.SecondGuardian.BodyCollision.Empty() {
 		// Three adjacent columns create a passage wide enough for the complete
