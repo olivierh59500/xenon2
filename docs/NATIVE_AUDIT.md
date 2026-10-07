@@ -1244,3 +1244,9 @@ frontend suite passes in 81.986 seconds with the known optional third-stage
 no-loss assertion explicitly excluded; that assertion remains enabled when
 requested and its failure is retained. Resource import/export, sound, controls,
 presentation and merchant suites pass, as do vet and the desktop rebuild.
+
+The corresponding Android ARM64 debug build also succeeds. APK signature and
+16 KiB alignment checks pass; the USB Pixel 10a accepts replacement installation
+and cold launch. The process remains alive afterward. The package includes the
+latest source-state corrections; graphics and manual touch were not revalidated
+while the device was locked. Build outputs remain locally excluded.
