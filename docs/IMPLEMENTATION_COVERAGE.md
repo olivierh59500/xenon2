@@ -104,6 +104,19 @@ the arena. The earlier legal-continue probe predates the fractional correction
 and does not establish the current carried route. Isolated arena wins are not
 substitutes for a connected victory through ordinary controls.
 
+The practiced presentation controller now also completes the entire first level
+from the production intro: known left junction, both genuine merchants, final
+guardian destruction and collected exit drops. Its exported MP4 is 413.05 seconds
+and ends before playing level two. A separate bounded continuation shows that
+this newer presentation profile still fails inside the second middle arena;
+the reference controller's two-stage proof does not establish that profile's
+campaign completion.
+
+Fifth guardian/column creation and updates now preserve the physical emitter,
+phase, direction and untouched fields written or retained by the native callbacks.
+Actual sold-cannon/expired-column slot reuse and fresh/strong middle contact cases
+verify the effects on first firing and later weapon admission.
+
 The remaining live checks are:
 
 - Play all five stages from the normal menu, including both shop boundaries,

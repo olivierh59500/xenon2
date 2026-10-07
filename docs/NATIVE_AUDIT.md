@@ -1379,3 +1379,11 @@ slots retain eight-point contact; slots reclaimed through real strong oscillator
 expiry retain sixteen. Actual mount/core contact tests fail before that change
 and pass afterward. The final constructor still writes its explicit strength.
 No health, movement, reward or source-clock rule is relaxed by these fixes.
+
+The full engine/native race suite passes in 55.637 seconds after these corrections.
+All eleven integrated GPU arena/beam fixtures and the final-core hit-to-flash
+pixel comparison pass. A carried presentation continuation from the full intro
+still completes only level one: repeated tag284 contact in the second arena
+exhausts both legal continues at 676.25 seconds. It never reaches level three.
+That controller limitation remains separate from the passing reference route
+and the source-state corrections.
