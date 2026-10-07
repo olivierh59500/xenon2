@@ -64,3 +64,44 @@ func TestTerrainRewindNativeHistoryAndCrushingOptional(t *testing.T) {
 		t.Fatalf("incomplete rewind comparisons:%d", cases)
 	}
 }
+
+func TestPlayerTerrainLoopNativeHistoryOptional(t *testing.T) {
+	data := playableOriginalWorldData(t, 5)
+	coverage, err := NewTerrainCoverage(data.Terrain)
+	if err != nil {
+		t.Fatal(err)
+	}
+	player := PlayerMotionState{X: 157, Y: 173}
+	rewind := NewTerrainRewind(4608, 160, 176)
+	scroll, maximum := 4607, 4608
+	passes := 0
+	nativeCombatRows(t, "player-terrain-loop.csv", func(v []int64) {
+		input := MotionInput{Up: true}
+		if passes >= 80 {
+			input.Left, input.Right = passes%80 < 40, passes%80 >= 40
+		}
+		touching := coverage.Touches(player.X, player.Y, scroll, *data.PlayerStencil)
+		handled, crushed := rewind.Advance(&player, scroll, 1, touching)
+		if crushed {
+			t.Fatal("source comparison crushed unexpectedly")
+		}
+		if !handled {
+			player.Advance(input, MotionContext{ScrollY: scroll, VisitedScrollY: maximum, BaseScrollStep: 1})
+			rewind.Record(scroll, player.X, player.Y)
+			if coverage.Touches(player.X, player.Y, scroll, *data.PlayerStencil) {
+				rewind.Timer, player.Inertia = 1, 0
+				maximum = max(maximum, scroll+16)
+			}
+		}
+		scroll = min(maximum, scroll-player.ScrollStep)
+		maximum = min(maximum, scroll+16)
+		contact := coverage.Touches(player.X, player.Y, scroll, *data.PlayerStencil)
+		if player.X != int(v[1]) || player.Y != int(v[2]) || scroll != int(v[3]) || maximum != int(v[4]) || rewind.Timer != int(v[5]) || player.ScrollStep != int(v[6]) || contact != (v[7] != 0) {
+			t.Fatalf("source terrain pass%d differs: player%+v scroll%d maximum%d rewind%d contact%v native%v", passes, player, scroll, maximum, rewind.Timer, contact, v)
+		}
+		passes++
+	})
+	if passes != 180 {
+		t.Fatalf("incomplete player-terrain loop comparison: %d", passes)
+	}
+}
