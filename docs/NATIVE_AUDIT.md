@@ -849,3 +849,32 @@ three with two ships, full shield and no credits, improving the previous one-shi
 admission. Shops use their real dialogues, random stream, quotes and purchases.
 A connected third-stage victory is still unverified; separate arena wins and
 the excluded instantaneous-shop replay do not establish that campaign outcome.
+
+## Turning-projectile pilot prediction
+
+The third-stage sweeper's shots keep their live motion in the specialized
+turning controller, not the generic projectile field. The pilot now forecasts
+a copy of that controller, including its 128/192 turning thresholds, fractional
+travel and removal boundary. Ordinary linear-shot forecasts retain their
+existing conservative behavior. General and arena planning share this lookup.
+Synthetic threshold, fractional-motion and retirement cases verify that live
+shots and their state remain unchanged. Connected frontend validation of the
+third-stage route remains open. Both first/second-stage normal-menu regressions
+still pass after this correction, with unchanged outcomes at both cadences.
+
+## Fourth final eye/core pilot
+
+The final guardian's core becomes continuously available after both eyes die;
+the alarm counter does not gate it. The pilot follows the body's actual screen
+height after the eyes and avoids bottom-edge reverse-scroll requests that would
+push the core out of view. Eight copied player, guardian, camera and random-state
+passes evaluate ordinary movement choices without modifying game rules.
+
+An original final-checkpoint fixture activates the guardian through the real
+encounter stream. The normal pilot dispatch destroys both 50 HP eyes and the
+100 HP core, drains the 20 exit coins and reaches the genuine final merchant in
+1,785 commands, with two ships, 23 shield and no continues. Admission/resource
+guards and prediction immutability are also tested. The source/resource engine
+suite passes; the excluded overlay race suite passes. Steady decision work
+measures about 59 microseconds with zero allocations on the M4 Max. This is an
+arena proof, not a complete fourth-stage or five-stage campaign victory.

@@ -80,11 +80,8 @@ func secondCorridorRouteMotion(w *World, x, y int) MotionInput {
 						if !shot.Active {
 							continue
 						}
-						pred := shot.Motion
-						for step := 0; step <= depth; step++ {
-							pred.Advance(w.ScrollDelta)
-						}
-						if int(pred.X>>16) >= rect.Left-4 && int(pred.X>>16) <= rect.Right+4 && int(pred.Y>>16) >= rect.Top-4 && int(pred.Y>>16) <= rect.Bottom+4 {
+						sx, sy, alive := demoProjectilePosition(w, shot, depth+1, w.ScrollDelta)
+						if alive && sx >= rect.Left-4 && sx <= rect.Right+4 && sy >= rect.Top-4 && sy <= rect.Bottom+4 {
 							b.score += 100000 / float64(depth+1)
 						}
 					}

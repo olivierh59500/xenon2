@@ -69,12 +69,8 @@ func (p *DemoPilot) ThirdMiddleInput(w *World) (Input, bool) {
 				if !shot.Active {
 					continue
 				}
-				prediction := shot.Motion
-				for range future + 1 {
-					_, _ = prediction.Advance(w.ScrollDelta)
-				}
-				sx, sy := int(prediction.X>>16), int(prediction.Y>>16)
-				if sx >= rect.Left-5 && sx <= rect.Right+5 && sy >= rect.Top-5 && sy <= rect.Bottom+5 {
+				sx, sy, alive := demoProjectilePosition(w, shot, future+1, w.ScrollDelta)
+				if alive && sx >= rect.Left-5 && sx <= rect.Right+5 && sy >= rect.Top-5 && sy <= rect.Bottom+5 {
 					score += 100000 / float64(future+1)
 				}
 			}

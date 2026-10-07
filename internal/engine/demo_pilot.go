@@ -27,6 +27,9 @@ func (p *DemoPilot) NormalInput(w *World) Input {
 	if w.Ready {
 		return Input{Fire: true}
 	}
+	if input, handled := p.FourthFinalInput(w); handled {
+		return input
+	}
 	if input, handled := p.ThirdMiddleInput(w); handled {
 		return input
 	}
@@ -157,11 +160,8 @@ func (p *DemoPilot) NormalInput(w *World) Input {
 				if !shot.Active {
 					continue
 				}
-				prediction := shot.Motion
-				for step := 0; step < future; step++ {
-					_, _ = prediction.Advance(w.ScrollDelta)
-				}
-				if absDemo(player.X-int(prediction.X>>16)) < c.SafetyMargin && absDemo(player.Y-int(prediction.Y>>16)) < c.SafetyMargin+4 {
+				sx, sy, alive := demoProjectilePosition(w, shot, future, w.ScrollDelta)
+				if alive && absDemo(player.X-sx) < c.SafetyMargin && absDemo(player.Y-sy) < c.SafetyMargin+4 {
 					score += 100000 / float64(future)
 					immediateThreat = immediateThreat || future <= 2
 				}
