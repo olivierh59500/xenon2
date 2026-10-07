@@ -2,6 +2,7 @@ package engine
 
 import (
 	"fmt"
+	"slices"
 	"testing"
 
 	"xenon2/internal/visualassets"
@@ -218,5 +219,119 @@ func TestOriginalFifthLethalMountHitRetainsIndividualFlashOptional(t *testing.T)
 				t.Fatal("following source callback did not publish the ordinary noncollidable wreck")
 			}
 		})
+	}
+}
+
+// The normal renderer at 0x5685a writes six muzzle tile words from the
+// clock-selected table. Its replacement at 0x56840 draws that table without
+// those writes, so consecutive flashes retain the last normal muzzle pose.
+func TestOriginalFifthMiddleFlashRetainsNormalMuzzleTilesOptional(t *testing.T) {
+	w, body, core := fifthCoreFlashWorld(t, false, true)
+	w.FifthMiddle.Parts[0].FireAccumulator = 246 // The native +10 starts clock 1.
+	wantHealth := 200
+	for _, pass := range []struct {
+		hit         bool
+		clock, pose int
+	}{{true, 1, 0}, {true, 2, 0}, {false, 3, 3}, {true, 4, 3}, {false, 5, 5}} {
+		if pass.hit {
+			addFifthFlashShot(t, w, false, int(core.X)+3, int(core.Y)+3, 1)
+			wantHealth--
+		}
+		if err := w.Step(Input{}); err != nil {
+			t.Fatal(err)
+		}
+		want := w.fifthMiddleArt.Components[0].TileFrames[pass.pose]
+		if w.FifthMiddle.Parts[0].Clock != pass.clock || body.Patch == nil || !slices.Equal(body.Patch.Tiles, want.Tiles) || body.Flash != pass.hit || core.Health != wantHealth || w.Score != 0 {
+			t.Fatalf("clock %d: flash %v must use last normal pose %d, got clock %d flash %v health %d", pass.clock, pass.hit, pass.pose, w.FifthMiddle.Parts[0].Clock, body.Flash, core.Health)
+		}
+	}
+}
+
+func TestOriginalFifthMiddleContactFlashRetainsPreUpdateMuzzleTilesOptional(t *testing.T) {
+	w, body, core := fifthCoreFlashWorld(t, false, true)
+	w.FifthMiddle.Parts[0].FireAccumulator = 246
+	w.Player = PlayerMotionState{X: int(core.X) + 3, Y: int(core.Y) + 3}
+	w.PreviousPlayer = w.Player
+	if err := w.Step(Input{}); err != nil {
+		t.Fatal(err)
+	}
+	if w.FifthMiddle.Parts[0].Clock != 1 || core.Health != 73 || !body.Flash || !slices.Equal(body.Patch.Tiles, w.fifthMiddleArt.Components[0].TileFrames[0].Tiles) {
+		t.Fatal("contact before the updater advanced the normal muzzle table during a flash")
+	}
+	w.Player = PlayerMotionState{X: 24, Y: 176}
+	w.PreviousPlayer = w.Player
+	if err := w.Step(Input{}); err != nil {
+		t.Fatal(err)
+	}
+	if body.Flash || !slices.Equal(body.Patch.Tiles, w.fifthMiddleArt.Components[0].TileFrames[2].Tiles) {
+		t.Fatal("normal muzzle selection did not resume after the contact flash")
+	}
+}
+
+func TestOriginalFifthMiddleFlashRetainsMuzzleAcrossClockResetOptional(t *testing.T) {
+	w, body, core := fifthCoreFlashWorld(t, false, true)
+	w.FifthMiddle.Parts[0].Clock = 7
+	if err := w.Step(Input{}); err != nil {
+		t.Fatal(err)
+	}
+	if !slices.Equal(body.Patch.Tiles, w.fifthMiddleArt.Components[0].TileFrames[8].Tiles) {
+		t.Fatal("fixture did not run the normal clock-eight renderer")
+	}
+	addFifthFlashShot(t, w, false, int(core.X)+3, int(core.Y)+3, 1)
+	if err := w.Step(Input{}); err != nil {
+		t.Fatal(err)
+	}
+	if w.FifthMiddle.Parts[0].Clock != 0 || core.Health != 199 || !body.Flash || !slices.Equal(body.Patch.Tiles, w.fifthMiddleArt.Components[0].TileFrames[8].Tiles) {
+		t.Fatal("flash rewrote the last normal muzzle table when the source clock reset")
+	}
+	if err := w.Step(Input{}); err != nil {
+		t.Fatal(err)
+	}
+	if body.Flash || !slices.Equal(body.Patch.Tiles, w.fifthMiddleArt.Components[0].TileFrames[0].Tiles) {
+		t.Fatal("normal clock-zero muzzle table did not return after the flash")
+	}
+}
+
+func TestOriginalFifthMiddleContactAfterNormalOrFlashRetainsMuzzleTilesOptional(t *testing.T) {
+	for _, priorFlash := range []bool{false, true} {
+		t.Run(fmt.Sprint(priorFlash), func(t *testing.T) {
+			w, body, core := fifthCoreFlashWorld(t, false, true)
+			w.FifthMiddle.Parts[0].FireAccumulator = 246
+			wantHealth, wantPose := 73, 1
+			if priorFlash {
+				addFifthFlashShot(t, w, false, int(core.X)+3, int(core.Y)+3, 1)
+				wantHealth, wantPose = 72, 0
+			}
+			if err := w.Step(Input{}); err != nil {
+				t.Fatal(err)
+			}
+			w.Player = PlayerMotionState{X: int(core.X) + 3, Y: int(core.Y) + 3}
+			w.PreviousPlayer = w.Player
+			if err := w.Step(Input{}); err != nil {
+				t.Fatal(err)
+			}
+			if core.Health != wantHealth || w.Equipment.Shield != 31 || !body.Flash || !slices.Equal(body.Patch.Tiles, w.fifthMiddleArt.Components[0].TileFrames[wantPose].Tiles) {
+				t.Fatalf("contact after prior flash %v must retain normal pose %d and source health %d", priorFlash, wantPose, wantHealth)
+			}
+		})
+	}
+}
+
+func TestOriginalFifthMiddleConsecutiveContactsDoNotCommitSkippedMuzzlePoseOptional(t *testing.T) {
+	w, body, core := fifthCoreFlashWorld(t, false, true)
+	w.FifthMiddle.Parts[0].FireAccumulator = 246
+	for range 2 {
+		w.Player = PlayerMotionState{X: int(core.X) + 3, Y: int(core.Y) + 3}
+		w.PreviousPlayer = w.Player
+		if err := w.Step(Input{}); err != nil {
+			t.Fatal(err)
+		}
+		if !slices.Equal(body.Patch.Tiles, w.fifthMiddleArt.Components[0].TileFrames[0].Tiles) {
+			t.Fatal("consecutive contact committed a muzzle pose skipped by the flash renderer")
+		}
+	}
+	// The source 200 HP core necessarily dies on its second 127-point contact.
+	if !w.FifthMiddle.Defeated || body.Active || core.Active || w.Score != 1500 || w.PendingExitDrops != 10 || w.Equipment.Shield != 23 {
+		t.Fatal("consecutive contacts changed the source core death, reward or surviving ship")
 	}
 }

@@ -1188,3 +1188,21 @@ The original-resource regression fails before this correction and passes through
 birth, changing camera positions, first-stage destruction, second-stage updates,
 final destruction and physical release. Existing native compound-cannon traces,
 fresh/reused contact-strength cases and the final-worm boundary still pass.
+
+## Fifth middle-body retained muzzle table
+
+The normal renderer at 0x5685a writes six muzzle tile words selected by the
+current firing clock. The replacement flash renderer at 0x56840 skips those
+writes and draws the last normal table. The Go callback previously selected the
+new clock's table before later damage replaced its renderer. A per-body pending
+selection now becomes the retained normal table only after a normal pass;
+multiple display draws cannot mutate it.
+
+Actual World.Step regressions cover startup, consecutive projectile flashes,
+normal/contact and flash/contact ordering, clock reset and two genuinely lethal
+player contacts. Relevant cases fail against the previous implementation and
+pass afterward, preserving native damage, score and exit drops. The complete
+fifth source/resource race run passes. These positive opaque muzzle codes may
+produce the same palette-15 flash pixels; this correction proves retained table
+state rather than a visible difference at those exact cells. The earlier
+middle-body firing-clock caveat is resolved for these boundaries.

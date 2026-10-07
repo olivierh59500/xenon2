@@ -5,6 +5,29 @@ import (
 	"xenon2/internal/visualassets"
 )
 
+// The middle body's normal renderer mutates its muzzle tile table. A flash
+// draws the last normal table instead, even when the firing clock has advanced.
+// Keep the current pass's normal choice pending until all damage callbacks have
+// selected its renderer; drawing the resulting frame never mutates this state.
+type fifthBodyRenderState struct {
+	normal, pending *visualassets.TilePatch
+	pass            uint64
+}
+
+func (w *World) fifthMiddleBodyRender(body *WorldActor) *fifthBodyRenderState {
+	if body.fifthBodyRender == nil {
+		body.fifthBodyRender = &fifthBodyRenderState{normal: &body.fifthPart.TileFrames[0]}
+	}
+	render := body.fifthBodyRender
+	if render.pending != nil && render.pass != w.Frame {
+		if !body.Flash || body.fifthFlashPass != render.pass {
+			render.normal = render.pending
+		}
+		render.pending = nil
+	}
+	return render
+}
+
 func (w *World) initializeFifthStage() error {
 	if w.Level.Number != 5 || len(w.Level.GuardianGroups) == 0 {
 		return nil
@@ -84,6 +107,7 @@ func (w *World) advanceFifthGuardian(final bool) {
 	var event FifthGuardianEvents
 	var creatures []FifthMouthCreature
 	var group *visualassets.GuardianGroup
+	var middleRender *fifthBodyRenderState
 	if final {
 		group = w.fifthFinalArt
 		result := w.FifthFinal.Advance(group, w.ScrollY, w.ScrollDelta, w.BaseScrollStep, w.MaximumScrollY, int(w.Frame), w.Player.X, w.Player.Y, &w.random)
@@ -97,6 +121,9 @@ func (w *World) advanceFifthGuardian(final bool) {
 		}
 	} else {
 		group = w.fifthMiddleArt
+		// Finalize the preceding pass before clearing its flash request. Player
+		// contact may already have selected this pass's replacement renderer.
+		middleRender = w.fifthMiddleBodyRender(w.fifthMiddleActors[0])
 		event = w.FifthMiddle.Advance(group, w.ScrollY, w.ScrollDelta, w.MaximumScrollY, w.Player.X, w.Player.Y, &w.random)
 	}
 	w.MaximumScrollY, w.VisitedScrollY = event.MaximumScroll, event.MaximumScroll
@@ -133,7 +160,11 @@ func (w *World) advanceFifthGuardian(final bool) {
 		actor.Extras = actor.Extras[:0]
 		if index == 0 {
 			if !final && len(actor.fifthPart.TileFrames) > state.Clock {
-				actor.Patch = &actor.fifthPart.TileFrames[state.Clock]
+				middleRender.pending, middleRender.pass = &actor.fifthPart.TileFrames[state.Clock], w.Frame
+				actor.Patch = middleRender.pending
+				if actor.Flash {
+					actor.Patch = middleRender.normal
+				}
 			}
 			if final {
 				actor.Patch = nil
@@ -239,11 +270,13 @@ func (w *World) damageFifthGuardian(actor *WorldActor, amount uint16) {
 		if state.Active {
 			// Core damage selects the owner's tile renderer, including the final
 			// body normally drawn only as scenery. Mouth overlays resume later.
-			body.Flash, body.fifthFlashPass = true, w.Frame
 			if actor.fifthFinal {
 				body.Patch = &body.fifthPart.TileFrames[0]
 				body.Extras = body.Extras[:0]
+			} else {
+				body.Patch = w.fifthMiddleBodyRender(body).normal
 			}
+			body.Flash, body.fifthFlashPass = true, w.Frame
 		}
 		w.storeActorResidue(body)
 	} else if !wasDestroyed && (actor.fifthFinal && index >= 3 && index < 21 || !actor.fifthFinal && index >= 1 && index <= 4) {
