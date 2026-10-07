@@ -31,6 +31,14 @@ at the expense of the basic loadout. Priorities work across both shop pages.
 A key or click immediately returns control of the current game to the player.
 It does not grant health, equipment or money, skip guardians or change terrain.
 
+After sixty seconds without input on the title menu, the expert controller starts
+an ordinary single-player demo at level one with cheats disabled. DEMO MODE and
+`-demo` select the same controller. Keyboard, mouse movement/buttons/wheel, held
+controls and touch restart the idle interval and immediately return control of
+an active demo; that same action is passed to the game. Fades, pause, the cheat
+menu and merchants do not count as title idle time. The controller remains in
+development; its complete five-level route is not yet validated.
+
 Full-game autonomous playback is still in development. The current pilot
 completes levels one and two from the normal menu, including guardian destruction
 and both merchants on each stage, and starts level three. The full-intro startup

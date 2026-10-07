@@ -106,6 +106,9 @@ type Game struct {
 	cheatRow                 int
 	cheatReturn              Screen
 	demo                     *demoDirector
+	titleIdleUpdates         int
+	pointerX, pointerY       int
+	pointerKnown             bool
 	paused                   bool
 	pauseFraction            float64
 	fade                     *presentation.PaletteFade
@@ -228,6 +231,11 @@ func (g *Game) advanceWithInput(controls inputFrame) error {
 		return ebiten.Termination
 	}
 	g.updates++
+	if g.pointerKnown && (controls.mouseX != g.pointerX || controls.mouseY != g.pointerY) {
+		controls.deviceActivity = true
+	}
+	g.pointerX, g.pointerY, g.pointerKnown = controls.mouseX, controls.mouseY, true
+	g.advanceTitleIdle(controls)
 	controls = g.demoControls(controls)
 	if g.fade != nil && !g.fade.Done {
 		for ticks := g.palClock.Advance(); ticks > 0; ticks-- {
@@ -527,16 +535,7 @@ func (g *Game) updateTitle(controls inputFrame) {
 
 func (g *Game) activateMenu() {
 	if g.menu == 4 {
-		g.Config.Demo = true
-		g.Config.Cheats = engine.CheatOptions{}
-		g.Config.Level = 1
-		g.applyCheatOptions()
-		g.demo = nil
-		g.menu = 0
-		g.pendingPlayers = 1
-		g.director.BeginStart()
-		g.Screen = PresentationScreen
-		g.selectMusic()
+		g.beginTitleDemo()
 		return
 	}
 	if g.menu == 3 {

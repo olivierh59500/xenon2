@@ -6,6 +6,8 @@ import (
 	"xenon2/internal/shopui"
 )
 
+const titleDemoIdleUpdates = 60 * 60
+
 // demoDirector supplies the same sampled controls as a human player. It never
 // grants equipment, changes collisions or advances past an undefeated guardian.
 type demoDirector struct {
@@ -24,11 +26,44 @@ type demoDirector struct {
 // DemoActive reports whether the normal-input pilot still owns the controls.
 func (g *Game) DemoActive() bool { return g.Config.Demo }
 
+func manualDemoActivity(manual inputFrame) bool {
+	return manual.deviceActivity || manual.anyKey || manual.mousePressed || manual.escape || manual.music || manual.pause || manual.cheatMenu ||
+		manual.confirm || manual.menuConfirm || manual.fire || manual.firePressed || manual.divePressed || manual.left || manual.right ||
+		manual.leftPressed || manual.rightPressed || manual.upPressed || manual.downPressed || manual.referenceLevel != 0 || manual.referenceShop ||
+		manual.cheatItem != engine.ItemNone || manual.cheatEnergy != 0 || manual.gameMotion != (engine.MotionInput{})
+}
+
+func (g *Game) advanceTitleIdle(manual inputFrame) {
+	if g.Config.Demo || g.Screen != TitleScreen || g.paused || g.fade != nil && !g.fade.Done || manualDemoActivity(manual) {
+		g.titleIdleUpdates = 0
+		return
+	}
+	g.titleIdleUpdates++
+	if g.titleIdleUpdates == titleDemoIdleUpdates {
+		g.beginTitleDemo()
+	}
+}
+
+func (g *Game) beginTitleDemo() {
+	g.Config.Demo, g.Config.HumanDemo = true, true
+	g.Config.Cheats = engine.CheatOptions{}
+	g.Config.Level = 1
+	g.applyCheatOptions()
+	g.demo = nil
+	g.titleIdleUpdates = 0
+	g.menu = 0
+	g.pendingPlayers = 1
+	g.pendingFire, g.pendingDive = false, false
+	g.director.BeginStart()
+	g.Screen = PresentationScreen
+	g.selectMusic()
+}
+
 func (g *Game) demoControls(manual inputFrame) inputFrame {
 	if !g.Config.Demo {
 		return manual
 	}
-	if manual.anyKey || manual.cheatMenu || manual.mousePressed || manual.escape || manual.firePressed || manual.divePressed || manual.gameMotion != (engine.MotionInput{}) {
+	if manualDemoActivity(manual) {
 		g.Config.Demo = false
 		g.demo = nil
 		return manual

@@ -11,6 +11,7 @@ import (
 // Recorded checks can supply the same controls without OS keyboard injection.
 type inputFrame struct {
 	escape, music, pause, anyKey                      bool
+	deviceActivity                                    bool
 	confirm, menuConfirm, firePressed, divePressed    bool
 	left, right                                       bool
 	leftPressed, rightPressed, upPressed, downPressed bool
@@ -38,6 +39,12 @@ func sampleInput() inputFrame {
 		fire:         ebiten.IsKeyPressed(ebiten.KeySpace) || ebiten.IsKeyPressed(ebiten.KeyControl),
 		mousePressed: inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft),
 	}
+	i.deviceActivity = len(inpututil.AppendPressedKeys(nil)) != 0 || len(ebiten.AppendTouchIDs(nil)) != 0
+	for button := ebiten.MouseButtonLeft; button <= ebiten.MouseButtonMax; button++ {
+		i.deviceActivity = i.deviceActivity || ebiten.IsMouseButtonPressed(button)
+	}
+	wheelX, wheelY := ebiten.Wheel()
+	i.deviceActivity = i.deviceActivity || wheelX != 0 || wheelY != 0
 	i.mouseX, i.mouseY = ebiten.CursorPosition()
 	i.gameMotion = engine.MotionInput{Left: i.left || ebiten.IsKeyPressed(ebiten.KeyA), Right: i.right || ebiten.IsKeyPressed(ebiten.KeyD), Up: ebiten.IsKeyPressed(ebiten.KeyArrowUp) || ebiten.IsKeyPressed(ebiten.KeyW), Down: ebiten.IsKeyPressed(ebiten.KeyArrowDown) || ebiten.IsKeyPressed(ebiten.KeyS)}
 	for n, key := range []ebiten.Key{ebiten.KeyDigit1, ebiten.KeyDigit2, ebiten.KeyDigit3, ebiten.KeyDigit4, ebiten.KeyDigit5} {
@@ -80,6 +87,10 @@ func sampleInput() inputFrame {
 // mergeTouchInput routes mobile edges through the same controls as the keyboard.
 // Menu and shop navigation keep their original one-press selection semantics.
 func mergeTouchInput(i inputFrame, touch controls.Frame) inputFrame {
+	i.deviceActivity = i.deviceActivity || touch.AnyPressed || touch.Tap || touch.X != 0 || touch.Y != 0
+	for _, held := range touch.Held {
+		i.deviceActivity = i.deviceActivity || held
+	}
 	i.anyKey = i.anyKey || touch.AnyPressed
 	i.escape = i.escape || touch.Pressed[controls.Menu]
 	i.pause = i.pause || touch.Pressed[controls.Pause]

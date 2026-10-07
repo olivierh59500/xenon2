@@ -34,7 +34,7 @@ func main() {
 	if err != nil {
 		fail(err)
 	}
-	config := app.Config{Level: *level, Frames: *frames, Screenshot: *screenshot, Mute: *mute, LogicPALRefreshes: *logicRefreshes, Demo: *demo}
+	config := app.Config{Level: *level, Frames: *frames, Screenshot: *screenshot, Mute: *mute, LogicPALRefreshes: *logicRefreshes, Demo: *demo, HumanDemo: *demo}
 	switch *view {
 	case "menu":
 		config.StartScreen = app.TitleScreen
