@@ -29,7 +29,7 @@ The first five payloads use a shared header at the original address `0x54e00`. I
 
 ## Timing
 
-The vertical-blank interrupt increments the display counter and samples the joystick. The main loop waits for four counter increments by default, or five in an alternate startup mode. The supplied trained release also increments this counter in an added interrupt hook, so four increments do not mean four display frames. The default threshold can represent two PAL refreshes, or 25 simulation passes per second. Trainer changes must be separated and live original measurements made before confirming the effective cadence of each screen and transition.
+The vertical-blank interrupt increments the display counter and samples the joystick. Its called hook increments the same counter again before an optional delay. The main loop waits for four counter increments by default, or five in an alternate startup mode, so four increments do not mean four display frames. The default threshold represents two PAL refreshes, or a maximum of 25 simulation passes per second when processing fits that interval. The hook's presence alone does not establish that it is a trainer modification. Live original measurements remain necessary for screens whose processing exceeds the wait interval.
 
 The Go version can draw at 60 frames per second while preserving the original simulation timing. Visual interpolation must not accelerate enemies, projectiles, level scrolling, firing delays or shop interactions.
 
@@ -175,8 +175,8 @@ The broad body collision is separate from its vulnerable eye. A projectile can
 hit the body and disappear without reducing health when it misses that eye. The
 articulated pieces block shots and damage the player; their ordinary collision
 does not award a fictitious destruction score. Death releases nine pairs of
-small and large cash rewards, using the source's different head/tail insertion
-order and pending-exit count.
+small and large cash rewards, appended in alternating order at the source
+projectile-list tail and tracked by the global pending-exit count.
 
 The integrated controller remains subject to full scene, checkpoint and stage
 progression comparisons. Other guardians and scripted scenery require their

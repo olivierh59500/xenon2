@@ -20,9 +20,9 @@ func (w *World) spawnWaveCash(x, y int, heavy bool) {
 	if !ok {
 		return
 	}
-	tag := int16(80)
+	tag := int16(96)
 	if heavy {
-		tag = 84
+		tag = 24
 	}
 	binding, err := w.reserveWorldActor(tag, ActorPoolProjectile, false)
 	if err != nil {
@@ -36,8 +36,8 @@ func (w *World) spawnWaveCash(x, y int, heavy bool) {
 	w.Collectibles = append([]*WorldCollectible{p}, w.Collectibles...)
 }
 
-// spawnExitCash creates the original alternating small-head and large-tail
-// rewards. Cash insertion order differs from ordinary projectile creation.
+// spawnExitCash appends both coins in each source pair to the projectile tail.
+// Allocation precedes the two position draws for each independent coin.
 func (w *World) spawnExitCash(pairs int) {
 	for range pairs {
 		for _, heavy := range []bool{false, true} {
@@ -49,30 +49,26 @@ func (w *World) spawnExitCash(pairs int) {
 			if !ok {
 				continue
 			}
-			x, _ := w.random.Below(300)
-			y, _ := w.random.Below(180)
-			tag := int16(80)
+			tag := int16(96)
 			if heavy {
-				tag = 84
+				tag = 24
 			}
-			binding, err := w.reserveWorldActor(tag, ActorPoolProjectile, heavy)
+			binding, err := w.reserveWorldActor(tag, ActorPoolProjectile, true)
 			if err != nil {
 				w.poolError = err
 				return
 			}
+			x, _ := w.random.Below(300)
+			y, _ := w.random.Below(180)
 			p := &WorldCollectible{ID: binding.EntityID, Binding: binding, Cash: CashValue(heavy), X: float64(x + 10), Y: float64(y + 6), Active: true,
 				Motion: CashMotion{X: int(x) + 10, Y: int(y) + 6, Mode: 7}, animation: animation, animationState: NewAnimation(animation.Animation)}
 			p.PreviousX, p.PreviousY = p.X, p.Y
 			p.Sprite = p.animationState.Sprite(animation.Animation)
 			w.poolCollectibles[binding.Slot] = p
 			w.PendingExitDrops++
-			if heavy {
-				w.nextTailOrder--
-				p.Order = w.nextTailOrder
-				w.Collectibles = append(w.Collectibles, p)
-			} else {
-				w.Collectibles = append([]*WorldCollectible{p}, w.Collectibles...)
-			}
+			w.nextTailOrder--
+			p.Order = w.nextTailOrder
+			w.Collectibles = append(w.Collectibles, p)
 		}
 	}
 }

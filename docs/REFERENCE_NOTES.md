@@ -55,16 +55,17 @@ number of available continues.
 
 ## Timing and 60 Hz presentation
 
-No verified simulation frequency has yet been established for this disk.
+The default wait interval is two PAL refreshes, allowing 25 logic passes per
+second when processing fits the interval. Elapsed cadence still needs live
+verification for the supplied disk.
 PAL video refresh, game logic frequency and rendered frame frequency are
 different quantities. An internet video labelled 50 FPS does not establish
 that the game's simulation updates fifty times per second.
 
-The supplied unpacked program also contains an additional clock-counter
-increment in a routine called from the vertical-blank interrupt. Its wait
-routine uses a configurable counter threshold. The trained release's
-effective cadence therefore cannot be treated as an unmodified retail
-reference until those changes have been separated from the original code.
+The supplied unpacked program contains two clock-counter increments per
+vertical-blank interrupt. Its wait routine uses a configurable threshold.
+This establishes the counter mechanics; identifying a trainer change requires
+comparison evidence rather than the presence of the second increment alone.
 
 The game reads the Amiga beam-position registers and joystick hardware.
 The beam wait and its main-loop callers must be traced before choosing the

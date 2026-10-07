@@ -43,8 +43,8 @@ func TestFirstGuardianWorldCompletionWaitsForExitCash(t *testing.T) {
 		t.Fatal("guardian death must emit the source's twenty random explosions")
 	}
 	for _, coin := range w.Collectibles {
-		if coin.Cash == 50 && coin.Order < 0 || coin.Cash == 100 && coin.Order >= 0 {
-			t.Fatal("small and large exit cash must retain head/tail insertion")
+		if coin.Order >= 0 {
+			t.Fatal("both source reward coins must retain tail insertion")
 		}
 		coin.Motion.Mode, coin.Motion.Y = 0, 199
 		w.advanceCollectible(coin)
