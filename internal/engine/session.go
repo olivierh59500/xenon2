@@ -68,6 +68,21 @@ func (s *Session) DeclineContinue() (turnChanged bool) {
 	return changed
 }
 
+// AcceptContinue records the new ships on the accepting player's saved game,
+// then follows ordinary turn admission. A live incomplete opponent plays next.
+func (s *Session) AcceptContinue() bool {
+	w := s.ActiveWorld()
+	next := s.Current ^ 1
+	change := s.PlayerCount == 2 && !s.Completed[next] && !s.Players[next].GameOver && s.Players[next].Equipment.Lives > 0
+	w.deferCheckpointRestart = change
+	accepted := w.AcceptContinue()
+	w.deferCheckpointRestart = false
+	if accepted && change {
+		s.switchTurn()
+	}
+	return accepted
+}
+
 func (s *Session) switchTurn() bool {
 	if s.PlayerCount != 2 {
 		return false

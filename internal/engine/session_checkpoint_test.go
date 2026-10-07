@@ -172,3 +172,28 @@ func TestAlternatingCheckpointRetainsGuardianSlotsAndSingleCameraShiftOptional(t
 		t.Fatal("incoming restore applied a second guardian camera shift or reset damage")
 	}
 }
+
+func TestSinglePlayerContinueRestoresOnceAndKeepsStageData(t *testing.T) {
+	s, err := NewSession(testWorld(t).Level, 1, NewRandomState())
+	if err != nil {
+		t.Fatal(err)
+	}
+	w := s.ActiveWorld()
+	w.Equipment.ApplyItem(ItemCannon)
+	w.Checkpoint.Loadout = w.Equipment.WeaponLoadout
+	w.Checkpoint.PlayerX = 120
+	w.Checkpoint.ScrollY = 1500
+	w.Checkpoint.Money = 200
+	w.Level.Terrain.Map[100] = 77
+	w.GameOver = true
+	w.Equipment.Lives = 0
+	w.Score = 9000
+	w.DisplayScore = 9000
+	serial := w.Equipment.NextWeaponSerial
+	if !s.AcceptContinue() || s.Current != 0 || !w.Ready || !w.PlayerAlive || w.Equipment.Lives != 3 || w.Score != 0 || w.DisplayScore != 0 || w.ContinueCredits != 1 {
+		t.Fatal("single-player continue did not restore its source game state")
+	}
+	if w.Player.X != 120 || w.ScrollY != 1500 || w.Money != 200 || w.Level.Terrain.Map[100] != 77 || w.Equipment.NextWeaponSerial != serial+2 {
+		t.Fatal("continue lost its map/checkpoint or initialized guns more than once")
+	}
+}

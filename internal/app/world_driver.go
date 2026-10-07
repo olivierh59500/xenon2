@@ -237,7 +237,14 @@ func (g *Game) StartLevel(level int) error {
 		driver.world.SetRandomState(*g.starfield.Random)
 	}
 	g.onContinue = func() error {
-		if !driver.world.AcceptContinue() {
+		accepted := false
+		if driver.session != nil {
+			accepted = driver.session.AcceptContinue()
+			driver.world = driver.session.ActiveWorld()
+		} else {
+			accepted = driver.world.AcceptContinue()
+		}
+		if !accepted {
 			return fmt.Errorf("continue unavailable")
 		}
 		g.View = driver.Frame()
@@ -262,9 +269,10 @@ func (g *Game) StartSession(level, players int) error {
 	g.palClock = engine.NewFrameClock(50, 60)
 	g.readyRunning, g.gameOverRunning = false, false
 	g.onContinue = func() error {
-		if !driver.world.AcceptContinue() {
+		if !driver.session.AcceptContinue() {
 			return fmt.Errorf("continue unavailable")
 		}
+		driver.world = driver.session.ActiveWorld()
 		g.View = driver.Frame()
 		g.rememberFrameHistory()
 		return nil

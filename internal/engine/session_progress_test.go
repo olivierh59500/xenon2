@@ -184,6 +184,58 @@ func TestCompletedTurnAdmissionNativeRoutesOptional(t *testing.T) {
 	t.Logf("Compared %d original READY/ending routes after the opponent's final loss.", len(rows)-1)
 }
 
+func TestContinueAdmissionNativeRoutesOptional(t *testing.T) {
+	root := os.Getenv("XENON2_NATIVE_TRACE_DIR")
+	if root == "" {
+		t.Skip("local original continue admission routes not supplied")
+	}
+	f, err := os.Open(filepath.Join(root, "continue-admission-trace.csv"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer f.Close()
+	rows, err := csv.NewReader(f).ReadAll()
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, row := range rows[1:] {
+		n := func(i int) int {
+			v, err := strconv.Atoi(row[i])
+			if err != nil {
+				t.Fatal(err)
+			}
+			return v
+		}
+		s, err := NewSession(stageData(t, 1), 2, NewRandomState())
+		if err != nil {
+			t.Fatal(err)
+		}
+		s.Current = n(1)
+		accepting := s.ActiveWorld()
+		accepting.GameOver = true
+		accepting.Equipment.Lives = 0
+		accepting.Score = 12345
+		accepting.DisplayScore = 12345
+		other := s.Current ^ 1
+		if n(2) == 0 {
+			s.Players[other].GameOver = true
+			s.Players[other].Equipment.Lives = 0
+		}
+		s.Completed[other] = n(3) != 0
+		if n(4) != 0 {
+			accepting.Equipment.ApplyItem(ItemSuperNashwan)
+			accepting.Equipment.BeginSuperLoadout()
+		}
+		if !s.AcceptContinue() || s.Current != n(5) || !s.ActiveWorld().Ready || accepting.GameOver || accepting.Equipment.Lives != 3 || accepting.Score != 0 || accepting.DisplayScore != 0 || accepting.ContinueCredits != 1 {
+			t.Fatalf("continue admission differs: native%v current%d saved%+v", row, s.Current, accepting.Equipment)
+		}
+	}
+	if len(rows)-1 != 16 {
+		t.Fatal("incomplete continue admission routes")
+	}
+	t.Logf("Compared %d original accepted-continue player-admission routes.", len(rows)-1)
+}
+
 func TestFifthStageLoopsDifficultyAndAwardsOneCreditPerPlayer(t *testing.T) {
 	s, err := NewSession(stageData(t, 5), 2, NewRandomState())
 	if err != nil {

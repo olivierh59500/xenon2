@@ -475,7 +475,9 @@ func (w *World) AcceptContinue() bool {
 	w.Equipment.Lives = 3
 	w.Score = 0
 	w.DisplayScore = 0
-	w.RestartCheckpoint()
+	if !w.deferCheckpointRestart {
+		w.RestartCheckpoint()
+	}
 	w.Ready = true
 	return true
 }
