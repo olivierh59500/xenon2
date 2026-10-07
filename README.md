@@ -12,8 +12,7 @@ carrier rewards, checkpoint recovery, alternating players, and both sections
 of the five levels, including their compound guardians. Original shop, attract,
 HUD, loading and ending presentation are connected. All fixed encounter families
 are implemented. Shared-state and artwork audits and full-game validation remain
-in progress;
-this build is not yet the complete playable game.
+in progress; this build is not yet the complete playable game.
 
 ## Local resources
 
@@ -26,12 +25,12 @@ in Git. Extraction tools rebuild the local resources reproducibly.
 GOWORK=off go run ./cmd/xenon2
 ```
 
-The level reference view uses the arrow keys or WASD for movement and Space for
-firing; Alt requests a dive. In reference views only, keys 1–5 select a level
+Use the arrow keys or WASD for movement and Space or Control for firing; Alt
+requests a dive. In reference views only, keys 1–5 select a level
 and F2 opens the shop inspection route. Escape returns to the menu. M toggles
 music. P pauses gameplay; any key or a fire click resumes it while the soundtrack
-continues. The normal menu supports one or two
-alternating players. Full source timing and framebuffer comparisons remain in
+continues. The normal menu supports one or two alternating players. Full source
+timing and framebuffer comparisons remain in
 progress for integrated scenes and the complete five-level run.
 
 ```sh
@@ -57,6 +56,17 @@ separate from the original game's rules.
 
 The [asset setup guide](docs/ASSET_SETUP.md) describes the reproducible extraction
 pipeline, and the [audio notes](docs/AUDIO.md) document the independent replay.
+
+To build a standalone desktop executable after extraction:
+
+```sh
+mkdir -p bin
+GOWORK=off go build -o bin/xenon2 ./cmd/xenon2
+./bin/xenon2
+```
+
+The exported assets are embedded at build time. A clean checkout can compile
+the tools and game before extraction, but playing requires the local resources.
 
 Generated references and captures remain local. The original shop's static
 bitmaps and portrait poses, all sixteen caption/logo sampling steps, the HUD and
