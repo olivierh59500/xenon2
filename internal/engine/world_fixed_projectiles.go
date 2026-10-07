@@ -78,6 +78,7 @@ func (w *World) advanceTurningFixedShot(shot *WorldProjectile) error {
 }
 
 func (w *World) advanceFixedAimingActor(actor *WorldActor) {
+	actor.PreviousX, actor.PreviousY = actor.X, actor.Y
 	actor.Flash = false
 	state, art := actor.fixedAiming, w.Level.FixedSprites.Projectile
 	event := state.Advance(art, w.fixedProjectileInputs(), func(name string) visualassets.CollisionBox {

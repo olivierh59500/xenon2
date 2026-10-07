@@ -211,6 +211,7 @@ func (w *World) advanceMovingActor(actor *WorldActor) error {
 
 func (w *World) advanceSceneryActor(actor *WorldActor) error {
 	if actor.thirdScenery {
+		actor.PreviousX, actor.PreviousY = actor.X, actor.Y
 		actor.Visible = w.thirdFinalUpdated
 		actor.X, actor.Y = 0, float64(-w.ScrollY)
 		return nil
