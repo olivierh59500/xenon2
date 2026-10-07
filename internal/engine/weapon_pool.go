@@ -37,9 +37,13 @@ func (r *WeaponRuntime) storeProjectile(c WeaponContext, p *runtimeWeaponProject
 	residue := &p.Binding.Residue
 	residue.X, residue.Y = int16(p.Render.X), int16(p.Render.Y)
 	switch p.Render.Kind {
-	case "small-shot", "launcher-missile":
+	case "small-shot":
 		residue.Direction, residue.VerticalVelocity = int16(p.Small.VelocityX), int16(p.Small.VelocityY)
 		residue.Counter, residue.PowerOrScore = 0, uint16(p.Render.Tier)
+	case "launcher-missile":
+		// Launcher construction and movement leave the prior slot counter intact.
+		residue.Direction, residue.VerticalVelocity = int16(p.Small.VelocityX), int16(p.Small.VelocityY)
+		residue.PowerOrScore = uint16(p.Render.Tier)
 	case "cannon-ball":
 		residue.Counter = 0
 	case "laser":

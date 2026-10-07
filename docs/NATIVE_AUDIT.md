@@ -1260,3 +1260,18 @@ credit and restores three ships. Subsequent contacts with moving resource tag
 No third shop or final gate is reached. This bounded temporary-overlay probe
 changes no rules or controller policy and supersedes the older carried result;
 the exact first lethal damage callback remains uninstrumented.
+
+## Launcher missile counter preservation
+
+Launcher emission at 0x41da–0x421c leaves the previous slot's counter word
+untouched. Ordinary basic-shot emission explicitly clears it at 0x61d8. Their
+shared Go storage formerly cleared both. Separate cases now preserve the
+launcher's value without changing the basic shot.
+
+A resource-backed regression emits a laser, lets it expire with counter 65,
+reuses that slot for the next ordinary weapon, lets the projectile expire, and
+installs a flamer into the same physical slot. The launcher case fails before
+the correction, including the flamer's missing release-time effect cleanup.
+The basic-shot control passes before and after. Both now pass, together with
+the complete engine/native suite and its 43.173-second race run. No controller
+outcome snapshots change.
