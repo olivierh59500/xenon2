@@ -9,6 +9,7 @@ type PresentationPilot struct {
 	// PALRefreshes matches the host's gameplay cadence; zero uses three ticks.
 	PALRefreshes            int
 	forecast                WorldForecast
+	middleForecastPolicy    DemoPilot
 	planner                 DemoPilot
 	world                   *World
 	frame                   uint64
@@ -74,6 +75,7 @@ func (p *PresentationPilot) NormalInput(w *World) Input {
 		input.Fire = false
 	}
 	input = p.forecastOpeningGuard(w, input)
+	input = p.forecastThirdMiddleInput(w, input)
 	return input
 }
 

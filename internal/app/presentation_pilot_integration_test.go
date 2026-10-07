@@ -313,3 +313,32 @@ func TestExpertThirdRouteReachesSecondCheckpointWithoutShipLossOptional(t *testi
 	}
 	t.Fatal("bounded expert route did not reach the second third-stage checkpoint")
 }
+
+func TestExpertThirdMiddleVictoryFromCompleteIntroWithoutShipLossOptional(t *testing.T) {
+	if os.Getenv("XENON2_HUMAN_PRESENTATION_CHECK") == "" {
+		t.Skip("enable the connected expert middle fight explicitly")
+	}
+	g := verifyPresentationFirstTwoLevelsFromDefaultIntro(t)
+	w := g.Driver.(*worldDriver).world
+	ships, credits := w.Equipment.Lives, w.ContinueCredits
+	admitted, initialShield := false, 0
+	for update := 0; update < 60*240; update++ {
+		advanceFrontend(t, g, inputFrame{})
+		d := g.Driver.(*worldDriver)
+		w = d.world
+		if w.Level.Number != 3 || !w.PlayerAlive || w.GameOver || w.Equipment.Lives != ships || w.ContinueCredits != credits || w.Cheats.Enabled() || d.diagnostic {
+			t.Fatal("expert fight consumed a carried ship or changed ordinary rules")
+		}
+		if w.ThirdMiddle != nil && !admitted {
+			admitted, initialShield = true, w.Equipment.Shield
+		}
+		if g.Screen == ShopScreen && !g.shopFinal {
+			if !admitted || w.ThirdMiddle == nil || !w.ThirdMiddle.Defeated || w.ThirdMiddle.EyeHealth != [2]uint16{} || w.PendingExitDrops != 0 || w.LevelFinished || w.Equipment.Shield < initialShield-4 {
+				t.Fatal("middle merchant omitted the genuine low-damage guardian victory")
+			}
+			t.Logf("Carried expert middle merchant at frame%d camera%d: ships%d shield%d from%d credits%d", w.Frame, w.ScrollY, ships, w.Equipment.Shield, initialShield, credits)
+			return
+		}
+	}
+	t.Fatal("bounded carried expert fight did not defeat both eyes and collect the merchant drops")
+}

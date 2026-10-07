@@ -57,10 +57,9 @@ window. It retains its prepared command unless the full callback simulation
 predicts damage, then ranks ordinary movements by survival and remaining shield.
 The guard advances the host-configured PAL cadence and does not enter a frontend.
 The genuine carried route reaches checkpoints 4032 and 3408 without another ship
-loss, retaining 39 and 31 shield respectively. Later middle-guardian victory is
-not established; an unrestricted trial can choose a stationary safe position.
+loss, retaining 39 and 31 shield respectively.
 
-This first implementation prioritizes correct ownership over allocation reuse.
+The initial implementation prioritized correct ownership over allocation reuse.
 On the M4 Max, arena Load measures 17–41 microseconds and 91–147 KiB of allocations;
 Load plus 6 passes measures 52–142 microseconds with 126–275 KiB. The tested safe-opening
 guard measures 46 microseconds/133 KiB; searching nine alternatives costs more.
@@ -98,3 +97,33 @@ all-five parity and isolation pass under the race detector. Warm Load measures
 about 3–8 microseconds and 386–4,358 bytes on M4 Max, compared with 17–41 microseconds
 and 91–147 KiB initially. Future World.Step callbacks still allocate; this change
 reduces copy pressure, not the whole tactical policy's cost.
+
+## Third middle guardian
+
+The boss controller compares nine ordinary movements over 36 real gameplay
+passes, including the complete arm lunge and recovery. Each branch holds its
+initial movement for three simulated passes, then follows the source-based
+six-pass policy. Only its first command is applied to the live game. Survival
+and remaining shield rank before signed eye health and firing alignment. Trigger
+release and diving still suppress fire normally.
+
+The complete-intro regression carries the ordinary inventory, damage, merchant
+purchases and credits through the first two levels. It defeats both eyes of the
+third middle guardian and collects all real exit drops at frame 2448/camera 2739,
+retaining its admission ship and 19 shield points. The constructor also clears
+the entire source emitter word for all 17 parts: preserving a reused slot's low
+byte previously created an extra shot and changed the shared RNG stream.
+
+The continuation proposal caches terrain coverage as row words; 18,980 comparisons
+across the five source maps and a live patch match the original stencil test.
+This cache only proposes commands. Every branch still executes actual mutable-map
+collision through World.Step. With persistent proposal storage, a warm M4 Max
+decision measures about 3.9 ms and 20,234 allocations. An earlier word-cache-only
+Pixel sample measured 64.7 ms, down from 209.5 ms before that optimization. Those
+versions differ: neither number establishes a mobile frame budget for the final
+policy. CPU and allocation reduction remain necessary before calling the full
+boss controller ready for smooth Android playback.
+
+The current connected route still stalls in the post-merchant third-stage
+corridor. Third-stage completion, levels four and five, ending and near-lossless
+campaign play are not established by this boss result.

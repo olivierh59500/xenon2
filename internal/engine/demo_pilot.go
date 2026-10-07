@@ -14,12 +14,13 @@ type DemoPilotConfig struct {
 // second-level opening policy and conservative short-horizon obstacle avoidance.
 // It is a development controller, not a guarantee of completing every stage.
 type DemoPilot struct {
-	Config             DemoPilotConfig
-	navigation         *demoNavigation
-	retreatGoal        int
-	practicedRoute     bool
-	retreatX, retreatY int
-	secondArenaScratch []demoSecondDefenseView
+	Config              DemoPilotConfig
+	navigation          *demoNavigation
+	retreatGoal         int
+	practicedRoute      bool
+	retreatX, retreatY  int
+	secondArenaScratch  []demoSecondDefenseView
+	middleTerrainFrozen bool
 }
 
 var demoDirections = [9]MotionInput{{}, {Left: true}, {Right: true}, {Up: true}, {Down: true}, {Left: true, Up: true}, {Right: true, Up: true}, {Left: true, Down: true}, {Right: true, Down: true}}

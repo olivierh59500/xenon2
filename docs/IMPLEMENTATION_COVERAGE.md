@@ -145,8 +145,12 @@ passes. These are source-state fixtures, not additional campaign progress.
 The expert opening now reaches the first third-stage checkpoint with its carried
 ship and credits intact, using changing directions within a copied source horizon.
 A separate reference continuation destroys the terrain cannon that blocks the
-later passage by ordinary shots. Neither result establishes low-loss play across
-all stages. Automatic title admission after sixty idle seconds is shared by the
+later passage by ordinary shots. The connected expert now also defeats both eyes
+of the third middle guardian, collects its real drops and reaches the middle
+merchant with its carried ship and all 19 admission shield points intact. The
+36-pass boss forecast covers the arm's extension and recovery, but its mobile
+cost remains too high for a smooth-frame claim. These results do not establish
+low-loss play across all stages. Automatic title admission after sixty idle seconds is shared by the
 desktop and Android frontend, with immediate manual takeover.
 
 The remaining live checks are:

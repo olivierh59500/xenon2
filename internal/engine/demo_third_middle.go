@@ -11,6 +11,16 @@ func (p *DemoPilot) ThirdMiddleInput(w *World) (Input, bool) {
 		return Input{}, false
 	}
 	const horizon = 6
+	var terrain *demoNavigation
+	if w.Coverage.Columns == 20 && w.Coverage.Rows == 300 && len(w.Coverage.Map) == 6000 {
+		if p.navigation == nil {
+			p.navigation = &demoNavigation{}
+		}
+		if !p.middleTerrainFrozen || p.navigation.world != w {
+			p.navigation.refresh(w)
+		}
+		terrain = p.navigation
+	}
 	eye := 3
 	if int16(w.ThirdMiddle.EyeHealth[0]) <= 0 {
 		eye = 4
@@ -54,7 +64,13 @@ func (p *DemoPilot) ThirdMiddleInput(w *World) (Input, bool) {
 		player, score := w.Player, 0.0
 		for future := 0; future < horizon; future++ {
 			player.Advance(candidate, MotionContext{ScrollY: w.ScrollY, VisitedScrollY: w.MaximumScrollY, BaseScrollStep: w.BaseScrollStep})
-			if w.Coverage.Touches(player.X, player.Y, w.ScrollY, *w.Level.PlayerStencil) {
+			touching := false
+			if terrain != nil {
+				touching = terrain.touching(player.X, player.Y+w.ScrollY)
+			} else {
+				touching = w.Coverage.Touches(player.X, player.Y, w.ScrollY, *w.Level.PlayerStencil)
+			}
+			if touching {
 				score += 10000000
 				break
 			}

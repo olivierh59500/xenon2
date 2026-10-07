@@ -100,15 +100,15 @@ func (n *demoNavigation) refresh(w *World) bool {
 		changed = true
 		n.tiles[index] = id
 		column, row := index%20, index/20
-		for y := row * 16; y < row*16+16; y++ {
-			for x := column * 16; x < column*16+16; x++ {
-				mask := uint32(1) << uint(31-x%32)
-				if w.Coverage.Solid(x, y) {
-					n.rows[y][x/32] |= mask
-				} else {
-					n.rows[y][x/32] &^= mask
-				}
-			}
+		shift := uint(16 * (1 - column%2))
+		mask := uint32(0xffff) << shift
+		coverage := w.Coverage.coverage[id]
+		if id == 0 {
+			coverage = [16]uint16{}
+		}
+		for y, pixels := range coverage {
+			word := &n.rows[row*16+y][column/2]
+			*word = *word&^mask | uint32(pixels)<<shift
 		}
 	}
 	return changed

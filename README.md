@@ -77,10 +77,12 @@ completes that route in about 6 minutes 53 seconds with two ships remaining.
 Ordinary damage and purchases still apply. The broader five-level presentation
 controller now also completes stages one and two from the full intro, visiting
 all four merchants and entering stage three with one ship after ordinary
-recovery. Its third opening now reaches the first two checkpoints without losing
-the carried ship. Connected victory through stages three to five and near-lossless
-expert play remain unverified. Source-based preparation now preserves at least
-39 shield points at the first checkpoint and 31 at the second. See the [expert forecast design](docs/EXPERT_FORECAST.md)
+recovery. Its third opening reaches the first two checkpoints without losing
+the carried ship, preserving 39 and 31 shield points respectively. It also defeats
+both eyes of the third middle guardian and collects the real merchant drops
+without another ship loss or any shield loss during the fight. Connected victory
+through stages three to five and near-lossless expert play remain unverified.
+The longer boss forecast still needs mobile performance work. See the [expert forecast design](docs/EXPERT_FORECAST.md)
 for the remaining full-world planning work.
 Generated MP4, PNG poster and chapter JSON files stay
 under locally excluded `recordings/`. The export command requires Go 1.26 or
