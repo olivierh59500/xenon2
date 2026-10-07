@@ -1326,3 +1326,26 @@ shield, score 9,880 and 600 cash. The completed first-level frontend route passe
 both merchants, destroys the final guardian, exhausts its exit drops and enters
 level two after 413.07 seconds. It retains two ships; this is a complete first
 stage with ordinary damage, not a lossless run or a five-stage campaign proof.
+
+## Complete first-level MP4 and validation
+
+The `-complete-level1` recording mode returns Ebitengine termination only when
+the ordinary session enters level two. Exhausted recovery or a twenty-minute
+stall returns an export error instead of marking a partial recording complete.
+Its frontend test uses the same configured constructor and completion wrapper.
+
+The completed export contains 24,783 frames: 413.05 seconds at 1280×800/60 FPS,
+H.264 video and AAC stereo at 44,100 Hz. Its level-specific report marks
+completion, including the intro, both merchants, the guardian and next-stage
+loading. Full decoding passes. Window-only gameplay, both merchants and the
+guardian were visually sampled; the original music/effects remain audible in
+the encoded stream. The MP4, poster and chapter report replace the old
+three-minute presentation and remain excluded from Git.
+
+The complete engine/native race suite passes in 55.411 seconds. Production
+GPU/audio frontend checks pass in 93.686 seconds with the previously known
+optional third-stage no-loss assertion explicitly excluded. Both reference
+two-stage routes and their full-intro variants still pass unchanged. Vet and the
+desktop rebuild pass. These results establish the requested first-level video
+and new controller behavior, while the full five-level conversion audit remains
+open.
