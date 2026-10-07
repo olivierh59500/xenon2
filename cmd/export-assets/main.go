@@ -34,11 +34,25 @@ func main() {
 		if err != nil {
 			fail(err)
 		}
-		terrain, err := visualassets.DecodeTerrain(data)
+		var fixed *visualassets.FixedTiles
+		var extraTiles []uint16
+		fixed, extraTiles, err = visualassets.DecodeFixedTiles(index+1, data)
+		if err != nil {
+			fail(err)
+		}
+		terrain, err := visualassets.DecodeTerrainWithTiles(data, extraTiles)
 		if err != nil {
 			fail(fmt.Errorf("level %d: %w", index+1, err))
 		}
 		prefix := filepath.Join(*output, fmt.Sprintf("level-%d", index+1))
+		if fixed != nil {
+			if err := visualassets.RemapFixedTiles(fixed, terrain.SourceTileIDs); err != nil {
+				fail(err)
+			}
+			if err := writeJSON(prefix+"-fixed-tiles.json", fixed); err != nil {
+				fail(err)
+			}
+		}
 		if err := writeJSON(prefix+".json", terrain); err != nil {
 			fail(err)
 		}
@@ -60,6 +74,26 @@ func main() {
 			fail(fmt.Errorf("level %d encounters: %w", index+1, err))
 		}
 		if err := writeJSON(prefix+"-encounters.json", encounters); err != nil {
+			fail(err)
+		}
+		actors, err := visualassets.DecodeWaveActors(data, terrain.Palette, encounters)
+		if err != nil {
+			fail(fmt.Errorf("level %d actors: %w", index+1, err))
+		}
+		if err := writeJSON(prefix+"-actors.json", actors); err != nil {
+			fail(err)
+		}
+		if err := writePNG(prefix+"-actors.png", actors.Atlas.Image); err != nil {
+			fail(err)
+		}
+		fixedSprites, err := visualassets.DecodeFixedSprites(index+1, data, terrain.Palette)
+		if err != nil {
+			fail(err)
+		}
+		if err := writeJSON(prefix+"-fixed-sprites.json", fixedSprites); err != nil {
+			fail(err)
+		}
+		if err := writePNG(prefix+"-fixed-sprites.png", fixedSprites.Atlas.Image); err != nil {
 			fail(err)
 		}
 		fmt.Printf("Exported level %d: %d tiles, %d map rows.\n", index+1, len(terrain.Tiles), terrain.Rows)
@@ -108,6 +142,16 @@ func main() {
 	if err := writePNG(filepath.Join(*output, "ships.png"), shipArt.Atlas.Image); err != nil {
 		fail(err)
 	}
+	commonArt, err := visualassets.DecodeCommonActorArtWithEquipment(executable, shopData, shop, palette)
+	if err != nil {
+		fail(err)
+	}
+	if err := writeJSON(filepath.Join(*output, "common-actors.json"), commonArt); err != nil {
+		fail(err)
+	}
+	if err := writePNG(filepath.Join(*output, "common-actors.png"), commonArt.Image); err != nil {
+		fail(err)
+	}
 	shopArt, err := visualassets.DecodeShopArt(shopData, executable, shop)
 	if err != nil {
 		fail(err)
@@ -116,6 +160,16 @@ func main() {
 		fail(err)
 	}
 	if err := writePNG(filepath.Join(*output, "shop-art.png"), shopArt.Atlas.Image); err != nil {
+		fail(err)
+	}
+	title, err := visualassets.DecodeTitleArt(executable)
+	if err != nil {
+		fail(err)
+	}
+	if err := writeJSON(filepath.Join(*output, "title.json"), title); err != nil {
+		fail(err)
+	}
+	if err := writePNG(filepath.Join(*output, "title.png"), title.Image); err != nil {
 		fail(err)
 	}
 	fmt.Println("Exported the original common font. No executable bytes were exported.")

@@ -26,19 +26,28 @@ type Tile struct {
 // Terrain carries dimensions, stable atlas IDs and colors rather than Amiga
 // addresses or instructions. Tile ID zero denotes untouched background.
 type Terrain struct {
-	Columns    int          `json:"columns"`
-	Rows       int          `json:"rows"`
-	TileSize   int          `json:"tile_size"`
-	Palette    [16][4]uint8 `json:"palette"`
-	Tiles      []Tile       `json:"tiles"`
-	Map        []uint16     `json:"map"`
-	Atlas      *image.NRGBA `json:"-"`
-	Background *image.NRGBA `json:"-"`
+	Columns           int               `json:"columns"`
+	Rows              int               `json:"rows"`
+	TileSize          int               `json:"tile_size"`
+	MidShopStockLimit int               `json:"mid_shop_stock_limit"`
+	EndShopStockLimit int               `json:"end_shop_stock_limit"`
+	Palette           [16][4]uint8      `json:"palette"`
+	Tiles             []Tile            `json:"tiles"`
+	Map               []uint16          `json:"map"`
+	Atlas             *image.NRGBA      `json:"-"`
+	Background        *image.NRGBA      `json:"-"`
+	SourceTileIDs     map[uint16]uint16 `json:"-"`
 }
 
 // DecodeTerrain reads only the documented graphics and map fields from a
 // decoded level. The branch vectors and gameplay code are not copied out.
 func DecodeTerrain(data []byte) (*Terrain, error) {
+	return DecodeTerrainWithTiles(data, nil)
+}
+
+// DecodeTerrainWithTiles also includes verified tile frames used by mutable
+// terrain encounters. Extra references come from their decoded frame tables.
+func DecodeTerrainWithTiles(data []byte, extra []uint16) (*Terrain, error) {
 	if len(data) < 0x40 {
 		return nil, fmt.Errorf("decoded level header is truncated")
 	}
@@ -59,6 +68,8 @@ func DecodeTerrain(data []byte) (*Terrain, error) {
 		return nil, err
 	}
 	terrain := &Terrain{Columns: MapColumns, Rows: MapRows, TileSize: TileSize, Map: make([]uint16, MapColumns*MapRows)}
+	terrain.EndShopStockLimit = int(binary.BigEndian.Uint16(data[0x3c:]))
+	terrain.MidShopStockLimit = int(binary.BigEndian.Uint16(data[0x3e:]))
 	for i := range terrain.Palette {
 		word := binary.BigEndian.Uint16(data[paletteStart+i*2:])
 		if word&0xf888 != 0 {
@@ -73,6 +84,11 @@ func DecodeTerrain(data []byte) (*Terrain, error) {
 			unique[raw] = true
 		}
 	}
+	for _, code := range extra {
+		if code != 0 {
+			unique[code] = true
+		}
+	}
 	codes := make([]int, 0, len(unique))
 	for code := range unique {
 		codes = append(codes, int(code))
@@ -80,6 +96,7 @@ func DecodeTerrain(data []byte) (*Terrain, error) {
 	sort.Ints(codes)
 	terrain.Atlas = image.NewNRGBA(image.Rect(0, 0, 16*TileSize, ((len(codes)+15)/16)*TileSize))
 	ids := make(map[uint16]uint16, len(codes))
+	terrain.SourceTileIDs = ids
 	for ordinal, code := range codes {
 		id := uint16(ordinal + 1)
 		masked := code&0x8000 != 0
@@ -119,6 +136,11 @@ func offset(data []byte, field, length int) (int, error) {
 // drawPlanar handles row-interleaved Amiga planes. A mask one selects sprite
 // pixels, while zero preserves the already drawn background at that pixel.
 func drawPlanar(destination *image.NRGBA, point image.Point, data []byte, width, height, planes int, masked bool, palette [16][4]uint8) error {
+	return drawPlanarLayout(destination, point, data, width, height, planes, masked, false, palette)
+}
+
+// Terrain tiles put their mask first; ordinary masked sprites put it last.
+func drawPlanarLayout(destination *image.NRGBA, point image.Point, data []byte, width, height, planes int, masked, maskLast bool, palette [16][4]uint8) error {
 	if width <= 0 || width%16 != 0 || height <= 0 || planes < 1 || planes > 4 {
 		return fmt.Errorf("invalid planar dimensions")
 	}
@@ -133,8 +155,12 @@ func drawPlanar(destination *image.NRGBA, point image.Point, data []byte, width,
 	for y := range height {
 		row := data[y*rowBytes : (y+1)*rowBytes]
 		planeStart := 0
-		if masked {
+		maskStart := 0
+		if masked && !maskLast {
 			planeStart = planeBytes
+		}
+		if masked && maskLast {
+			maskStart = planeBytes * planes
 		}
 		for x := range width {
 			bit := byte(1 << uint(7-x%8))
@@ -145,7 +171,7 @@ func drawPlanar(destination *image.NRGBA, point image.Point, data []byte, width,
 				}
 			}
 			c := palette[index]
-			if masked && row[x/8]&bit == 0 {
+			if masked && row[maskStart+x/8]&bit == 0 {
 				c[3] = 0
 			}
 			destination.SetNRGBA(point.X+x, point.Y+y, color.NRGBA{R: c[0], G: c[1], B: c[2], A: c[3]})

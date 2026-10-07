@@ -38,7 +38,7 @@ func NewPathMotion(path *visualassets.Path, config PathMotionConfig) (PathMotion
 	if config.Delay < 0 || config.Delay > 32768 || config.Budget < 0 || config.Budget > 32767 {
 		return PathMotionState{}, fmt.Errorf("invalid path delay or movement budget")
 	}
-	state := PathMotionState{PathID: path.ID, Remaining: -config.Delay, Budget: config.Budget, Active: true}
+	state := PathMotionState{PathID: path.ID, X: int32(config.StartXOffset) << 16, Remaining: -config.Delay, Budget: config.Budget, Active: true}
 	if first := path.Commands[0]; first.Kind == "origin" {
 		state.X = int32(first.X+config.StartXOffset) << 16
 		state.Y = int32(first.Y) << 16

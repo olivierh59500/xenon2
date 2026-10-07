@@ -36,14 +36,14 @@ func DecodeActorSprite(data []byte, start int, name string, palette [16][4]uint8
 	}
 	value := func(index int) int { return int(int16(binary.BigEndian.Uint16(data[start-8+index*2:]))) }
 	sprite.Collision = &CollisionBox{X: value(0) - sprite.AnchorX, Y: value(1) - sprite.AnchorY, Width: value(2), Height: value(3)}
-	if sprite.Collision.Width < 1 || sprite.Collision.Height < 1 {
+	if sprite.Collision.Width < 0 || sprite.Collision.Height < 0 {
 		return nil, fmt.Errorf("actor %s has invalid collision bounds", name)
 	}
 	return sprite, nil
 }
 
-// DecodeSprite reads a four-word image header followed by row-interleaved mask
-// and four color planes. Storage rounds widths up to a sixteen-pixel word.
+// DecodeSprite reads a four-word image header followed by row-interleaved four
+// color planes and a final mask. Storage rounds widths up to a sixteen-pixel word.
 func DecodeSprite(data []byte, start int, name string, palette [16][4]uint8) (*Sprite, error) {
 	if start < 0 || start+8 > len(data) {
 		return nil, fmt.Errorf("sprite %s header is outside its source", name)
@@ -59,7 +59,7 @@ func DecodeSprite(data []byte, start int, name string, palette [16][4]uint8) (*S
 		return nil, fmt.Errorf("sprite %s pixels are truncated", name)
 	}
 	picture := image.NewNRGBA(image.Rect(0, 0, storageWidth, height))
-	if err := drawPlanar(picture, image.Point{}, data[start+8:start+8+bytes], storageWidth, height, 4, true, palette); err != nil {
+	if err := drawPlanarLayout(picture, image.Point{}, data[start+8:start+8+bytes], storageWidth, height, 4, true, true, palette); err != nil {
 		return nil, err
 	}
 	return &Sprite{Name: name, AnchorX: int(int16(word(0))), AnchorY: int(int16(word(1))), Width: width, Height: height, Image: picture}, nil

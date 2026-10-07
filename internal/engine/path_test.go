@@ -156,3 +156,23 @@ func TestRecoveredPathsAcceptMotionSchemaOptional(t *testing.T) {
 		}
 	}
 }
+
+func BenchmarkPathMotionAdvance(b *testing.B) {
+	path := visualassets.Path{ID: 1, Commands: []visualassets.PathCommand{
+		{Kind: "curve", Heading: 64, AngularVelocity: -88, Duration: 405},
+		{Kind: "jump", Target: 0},
+	}}
+	var sine [256]int8
+	sine[64] = 64
+	state, err := NewPathMotion(&path, PathMotionConfig{Budget: 7})
+	if err != nil {
+		b.Fatal(err)
+	}
+	b.ReportAllocs()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		if err := state.Advance(&path, &sine, nil); err != nil {
+			b.Fatal(err)
+		}
+	}
+}

@@ -19,8 +19,9 @@ type SpriteRegion struct {
 }
 
 type SpriteAtlas struct {
-	Sprites []SpriteRegion `json:"sprites"`
-	Image   *image.NRGBA   `json:"-"`
+	Sprites   []SpriteRegion  `json:"sprites"`
+	Equipment []ItemAnimation `json:"equipment,omitempty"`
+	Image     *image.NRGBA    `json:"-"`
 }
 
 type ItemAnimation struct {
@@ -60,7 +61,13 @@ func DecodeShopArt(shop, common []byte, catalogue *ShopCatalogue) (*ShopArt, err
 		if address >= levelBase {
 			data, start = shop, int(address-levelBase)
 		}
-		picture, err := DecodeSprite(data, start, name, art.Palette)
+		var picture *Sprite
+		var err error
+		if address < levelBase {
+			picture, err = DecodeActorSprite(data, start, name, art.Palette)
+		} else {
+			picture, err = DecodeSprite(data, start, name, art.Palette)
+		}
 		if err != nil {
 			return "", err
 		}

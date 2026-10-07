@@ -67,3 +67,41 @@ Exported paths resolve original byte offsets into command indices and use these 
 Curve motion uses a recovered 256-entry signed sine table with amplitude 64. The X component uses the table a quarter-turn ahead of Y. Positions use 16.16 fixed-point values; heading fractions and signed angular velocity/acceleration are preserved. Rounding these values to whole pixels at every substep would change the trajectories.
 
 Formation spacing below 100 delays following actors along the path. Values of 100 or above also offset their starting X positions; the remainder modulo 100 determines the separation. Enemy descriptors can link multiple pieces into a single composite actor, so a wave count is not necessarily the count of independently colliding sprites.
+
+## Independent movement verification
+
+The Go path follower has been compared with bounded executions of the original isolated path routine. All 418 recovered paths across the five levels match over 42,408 recorded gameplay passes, including 16.16 positions, fractional headings, angular velocity and acceleration, command transitions, pauses, branches and removal. Random branches consume the original recorded random outputs during the comparison.
+
+The independent ship-motion routine also matches 240 original directional-control passes across all three speed tiers. This covers held controls, release drift, reversals and vertical limits. The original checks vertical limits before movement, so an overshooting step reaches the boundary on the next pass; immediate clamping would differ.
+
+These comparisons establish the isolated movement rules. They do not yet establish complete enemy combat, linked-body behavior, guardians, terrain collisions, shops or full-game progression.
+
+## Equipment and shop rules
+
+The Go equipment model retains the original seven positions: a primary gun, four additional mounts, a rear attachment and a side attachment. Each weapon keeps its own power tier. The firing period is shared and depends on the order of equipment changes; it is not recalculated from the final inventory.
+
+The shop's compatibility checks match 1,325 isolated original cases. Buying and sale calculations match 150 original quote cases across ordinary and final-level shops. Equipment installation, power selection, temporary loadout replacement and timers match 234 original steps, including the complete 170-pass Nashwan duration. Buying Nashwan starts its timer in the shop; its temporary suite is installed after departure, so the saved loadout includes intervening trades.
+
+Powerup advances one eligible weapon with the lowest current tier. Ties use the original position order: primary, four mounts, rear and side. Shop checks remain separate from pickup initializers because pickups can replace equipment that must first be sold in the shop.
+
+Level five halves buying prices. Sale refunds use half the undiscounted catalogue price plus 1,000 per weapon power tier. Stock limits are independent of the wallet:
+
+| Level | Middle shop limit | Final shop limit |
+| --- | ---: | ---: |
+| 1 | 600 | 3,000 |
+| 2 | 1,200 | 4,000 |
+| 3 | 2,000 | 5,000 |
+| 4 | 2,000 | 6,000 |
+| 5 | 6,000 | 6,000 |
+
+The basic forward gun does not appear in the sale inventory. If the primary gun is sold, the basic gun is restored when leaving the shop. The initial inventory has three ships, a shield value of 39, speed tier zero, firing period eight and firing advance one.
+
+## Artwork format distinction
+
+Ordinary masked sprites store four colour planes followed by their coverage plane. Masked terrain tiles place coverage before their colour planes. These two formats require different decoders. Sprite collision rectangles precede the image header and are independent of the visible coverage mask.
+
+The attract-loop logo is a 208 × 54 image whose sixteen-pixel words interleave four colour planes. Its stable display position is X = 48, Y = 20, with a separate attract-loop palette. Its zoom animation must be compared separately from this static artwork.
+
+## Offline instruction verification
+
+The installed Ghidra 68000 model does not copy carry into the extend flag after `ADDX`. The offline comparison harness corrects that flag according to the [Motorola instruction reference](https://www.nxp.com/docs/en/reference-manual/M68000PRM.pdf), before recording the shared random stream. The Go random generator matches 320 corrected original calls across four seed cases, including carry boundaries. This correction is confined to local analysis and does not introduce an emulator dependency into the game.
