@@ -82,6 +82,7 @@ func (w *World) advanceFourthPod(actor *WorldActor) error {
 		actor.fourthPod = nil
 		actor.part.ResourceTag, actor.part.MotionMode = 12, "finite-effect"
 		clip := w.commonAnimations["explosion-small"]
+		clip.Animation.Ending = clip.Ending
 		actor.Atlas, actor.animation, actor.animationState = "common", clip.Animation, NewAnimation(clip.Animation)
 		actor.Sprite = actor.animationState.Sprite(actor.animation)
 		w.Pool.Slot(actor.Binding.Slot).ResourceTag = 12

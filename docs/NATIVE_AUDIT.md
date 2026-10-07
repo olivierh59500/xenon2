@@ -1073,3 +1073,13 @@ Seven resource-backed lifecycle regressions and native weapon traces pass.
 The complete engine suite passes, including the reconciled boundary snapshots;
 its race run also passes. Temporary invulnerability in the isolated lifetime
 fixtures separates weapon restoration from unrelated enemy contact.
+
+## Fourth-stage pod explosion termination
+
+The pod conversion at 0x55450–0x55464 retains its physical actor, changes its tag
+to 12 and installs the common small-explosion sequence through updater 0xf44.
+This second creation path also lost the named sequence's `remove` ending. It
+now preserves that callback. The resource-backed regression observes in-place
+conversion, six subsequent explosion passes, retirement and physical release;
+it fails before the fix and passes afterward. The separately spawned child
+still retains its own health, path looping and wave-bonus escape behavior.

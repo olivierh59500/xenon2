@@ -67,13 +67,31 @@ func TestFourthWorldPodConvertsInPlaceAndSpawnsLoopingChildOptional(t *testing.T
 	w.spawnFourthPod(0, 32, 40)
 	actor := w.Actors[0]
 	slot, id := actor.Binding.Slot, actor.ID
-	for range 30 {
+	for pass := 0; actor.fourthPod != nil && pass < 30; pass++ {
 		if err := w.advancePooledProjectiles(Input{}); err != nil {
 			t.Fatal(err)
 		}
 	}
 	if actor.ID != id || actor.Binding.Slot != slot || actor.fourthPod != nil || actor.part.ResourceTag != 12 || actor.Atlas != "common" {
 		t.Fatal("pod did not become its finite explosion in the same physical slot")
+	}
+	frames := 0
+	for _, frame := range w.commonAnimations["explosion-small"].Animation.Frames {
+		frames += frame.Duration
+	}
+	for range frames {
+		if err := w.advancePooledProjectiles(Input{}); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if actor.Active || w.Pool.Slot(slot).ResourceTag != 4 {
+		t.Fatal("converted pod explosion restarted after its final frame")
+	}
+	if err := w.advancePooledProjectiles(Input{}); err != nil {
+		t.Fatal(err)
+	}
+	if w.Pool.Slot(slot).allocated {
+		t.Fatal("converted pod explosion retained its physical slot")
 	}
 	var child *WorldActor
 	for _, candidate := range w.Actors {
