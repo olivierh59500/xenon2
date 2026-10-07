@@ -161,6 +161,9 @@ func (w *World) spawnThirdChain(record visualassets.FixedEncounter) {
 		}
 		w.Pool.Slot(actor.Binding.Slot).Linked = true
 		actor.Binding.Residue.OwnerSlot = leader.Binding.Slot
+		actor.Binding.Residue.StrongHealth = false
+		actor.Binding.Residue.VerticalVelocity = int16(part.X)
+		actor.Binding.Residue.FollowingSlot = NoActorSlot
 		w.storeActorResidue(actor)
 		w.updateSecondActorCollision(actor)
 		group[index] = actor
@@ -174,6 +177,25 @@ func (w *World) spawnThirdChain(record visualassets.FixedEncounter) {
 	}
 	w.Actors = append([]*WorldActor{second}, w.Actors...)
 }
+
+func (w *World) storeThirdChainResidue(actor *WorldActor) {
+	if actor.Binding.EntityID == 0 {
+		return
+	}
+	index := actor.thirdChainPart - 1
+	s, r := actor.thirdChain, &actor.Binding.Residue
+	r.X, r.Y = int16(s.Parts[index].X), int16(s.Parts[index].Y)
+	r.Health, r.PowerOrScore, r.WaveBonusToken = uint16(actor.Health), uint16(actor.Score), actor.WaveToken
+	r.Counter, r.Direction, r.VerticalFraction = 0, 0, uint16(int16(s.Parts[index].Spacing))
+	if index == 0 {
+		r.Counter, r.Direction, r.VerticalFraction = int16(s.Phase), int16(s.Speed), uint16(int16(s.AmplitudeOrCooldown))
+	}
+	w.storeWorldResidue(actor.Binding)
+	if !actor.Active {
+		w.retireWorldActor(actor.Binding)
+	}
+}
+
 func (w *World) advanceThirdChain(leader *WorldActor) {
 	art := w.Level.FixedSprites.Third.Chain
 	state := leader.thirdChain

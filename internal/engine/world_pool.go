@@ -207,6 +207,10 @@ func (w *World) bindWorldActor(actor *WorldActor) error {
 }
 
 func (w *World) storeActorResidue(actor *WorldActor) {
+	if actor.thirdChainPart > 0 {
+		w.storeThirdChainResidue(actor)
+		return
+	}
 	if actor.fifthIndex > 0 {
 		w.storeFifthGuardianResidue(actor)
 		return
@@ -263,6 +267,15 @@ func (w *World) storeActorResidue(actor *WorldActor) {
 		return
 	}
 	if actor.Binding.EntityID == 0 {
+		return
+	}
+	if actor.thirdChainSentinel {
+		// Native chain markers only maintain aggregate bounds and list links;
+		// their display state does not overwrite retained gameplay words.
+		w.storeWorldResidue(actor.Binding)
+		if !actor.Active {
+			w.retireWorldActor(actor.Binding)
+		}
 		return
 	}
 	r := &actor.Binding.Residue

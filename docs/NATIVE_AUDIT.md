@@ -1403,3 +1403,23 @@ the shielded node still produces no otherwise-empty firing opportunity. Target
 recognition leaves player, random state and health unchanged; damage remains
 owned by the source projectile callback. Existing empty/immune/terrain trigger
 checks and the complete resource/native engine suite pass.
+
+## Third chain markers and body storage
+
+The aggregate markers at 0x5605a–0x560ae initialize their callbacks/bounds and
+links, not gameplay coordinate, health or emitter words. Their Go bookkeeping
+previously replaced retained values with zero presentation fields. Marker
+storage now retains those values. A real diagonal bullet expires, the marker
+reuses its slot and follows the chain's natural 232-pixel expiry, then a new
+bullet takes the same slot. Before the fix, fractions 0x6cf0/0x9310 were erased
+and the next bullet reached (104,86) instead of native (104,87).
+
+Chain body construction writes phase/speed/base-X/spacing at offsets
+0x28/0x2a/0x2e/0x30 and explicitly clears strength. Its whole-pixel updates retain
+fractional coordinate words. Specialized storage now publishes those fields:
+part zero owns phase/speed/amplitude, while the animated final part retains its
+own zero phase/speed and signed spacing. Two original variants cover all eight
+parts, sixty extension callbacks, natural expiration and reuse by the next
+ordinary fractional bullet. The pre-fix birth cases fail; corrected cases and
+the existing 6,400 native chain-part comparisons pass. Health, rewards, source
+motion and linked-group damage are unchanged.
