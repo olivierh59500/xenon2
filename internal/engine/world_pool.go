@@ -148,6 +148,10 @@ func (w *World) bindWorldActor(actor *WorldActor) error {
 }
 
 func (w *World) storeActorResidue(actor *WorldActor) {
+	if actor.fixedHatch != nil || actor.fixedPod != nil || actor.hatchCreature != nil || actor.podCreature != nil {
+		w.storeSecondSpecializedResidue(actor)
+		return
+	}
 	if actor.invulnerability != nil {
 		w.storeInvulnerabilityResidue(actor)
 		return
@@ -191,8 +195,10 @@ func (w *World) storeActorResidue(actor *WorldActor) {
 	r.Health, r.PowerOrScore = uint16(actor.Health), uint16(actor.Score)
 	r.WaveBonusToken = actor.WaveToken
 	r.XFraction, r.YFraction = uint16(actor.motion.X), uint16(actor.motion.Y)
-	if actor.part != nil && actor.part.MotionMode == "path" {
+	if actor.part != nil && (actor.part.MotionMode == "path" || actor.part.MotionMode == "path-heading-frames" || actor.part.MotionMode == "path-entry-edge-frames" || actor.part.MotionMode == "follow-leader") {
 		r.SetFireState(actor.fire.Accumulator, actor.fire.Rate)
+		r.Counter, r.MotionBudget = int16(actor.motion.Remaining), int16(actor.motion.Budget)
+		r.Direction, r.HorizontalDriftRemainder = int16(uint16(actor.motion.AngleFixed)), uint16(uint32(actor.motion.AngleFixed)>>16)
 	}
 	w.storeWorldResidue(actor.Binding)
 	if !actor.Active {

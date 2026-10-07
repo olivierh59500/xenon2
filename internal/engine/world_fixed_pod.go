@@ -18,6 +18,7 @@ func (w *World) spawnFixedPod(record visualassets.FixedEncounter) bool {
 			w.poolError = err
 			return true
 		}
+		w.initializeSecondEmitterResidue(actor)
 		if !state.Large {
 			w.setSecondMapPatch(state.X/16, state.WorldY/16, variant.Initial)
 		}
@@ -57,6 +58,7 @@ func (w *World) spawnPodCreature(x, y, variant int) {
 		return
 	}
 	state.AllocationPhase = int(actor.Binding.AllocationPhase)
+	w.initializeSecondCreatureResidue(actor)
 	w.updateSecondActorCollision(actor)
 	w.Actors = append([]*WorldActor{actor}, w.Actors...)
 }

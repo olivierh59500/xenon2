@@ -23,6 +23,7 @@ func (w *World) spawnFixedHatch(record visualassets.FixedEncounter) bool {
 				w.poolError = err
 				return true
 			}
+			w.initializeSecondEmitterResidue(actor)
 			w.setSecondMapPatch(state.X/16, state.WorldY/16, variant.Initial)
 			w.Actors = append([]*WorldActor{actor}, w.Actors...)
 			return true
@@ -59,6 +60,7 @@ func (w *World) spawnHatchCreatures(x, y int) {
 			return
 		}
 		state.Timer = int(w.random.Next() & 31)
+		w.initializeSecondCreatureResidue(actor)
 		w.updateSecondActorCollision(actor)
 		w.Actors = append([]*WorldActor{actor}, w.Actors...)
 	}

@@ -16,7 +16,7 @@ type HatchCreatureArtwork struct {
 func decodeHatchCreatureArtwork(level []byte, add func(int) (string, error)) (*HatchCreatureArtwork, error) {
 	art := &HatchCreatureArtwork{Lifetime: 80}
 	for i := range 8 {
-		entry := 0x557a8 - levelBase + (7-i)*8
+		entry := 0x557a8 - levelBase + i*8
 		art.Offsets[i] = [2]int{int(int16(binary.BigEndian.Uint16(level[entry+4:]))), int(int16(binary.BigEndian.Uint16(level[entry+6:])))}
 		initialRoot := int(binary.BigEndian.Uint32(level[entry:])) - levelBase
 		initial, err := decodeActorAnimation(level, initialRoot, add)

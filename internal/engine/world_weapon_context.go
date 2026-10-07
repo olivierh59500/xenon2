@@ -18,20 +18,7 @@ func (w *World) weaponContext(input Input, pulse bool) WeaponContext {
 				SlotIdentity: slotIdentity})
 		}
 	}
-	centerX, centerY := w.Player.X, w.Player.Y
-	if w.Level.Ships != nil {
-		index := w.Player.Inertia + 6
-		if index >= 0 && index < len(w.Level.Ships.SteeringFrames) {
-			name := w.Level.Ships.SteeringFrames[index]
-			for _, sprite := range w.Level.Ships.Atlas.Sprites {
-				if sprite.Name == name {
-					centerX = w.Player.X - sprite.AnchorX + sprite.Width/2
-					centerY = w.Player.Y - sprite.AnchorY + (sprite.Height-1)/2
-					break
-				}
-			}
-		}
-	}
+	centerX, centerY := w.currentShipCenter()
 	return WeaponContext{
 		Equipment: &w.Equipment, ShipX: w.Player.X, ShipY: w.Player.Y,
 		ShipCenterX: centerX, ShipCenterY: centerY, MaterializationFrames: w.MaterializationFrames,
