@@ -9,6 +9,27 @@ const (
 	LoadedNextStage
 )
 
+type ResumeRoute uint8
+
+const (
+	ResumeGameplay ResumeRoute = iota
+	ResumeNextStage
+	ResumeMerchantEnding
+)
+
+// AfterReady keeps saved completed turns in the original admission sequence.
+// An opponent's final loss can reopen the surviving player's completed stage;
+// READY precedes the next load, or the merchant ending on the fifth stage.
+func (s *Session) AfterReady() ResumeRoute {
+	if !s.Completed[s.Current] {
+		return ResumeGameplay
+	}
+	if s.ActiveWorld().Level.Number == 5 {
+		return ResumeMerchantEnding
+	}
+	return ResumeNextStage
+}
+
 // CompleteStage follows the original shared-level gate. A surviving second
 // player finishes the same level before either player receives a fresh map.
 func (s *Session) CompleteStage(next LevelData) (StageTransition, error) {
@@ -16,12 +37,14 @@ func (s *Session) CompleteStage(next LevelData) (StageTransition, error) {
 	if !current.LevelFinished {
 		return WaitForOtherPlayer, fmt.Errorf("stage guardian has not been defeated")
 	}
-	if !s.Completed[s.Current] {
+	if !s.Completed[s.Current] || s.completedReentry {
 		if current.Level.Number == 5 {
 			current.finishFifthStage()
 		}
 		s.Completed[s.Current] = true
 	}
+	s.completedReentry = false
+	current.ShopReady = false
 	other := s.Current ^ 1
 	if s.PlayerCount == 2 && s.Players[other].Equipment.Lives > 0 && !s.Players[other].GameOver && !s.Completed[other] {
 		if !s.switchTurn() {
@@ -51,6 +74,12 @@ func (s *Session) CompleteStage(next LevelData) (StageTransition, error) {
 	}
 	s.Players, s.Completed, s.Difficulty = replacements, [2]bool{}, difficulty
 	s.hasPlayed = [2]bool{true, s.PlayerCount == 2}
+	// The shared-level initializer clears both completion flags before the
+	// normal turn admission. Two surviving players therefore alternate here,
+	// rather than leaving the player who completed last in control.
+	if s.PlayerCount == 2 && s.Players[other].Equipment.Lives > 0 && !s.Players[other].GameOver {
+		s.Current = other
+	}
 	return LoadedNextStage, nil
 }
 

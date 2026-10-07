@@ -5,12 +5,13 @@ import "fmt"
 // Session keeps one independent saved game per alternating player while
 // carrying the shared random stream across turns and shop interactions.
 type Session struct {
-	Completed   [2]bool
-	Difficulty  int
-	Players     [2]*World
-	PlayerCount int
-	Current     int
-	hasPlayed   [2]bool
+	Completed        [2]bool
+	Difficulty       int
+	Players          [2]*World
+	PlayerCount      int
+	Current          int
+	hasPlayed        [2]bool
+	completedReentry bool
 }
 
 func NewSession(level LevelData, players int, random RandomState) (*Session, error) {
@@ -58,7 +59,9 @@ func (s *Session) DeclineContinue() (turnChanged bool) {
 	if !s.ActiveWorld().GameOver {
 		return false
 	}
-	return s.switchTurn()
+	changed := s.switchTurn()
+	s.completedReentry = changed && s.Completed[s.Current]
+	return changed
 }
 
 func (s *Session) switchTurn() bool {

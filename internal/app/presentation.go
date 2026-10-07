@@ -66,6 +66,19 @@ func (g *Game) updatePresentation() error {
 			}
 			g.Screen = LevelScreen
 			g.readyRunning = false
+			if driver, ok := g.Driver.(*worldDriver); ok && driver.session != nil {
+				switch driver.session.AfterReady() {
+				case engine.ResumeMerchantEnding:
+					if err := g.requestShop(); err != nil {
+						return err
+					}
+				case engine.ResumeNextStage:
+					g.beginLoading(driver.world.Level.Number%5+1, false, headerNextStage)
+				}
+				if g.Screen != LevelScreen {
+					break
+				}
+			}
 			g.startLevelFade()
 			g.selectMusic()
 		case presentation.ContinueAccepted:
@@ -123,10 +136,6 @@ func (g *Game) updatePresentation() error {
 func (g *Game) finishPlayerGame() {
 	if driver, ok := g.Driver.(*worldDriver); ok && driver.session != nil && driver.session.DeclineContinue() {
 		driver.world = driver.session.ActiveWorld()
-		if driver.session.Completed[driver.session.Current] {
-			g.beginLoading(driver.world.Level.Number%5+1, false, headerNextStage)
-			return
-		}
 		g.View = driver.Frame()
 		g.rememberFrameHistory()
 		g.readyRunning, g.gameOverRunning = false, false

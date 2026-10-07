@@ -364,6 +364,24 @@ cash first. Nonlethal final-core damage selects the original health-dependent
 image from its twelve-entry table. The common explosion factory also retains
 its immediate audio dispatch alongside the two queued requests.
 
+## Shared stage and completed-player admission
+
+Eighty source routes cover all five stages, both current-player indices,
+surviving/completed opponent combinations and Nashwan activity. After both
+surviving players finish, the next level clears the completion flags and admits
+the other player. The fresh worlds retain independent equipment and maps.
+
+Twenty additional source routes cover an opponent declining its final continue
+offer. An already completed surviving player still receives READY. It then
+loads the next level, or receives the merchant ending if the completed stage was
+the fifth. That reopened fifth-stage completion retains its source credit award.
+Music stops before the first player's fifth-stage ending is skipped.
+
+These route comparisons establish admission and completion branches. Integrated
+fade/audio overlap, live scene composition and a full five-level playthrough
+remain separate validation. Repeated checkpoint restoration across alternating
+turns is also under its own state comparison.
+
 HUD pixel comparisons now cover four score/lives/shield combinations under all
 five level palettes, including the second player's layout. The renderer
 prepares separate recolored HUD images and fonts for each level; it no longer

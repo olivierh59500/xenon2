@@ -71,6 +71,8 @@ func (g *Game) requestShop() error {
 	}
 	world := driver.world
 	g.shopFinal = world.LevelFinished
+	g.stream.StopMusic()
+	g.soundtrack = ""
 	// In the last stage, the first surviving player waits without seeing the
 	// merchant ending. The final surviving completion shows it once.
 	if g.shopFinal && world.Level.Number == 5 && driver.session != nil && driver.session.PlayerCount == 2 {
@@ -79,8 +81,6 @@ func (g *Game) requestShop() error {
 			return g.advanceCompletedStage()
 		}
 	}
-	g.stream.StopMusic()
-	g.soundtrack = ""
 	g.startFade(presentation.NewPaletteFadeOut(2), func() error { g.beginHeader(g.Bundle.Presentation.EnteringShopHeading, headerShop); return nil })
 	return nil
 }

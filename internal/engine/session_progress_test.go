@@ -1,6 +1,10 @@
 package engine
 
 import (
+	"encoding/csv"
+	"os"
+	"path/filepath"
+	"strconv"
 	"testing"
 	"xenon2/internal/visualassets"
 )
@@ -50,7 +54,7 @@ func TestTwoPlayersFinishBeforeAdvancingWithIndependentState(t *testing.T) {
 	second.Money = 300
 	second.LevelFinished = true
 	transition, err = s.CompleteStage(stageData(t, 2))
-	if err != nil || transition != LoadedNextStage || s.Current != 1 {
+	if err != nil || transition != LoadedNextStage || s.Current != 0 {
 		t.Fatal("both players did not advance together")
 	}
 	first, second = s.Players[0], s.Players[1]
@@ -64,6 +68,120 @@ func TestTwoPlayersFinishBeforeAdvancingWithIndependentState(t *testing.T) {
 	if second.Level.Terrain.Map[10] != 0 {
 		t.Fatal("fresh maps share mutable storage")
 	}
+}
+
+func TestStageAdmissionNativeRoutesOptional(t *testing.T) {
+	root := os.Getenv("XENON2_NATIVE_TRACE_DIR")
+	if root == "" {
+		t.Skip("local original stage admission routes not supplied")
+	}
+	f, err := os.Open(filepath.Join(root, "stage-admission-trace.csv"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer f.Close()
+	rows, err := csv.NewReader(f).ReadAll()
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, row := range rows[1:] {
+		n := func(i int) int {
+			v, err := strconv.Atoi(row[i])
+			if err != nil {
+				t.Fatal(err)
+			}
+			return v
+		}
+		level, current := n(0), n(1)
+		s, err := NewSession(stageData(t, level), 2, NewRandomState())
+		if err != nil {
+			t.Fatal(err)
+		}
+		s.Current = current
+		s.hasPlayed = [2]bool{true, true}
+		other := current ^ 1
+		if n(2) == 0 {
+			s.Players[other].GameOver = true
+			s.Players[other].Equipment.Lives = 0
+		}
+		s.Completed[other] = n(3) != 0
+		if n(4) != 0 {
+			s.ActiveWorld().Equipment.ApplyItem(ItemSuperNashwan)
+			s.ActiveWorld().Equipment.BeginSuperLoadout()
+		}
+		s.ActiveWorld().LevelFinished = true
+		transition, err := s.CompleteStage(stageData(t, level%5+1))
+		if err != nil {
+			t.Fatal(err)
+		}
+		if s.Current != n(5) || s.ActiveWorld().Level.Number != n(6) || s.Difficulty != n(7) || s.Completed[0] != (n(8) != 0) || s.Completed[1] != (n(9) != 0) || !s.ActiveWorld().Ready || (transition == LoadedNextStage) != (n(11) != 0) {
+			t.Fatalf("stage route differs: Go current%d level%d difficulty%d completed%v transition%d native%v", s.Current, s.ActiveWorld().Level.Number, s.Difficulty, s.Completed, transition, row)
+		}
+		if s.Players[current].ContinueCredits != 2+n(14) {
+			t.Fatalf("fifth victory credit differs: %v", row)
+		}
+	}
+	if len(rows)-1 != 80 {
+		t.Fatal("incomplete source admission routes")
+	}
+	t.Logf("Compared %d original shared-stage and player-admission routes.", len(rows)-1)
+}
+
+func TestCompletedTurnAdmissionNativeRoutesOptional(t *testing.T) {
+	root := os.Getenv("XENON2_NATIVE_TRACE_DIR")
+	if root == "" {
+		t.Skip("local original completed-turn routes not supplied")
+	}
+	f, err := os.Open(filepath.Join(root, "completed-turn-trace.csv"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer f.Close()
+	rows, err := csv.NewReader(f).ReadAll()
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, row := range rows[1:] {
+		n := func(i int) int {
+			v, err := strconv.Atoi(row[i])
+			if err != nil {
+				t.Fatal(err)
+			}
+			return v
+		}
+		level, current := n(0), n(1)
+		s, err := NewSession(stageData(t, level), 2, NewRandomState())
+		if err != nil {
+			t.Fatal(err)
+		}
+		s.Current = current
+		s.hasPlayed = [2]bool{true, true}
+		s.ActiveWorld().GameOver = true
+		s.ActiveWorld().Equipment.Lives = 0
+		s.Completed[current^1] = n(2) != 0
+		s.Players[current^1].LevelFinished = n(2) != 0
+		if !s.DeclineContinue() || s.Current != n(3) || !s.ActiveWorld().Ready || n(4) != 1 {
+			t.Fatalf("incoming READY route differs: %v", row)
+		}
+		route := s.AfterReady()
+		if (route != ResumeGameplay) != (n(5) != 0) || (route == ResumeMerchantEnding) != (n(8) != 0) {
+			t.Fatalf("post-READY route%d native%v", route, row)
+		}
+		if route != ResumeGameplay {
+			credits := s.ActiveWorld().ContinueCredits
+			state, err := s.CompleteStage(stageData(t, level%5+1))
+			if err != nil || state != LoadedNextStage {
+				t.Fatalf("saved completion failed: %v %v", state, err)
+			}
+			if s.ActiveWorld().Level.Number != n(11) || s.ActiveWorld().ContinueCredits != credits+n(10) {
+				t.Fatalf("saved stage load or ending credit differs: %v", row)
+			}
+		}
+	}
+	if len(rows)-1 != 20 {
+		t.Fatal("incomplete completed-turn source routes")
+	}
+	t.Logf("Compared %d original READY/ending routes after the opponent's final loss.", len(rows)-1)
 }
 
 func TestFifthStageLoopsDifficultyAndAwardsOneCreditPerPlayer(t *testing.T) {
