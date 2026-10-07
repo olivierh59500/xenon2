@@ -10,9 +10,10 @@ original menu and five level maps, moves the ship and enemy formations, and
 replays the original soundtrack. It includes source-derived weapon state,
 carrier rewards, checkpoint recovery, alternating player sessions, the first
 final guardian, the second level's defense arena and final guardian, and the
-third level's middle guardian and final worm. Original shop, attract, HUD,
+third level's middle guardian and final worm, and both fourth-level guardians.
+Original shop, attract, HUD,
 loading and ending presentation are connected. Remaining encounter families,
-fourth/fifth-level integration and full-game validation are still in progress;
+fifth-level integration and full-game validation are still in progress;
 this build is not yet the complete playable game.
 
 ## Local resources
@@ -27,7 +28,8 @@ GOWORK=off go run ./cmd/xenon2
 ```
 
 The level reference view uses the arrow keys or WASD for movement and Space for
-firing; Alt requests a dive. Keys 1–5 select a reference level; F2 opens the shop inspection route; Escape
+firing; Alt requests a dive. Keys 1–5 select a reference level; F2 opens the shop
+inspection route; Escape
 returns to the menu. M toggles music. The normal menu supports one or two
 alternating players. Full source timing and framebuffer comparisons remain in
 progress for integrated scenes and the complete five-level run.
