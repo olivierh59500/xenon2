@@ -77,8 +77,11 @@ shop and five level captures have been inspected.
 A real fifteen-second desktop run measured approximately 60 updates per second
 and 120 draw calls per second on its 120 Hz display after warm-up. That run does
 not establish dense-combat performance or a complete playthrough. A legal-input
-replay reaches the first middle shop and the first final arena; it does not yet
-defeat the guardian.
+replay completes the first level, defeats its guardian through normal firing,
+and reaches its final shop after the exit coins drain. The independent replay
+test validates all 8,198 recorded input/state steps with real terrain and legal
+continues. The other four levels and complete frontend campaign still require
+playthrough validation.
 
 The remaining live checks are:
 
