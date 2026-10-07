@@ -40,3 +40,27 @@ func TestDemoMotionForecastUsesNativeReverseAndTerrainRewind(t *testing.T) {
 		})
 	}
 }
+
+func TestDemoSecondBackwardForecastIncludesLivingNodeBoundOptional(t *testing.T) {
+	w, err := NewWorld(originalWorldData(t, 2))
+	if err != nil {
+		t.Fatal(err)
+	}
+	w.Ready, w.MaterializationFrames = false, 0
+	w.Level.Encounters.Moving, w.Level.Encounters.Fixed = nil, nil
+	w.ScrollY, w.MaximumScrollY, w.VisitedScrollY = 2700, 2701, 2701
+	w.secondBackward, w.BaseScrollStep = true, -1
+	w.Player.X, w.Player.Y = 160, 160
+	forecast := newDemoMotionForecast(w)
+	for pass := 0; pass < 6; pass++ {
+		if !forecast.advance(w, MotionInput{}) {
+			t.Fatal("clear original backward movement rejected")
+		}
+		if err := w.Step(Input{}); err != nil {
+			t.Fatal(err)
+		}
+		if forecast.player != w.Player || forecast.scroll.Y != w.ScrollY || forecast.scroll.Maximum != w.MaximumScrollY {
+			t.Fatalf("backward pass%d missed living node source bound: forecast%+v actual camera%d max%d", pass, forecast.scroll, w.ScrollY, w.MaximumScrollY)
+		}
+	}
+}

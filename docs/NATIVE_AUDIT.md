@@ -1423,3 +1423,25 @@ parts, sixty extension callbacks, natural expiration and reuse by the next
 ordinary fractional bullet. The pre-fix birth cases fail; corrected cases and
 the existing 6,400 native chain-part comparisons pass. Health, rewards, source
 motion and linked-group damage are unchanged.
+
+## Active second-defense formation forecasts
+
+The twelve staggered members follow independent source paths. Their batch
+forecast copies all current controllers, gates and the shared random stream,
+visiting physical moving-list order from tail through head. Each future phase
+receives its preceding camera displacement before consuming path substeps.
+Hidden members still publish their source collision prefixes.
+
+Six original-resource fixtures compare both forward/reverse motion at early,
+active and retirement boundaries: 1,152 predictions match actual World.Step
+position, heading image, collider, active/hidden/materializing state. A diagnostic
+branch test checks copied shared-RNG ordering; read-only tests retain live pool,
+controllers, scheduler, gates, heartbeat, player, equipment, camera and terrain.
+Native wave comparisons and the focused race run pass. The helper forecasts
+current members only, not scheduler births, evictions or future combat deaths.
+
+Movement prediction also includes the source living-node 2,880 backward bound.
+Six real World.Step comparisons verify that bound and the player/camera result.
+An excluded collision-aware movement trial survived farther but still exhausted
+recovery without damaging the three nodes; it is not retained as a completed
+arena strategy. The presentation's carried second-level victory remains open.
