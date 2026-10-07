@@ -34,6 +34,9 @@ type Input struct {
 // WorldActor separates simulation positions from interpolated display state.
 // Fixed actors retain map coordinates; moving actors retain their path state.
 type WorldActor struct {
+	DrawKind                   string
+	DrawLength                 int
+	DrawUp                     bool
 	Binding                    ActorPoolBinding
 	ID                         int
 	Order                      int
@@ -60,6 +63,7 @@ type WorldActor struct {
 	Patch                      *visualassets.TilePatch
 	Flash                      bool
 	Extras                     []WorldSpriteAttachment
+	TileOverlays               []WorldTileOverlay
 	firstGuardian              bool
 	secondGuardian             bool
 	firstSegment               int
@@ -103,6 +107,11 @@ type WorldActor struct {
 type WorldSpriteAttachment struct {
 	Sprite, Atlas string
 	X, Y          float64
+}
+
+type WorldTileOverlay struct {
+	Patch visualassets.TilePatch
+	X, Y  float64
 }
 
 type WorldProjectile struct {
