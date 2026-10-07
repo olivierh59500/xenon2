@@ -289,6 +289,9 @@ func (g *Game) drawLevel(screen *ebiten.Image) {
 	l := g.Bundle.Levels[level-1]
 	gpu := &g.graphics.levels[level-1]
 	alpha := g.clock.Fraction()
+	if g.paused {
+		alpha = g.pauseFraction
+	}
 	if g.View.FreezeInterpolation || g.backdropOnly {
 		alpha = 1
 	}

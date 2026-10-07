@@ -96,6 +96,8 @@ type Config struct {
 }
 
 type Game struct {
+	paused                   bool
+	pauseFraction            float64
 	fade                     *presentation.PaletteFade
 	whenFadeEnds             func() error
 	backdropOnly             bool
@@ -227,6 +229,7 @@ func (g *Game) Update() error {
 		return nil
 	}
 	if inpututil.IsKeyJustPressed(ebiten.KeyEscape) {
+		g.paused = false
 		if g.Screen == TitleScreen {
 			return ebiten.Termination
 		}
@@ -236,6 +239,22 @@ func (g *Game) Update() error {
 	if inpututil.IsKeyJustPressed(ebiten.KeyM) {
 		g.music = !g.music
 		g.selectMusic()
+	}
+	if g.paused {
+		if len(inpututil.AppendJustPressedKeys(nil)) != 0 || inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) {
+			g.paused = false
+		}
+		if g.Config.Frames > 0 && g.updates >= g.Config.Frames {
+			g.capturePending = true
+		}
+		return nil
+	}
+	if g.Screen == LevelScreen && !g.View.Ready && !g.View.GameOver && inpututil.IsKeyJustPressed(ebiten.KeyP) {
+		g.paused, g.pauseFraction = true, g.clock.Fraction()
+		if g.Config.Frames > 0 && g.updates >= g.Config.Frames {
+			g.capturePending = true
+		}
+		return nil
 	}
 	switch g.Screen {
 	case PresentationScreen:

@@ -28,7 +28,8 @@ GOWORK=off go run ./cmd/xenon2
 The level reference view uses the arrow keys or WASD for movement and Space for
 firing; Alt requests a dive. In reference views only, keys 1–5 select a level
 and F2 opens the shop inspection route. Escape returns to the menu. M toggles
-music. The normal menu supports one or two
+music. P pauses gameplay; any key or a fire click resumes it while the soundtrack
+continues. The normal menu supports one or two
 alternating players. Full source timing and framebuffer comparisons remain in
 progress for integrated scenes and the complete five-level run.
 
