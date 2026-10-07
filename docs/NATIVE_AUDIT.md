@@ -565,3 +565,21 @@ actors, starfield and HUD. The clock test preserves 60,000 logic passes and
 Frontend admission/fade tests retain the selected profile while presentation
 and shop timing remain unchanged. This validates the selectable profile, not
 complete original cadence equivalence.
+
+## Independent PAL and gameplay scheduler boundaries
+
+The optional three-refresh profile is checked at 50, 60, 120 and 144 display
+updates per second. At each eligible logic boundary, its accumulated PAL ticks
+match three prelogic ticks. A supernova strobe ends on its 31st PAL tick; the
+next eligible gameplay pass resumes at tick 33. Logic-timed equipment remains
+unchanged during the strobe, and paused updates retain both clock remainders.
+Alternating-player death and READY admission retain the incoming checkpoint
+and gameplay timers under this profile. These are explicit timing fixtures,
+not additional campaign victories.
+
+The historical first-level CSV checks every recorded input and observation
+with two PAL ticks grouped after each logic step. It remains useful profile 2
+engine-path evidence. It does not exercise the application's PAL-before-logic
+dispatch at every display update, and must not be relabelled as profile 3 or
+normal-menu campaign evidence. Grouping the same three ticks after logic
+instead would delay supernova gameplay resumption by one logic slot.
