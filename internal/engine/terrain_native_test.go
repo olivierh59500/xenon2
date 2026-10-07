@@ -47,3 +47,20 @@ func TestWorldTerrainStencilNativeAcrossFiveLevelsOptional(t *testing.T) {
 		t.Fatalf("incomplete terrain comparison:%d", comparisons)
 	}
 }
+
+func TestTerrainRewindNativeHistoryAndCrushingOptional(t *testing.T) {
+	cases := 0
+	nativeCombatRows(t, "terrain-rewind-trace.csv", func(v []int64) {
+		state := NewTerrainRewind(int(v[4]), int(v[5]), int(v[6]))
+		state.Timer = int(v[0])
+		player := PlayerMotionState{ScrollStep: int(v[3])}
+		handled, crushed := state.Advance(&player, int(v[2]), int(v[3]), v[1] != 0)
+		if !handled || crushed != (v[11] != 0) || state.Timer != int(v[7]) || !crushed && (player.X != int(v[8]) || player.Y != int(v[9]) || player.ScrollStep != int(v[10])) {
+			t.Fatalf("rewind differs%v: %+v timer=%d handled=%t crushed=%t", v, player, state.Timer, handled, crushed)
+		}
+		cases++
+	})
+	if cases != 24 {
+		t.Fatalf("incomplete rewind comparisons:%d", cases)
+	}
+}

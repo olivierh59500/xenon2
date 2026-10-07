@@ -301,6 +301,11 @@ fine-scroll offset, and reads the original collision condition rather than the
 loop-count register left by the routine. This verifies terrain contact, not a
 complete wall-sliding/crushing playthrough or every guardian's custom collider.
 
+Twenty-four isolated rewind cases additionally compare the original history
+selection, timer decrement, upper/lower screen clamps, adjusted reverse scroll
+and terminal crushing condition. The integrated terrain-contact sequence still
+requires a full original playthrough comparison.
+
 ## Remaining third-level encounters and fourth-level guardians
 
 All third-level fixed selectors now have semantic Go controllers. The extending
