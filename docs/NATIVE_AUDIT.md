@@ -1148,3 +1148,13 @@ One genuine frontend probe separately permits the existing third-stage continue
 UI to run after the carried ship is lost. It consumes the final credit and
 restores three ships at checkpoint 3,408. Those ships are also lost before middle
 admission; allowing ordinary continues does not establish that route's victory.
+
+The complete engine suite passes after the effect-residue correction. Both
+normal-menu two-stage routes, the real-intro presentation activity check and
+all six guardian/beam GPU fixtures also pass without changed expected outcomes.
+A separate final-core GPU test activates the original selector, arranges the
+exposed weak point and fires the ordinary basic gun through World.Step. It
+reduces core health from 20 to 19, projects the owning tiled flash and compares
+its covered visible pixels with palette entry 15. The following pass removes
+the flash. This proves the integrated hit-to-drawing path for that fixture,
+not full final-arena victory.
