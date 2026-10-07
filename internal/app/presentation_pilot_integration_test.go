@@ -272,7 +272,7 @@ func TestExpertThirdOpeningKeepsCarriedShipsThroughFirstCheckpointOptional(t *te
 			t.Fatal("expert opening consumed a carried ship or changed ordinary rules")
 		}
 		if w.Checkpoint.ScrollY <= 4032 {
-			if w.ScrollY > 4032 || w.Equipment.Shield < 31 {
+			if w.ScrollY > 4032 || w.Equipment.Shield != 39 {
 				t.Fatal("expert did not cross the checkpoint with its prepared-route shield reserve")
 			}
 			t.Logf("Expert opening retains%d ships/credits%d at frame%d camera%d shield%d", ships, credits, w.Frame, w.ScrollY, w.Equipment.Shield)
@@ -280,4 +280,36 @@ func TestExpertThirdOpeningKeepsCarriedShipsThroughFirstCheckpointOptional(t *te
 		}
 	}
 	t.Fatal("bounded expert route did not reach the first third-stage checkpoint")
+}
+
+func TestExpertThirdRouteReachesSecondCheckpointWithoutShipLossOptional(t *testing.T) {
+	if os.Getenv("XENON2_HUMAN_PRESENTATION_CHECK") == "" {
+		t.Skip("enable the connected expert route explicitly")
+	}
+	g := verifyPresentationFirstTwoLevelsFromDefaultIntro(t)
+	w := g.Driver.(*worldDriver).world
+	ships, credits := w.Equipment.Lives, w.ContinueCredits
+	first := false
+	for update := 0; update < 60*120; update++ {
+		advanceFrontend(t, g, inputFrame{})
+		d := g.Driver.(*worldDriver)
+		w = d.world
+		if w.Level.Number != 3 || !w.PlayerAlive || w.GameOver || w.Equipment.Lives != ships || w.ContinueCredits != credits || w.Cheats.Enabled() || d.diagnostic {
+			t.Fatal("expert route consumed a carried ship or changed ordinary rules")
+		}
+		if w.Checkpoint.ScrollY == 4032 && !first {
+			if w.Equipment.Shield != 39 {
+				t.Fatal("expert failed to preserve full shield at the first checkpoint")
+			}
+			first = true
+		}
+		if w.Checkpoint.ScrollY <= 3408 {
+			if !first || w.ScrollY > 3408 || w.Equipment.Shield < 31 {
+				t.Fatal("expert omitted its prepared first gate or second shield reserve")
+			}
+			t.Logf("Second third-stage checkpoint at frame%d camera%d: ships%d shield%d credits%d", w.Frame, w.ScrollY, ships, w.Equipment.Shield, credits)
+			return
+		}
+	}
+	t.Fatal("bounded expert route did not reach the second third-stage checkpoint")
 }

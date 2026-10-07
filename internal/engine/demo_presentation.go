@@ -6,6 +6,9 @@ import "math"
 // committed tactical goals and held firing bursts. The game still owns every
 // movement, hit, reward, terrain change and random value.
 type PresentationPilot struct {
+	// PALRefreshes matches the host's gameplay cadence; zero uses three ticks.
+	PALRefreshes            int
+	forecast                WorldForecast
 	planner                 DemoPilot
 	world                   *World
 	frame                   uint64
@@ -31,7 +34,7 @@ func (p *PresentationPilot) NormalInput(w *World) Input {
 		return Input{Fire: true}
 	}
 	if p.world != w || w.Frame < p.frame {
-		*p = PresentationPilot{world: w, frame: w.Frame, decisionAt: w.Frame + 3, planner: DemoPilot{practicedRoute: true}}
+		*p = PresentationPilot{PALRefreshes: p.PALRefreshes, world: w, frame: w.Frame, decisionAt: w.Frame + 3, planner: DemoPilot{practicedRoute: true}}
 	}
 	p.frame = w.Frame
 	base := p.planner.NormalInput(w)
@@ -70,6 +73,7 @@ func (p *PresentationPilot) NormalInput(w *World) Input {
 	if w.blockedFireUntilRelease || w.Dive.Phase != 0 {
 		input.Fire = false
 	}
+	input = p.forecastOpeningGuard(w, input)
 	return input
 }
 

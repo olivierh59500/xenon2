@@ -124,6 +124,7 @@ func (g *Game) demoControls(manual inputFrame) inputFrame {
 		if d.logicFrame != w.Frame || d.level != w.Level.Number {
 			var input engine.Input
 			if g.Config.HumanDemo {
+				d.presentation.PALRefreshes = g.Config.LogicPALRefreshes
 				input = d.presentation.NormalInput(w)
 			} else {
 				input = d.pilot.NormalInput(w)
