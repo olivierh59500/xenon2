@@ -21,8 +21,8 @@ func NewSecondDefenseScheduler() SecondDefenseScheduler {
 }
 func (s *SecondDefenseScheduler) UseFinalLaunches() { s.Seeds = [2]uint32{0xd25135d3, 0x894d5d53} }
 
-// LaunchIdleStreams is called after that pass's existing segments report which
-// streams they updated. Each missing stream obtains its next original path.
+// LaunchIdleStreams consumes the preceding pass's stream flags before the
+// current actor traversal. Each missing stream obtains its next original path.
 func (s *SecondDefenseScheduler) LaunchIdleStreams(updated [2]bool, remaining int) []SecondDefenseLaunch {
 	result := make([]SecondDefenseLaunch, 0, 2)
 	for stream := range 2 {

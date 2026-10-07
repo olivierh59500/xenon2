@@ -472,9 +472,9 @@ func (w *World) AcceptContinue() bool {
 	return true
 }
 
-// Step follows the original update ordering: player, existing actors, timers,
-// then encounter activation and scroll advancement. New actors first move on
-// the next pass. Drawing never changes these states.
+// Step counts moving actors and runs stage scripts before updating the player
+// and actor lists. Timers, encounters and scroll follow. Stage births move in
+// the current pass; encounter-table births wait for the next pass.
 func (w *World) Step(input Input) error {
 	clear(w.SoundRequests[:])
 	clear(w.ImmediateSoundRequests[:])
