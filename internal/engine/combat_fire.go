@@ -116,8 +116,8 @@ func AimDirection(dx, dy int) uint8 {
 	return 3
 }
 
-var directionX = [8]int16{0, 11585, 16384, 11585, 0, -11585, -16384, -11585}
-var directionY = [8]int16{-16384, -11585, 0, 11585, 16384, 11585, 0, -11585}
+var directionX = [16]int16{0, 11585, 16384, 11585, 0, -11585, -16384, -11585, 6269, 15136, 15136, 6269, -6269, -15136, -15136, -6269}
+var directionY = [16]int16{-16384, -11585, 0, 11585, 16384, 11585, 0, -11585, -15136, -6269, 6269, 15136, 15136, 6269, -6269, -15136}
 
 // DirectionalProjectile retains fractional motion and the scenery scroll
 // adjustment used by ordinary enemy bullets.
@@ -130,7 +130,7 @@ type DirectionalProjectile struct {
 // Advance returns whether the projectile remains within the 320 by 192
 // playfield after moving. The final coordinates remain available after exit.
 func (s *DirectionalProjectile) Advance(scrollDelta int) (bool, error) {
-	if s.Direction >= 8 || s.Speed < -32768 || s.Speed > 32767 {
+	if s.Direction >= 16 || s.Speed < -32768 || s.Speed > 32767 {
 		return false, fmt.Errorf("invalid directional projectile")
 	}
 	s.X += int32(directionX[s.Direction]) * int32(s.Speed) * 4

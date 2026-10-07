@@ -6,16 +6,18 @@ import (
 )
 
 type GuardianVisual struct {
-	ID            string    `json:"id"`
-	InitialHealth int       `json:"initial_health"`
-	InitialWorldY int       `json:"initial_world_y"`
-	BodyX         int       `json:"body_x"`
-	Body          TilePatch `json:"body"`
-	EyeX          int       `json:"eye_x"`
-	EyeOffsetY    int       `json:"eye_offset_y"`
-	EyeFrames     []string  `json:"eye_frames"`
-	SegmentSprite string    `json:"segment_sprite,omitempty"`
-	SegmentCount  int       `json:"segment_count,omitempty"`
+	ID                string         `json:"id"`
+	InitialHealth     int            `json:"initial_health"`
+	InitialWorldY     int            `json:"initial_world_y"`
+	BodyX             int            `json:"body_x"`
+	Body              TilePatch      `json:"body"`
+	EyeX              int            `json:"eye_x"`
+	EyeOffsetY        int            `json:"eye_offset_y"`
+	EyeFrames         []string       `json:"eye_frames"`
+	SegmentSprite     string         `json:"segment_sprite,omitempty"`
+	SegmentCount      int            `json:"segment_count,omitempty"`
+	TailHeadingFrames []string       `json:"tail_heading_frames,omitempty"`
+	FlameAnimation    ActorAnimation `json:"flame_animation"`
 }
 
 type Guardians struct {
@@ -34,6 +36,15 @@ func DecodeGuardianArt(number int, level []byte, palette [16][4]uint8) (*Guardia
 		}
 		body := readTilePatch(level, bodyStart, 6, 9)
 		guardian := GuardianVisual{ID: "final-guardian", InitialHealth: int(binary.BigEndian.Uint16(level[0x5e:])), InitialWorldY: 96, BodyX: 112, Body: body}
+		return &Guardians{Visuals: []GuardianVisual{guardian}, Atlas: packSprites(nil)}, append([]uint16(nil), body.Tiles...), nil
+	}
+	if number == 5 {
+		const bodyStart = 0x57666 - levelBase
+		if len(level) < bodyStart+540 {
+			return nil, nil, fmt.Errorf("final terrain guardian body is truncated")
+		}
+		body := readTilePatch(level, bodyStart, 15, 18)
+		guardian := GuardianVisual{ID: "final-guardian", InitialHealth: 20, InitialWorldY: 96, BodyX: 48, Body: body}
 		return &Guardians{Visuals: []GuardianVisual{guardian}, Atlas: packSprites(nil)}, append([]uint16(nil), body.Tiles...), nil
 	}
 	if number != 1 {
@@ -68,6 +79,29 @@ func DecodeGuardianArt(number int, level []byte, palette [16][4]uint8) (*Guardia
 	images = append(images, segment)
 	guardian.SegmentSprite = segment.Name
 	guardian.SegmentCount = 8
+	for heading := range 8 {
+		address := int(binary.BigEndian.Uint32(level[0x5638a-levelBase+heading*4:]))
+		name := fmt.Sprintf("guardian-tail-%d", heading)
+		picture, err := DecodeActorSprite(level, address-levelBase, name, palette)
+		if err != nil {
+			return nil, nil, err
+		}
+		images = append(images, picture)
+		guardian.TailHeadingFrames = append(guardian.TailHeadingFrames, name)
+	}
+	flame, err := decodeActorAnimation(level, 0x552b0-levelBase, func(address int) (string, error) {
+		name := fmt.Sprintf("guardian-flame-%d", len(images))
+		picture, err := DecodeActorSprite(level, address-levelBase, name, palette)
+		if err != nil {
+			return "", err
+		}
+		images = append(images, picture)
+		return name, nil
+	})
+	if err != nil {
+		return nil, nil, err
+	}
+	guardian.FlameAnimation = flame
 	return &Guardians{Visuals: []GuardianVisual{guardian}, Atlas: packSprites(images)}, append([]uint16(nil), body.Tiles...), nil
 }
 

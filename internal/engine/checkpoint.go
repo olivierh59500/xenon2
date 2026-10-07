@@ -42,6 +42,7 @@ func (e *Equipment) RestoreCheckpointLoadout(loadout WeaponLoadout) {
 // RestartCheckpoint restores the independent state after the game director's
 // death and ready screens. The mutable level map is deliberately retained.
 func (w *World) RestartCheckpoint() {
+	scrollChange := w.ScrollY - w.Checkpoint.ScrollY
 	w.Equipment.RestoreCheckpointLoadout(w.Checkpoint.Loadout)
 	w.Money = w.Checkpoint.Money
 	w.Player = PlayerMotionState{X: w.Checkpoint.PlayerX, Y: 176, SpeedTier: w.Equipment.SpeedTier}
@@ -55,7 +56,23 @@ func (w *World) RestartCheckpoint() {
 	w.PlayerSprite = ""
 	w.MaterializationFrames = 8
 	w.Actors, w.Projectiles, w.SmallShots, w.Collectibles = nil, nil, nil, nil
+	if w.firstGuardianActor != nil && !w.FirstGuardian.Defeated {
+		w.Actors = append(w.Actors, w.firstGuardianActor)
+		if w.FirstGuardianSegments != nil && w.FirstGuardianSegments.Alive {
+			var segments []*WorldActor
+			for i, segment := range w.firstGuardianParts {
+				segment.Y += float64(scrollChange)
+				segment.PreviousY = segment.Y
+				w.FirstGuardianSegments.Pieces[i].Y += int32(scrollChange) << 16
+				segments = append(segments, segment)
+			}
+			w.Actors = append(segments, w.Actors...)
+		}
+	}
 	w.fire = NewFireCadence(w.Equipment)
+	if w.Weapons != nil {
+		w.Weapons.ResetProjectiles()
+	}
 	w.PendingExitDrops = 0
 	w.ExitReady = false
 	clear(w.WaveBonuses.Entries[:])

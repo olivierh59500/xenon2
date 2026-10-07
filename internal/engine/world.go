@@ -19,6 +19,7 @@ type LevelData struct {
 	Rules         *visualassets.LevelRules
 	Ships         *visualassets.ShipArt
 	Common        *visualassets.SpriteAtlas
+	Guardians     *visualassets.Guardians
 }
 
 type Input struct {
@@ -32,6 +33,7 @@ type WorldActor struct {
 	ID                         int
 	X, Y, PreviousX, PreviousY float64
 	Sprite, Atlas              string
+	ActorList                  string
 	Active                     bool
 	Visible                    bool
 	Health, Score              int
@@ -48,6 +50,16 @@ type WorldActor struct {
 	Collision                  CollisionRect
 	CarriedReward              int
 	WaveToken                  uint16
+	Patch                      *visualassets.TilePatch
+	Flash                      bool
+	Extras                     []WorldSpriteAttachment
+	firstGuardian              bool
+	firstSegment               int
+}
+
+type WorldSpriteAttachment struct {
+	Sprite, Atlas string
+	X, Y          float64
 }
 
 type WorldProjectile struct {
@@ -56,6 +68,8 @@ type WorldProjectile struct {
 	Sprite, Atlas              string
 	Active                     bool
 	Motion                     DirectionalProjectile
+	animation                  visualassets.ActorAnimation
+	animationState             AnimationState
 }
 
 type WorldSmallShot struct {
@@ -67,6 +81,7 @@ type WorldSmallShot struct {
 
 type WorldCollectible struct {
 	ID                         int
+	Order                      int
 	X, Y, PreviousX, PreviousY float64
 	Sprite                     string
 	Active                     bool
@@ -104,13 +119,18 @@ type World struct {
 	WaveBonuses                      WaveBonusCache
 	Ready                            bool
 	GameOver                         bool
+	ContinueCredits                  int
 	PlayerSprite                     string
 	Actors                           []*WorldActor
 	Projectiles                      []*WorldProjectile
 	SmallShots                       []*WorldSmallShot
 	Collectibles                     []*WorldCollectible
+	FirstGuardian                    *FirstGuardianState
+	FirstGuardianSegments            *FirstGuardianSegments
+	Weapons                          *WeaponRuntime
 	Frame                            uint64
 	Money, Score                     int
+	DisplayScore                     int
 	MinimumScrollY, MaximumScrollY   int
 	ScrollDeviationPasses            int
 	cursor                           EncounterCursor
@@ -128,6 +148,14 @@ type World struct {
 	deathAnimation                   visualassets.NamedActorAnimation
 	deathState                       AnimationState
 	blockedFireUntilRelease          bool
+	firstGuardianArt                 *visualassets.GuardianVisual
+	firstGuardianActor               *WorldActor
+	firstGuardianParts               [8]*WorldActor
+	nextTailOrder                    int
+	weaponIDs                        []int
+	weaponTargets                    []WeaponTarget
+	weaponTargetActors               map[int]*WorldActor
+	shipTrail                        [4]PlayerMotionState
 }
 
 func NewWorld(data LevelData) (*World, error) {
@@ -147,6 +175,17 @@ func NewWorld(data LevelData) (*World, error) {
 		kinds: make(map[int]*visualassets.WaveActor), paths: make(map[int]*visualassets.Path), fixedKinds: make(map[int]*visualassets.FixedSpriteKind),
 	}
 	w.PreviousPlayer = w.Player
+	for i := range w.shipTrail {
+		w.shipTrail[i] = w.Player
+	}
+	if data.Common != nil {
+		var err error
+		w.Weapons, err = NewWeaponRuntime(data.Common)
+		if err != nil {
+			return nil, err
+		}
+	}
+	w.ContinueCredits = 2
 	w.WaveBonuses = NewWaveBonusCache()
 	w.Checkpoint = CheckpointState{ScrollY: w.ScrollY, PlayerX: w.Player.X, WorldY: w.Player.Y, Loadout: w.Equipment.WeaponLoadout}
 	w.fire = NewFireCadence(w.Equipment)
@@ -209,6 +248,11 @@ func NewWorld(data LevelData) (*World, error) {
 		w.kinds[kind.Kind] = kind
 	}
 	if data.FixedSprites != nil {
+		for _, sprite := range data.FixedSprites.Atlas.Sprites {
+			if sprite.Collision != nil {
+				w.movingSpriteBoxes[sprite.Name] = *sprite.Collision
+			}
+		}
 		for i := range data.FixedSprites.Kinds {
 			kind := &data.FixedSprites.Kinds[i]
 			w.fixedKinds[kind.Kind] = kind
@@ -219,7 +263,45 @@ func NewWorld(data LevelData) (*World, error) {
 			return nil, fmt.Errorf("wave references unknown kind or path")
 		}
 	}
+	if data.Number == 1 && data.Guardians != nil && len(data.Guardians.Visuals) != 0 {
+		w.firstGuardianArt = &data.Guardians.Visuals[0]
+		state := NewFirstGuardianState(w.firstGuardianArt.InitialHealth)
+		w.FirstGuardian = &state
+		w.nextActorID++
+		part := &visualassets.ActorPart{ResourceTag: 80, DamageMode: "first-guardian", MotionMode: "first-guardian-controller"}
+		w.firstGuardianActor = &WorldActor{ID: w.nextActorID, Active: true, ActorList: "moving", Atlas: "guardians", part: part, firstGuardian: true,
+			Collision: CollisionRect{Right: -1, Bottom: -1}}
+		w.Actors = append(w.Actors, w.firstGuardianActor)
+	}
 	return w, nil
+}
+
+// NextUIRandom shares the original random stream with shop animations and
+// dialogue choices, preserving its continuity when gameplay resumes.
+func (w *World) NextUIRandom() uint16 {
+	return uint16(w.random.Next())
+}
+
+// SetRandomState transfers the shared stream from the attract/menu director or
+// the other player's turn. It does not reset any gameplay state.
+func (w *World) SetRandomState(state RandomState) { w.random = state }
+
+func (w *World) RandomState() RandomState { return w.random }
+
+// AcceptContinue restores three ships at the same checkpoint. The original
+// resets score while retaining the recorded weapons, wallet and stage state.
+func (w *World) AcceptContinue() bool {
+	if !w.GameOver || w.ContinueCredits == 0 {
+		return false
+	}
+	w.ContinueCredits--
+	w.GameOver = false
+	w.Equipment.Lives = 3
+	w.Score = 0
+	w.DisplayScore = 0
+	w.RestartCheckpoint()
+	w.Ready = true
+	return true
 }
 
 // Step follows the original update ordering: player, existing actors, timers,
@@ -247,6 +329,18 @@ func (w *World) Step(input Input) error {
 	w.PreviousScrollY = w.ScrollY
 	w.RenderScrollY = w.ScrollY
 	w.PreviousBackgroundY = w.BackgroundY
+	if difference := w.Score - w.DisplayScore; difference > 0 {
+		switch {
+		case difference >= 2000:
+			w.DisplayScore += 1000
+		case difference >= 200:
+			w.DisplayScore += 100
+		default:
+			w.DisplayScore += 10
+		}
+	} else if difference < 0 {
+		w.Score = w.DisplayScore
+	}
 	backgroundStep := (w.ScrollDelta >> 1) + (int(w.Frame&1) & w.ScrollDelta)
 	w.BackgroundY = (w.BackgroundY - backgroundStep + 192) % 192
 	w.Player.SpeedTier = w.Equipment.SpeedTier
@@ -265,11 +359,17 @@ func (w *World) Step(input Input) error {
 			contactRect = CollisionRect{Left: w.Player.X - 64, Top: w.Player.Y - 64, Right: w.Player.X + 64, Bottom: w.Player.Y + 64}
 		}
 		for _, actor := range w.Actors {
-			if actor.Active && !actor.fixed && actor.Collision.Intersects(contactRect) {
+			if actor.Active && actor.ActorList == "moving" && actor.Collision.Intersects(contactRect) {
 				if w.Equipment.ShadesFrames == 0 {
 					w.damagePlayer(ContactDamage(actor.part.StrongHealth))
 				}
-				w.damageActor(actor, 127)
+				if actor.part.ResourceTag != 80 && actor.part.ResourceTag != 84 {
+					if w.Equipment.ShadesFrames != 0 && actor.firstGuardian {
+						w.strikeFirstGuardian(contactRect, 127)
+					} else if actor.part.ResourceTag != 80 && actor.part.ResourceTag != 84 {
+						w.damageActor(actor, 127)
+					}
+				}
 				break
 			}
 		}
@@ -304,14 +404,30 @@ func (w *World) Step(input Input) error {
 	if w.Dive.AdvancePhase() {
 		w.Rewind.Timer = -15
 	}
+	copy(w.shipTrail[:3], w.shipTrail[1:])
+	w.shipTrail[3] = w.PreviousPlayer
 	for _, actor := range w.Actors {
-		if !actor.Active || actor.fixed {
+		if !actor.Active || actor.ActorList != "moving" {
+			continue
+		}
+		if actor.firstSegment > 0 {
+			if actor.firstSegment == 1 {
+				if err := w.advanceFirstGuardianSegments(); err != nil {
+					return err
+				}
+			}
 			continue
 		}
 		actor.PreviousX, actor.PreviousY = actor.X, actor.Y
 		actor.Visible = true
+		if actor.firstGuardian {
+			w.advanceFirstGuardian()
+			continue
+		}
 		actor.animationState.Advance(actor.animation)
-		if actor.part.MotionMode == "follow-leader" {
+		if actor.fixed {
+			actor.Y = float64(actor.mapY - w.ScrollY)
+		} else if actor.part.MotionMode == "follow-leader" {
 			actor.X, actor.Y = actor.leader.X, actor.leader.Y
 			actor.Active = actor.leader.Active
 		} else {
@@ -336,7 +452,7 @@ func (w *World) Step(input Input) error {
 		if box, ok := w.movingSpriteBoxes[actor.Sprite]; ok {
 			actor.Collision = ActorCollisionRect(box, int(actor.X), int(actor.Y))
 		}
-		if actor.Active && actor.part.MotionMode != "follow-leader" {
+		if actor.Active && !actor.fixed && actor.part.MotionMode != "follow-leader" {
 			shot, fired, err := actor.fire.Tick(w.random.Next, w.Player.X-int(actor.X), w.Player.Y-int(actor.Y))
 			if err != nil {
 				return err
@@ -351,7 +467,13 @@ func (w *World) Step(input Input) error {
 	}
 	w.previousFire = input.Fire
 	w.fire.ApplyEquipment(w.Equipment)
-	if w.fire.TakePulse() && w.PlayerAlive && w.Dive.Phase == 0 {
+	pulse := w.fire.TakePulse()
+	if w.Weapons != nil {
+		if err := w.Weapons.AdvanceEquipment(w.weaponContext(input, pulse)); err != nil {
+			return err
+		}
+	}
+	if w.Weapons == nil && pulse && w.PlayerAlive && w.Dive.Phase == 0 {
 		for _, weapon := range []WeaponSlot{w.Equipment.Primary, w.Equipment.Rear, w.Equipment.Side} {
 			switch weapon.Item {
 			case ItemForwardShot, ItemDoubleShot, ItemRearShot, ItemSideShot:
@@ -378,8 +500,13 @@ func (w *World) Step(input Input) error {
 	// Both families belonged to the same newest-first projectile list. Merge
 	// their stable creation IDs to preserve hits and removals in that order.
 	collectiblesAtStart := w.Collectibles
-	for enemy, player, collectible := 0, 0, 0; enemy < len(w.Projectiles) || player < len(w.SmallShots) || collectible < len(collectiblesAtStart); {
-		enemyID, playerID, collectibleID := -1, -1, -1
+	w.weaponIDs = w.weaponIDs[:0]
+	if w.Weapons != nil {
+		w.weaponIDs = w.Weapons.ProjectileIDs(w.weaponIDs)
+	}
+	weaponContext := w.weaponContext(input, false)
+	for enemy, player, collectible, weapon := 0, 0, 0, 0; enemy < len(w.Projectiles) || player < len(w.SmallShots) || collectible < len(collectiblesAtStart) || weapon < len(w.weaponIDs); {
+		enemyID, playerID, collectibleID, weaponID := -2147483648, -2147483648, -2147483648, -2147483648
 		if enemy < len(w.Projectiles) {
 			enemyID = w.Projectiles[enemy].ID
 		}
@@ -388,8 +515,25 @@ func (w *World) Step(input Input) error {
 		}
 		if collectible < len(collectiblesAtStart) {
 			collectibleID = collectiblesAtStart[collectible].ID
+			if collectiblesAtStart[collectible].Order != 0 {
+				collectibleID = collectiblesAtStart[collectible].Order
+			}
 		}
-		if collectibleID > max(enemyID, playerID) {
+		if weapon < len(w.weaponIDs) {
+			weaponID = w.weaponIDs[weapon]
+		}
+		if weaponID > max(enemyID, playerID, collectibleID) {
+			weaponContext.ShipDestroyed = !w.PlayerAlive
+			for i := range weaponContext.Targets {
+				if actor := w.weaponTargetActors[weaponContext.Targets[i].ID]; actor != nil {
+					weaponContext.Targets[i].Active = actor.Active
+				}
+			}
+			if err := w.Weapons.AdvanceProjectile(weaponID, weaponContext); err != nil {
+				return err
+			}
+			weapon++
+		} else if collectibleID > max(enemyID, playerID) {
 			w.advanceCollectible(collectiblesAtStart[collectible])
 			collectible++
 		} else if enemyID > playerID {
@@ -402,8 +546,11 @@ func (w *World) Step(input Input) error {
 			player++
 		}
 	}
+	if w.Weapons != nil {
+		w.Weapons.Compact()
+	}
 	for _, actor := range w.Actors {
-		if !actor.Active || !actor.fixed {
+		if !actor.Active || actor.ActorList != "scenery" {
 			continue
 		}
 		actor.PreviousX, actor.PreviousY = actor.X, actor.Y
@@ -423,6 +570,12 @@ func (w *World) Step(input Input) error {
 	}
 	if err := w.fire.Tick(input.Fire); err != nil {
 		return err
+	}
+	if w.Weapons != nil {
+		if err := w.Weapons.AdvanceSparks(w.weaponContext(input, false)); err != nil {
+			return err
+		}
+		w.Weapons.Compact()
 	}
 	var spawnErr error
 	w.cursor.Activate(w.ScrollY, w.Level.Encounters,
@@ -461,6 +614,10 @@ func (w *World) Step(input Input) error {
 
 func (w *World) advanceEnemyShot(projectile *WorldProjectile) error {
 	projectile.PreviousX, projectile.PreviousY = projectile.X, projectile.Y
+	if len(projectile.animation.Frames) != 0 {
+		projectile.animationState.Advance(projectile.animation)
+		projectile.Sprite = projectile.animationState.Sprite(projectile.animation)
+	}
 	var err error
 	projectile.Active, err = projectile.Motion.Advance(w.ScrollDelta)
 	if err != nil {
@@ -468,7 +625,16 @@ func (w *World) advanceEnemyShot(projectile *WorldProjectile) error {
 	}
 	projectile.X, projectile.Y = float64(projectile.Motion.X>>16), float64(projectile.Motion.Y>>16)
 	if projectile.Active && w.PlayerAlive && w.Dive.Phase == 0 {
-		if box, ok := w.shotSpriteBoxes[projectile.Sprite]; ok && ActorCollisionRect(box, int(projectile.X), int(projectile.Y)).Intersects(w.playerCollision) {
+		box, ok := w.shotSpriteBoxes[projectile.Sprite]
+		if !ok && projectile.Atlas == "guardians" && w.Level.Guardians != nil {
+			for _, sprite := range w.Level.Guardians.Atlas.Sprites {
+				if sprite.Name == projectile.Sprite && sprite.Collision != nil {
+					box, ok = *sprite.Collision, true
+					break
+				}
+			}
+		}
+		if ok && ActorCollisionRect(box, int(projectile.X), int(projectile.Y)).Intersects(w.playerCollision) {
 			w.damagePlayer(EnemyBulletDamage)
 			projectile.Active = false
 		}
@@ -483,8 +649,12 @@ func (w *World) advanceSmallShot(shot *WorldSmallShot) {
 		return
 	}
 	for _, actor := range w.Actors {
-		if actor.Active && !actor.fixed && actor.Collision.Contains(shot.Shot.X, shot.Shot.Y) {
-			w.damageActor(actor, shot.Shot.Damage)
+		if actor.Active && actor.ActorList == "moving" && actor.Collision.Contains(shot.Shot.X, shot.Shot.Y) {
+			if actor.firstGuardian {
+				w.strikeFirstGuardian(CollisionRect{Left: shot.Shot.X, Top: shot.Shot.Y, Right: shot.Shot.X, Bottom: shot.Shot.Y}, shot.Shot.Damage)
+			} else {
+				w.damageActor(actor, shot.Shot.Damage)
+			}
 			shot.Active = false
 			return
 		}
@@ -541,7 +711,7 @@ func (w *World) spawnWave(wave visualassets.Wave) error {
 			// when the formation's firing rate is zero.
 			fire := NewEnemyFireState(wave.FireRate, w.random.Next())
 			w.nextActorID++
-			actor := &WorldActor{ID: w.nextActorID, Atlas: "moving", Active: true, Score: part.Score, part: part, path: path, motion: motion,
+			actor := &WorldActor{ID: w.nextActorID, Atlas: "moving", ActorList: "moving", Active: true, Score: part.Score, part: part, path: path, motion: motion,
 				animation: part.Animation, animationState: NewAnimation(part.Animation), leader: leader, fire: fire}
 			if part.Atlas != "" {
 				actor.Atlas = part.Atlas
@@ -626,6 +796,9 @@ func (w *World) destroyPlayer() {
 }
 
 func (w *World) damageActor(actor *WorldActor, amount uint16) {
+	if actor.part != nil && actor.part.DamageMode == "block-shot" {
+		return
+	}
 	if actor.part != nil && actor.part.DamageMode == "drop-equipment" {
 		w.spawnPickup(actor.CarriedReward, int(actor.X), int(actor.Y))
 		actor.Active = false
@@ -696,11 +869,19 @@ func (w *World) spawnFixed(record visualassets.FixedEncounter) {
 			continue
 		}
 		w.nextActorID++
-		a := &WorldActor{ID: w.nextActorID, X: float64(record.X + v.OriginOffsetX), Y: float64(record.Y + v.OriginOffsetY - w.ScrollY), Atlas: "fixed", Active: true,
+		part := &visualassets.ActorPart{Atlas: "fixed", StrongHealth: kind.StrongHealth, Score: kind.Score, MotionMode: "world-anchored", DamageMode: "individual"}
+		a := &WorldActor{ID: w.nextActorID, X: float64(record.X + v.OriginOffsetX), Y: float64(record.Y + v.OriginOffsetY - w.ScrollY), Atlas: "fixed", ActorList: kind.ActorList, Active: true, part: part,
 			mapY: record.Y + v.OriginOffsetY, fixed: true, Health: kind.Health, Score: kind.Score,
 			animation: v.Animation, animationState: NewAnimation(v.Animation)}
 		a.PreviousX, a.PreviousY = a.X, a.Y
 		a.selectSprite()
+		if kind.CollisionMode == "sprite-prefix" {
+			if box, ok := w.movingSpriteBoxes[a.Sprite]; ok {
+				a.Collision = ActorCollisionRect(box, int(a.X), int(a.Y))
+			}
+		} else {
+			a.Collision = CollisionRect{Right: -1, Bottom: -1}
+		}
 		w.Actors = append([]*WorldActor{a}, w.Actors...)
 		return
 	}

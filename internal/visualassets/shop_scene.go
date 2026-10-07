@@ -25,9 +25,19 @@ type ShopAmbient struct {
 	Animation ItemAnimation `json:"animation"`
 }
 
+type ShopHandFrame struct {
+	Sprite         string `json:"sprite"`
+	X, Y, Duration int
+}
+
 // ShopScene retains the original static composition, portrait, grid and font.
 type ShopScene struct {
-	CashFont                                                Font `json:"cash_font"`
+	TransitionArt                                           SpriteAtlas     `json:"transition_art"`
+	TransitionSprites                                       []string        `json:"transition_sprites"`
+	SaleHand                                                []ShopHandFrame `json:"sale_hand"`
+	TVTransition                                            []string        `json:"tv_transition"`
+	PageAnimation                                           ItemAnimation   `json:"page_animation"`
+	CashFont                                                Font            `json:"cash_font"`
 	MoneyX, MoneyY, MoneyDigits                             int
 	Messages                                                map[string]string `json:"messages"`
 	Ambient                                                 []ShopAmbient     `json:"ambient"`
@@ -100,7 +110,7 @@ func DecodeShopScene(data []byte, palette [16][4]uint8) (*ShopScene, error) {
 	for _, control := range []struct {
 		id            string
 		address, x, y int
-	}{{"cursor", 0x57850, 0, 0}, {"exit", 0x5b218, 4, 168}, {"buy", 0x5b458, 45, 168}, {"sell", 0x5b698, 45, 168}} {
+	}{{"cursor", 0x57850, 0, 0}, {"cursor-active", 0x578ba, 0, 0}, {"exit", 0x5b218, 4, 168}, {"buy", 0x5b458, 45, 168}, {"sell", 0x5b698, 45, 168}, {"exit-active", 0x5ab58, 4, 168}, {"buy-active", 0x5ad98, 45, 168}, {"sell-active", 0x5afd8, 45, 168}, {"eye-right", 0x5b97e, 263, 41}, {"eye-left", 0x5b8d8, 247, 41}, {"blink-right", 0x5bb60, 263, 35}, {"blink-left", 0x5ba24, 245, 35}} {
 		picture, err := DecodeSprite(data, control.address-base, "shop-control-"+control.id, palette)
 		if err != nil {
 			return nil, err
@@ -155,7 +165,64 @@ func DecodeShopScene(data []byte, palette [16][4]uint8) (*ShopScene, error) {
 		}
 		s.Ambient = append(s.Ambient, ShopAmbient{X: int(binary.BigEndian.Uint16(data[at:])), Y: int(binary.BigEndian.Uint16(data[at+2:])), Animation: animation})
 	}
+	page, err := decodeShopPointerList(data, 0x56108-base, "shop-next-page", add)
+	if err != nil {
+		return nil, err
+	}
+	s.PageAnimation = page
+	hand0, err := add(0x5c82c)
+	if err != nil {
+		return nil, err
+	}
+	hand1, err := add(0x5c59c)
+	if err != nil {
+		return nil, err
+	}
+	hand2, err := add(0x5cabc)
+	if err != nil {
+		return nil, err
+	}
+	for y := 120; y > 104; y -= 2 {
+		s.SaleHand = append(s.SaleHand, ShopHandFrame{Sprite: hand0, X: 247, Y: y, Duration: 1})
+	}
+	for _, name := range []string{hand0, hand1, hand0, hand2, hand0, hand1, hand0, hand2, hand0, hand1} {
+		s.SaleHand = append(s.SaleHand, ShopHandFrame{Sprite: name, X: 247, Y: 104, Duration: 3})
+	}
+	for y := 104; y < 128; y += 2 {
+		s.SaleHand = append(s.SaleHand, ShopHandFrame{Sprite: hand0, X: 247, Y: y, Duration: 1})
+	}
+	for i := 0; i < 9; i++ {
+		address := int(binary.BigEndian.Uint32(data[0x56a96-base+i*4:]))
+		name, err := add(address)
+		if err != nil {
+			return nil, err
+		}
+		s.TVTransition = append(s.TVTransition, name)
+	}
 	s.ControlArt = packSprites(pictures)
+	var transition []*Sprite
+	for i, address := range []int{0x5721c, 0x5731c, 0x573cc, 0x574cc, 0x575cc, 0x5767c} {
+		name := fmt.Sprintf("shop-headphones-%d", i)
+		picture, err := DecodeSprite(data, address-base, name, palette)
+		if err != nil {
+			return nil, err
+		}
+		transition = append(transition, picture)
+		s.TransitionSprites = append(s.TransitionSprites, name)
+	}
+	for i, address := range []int{0x61f8e, 0x6284e, 0x6310e} {
+		height := 40
+		if i == 2 {
+			height = 68
+		}
+		picture, err := decodeWordPlanes(data, address-base, 112, height, palette)
+		if err != nil {
+			return nil, err
+		}
+		name := fmt.Sprintf("shop-transition-strip-%d", i)
+		transition = append(transition, &Sprite{Name: name, Width: 112, Height: height, Image: picture})
+	}
+	s.TransitionArt = packPresentationFrames(transition)
 	s.Font = Font{Width: 4, Height: 8, Columns: 16, Image: image.NewNRGBA(image.Rect(0, 0, 64, 32))}
 	for code := 32; code <= 90; code++ {
 		s.Font.Characters += string(rune(code))
@@ -194,6 +261,36 @@ func DecodeShopScene(data []byte, palette [16][4]uint8) (*ShopScene, error) {
 		s.Messages[message.id] = string(data[start:end])
 	}
 	return s, nil
+}
+
+func decodeShopPointerList(data []byte, root int, id string, add func(int) (string, error)) (ItemAnimation, error) {
+	const base = 0x54e00
+	animation := ItemAnimation{ID: id}
+	cursor := root
+	positions := make(map[int]int)
+	for len(animation.Frames) < 256 {
+		if cursor < 0 || cursor+8 > len(data) {
+			return ItemAnimation{}, fmt.Errorf("shop pointer animation truncated")
+		}
+		positions[cursor] = len(animation.Frames)
+		address := int(binary.BigEndian.Uint32(data[cursor:]))
+		cursor += 4
+		if address == 0 {
+			loop := int(binary.BigEndian.Uint32(data[cursor:])) - base
+			at, ok := positions[loop]
+			if !ok {
+				return ItemAnimation{}, fmt.Errorf("shop pointer loop leaves its list")
+			}
+			animation.LoopFrom = at
+			return animation, nil
+		}
+		name, err := add(address)
+		if err != nil {
+			return ItemAnimation{}, err
+		}
+		animation.Frames = append(animation.Frames, name)
+	}
+	return ItemAnimation{}, fmt.Errorf("shop pointer animation exceeds limit")
 }
 
 // DecodeShopCashFont recovers the original seven-digit eight-pixel display.

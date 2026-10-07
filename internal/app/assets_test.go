@@ -1,11 +1,21 @@
 package app
 
 import (
+	"github.com/hajimehoshi/ebiten/v2"
 	"image"
 	"image/color"
 	"os"
 	"testing"
 )
+
+func TestOriginalPaletteShaderCompiles(t *testing.T) {
+	if _, err := ebiten.NewShader([]byte(paletteShaderSource)); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := ebiten.NewShader([]byte(sparkShaderSource)); err != nil {
+		t.Fatal(err)
+	}
+}
 
 func TestWrapInterpolationKeepsParallaxContinuous(t *testing.T) {
 	if got := wrapLerp(191, 0, .5, 192); got != 191.5 {
@@ -35,6 +45,16 @@ func TestSharedPaletteRemappingPreservesTransparencyAndSource(t *testing.T) {
 	}
 	if got := picture.NRGBAAt(0, 0); got != (color.NRGBA{34, 34, 34, 255}) {
 		t.Fatal("shared source image mutated")
+	}
+}
+
+func TestFlashUsesPaletteFifteenOnlyInsideOriginalCoverage(t *testing.T) {
+	source := image.NewNRGBA(image.Rect(0, 0, 2, 1))
+	source.SetNRGBA(0, 0, color.NRGBA{R: 10, G: 20, B: 30, A: 255})
+	source.SetNRGBA(1, 0, color.NRGBA{R: 10, G: 20, B: 30, A: 0})
+	result := flashPixels(source, source.Bounds(), [4]uint8{170, 68, 34, 255})
+	if result.NRGBAAt(0, 0) != (color.NRGBA{170, 68, 34, 255}) || result.NRGBAAt(1, 0).A != 0 {
+		t.Fatal("flash altered source coverage or selected a different palette color")
 	}
 }
 
@@ -69,6 +89,12 @@ func TestPrivateExportedBundleAndWorldSnapshots(t *testing.T) {
 			if sprite.ID < 1 {
 				t.Fatal("unstable sprite identity")
 			}
+			if sprite.Kind == "tiles" {
+				if len(sprite.Patch.Tiles) != sprite.Patch.Columns*sprite.Patch.Rows {
+					t.Fatal("guardian body patch incomplete")
+				}
+				continue
+			}
 			var found bool
 			atlas := bundle.Levels[level-1].Actors.Atlas
 			switch sprite.Atlas {
@@ -78,6 +104,8 @@ func TestPrivateExportedBundleAndWorldSnapshots(t *testing.T) {
 				atlas = bundle.Levels[level-1].Rules.EnemyShots
 			case "common":
 				atlas = bundle.Common
+			case "guardians":
+				atlas = bundle.Levels[level-1].Guardians.Atlas
 			}
 			for _, region := range atlas.Sprites {
 				if region.Name == sprite.Sprite {

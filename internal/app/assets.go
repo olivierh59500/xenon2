@@ -8,6 +8,7 @@ import (
 	"image/draw"
 	_ "image/png"
 	"io/fs"
+	"os"
 
 	runtimeassets "xenon2/assets/runtime"
 	"xenon2/internal/audio"
@@ -16,6 +17,7 @@ import (
 
 // LevelAssets holds exported graphics and ordinary gameplay descriptors.
 type LevelAssets struct {
+	Guardians    *visualassets.Guardians
 	Terrain      visualassets.Terrain
 	Paths        visualassets.Paths
 	Encounters   visualassets.Encounters
@@ -27,16 +29,19 @@ type LevelAssets struct {
 
 // Bundle retains no packed disk resources, original program or machine state.
 type Bundle struct {
-	Levels    [5]*LevelAssets
-	Title     visualassets.TitleArt
-	Font      visualassets.Font
-	Ships     visualassets.ShipArt
-	Stencil   visualassets.PlayerTerrainStencil
-	Common    visualassets.SpriteAtlas
-	Shop      visualassets.ShopCatalogue
-	ShopArt   visualassets.ShopArt
-	AudioBank *audio.Bank
-	Waveforms map[string][]byte
+	PlayerPresentation visualassets.PlayerPresentation
+	Presentation       visualassets.Presentation
+	ShopScene          visualassets.ShopScene
+	Levels             [5]*LevelAssets
+	Title              visualassets.TitleArt
+	Font               visualassets.Font
+	Ships              visualassets.ShipArt
+	Stencil            visualassets.PlayerTerrainStencil
+	Common             visualassets.SpriteAtlas
+	Shop               visualassets.ShopCatalogue
+	ShopArt            visualassets.ShopArt
+	AudioBank          *audio.Bank
+	Waveforms          map[string][]byte
 }
 
 func LoadEmbedded() (*Bundle, error) { return LoadFS(runtimeassets.Files) }
@@ -69,6 +74,55 @@ func LoadFS(resources fs.FS) (*Bundle, error) {
 	if err := readJSON(resources, "shop.json", &b.Shop); err != nil {
 		return nil, err
 	}
+	if err := readJSON(resources, "presentation.json", &b.Presentation); err != nil {
+		return nil, err
+	}
+	font, fontErr := readPNG(resources, "presentation-font.png")
+	if fontErr != nil {
+		return nil, fontErr
+	}
+	b.Presentation.Font.Image = font
+	zoom, zoomErr := readPNG(resources, "title-zoom.png")
+	if zoomErr != nil {
+		return nil, zoomErr
+	}
+	b.Presentation.LogoZoom.Image = zoom
+	textZoom, textErr := readPNG(resources, "caption-zoom.png")
+	if textErr != nil {
+		return nil, textErr
+	}
+	b.Presentation.TextZoom.Image = textZoom
+	if err := readJSON(resources, "player-presentation.json", &b.PlayerPresentation); err != nil {
+		return nil, err
+	}
+	playerArt, playerErr := readPNG(resources, "player-presentation.png")
+	if playerErr != nil {
+		return nil, playerErr
+	}
+	b.PlayerPresentation.Atlas.Image = playerArt
+	for _, resource := range []struct {
+		name  string
+		image **image.NRGBA
+	}{{"hud-base", &b.PlayerPresentation.HUD}, {"hud-score-font", &b.PlayerPresentation.ScoreFont.Image}, {"hud-lives-font", &b.PlayerPresentation.LivesFont.Image}} {
+		picture, err := readPNG(resources, resource.name+".png")
+		if err != nil {
+			return nil, err
+		}
+		*resource.image = picture
+	}
+	if err := readJSON(resources, "shop-scene.json", &b.ShopScene); err != nil {
+		return nil, err
+	}
+	for _, resource := range []struct {
+		name    string
+		picture **image.NRGBA
+	}{{"shop-base", &b.ShopScene.Base}, {"shop-portraits", &b.ShopScene.Portraits}, {"shop-controls", &b.ShopScene.ControlArt.Image}, {"shop-font", &b.ShopScene.Font.Image}, {"shop-cash-font", &b.ShopScene.CashFont.Image}, {"shop-transition", &b.ShopScene.TransitionArt.Image}} {
+		picture, err := readPNG(resources, resource.name+".png")
+		if err != nil {
+			return nil, err
+		}
+		*resource.picture = picture
+	}
 	for index := range b.Levels {
 		l := &LevelAssets{}
 		prefix := fmt.Sprintf("level-%d", index+1)
@@ -95,11 +149,37 @@ func LoadFS(resources fs.FS) (*Bundle, error) {
 			return nil, fmt.Errorf("level %d: %w", index+1, err)
 		}
 		b.Levels[index] = l
+		guardianName := prefix + "-guardians.json"
+		if _, err := fs.Stat(resources, guardianName); err == nil {
+			l.Guardians = &visualassets.Guardians{}
+			if err = readJSON(resources, guardianName, l.Guardians); err != nil {
+				return nil, err
+			}
+			picture, err := readPNG(resources, prefix+"-guardians.png")
+			if err != nil {
+				return nil, err
+			}
+			l.Guardians.Atlas.Image = picture
+		} else if !os.IsNotExist(err) {
+			return nil, err
+		}
 	}
 	var err error
 	b.AudioBank, b.Waveforms, err = audio.LoadFS(resources, "audio")
 	if err != nil {
 		return nil, fmt.Errorf("audio resources: %w", err)
+	}
+	shopBank, shopWaves, err := audio.LoadFS(resources, "shop-audio")
+	if err != nil {
+		return nil, fmt.Errorf("shop audio resources: %w", err)
+	}
+	b.AudioBank.Samples = append(b.AudioBank.Samples, shopBank.Samples...)
+	b.AudioBank.Effects = append(b.AudioBank.Effects, shopBank.Effects...)
+	for id, pcm := range shopWaves {
+		if _, exists := b.Waveforms[id]; exists {
+			return nil, fmt.Errorf("duplicate shop sound %q", id)
+		}
+		b.Waveforms[id] = pcm
 	}
 	if err = b.Validate(); err != nil {
 		return nil, err
@@ -155,6 +235,12 @@ func (b *Bundle) Validate() error {
 	if b.Stencil.Width < 1 || b.Stencil.Width > 32 || b.Stencil.Height < 1 || len(b.Stencil.Rows) != b.Stencil.Height {
 		return fmt.Errorf("invalid player terrain stencil")
 	}
+	if b.ShopScene.Base == nil || b.ShopScene.Portraits == nil || b.ShopScene.Font.Image == nil || b.ShopScene.CashFont.Image == nil || len(b.ShopScene.Cells) != 20 || b.ShopScene.PortraitFrames != 4 || b.ShopScene.MoneyDigits != 7 {
+		return fmt.Errorf("shop composition incomplete")
+	}
+	if err := validateAtlas(&b.ShopScene.ControlArt); err != nil {
+		return err
+	}
 	for _, l := range b.Levels {
 		if err := validateLevel(l); err != nil {
 			return err
@@ -175,6 +261,13 @@ func validateLevel(l *LevelAssets) error {
 		return fmt.Errorf("invalid level terrain dimensions")
 	}
 	ids := make(map[uint16]bool, len(t.Tiles))
+	colors := make(map[[4]uint8]bool, 16)
+	for _, color := range t.Palette {
+		if colors[color] {
+			return fmt.Errorf("palette effects require unambiguous color indices")
+		}
+		colors[color] = true
+	}
 	for _, tile := range t.Tiles {
 		if tile.ID == 0 || ids[tile.ID] || tile.X < 0 || tile.Y < 0 || tile.X+16 > t.Atlas.Bounds().Dx() || tile.Y+16 > t.Atlas.Bounds().Dy() {
 			return fmt.Errorf("invalid terrain tile")

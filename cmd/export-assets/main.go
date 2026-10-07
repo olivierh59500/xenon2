@@ -69,6 +69,11 @@ func main() {
 			fail(err)
 		}
 		extraTiles = append(extraTiles, guardianTiles...)
+		groups, guardianParts, err := visualassets.DecodeCompoundGuardianArt(index+1, data, baseTerrain.Palette)
+		if err != nil {
+			fail(err)
+		}
+		extraTiles = append(extraTiles, visualassets.GuardianGroupTileCodes(groups)...)
 		terrain, err := visualassets.DecodeTerrainWithTiles(data, extraTiles)
 		if err != nil {
 			fail(fmt.Errorf("level %d: %w", index+1, err))
@@ -85,11 +90,10 @@ func main() {
 				fail(err)
 			}
 		}
-		groups, guardianParts, err := visualassets.DecodeCompoundGuardianArt(index+1, data, terrain.Palette)
-		if err != nil {
-			fail(err)
-		}
 		if len(groups) > 0 {
+			if err := visualassets.RemapGuardianGroupTiles(groups, terrain.SourceTileIDs); err != nil {
+				fail(err)
+			}
 			if err := writeJSON(prefix+"-guardian-groups.json", struct {
 				Groups []visualassets.GuardianGroup `json:"groups"`
 				Atlas  visualassets.SpriteAtlas     `json:"atlas"`

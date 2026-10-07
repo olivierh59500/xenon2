@@ -162,3 +162,23 @@ The four ordinary weapon families cover all three power tiers, including the
 creation order of double and side shots. Bitmap Shades darken the original
 three-bit palette and apply a short-range damage area around the ship; they are
 separate from both invulnerability and Nashwan equipment.
+
+## First final guardian
+
+The Go controller matches 1,200 original passes through the original waiting,
+extension, recovery and vertical movement cycles. Its eight articulated pieces
+match 9,280 recorded segment states, including fractional positions, headings,
+angular velocity/acceleration, movement budgets, the final piece's target-facing
+artwork selector, firing accumulator and random consumption.
+
+The broad body collision is separate from its vulnerable eye. A projectile can
+hit the body and disappear without reducing health when it misses that eye. The
+articulated pieces block shots and damage the player; their ordinary collision
+does not award a fictitious destruction score. Death releases nine pairs of
+small and large cash rewards, using the source's different head/tail insertion
+order and pending-exit count.
+
+The integrated controller remains subject to full scene, checkpoint and stage
+progression comparisons. Other guardians and scripted scenery require their
+own independent Go controllers; their extracted artwork does not establish
+complete behavior.

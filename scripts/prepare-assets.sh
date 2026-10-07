@@ -23,4 +23,7 @@ GOWORK=off go run ./cmd/import-assets "$@"
 if [ "$import_only" -eq 0 ]; then
     GOWORK=off go run ./cmd/export-assets -analysis "$analysis_directory"
     GOWORK=off go run ./cmd/export-audio -analysis "$analysis_directory" -output assets/runtime/audio
+    GOWORK=off go run ./cmd/export-shop -analysis "$analysis_directory" -output assets/runtime
+    GOWORK=off go run ./cmd/export-presentation -analysis "$analysis_directory" -output assets/runtime
+    GOWORK=off go run ./cmd/export-shop-audio -analysis "$analysis_directory" -output assets/runtime/shop-audio
 fi

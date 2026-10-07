@@ -23,7 +23,23 @@ func DecodeCommonAnimations(common []byte, resolve func(int) (string, error)) ([
 	definitions := []struct {
 		id        string
 		tag, root int
-	}{{"power-up-carrier", 100, 0x2564}, {"player-invulnerability", 0, 0x25a0}, {"cash-small", 0, 0x26ae}, {"cash-large", 0, 0x264e}, {"player-death", 0, 0x2760}}
+	}{{"power-up-carrier", 100, 0x2564}, {"player-invulnerability", 0, 0x25a0}, {"cash-small", 0, 0x26ae}, {"cash-large", 0, 0x264e}, {"player-death", 0, 0x2760},
+		{"cannon-idle", 0, 0x280a}, {"cannon-fire", 0, 0x27f2}, {"cannon-ball", 0, 0x288e}, {"launcher-idle", 0, 0x2c24}, {"launcher-flight", 0, 0x2918}, {"laser-active", 0, 0x2612}, {"flamer-active", 0, 0x2540}, {"drone-active", 0, 0x25be}, {"electro-ball-active", 0, 0x2a02}, {"mine-small-active", 0, 0x28b2}, {"mine-large-active", 0, 0x28d0},
+		{"flamer-particle", 0, 0x2796},
+		{"bomb-flight", 0, 0x25e2}, {"rear-shot-active", 0, 0x283a},
+		{"explosion-small", 0, 0x270e}, {"explosion-large", 0, 0x273a},
+		{"launcher-fire", 0, 0x2c2a}, {"rear-shot-fire", 0, 0x2840},
+	}
+	if len(common) < 0x3aa2+32 {
+		return nil, fmt.Errorf("homing animation table is truncated")
+	}
+	for heading := range 8 {
+		definitions = append(definitions, struct {
+			id        string
+			tag, root int
+		}{fmt.Sprintf("homing-%d", heading), 0, int(binary.BigEndian.Uint32(common[0x3aa2+heading*4:]))})
+	}
+	baseCount := len(definitions)
 	for i := range 19 {
 		field := 0x3728 + i*6
 		definitions = append(definitions, struct {
@@ -40,8 +56,8 @@ func DecodeCommonAnimations(common []byte, resolve func(int) (string, error)) ([
 			return nil, fmt.Errorf("%s: %w", definition.id, err)
 		}
 		entry := NamedActorAnimation{ID: definition.id, ResourceTag: definition.tag, Ending: ending, Animation: animation}
-		if definitionIndex >= 5 {
-			pickupIndex := definitionIndex - 5
+		if definitionIndex >= baseCount {
+			pickupIndex := definitionIndex - baseCount
 			if len(common) < 0x47d6+(pickupIndex+1)*4 {
 				return nil, fmt.Errorf("pickup action table is truncated")
 			}
@@ -63,6 +79,11 @@ func DecodeCommonAnimations(common []byte, resolve func(int) (string, error)) ([
 		}
 		result = append(result, entry)
 	}
+	static, err := resolve(0x192ba)
+	if err != nil {
+		return nil, err
+	}
+	result = append(result, NamedActorAnimation{ID: "double-shot-active", Ending: "hold", Animation: ActorAnimation{Frames: []AnimationFrame{{Sprite: static}}, Static: true}})
 	return result, nil
 }
 
@@ -91,7 +112,15 @@ func decodeCommonAnimation(common []byte, start int, resolve func(int) (string, 
 				loop := int(binary.BigEndian.Uint32(common[cursor+8:]))
 				index, ok := offsets[loop]
 				if !ok {
-					return animation, "", fmt.Errorf("common animation loop leaves its frame list")
+					if loop < 0 || loop+6 > len(common) || binary.BigEndian.Uint16(common[loop+4:]) != 0 {
+						return animation, "", fmt.Errorf("common animation loop leaves its frame list")
+					}
+					name, err := resolve(int(binary.BigEndian.Uint32(common[loop:])))
+					if err != nil {
+						return animation, "", err
+					}
+					animation.Frames = append(animation.Frames, AnimationFrame{Sprite: name})
+					return animation, "hold", nil
 				}
 				animation.LoopFrom = index
 				return animation, "loop", nil

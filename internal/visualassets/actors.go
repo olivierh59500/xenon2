@@ -16,6 +16,7 @@ type ActorAnimation struct {
 	Frames   []AnimationFrame `json:"frames"`
 	LoopFrom int              `json:"loop_from"`
 	Static   bool             `json:"static,omitempty"`
+	Ending   string           `json:"ending,omitempty"`
 }
 
 type ActorPart struct {
@@ -226,6 +227,13 @@ func decodeActorAnimation(level []byte, start int, addImage func(int) (string, e
 		}
 		address := int(binary.BigEndian.Uint32(level[cursor:]))
 		if address == 0 {
+			if cursor+8 > len(level) {
+				return animation, fmt.Errorf("animation ending is truncated")
+			}
+			if binary.BigEndian.Uint32(level[cursor+4:]) == 0xe30 {
+				animation.Ending = "remove"
+				return animation, nil
+			}
 			if cursor+12 > len(level) || binary.BigEndian.Uint32(level[cursor+4:]) != 0xe2a {
 				return animation, fmt.Errorf("unsupported animation ending")
 			}
@@ -235,6 +243,7 @@ func decodeActorAnimation(level []byte, start int, addImage func(int) (string, e
 				return animation, fmt.Errorf("animation loop leaves its frame list")
 			}
 			animation.LoopFrom = index
+			animation.Ending = "loop"
 			return animation, nil
 		}
 		name, err := addImage(address)
@@ -246,7 +255,8 @@ func decodeActorAnimation(level []byte, start int, addImage func(int) (string, e
 		animation.Frames = append(animation.Frames, AnimationFrame{Sprite: name, Duration: duration})
 		cursor += 6
 		if duration == 0 {
-			animation.Static = true
+			animation.Static = len(animation.Frames) == 1
+			animation.Ending = "hold"
 			return animation, nil
 		}
 	}

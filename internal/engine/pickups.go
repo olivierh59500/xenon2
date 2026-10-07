@@ -27,6 +27,38 @@ func (w *World) spawnWaveCash(x, y int, heavy bool) {
 	w.Collectibles = append([]*WorldCollectible{p}, w.Collectibles...)
 }
 
+// spawnExitCash creates the original alternating small-head and large-tail
+// rewards. Cash insertion order differs from ordinary projectile creation.
+func (w *World) spawnExitCash(pairs int) {
+	for range pairs {
+		for _, heavy := range []bool{false, true} {
+			name := "cash-small"
+			if heavy {
+				name = "cash-large"
+			}
+			animation, ok := w.commonAnimations[name]
+			if !ok {
+				continue
+			}
+			x, _ := w.random.Below(300)
+			y, _ := w.random.Below(180)
+			w.nextActorID++
+			p := &WorldCollectible{ID: w.nextActorID, Cash: CashValue(heavy), X: float64(x + 10), Y: float64(y + 6), Active: true,
+				Motion: CashMotion{X: int(x) + 10, Y: int(y) + 6, Mode: 7}, animation: animation, animationState: NewAnimation(animation.Animation)}
+			p.PreviousX, p.PreviousY = p.X, p.Y
+			p.Sprite = p.animationState.Sprite(animation.Animation)
+			w.PendingExitDrops++
+			if heavy {
+				w.nextTailOrder--
+				p.Order = w.nextTailOrder
+				w.Collectibles = append(w.Collectibles, p)
+			} else {
+				w.Collectibles = append([]*WorldCollectible{p}, w.Collectibles...)
+			}
+		}
+	}
+}
+
 func (w *World) spawnPickup(reward, x, y int) {
 	if reward < 0 || reward >= len(carrierItems) {
 		return
@@ -117,7 +149,7 @@ func (w *World) AdvancePALTick() {
 	// The original supernova invokes each eligible enemy's own damage
 	// callback. Carriers can release further equipment during the blast.
 	for _, actor := range w.Actors {
-		if actor.Active && !actor.fixed && actor.part.ResourceTag != 0x50 && actor.part.ResourceTag != 0x54 {
+		if actor.Active && actor.ActorList == "moving" && actor.part.ResourceTag != 0x50 && actor.part.ResourceTag != 0x54 {
 			w.damageActor(actor, 127)
 		}
 	}

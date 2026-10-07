@@ -51,7 +51,7 @@ func main() {
 	for _, resource := range []struct {
 		name    string
 		picture image.Image
-	}{{"shop-base", scene.Base}, {"shop-portraits", scene.Portraits}, {"shop-font", scene.Font.Image}, {"shop-controls", scene.ControlArt.Image}, {"shop-cash-font", scene.CashFont.Image}} {
+	}{{"shop-base", scene.Base}, {"shop-portraits", scene.Portraits}, {"shop-font", scene.Font.Image}, {"shop-controls", scene.ControlArt.Image}, {"shop-cash-font", scene.CashFont.Image}, {"shop-transition", scene.TransitionArt.Image}} {
 		file, err := os.Create(filepath.Join(*output, resource.name+".png"))
 		if err != nil {
 			fail(err)

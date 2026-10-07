@@ -5,6 +5,7 @@ import (
 	"image"
 	"image/png"
 	"os"
+	"strings"
 	"sync"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -13,6 +14,9 @@ import (
 
 	"xenon2/internal/audio"
 	"xenon2/internal/engine"
+	"xenon2/internal/presentation"
+	"xenon2/internal/shopui"
+	"xenon2/internal/visualassets"
 )
 
 const (
@@ -27,6 +31,7 @@ const (
 	TitleScreen Screen = iota
 	LevelScreen
 	ShopScreen
+	PresentationScreen
 )
 
 // Input is sampled at the display rate and consumed by the simulation driver.
@@ -38,6 +43,12 @@ type Input struct {
 
 // SpriteView identifies exported artwork and screen-space anchor coordinates.
 type SpriteView struct {
+	Order                int
+	Tier, Length         int
+	Kind                 string
+	Patch                visualassets.TilePatch
+	Flash                bool
+	Layer                string
 	ID                   int
 	Atlas                string
 	Sprite               string
@@ -48,15 +59,24 @@ type SpriteView struct {
 
 // SceneFrame is a presentation snapshot, independent of original memory.
 type SceneFrame struct {
-	Level                             int
-	CameraY, BackgroundX, BackgroundY float64
-	Player                            engine.PlayerMotionState
-	Sprites                           []SpriteView
-	HUD                               []SpriteView
-	Score, Money, Shield, Lives       int
-	Diagnostic                        bool
-	PlayerAlive                       bool
-	TerrainMap                        []uint16
+	PlayerNumber, PlayerCount                int
+	PlayerScores, PlayerLives, PlayerShields [2]int
+	ContinueCredits                          int
+	DivePhase                                int
+	PlayerSprite                             string
+	Ready, GameOver                          bool
+	FreezeInterpolation                      bool
+	PaletteMask                              uint16
+	Shades                                   bool
+	Level                                    int
+	CameraY, BackgroundX, BackgroundY        float64
+	Player                                   engine.PlayerMotionState
+	Sprites                                  []SpriteView
+	HUD                                      []SpriteView
+	Score, Money, Shield, Lives              int
+	Diagnostic                               bool
+	PlayerAlive                              bool
+	TerrainMap                               []uint16
 }
 
 // Driver is the boundary between the pure Go game rules and their renderer.
@@ -74,6 +94,16 @@ type Config struct {
 }
 
 type Game struct {
+	gameOverRunning          bool
+	continueAfterScores      bool
+	presentationInput        presentation.Input
+	director                 *presentation.Director
+	onContinue               func() error
+	readyRunning             bool
+	starfield                *presentation.Starfield
+	menuClock                engine.FrameClock
+	shop                     *shopui.State
+	palClock                 engine.FrameClock
 	Bundle                   *Bundle
 	Config                   Config
 	Screen                   Screen
@@ -87,8 +117,6 @@ type Game struct {
 	music                    bool
 	menu                     int
 	updates                  int
-	shopPage                 int
-	shopFrame                int
 	pendingFire, pendingDive bool
 	done                     bool
 	capturePending           bool
@@ -107,6 +135,22 @@ func New(bundle *Bundle) (*Game, error) {
 	}
 	g := &Game{Bundle: bundle, Screen: TitleScreen, clock: engine.NewFrameClock(25, 60), stream: stream, music: true}
 	g.graphics = prepareGraphics(bundle)
+	g.palClock = engine.NewFrameClock(50, 60)
+	random := engine.NewRandomState()
+	g.starfield = presentation.NewStarfield(&random, bundle.Presentation.StarColors)
+	g.director = presentation.NewDirector(&bundle.Presentation)
+	g.menuClock = engine.NewFrameClock(25, 60)
+	shader, err := ebiten.NewShader([]byte(paletteShaderSource))
+	if err != nil {
+		return nil, err
+	}
+	g.graphics.paletteShader = shader
+	sparkShader, err := ebiten.NewShader([]byte(sparkShaderSource))
+	if err != nil {
+		return nil, err
+	}
+	g.graphics.sparkShader = sparkShader
+	g.graphics.sparkScratch = ebiten.NewImage(3, 3)
 	g.ResetDiagnosticLevel(1)
 	if err = g.StartLevel(1); err != nil {
 		return nil, err
@@ -153,24 +197,66 @@ func (g *Game) Update() error {
 		g.selectMusic()
 	}
 	switch g.Screen {
+	case PresentationScreen:
+		if err := g.updatePresentation(); err != nil {
+			return err
+		}
 	case TitleScreen:
+		for ticks := g.menuClock.Advance(); ticks > 0; ticks-- {
+			g.starfield.Advance()
+			for i, star := range g.starfield.Stars {
+				if g.menuPixelOccupied(star.ScreenX, star.ScreenY) {
+					g.starfield.Covered(i)
+				}
+			}
+		}
 		g.updateTitle()
 	case ShopScreen:
-		g.shopFrame += g.clock.Advance()
-		if inpututil.IsKeyJustPressed(ebiten.KeyArrowLeft) {
-			g.shopPage = (g.shopPage + 3) % 4
-		}
-		if inpututil.IsKeyJustPressed(ebiten.KeyArrowRight) {
-			g.shopPage = (g.shopPage + 1) % 4
-		}
-		if inpututil.IsKeyJustPressed(ebiten.KeyEnter) {
-			g.Screen = LevelScreen
-			g.selectMusic()
+		if err := g.updateShop(); err != nil {
+			return err
 		}
 	case LevelScreen:
+		if g.View.Ready && !g.readyRunning {
+			player := g.View.PlayerNumber
+			if player == 0 {
+				player = 1
+			}
+			g.director.BeginReady(player)
+			g.Screen = PresentationScreen
+			g.readyRunning = true
+			break
+		}
+		if g.View.GameOver && !g.gameOverRunning {
+			g.gameOverRunning = true
+			if g.director.InsertScore(g.View.Score) {
+				g.continueAfterScores = true
+			} else if g.View.ContinueCredits > 0 {
+				g.director.BeginContinue()
+			} else {
+				g.finishPlayerGame()
+				break
+			}
+			g.Screen = PresentationScreen
+			break
+		}
+		for ticks := g.palClock.Advance(); ticks > 0; ticks-- {
+			if source, ok := g.Driver.(interface{ AdvancePALTick() }); ok {
+				source.AdvancePALTick()
+				if err := g.consumeDriverAudio(); err != nil {
+					return err
+				}
+				g.View = g.Driver.Frame()
+				if source, ok := g.Driver.(interface{ ConsumeTurnChange() bool }); ok && source.ConsumeTurnChange() {
+					g.rememberFrameHistory()
+					g.readyRunning = false
+					g.gameOverRunning = false
+				}
+			}
+		}
 		if inpututil.IsKeyJustPressed(ebiten.KeyF2) {
-			g.Screen = ShopScreen
-			g.stream.StopMusic()
+			if err := g.EnterShop(false); err != nil {
+				return err
+			}
 			break
 		}
 		if g.View.Diagnostic {
@@ -191,7 +277,15 @@ func (g *Game) Update() error {
 				if err := g.Driver.Advance(input); err != nil {
 					return err
 				}
+				if err := g.consumeDriverAudio(); err != nil {
+					return err
+				}
 				g.View = g.Driver.Frame()
+				if source, ok := g.Driver.(interface{ ConsumeTurnChange() bool }); ok && source.ConsumeTurnChange() {
+					g.rememberFrameHistory()
+					g.readyRunning = false
+					g.gameOverRunning = false
+				}
 			}
 			g.pendingFire, g.pendingDive = false, false
 		}
@@ -200,6 +294,55 @@ func (g *Game) Update() error {
 		g.capturePending = true
 	}
 	return nil
+}
+
+func (g *Game) menuPixelOccupied(x, y int) bool {
+	p := &g.Bundle.Presentation
+	if fontPixelOccupied(p.Font, p.MenuHeading, 0, 4, p.Font.Width, x, y) {
+		return true
+	}
+	for i, line := range p.Menu {
+		text := line.Text
+		if i == g.menu {
+			text = line.SelectedText
+		}
+		if line.ID == "music" {
+			if g.music {
+				text = p.MusicOn
+				if i == g.menu {
+					text = p.MusicOnSelected
+				}
+			} else {
+				text = p.MusicOff
+				if i == g.menu {
+					text = p.MusicOffSelected
+				}
+			}
+		}
+		if fontPixelOccupied(p.Font, text, 0, line.CenterY-8, p.Font.Width, x, y) {
+			return true
+		}
+	}
+	return fontPixelOccupied(g.Bundle.Font, p.CreditsCaption, 176, 184, 8, x, y)
+}
+
+func fontPixelOccupied(font visualassets.Font, text string, left, top, advance, x, y int) bool {
+	if x < left || y < top || y >= top+font.Height {
+		return false
+	}
+	characterIndex := (x - left) / advance
+	if characterIndex < 0 || characterIndex >= len(text) {
+		return false
+	}
+	character := rune(text[characterIndex])
+	glyph := strings.IndexRune(font.Characters, character)
+	if glyph < 0 {
+		return false
+	}
+	px := (glyph%font.Columns)*font.Width + (x - left - characterIndex*advance)
+	py := (glyph/font.Columns)*font.Height + y - top
+	c := font.Image.NRGBAAt(px, py)
+	return c.R != 0 || c.G != 0 || c.B != 0
 }
 
 func (g *Game) rememberFrameHistory() {
@@ -211,18 +354,36 @@ func (g *Game) rememberFrameHistory() {
 	g.previous.TerrainMap = nil
 }
 
+func (g *Game) consumeDriverAudio() error {
+	if source, ok := g.Driver.(interface{ ConsumeSoundRequests() [4]string }); ok {
+		for channel, id := range source.ConsumeSoundRequests() {
+			if id != "" && !g.Config.Mute {
+				if err := g.stream.QueueEffect(id, channel); err != nil {
+					return err
+				}
+			}
+		}
+	}
+	return nil
+}
+
 func (g *Game) updateTitle() {
 	if inpututil.IsKeyJustPressed(ebiten.KeyArrowUp) {
-		g.menu = (g.menu + 3) % 4
+		g.menu = (g.menu + 2) % 3
 	}
 	if inpututil.IsKeyJustPressed(ebiten.KeyArrowDown) {
-		g.menu = (g.menu + 1) % 4
+		g.menu = (g.menu + 1) % 3
 	}
 	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) {
 		x, y := ebiten.CursorPosition()
-		if x >= 32 && x < 288 && y >= 88 && y < 168 {
-			g.menu = (y - 88) / 20
-			g.activateMenu()
+		if x >= 0 && x < 320 {
+			for i, line := range g.Bundle.Presentation.Menu {
+				if y >= line.CenterY-8 && y < line.CenterY+14 {
+					g.menu = i
+					g.activateMenu()
+					break
+				}
+			}
 		}
 	}
 	if inpututil.IsKeyJustPressed(ebiten.KeyEnter) || inpututil.IsKeyJustPressed(ebiten.KeySpace) {
@@ -232,11 +393,11 @@ func (g *Game) updateTitle() {
 
 func (g *Game) activateMenu() {
 	if g.menu >= 2 {
-		g.music = g.menu == 2
+		g.music = !g.music
 		g.selectMusic()
 		return
 	}
-	if err := g.StartLevel(g.View.Level); err != nil {
+	if err := g.StartSession(g.View.Level, g.menu+1); err != nil {
 		g.err = err
 		return
 	}
@@ -323,6 +484,14 @@ func Run(bundle *Bundle, config Config) error {
 		return err
 	}
 	g.Screen = config.StartScreen
+	if config.StartScreen == PresentationScreen {
+		g.BeginAttract()
+	}
+	if config.StartScreen == ShopScreen {
+		if err = g.EnterShop(false); err != nil {
+			return err
+		}
+	}
 	if err = g.EnableAudio(); err != nil {
 		return err
 	}

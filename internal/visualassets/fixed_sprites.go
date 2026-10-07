@@ -11,6 +11,13 @@ type FixedSpriteVariant struct {
 	OriginOffsetY    int            `json:"origin_offset_y"`
 	InitialVelocityX int            `json:"initial_velocity_x,omitempty"`
 	Animation        ActorAnimation `json:"animation"`
+	AttackAnimation  ActorAnimation `json:"attack_animation"`
+	ShotMode         string         `json:"shot_mode,omitempty"`
+	ShotDirections   []int          `json:"shot_directions,omitempty"`
+	ShotSpeed        int            `json:"shot_speed,omitempty"`
+	ShotSprite       string         `json:"shot_sprite,omitempty"`
+	ShotOffsetX      int            `json:"shot_offset_x,omitempty"`
+	ShotOffsetY      int            `json:"shot_offset_y,omitempty"`
 }
 
 type FixedSpriteKind struct {
@@ -21,6 +28,11 @@ type FixedSpriteKind struct {
 	VariantThresholdX int                  `json:"variant_threshold_x,omitempty"`
 	Damageable        bool                 `json:"damageable"`
 	StrongHealth      bool                 `json:"strong_health"`
+	ActorList         string               `json:"actor_list"`
+	CollisionMode     string               `json:"collision_mode"`
+	ContactDamage     int                  `json:"contact_damage,omitempty"`
+	Behavior          string               `json:"behavior"`
+	MotionParameters  map[string]int       `json:"motion_parameters,omitempty"`
 	Variants          []FixedSpriteVariant `json:"variants"`
 }
 
@@ -70,6 +82,35 @@ func DecodeFixedSprites(levelNumber int, level []byte, palette [16][4]uint8) (*F
 	for _, d := range descriptors {
 		kind := FixedSpriteKind{Kind: d.kind, Score: d.score, VariantSelection: d.selection}
 		kind.Damageable = levelNumber != 4
+		kind.ActorList = "moving"
+		kind.CollisionMode = "sprite-prefix"
+		switch levelNumber {
+		case 1, 2:
+			threshold := 50
+			if levelNumber == 2 {
+				threshold = 30
+			}
+			kind.Behavior = "scroll-bounce-attack"
+			kind.MotionParameters = map[string]int{"initial_vertical_velocity": -1, "amplitude_state1_scale": 16, "attack_y_minimum": -30, "attack_y_maximum": 10, "attack_random_threshold": threshold, "clip_margin": 208}
+			if levelNumber == 1 {
+				delete(kind.MotionParameters, "amplitude_state1_scale")
+				kind.MotionParameters["amplitude_state2_scale"] = 16
+			}
+		case 3:
+			kind.Behavior = "horizontal-sweeper"
+			kind.MotionParameters = map[string]int{"horizontal_speed": 2, "left_edge": -32, "right_edge": 352, "left_reset": 0, "right_reset": 320, "left_attack_x": 136, "right_attack_x": 184, "attack_shot_tick": 11}
+		case 4:
+			kind.Behavior = "extending-beam"
+			kind.MotionParameters = map[string]int{"maximum_phase": 6, "phase_spacing": 16, "contact_y_offset": 8, "contact_height": 17, "clip_bottom": 392, "fire_rate": int(level[0x5f])}
+		case 5:
+			kind.Behavior = "vertical-oscillator"
+			kind.MotionParameters = map[string]int{"vertical_speed": 1, "minimum_world_y": 3632, "maximum_world_y": 3872, "clip_bottom": 400, "fire_rate": int(level[0x4b])}
+		}
+		if levelNumber == 4 {
+			kind.ActorList = "scenery"
+			kind.CollisionMode = "extending-beam-rectangle"
+			kind.ContactDamage = 6
+		}
 		kind.StrongHealth = levelNumber == 1 || levelNumber == 3 || levelNumber == 5
 		if levelNumber == 3 {
 			kind.VariantThresholdX = 160
@@ -94,6 +135,47 @@ func DecodeFixedSprites(levelNumber int, level []byte, palette [16][4]uint8) (*F
 				v.InitialVelocityX = 2
 				if variant == 1 {
 					v.InitialVelocityX = -2
+				}
+			}
+			if levelNumber == 1 || levelNumber == 2 {
+				attackRoot := 0x551f8 - levelBase
+				if variant == 1 {
+					attackRoot = 0x55236 - levelBase
+				}
+				if levelNumber == 2 {
+					attackRoot = 0x55d42 - levelBase
+					if variant == 0 {
+						attackRoot = 0x55d00 - levelBase
+					}
+				}
+				attack, err := decodeActorAnimation(level, attackRoot, add)
+				if err != nil {
+					return nil, err
+				}
+				v.AttackAnimation = attack
+				if levelNumber == 1 {
+					v.ShotMode = "point-burst"
+					v.ShotDirections = []int{3, 2, 1}
+					if variant == 1 {
+						v.ShotDirections = []int{7, 6, 5}
+					}
+					v.ShotSpeed = int(binary.BigEndian.Uint16(level[0x56:]))
+					v.ShotOffsetY = 7
+				} else {
+					v.ShotMode = "point"
+					v.ShotDirections = []int{2}
+					v.ShotOffsetX = 3
+					if variant == 1 {
+						v.ShotDirections = []int{6}
+						v.ShotOffsetX = 11
+					}
+					v.ShotOffsetY = 7
+					v.ShotSpeed = int(binary.BigEndian.Uint16(level[0x4c:]))
+					name, err := add(0x5ccf6)
+					if err != nil {
+						return nil, err
+					}
+					v.ShotSprite = name
 				}
 			}
 			kind.Variants = append(kind.Variants, v)
