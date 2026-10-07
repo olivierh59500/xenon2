@@ -1250,3 +1250,13 @@ The corresponding Android ARM64 debug build also succeeds. APK signature and
 and cold launch. The process remains alive afterward. The package includes the
 latest source-state corrections; graphics and manual touch were not revalidated
 while the device was locked. Build outputs remain locally excluded.
+
+The repeated current-code carried-stage probe starts stage three with three
+ships, full shield and one credit after 46,473 display updates. Ordinary damage
+loses the first ship at pass 1,244; the third loss reaches the continue UI at
+pass 3,026 and checkpoint 3,408. Its legal confirmation consumes the final
+credit and restores three ships. Subsequent contacts with moving resource tag
+212 exhaust them before middle admission, ending at pass 3,977/camera 3,114.
+No third shop or final gate is reached. This bounded temporary-overlay probe
+changes no rules or controller policy and supersedes the older carried result;
+the exact first lethal damage callback remains uninstrumented.
