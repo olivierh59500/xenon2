@@ -386,3 +386,29 @@ HUD pixel comparisons now cover four score/lives/shield combinations under all
 five level palettes, including the second player's layout. The renderer
 prepares separate recolored HUD images and fonts for each level; it no longer
 retains level-one colors when the playfield palette changes.
+
+## Remaining fixed selectors and timed visuals
+
+The last level's three ten-member formations match 27,030 native construction
+and update states, including staggered entry, heading-dependent images and
+eight-shot bursts. Eighty damage and re-entry cases verify the two persistent
+turret selectors. Every fixed encounter selector in all five exported streams
+is consumed by an explicit World implementation.
+
+Thirty fixed-sprite constructors retain their original tags and slot values.
+Fifty-six beam layouts compare the repeated masked shaft and displaced animated
+tip. Eight Supernova traversal cases verify group-aware order, tag-20 projectile
+removal and clearing the eight wave-reward buckets. Transferred bouncing attacks
+continue their source callback after entering the effect list.
+
+The invulnerability aura matches forty guarded updates and four constructor
+cases. Its original animation advances while ship materialization freezes the
+timer; consecutive pickups reuse one actor. Expiry keeps the final meter for
+that pass before releasing the aura on its next list visit. Four forced-restart
+cases retain an unusual source edge case: cleanup removes the aura while leaving
+its timer unchanged. This does not represent an ordinary death path.
+
+Three hundred and six image selections cover the diving and Nashwan meters.
+Their countdown images appear at the source anchors, alongside the aura's
+separate meter. One hundred and eighty consecutive source ship/terrain passes
+also compare evolving position history, wall contact and rewind behavior.

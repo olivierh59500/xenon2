@@ -31,6 +31,11 @@ terrain coverage, cash and carrier rewards, checkpoint recovery, alternating
 players and the shared 159-slot allocator have source comparisons. Terrain and
 sprite transparency use their distinct original coverage formats.
 
+Invulnerability uses its original animated aura in the projectile list. Its
+counter freezes during ship materialization and successive pickups extend the
+existing aura. The source meters for invulnerability, diving and Nashwan use the
+original ten images and include their final zero-count frame.
+
 The session has explicit intermediate-shop and stage-completion boundaries.
 The two-player stage gate preserves each saved game; level five increases
 difficulty and loops to level one. Frontend loading, shop and ending routes are
