@@ -10,7 +10,7 @@ import (
 type RecordingGame struct{ *Game }
 
 func NewRecordingGame() (*RecordingGame, error) {
-	g, err := NewGameFromConfig(Config{Level: 1, StartScreen: PresentationScreen, Demo: true})
+	g, err := NewGameFromConfig(Config{Level: 1, StartScreen: PresentationScreen, Demo: true, HumanDemo: true})
 	if err != nil {
 		return nil, err
 	}

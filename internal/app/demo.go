@@ -9,15 +9,16 @@ import (
 // demoDirector supplies the same sampled controls as a human player. It never
 // grants equipment, changes collisions or advances past an undefeated guardian.
 type demoDirector struct {
-	pilot      engine.DemoPilot
-	screen     Screen
-	phase      presentation.Phase
-	wait       int
-	logicFrame uint64
-	level      int
-	controls   inputFrame
-	shop       *shopui.State
-	shopWait   int
+	pilot        engine.DemoPilot
+	presentation engine.PresentationPilot
+	screen       Screen
+	phase        presentation.Phase
+	wait         int
+	logicFrame   uint64
+	level        int
+	controls     inputFrame
+	shop         *shopui.State
+	shopWait     int
 }
 
 // DemoActive reports whether the normal-input pilot still owns the controls.
@@ -86,7 +87,12 @@ func (g *Game) demoControls(manual inputFrame) inputFrame {
 		}
 		w := driver.world
 		if d.logicFrame != w.Frame || d.level != w.Level.Number {
-			input := d.pilot.NormalInput(w)
+			var input engine.Input
+			if g.Config.HumanDemo {
+				input = d.presentation.NormalInput(w)
+			} else {
+				input = d.pilot.NormalInput(w)
+			}
 			d.controls = inputFrame{gameMotion: input.Motion, fire: input.Fire, divePressed: input.Dive}
 			d.logicFrame, d.level = w.Frame, w.Level.Number
 		} else {

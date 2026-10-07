@@ -97,6 +97,7 @@ type Config struct {
 	StartScreen       Screen
 	LogicPALRefreshes int
 	Demo              bool
+	HumanDemo         bool
 	Cheats            engine.CheatOptions
 }
 

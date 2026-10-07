@@ -51,8 +51,11 @@ The recorder captures the original game canvas at 1280 × 800 and 60 FPS, with
 the game's own stereo soundtrack and effects. It uses DCK v1.0.14's offline
 video/audio route and FFmpeg for H.264/AAC encoding; other windows and system
 audio are never captured. The default three-minute presentation follows the
-intro, menu, first-level play and the intermediate merchant. It is not a
-complete-game recording. Generated MP4, PNG poster and chapter JSON files stay
+intro, menu and first-level play. Its presentation controller approaches actual
+enemies and reachable bonuses, commits to short tactical routes and holds aimed
+firing bursts with reassessment pauses. It retains ordinary damage and can lose
+a ship; complete-stage and campaign success remain unproven for this controller.
+Generated MP4, PNG poster and chapter JSON files stay
 under locally excluded `recordings/`. The export command requires Go 1.26 or
 newer and FFmpeg. A different positive `-duration` records a longer excerpt.
 

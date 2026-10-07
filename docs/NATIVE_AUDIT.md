@@ -1008,3 +1008,20 @@ the fix; all eight reused cases failed with the incorrect shield debit.
 The complete source/resource engine suite and race suite pass. Both gameplay
 cadences still win stages one/two from the direct menu and full intro; the direct
 menu route still admits the third middle guardian with two ships and 19 shield.
+
+## Recording presentation controller
+
+The MP4 route now uses a separate ordinary-input presentation controller. It
+approaches visible moving targets and reachable bonuses, commits to short goals
+and holds native firing bursts only when a forward shot opportunity exists.
+Empty, off-axis, below-ship and immune-body targets release the trigger.
+The original damage, random stream, equipment, cash and terrain remain untouched.
+
+A 2,000-pass resource trace records 623 distinct positions, 5,686 pixels of
+input-driven travel and 199 firing passes. The real intro/frontend regression
+records 744 moving passes out of 1,846, with 193 firing and 1,653 quiet passes;
+the ship spans X73..260 and Y74..176. The MP4 was rendered and inspected at four
+gameplay times, then replaced. It retains one genuine ship loss and checkpoint
+recovery. Complete-stage and expert-campaign success are not established by
+this profile. The existing reference controller remains available separately
+and its two-stage victories still pass unchanged.
