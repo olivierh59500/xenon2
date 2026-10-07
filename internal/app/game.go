@@ -492,10 +492,10 @@ func (g *Game) consumeDriverAudio() error {
 
 func (g *Game) updateTitle(controls inputFrame) {
 	if controls.upPressed {
-		g.menu = (g.menu + 3) % 4
+		g.menu = (g.menu + 4) % 5
 	}
 	if controls.downPressed {
-		g.menu = (g.menu + 1) % 4
+		g.menu = (g.menu + 1) % 5
 	}
 	if controls.mousePressed {
 		x, y := controls.mouseX, controls.mouseY
@@ -513,12 +513,28 @@ func (g *Game) updateTitle(controls inputFrame) {
 		g.menu = 3
 		g.activateMenu()
 	}
+	if controls.mousePressed && controls.mouseX >= 0 && controls.mouseX < 320 && controls.mouseY >= 164 && controls.mouseY < 180 {
+		g.menu = 4
+		g.activateMenu()
+	}
 	if controls.menuConfirm {
 		g.activateMenu()
 	}
 }
 
 func (g *Game) activateMenu() {
+	if g.menu == 4 {
+		g.Config.Demo = true
+		g.Config.Cheats = engine.CheatOptions{}
+		g.applyCheatOptions()
+		g.demo = nil
+		g.menu = 0
+		g.pendingPlayers = 1
+		g.director.BeginStart()
+		g.Screen = PresentationScreen
+		g.selectMusic()
+		return
+	}
 	if g.menu == 3 {
 		g.openCheatMenu()
 		return

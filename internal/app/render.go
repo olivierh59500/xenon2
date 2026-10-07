@@ -263,6 +263,11 @@ func (g *Game) drawTitle(screen *ebiten.Image) {
 		text = "      >CHEATS<      "
 	}
 	g.drawGlyphs(screen, g.graphics.presentationFont, text, 0, 140, g.Bundle.Presentation.Font.Width)
+	demoText := "DEMO MODE"
+	if g.menu == 4 {
+		demoText = ">DEMO MODE<"
+	}
+	g.drawCheatText(screen, demoText, 112, 168, 8)
 	g.drawGlyphs(screen, g.graphics.font, g.creditCaption(3), 176, 184, 8)
 	g.drawStarfield(screen)
 	if g.Driver == nil || g.View.Diagnostic {

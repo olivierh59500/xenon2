@@ -20,7 +20,9 @@ in progress; this build is not yet the complete playable game.
 GOWORK=off go run ./cmd/xenon2 -demo
 ```
 
-The development pilot uses ordinary movement, fire and dive commands. It enters
+The menu also offers DEMO MODE. This starts an ordinary single-player session
+with trainer aids disabled. The development pilot uses ordinary movement, fire
+and dive commands. It enters
 through the normal menu and READY, handles score entry and continues, and buys
 available upgrades through the original merchant quote/confirmation interface.
 It chooses the cheapest sufficient shield repair, saves for extra ships when
