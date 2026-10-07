@@ -56,7 +56,7 @@ func (w *World) activateFifthGuardian(record visualassets.FixedEncounter, final 
 		if err != nil {
 			return err
 		}
-		actor := &WorldActor{ID: binding.EntityID, Binding: binding, Active: true, Visible: false, ActorList: "moving", Atlas: "guardian-parts", fifthIndex: index + 1, fifthFinal: final, fifthPart: &group.Components[index], Health: descriptor.Health, Collision: CollisionRect{Right: -1, Bottom: -1}, part: &visualassets.ActorPart{ResourceTag: descriptor.ResourceTag, DamageMode: "fifth-guardian"}}
+		actor := &WorldActor{ID: binding.EntityID, Binding: binding, Active: true, Visible: false, ActorList: "moving", Atlas: "guardian-parts", fifthIndex: index + 1, fifthFinal: final, fifthPart: &group.Components[index], Health: descriptor.Health, Collision: CollisionRect{Right: -1, Bottom: -1}, part: &visualassets.ActorPart{ResourceTag: descriptor.ResourceTag, StrongHealth: descriptor.StrongHealth, DamageMode: "fifth-guardian"}}
 		state := w.fifthPartState(actor)
 		actor.X, actor.Y = float64(state.X), float64(state.Y)
 		actor.PreviousX, actor.PreviousY = actor.X, actor.Y
@@ -113,11 +113,16 @@ func (w *World) advanceFifthGuardian(final bool) {
 		state := w.fifthPartState(actor)
 		actor.PreviousX, actor.PreviousY = actor.X, actor.Y
 		actor.X, actor.Y = float64(state.X), float64(state.Y)
-		actor.Active, actor.Visible = state.Active, state.Active
+		actor.Active, actor.Visible = state.Active, state.Active && actor.fifthPart.RenderMode != "none"
 		actor.Sprite, actor.Health = state.Sprite, state.Health
 		actor.Collision = CollisionRect{Right: -1, Bottom: -1}
 		if actor.fifthPart.RenderMode == "sprite" && state.Active && !state.Destroyed {
 			w.updateSecondActorCollision(actor)
+		}
+		if actor.fifthPart.Behavior == "barrier-band" && state.Active {
+			// These source actors have no renderer, but their updater publishes
+			// the armor rectangle used by player and projectile callbacks.
+			actor.Collision = state.Collision
 		}
 		if final && index == 21 && w.FifthFinal.OuterRemaining > 0 {
 			actor.Collision = CollisionRect{Right: -1, Bottom: -1}
@@ -215,6 +220,11 @@ func (w *World) damageFifthGuardian(actor *WorldActor, amount uint16) {
 	actor.Health = state.Health
 	actor.Flash = !state.Destroyed
 	actor.Active = state.Active
+	if state.Destroyed && state.Active {
+		// Mount wrecks keep their actor and current image, but stop intercepting
+		// later shots immediately, before the next moving-actor callback.
+		actor.Collision.Left, actor.Collision.Right = 1000, 1000
+	}
 	w.Score += event.Score
 	if event.Explosions == 1 {
 		w.spawnActorDeathEffect(actor)

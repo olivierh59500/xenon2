@@ -899,3 +899,40 @@ Ordinary waves deliberately compute their collision before the first display
 callback. The original constructor's rectangle call confirms this behavior;
 a global Visible filter would incorrectly change those waves. The fifth hidden
 seeker correction therefore remains specific to its distinct constructor.
+
+## Fifth compound barrier and wreck integration
+
+The final guardian's two invisible armor bands now publish the rectangles
+computed by their source updater. RenderMode none suppresses their images, not
+their player/projectile contacts. Ordinary shots are consumed without damaging
+the bands; lasers retire before reaching a later overlapping target. The bottom
+edge retains the source low-byte addition, including signed coordinates and
+byte-boundary wrapping.
+
+Both fifth guardian factories retain exported contact strength. Ordinary mounts
+deal eight points, while the bands and strong plates use sixteen. Protection,
+invulnerability, diving and the lethal-player early return retain their distinct
+source routes. Player contacts see the preceding actor callback's rectangle.
+Destroyed middle/final mounts retain their wreck and reward but disable their
+collider immediately, allowing a later shot in the same projectile phase through.
+The displayed wreck image still changes on the following actor callback.
+
+Seven resource-backed regressions cover these boundaries, and the complete
+engine suite with all available native fixtures passes under the race detector.
+The terrain audit also confirms that levels one, three, four and five have no
+ordinary shot-blocking fallback; level two retains its special cell handler.
+This corrects gameplay integration and does not establish a fifth-stage victory.
+
+## Permanent A500 output response
+
+The main and shop initializers disable CIAA's optional LED low-pass. Game output
+now models the two permanent A500 RC stages while preserving that choice.
+Raw digital PCM remains available for source-register diagnostics. Independent
+impulse/frequency checks, stereo isolation, silence decay, arbitrary reader
+chunks and unchanged replay state cover the filter. The filtered frontend PCM
+still matches 428,505 uninterrupted music frames through death, score entry,
+continue and READY, and merchant direct/queued dispatch checks pass.
+
+Steady filtered output measures about 29 microseconds per 1,024 stereo frames
+with no allocations on the M4 Max. This is a numerical reconstruction model;
+physical-output and complete soundtrack comparisons remain separate work.

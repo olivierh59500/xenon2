@@ -129,7 +129,10 @@ func (s *FifthFinalGuardianState) Advance(group *visualassets.GuardianGroup, scr
 		case "final-weak-point":
 			state.Collision = CollisionRect{Right: -1, Bottom: -1}
 		case "barrier-band":
-			state.Collision = CollisionRect{Left: state.X, Top: state.Y, Right: state.X + part.Health, Bottom: state.Y + 16}
+			// The source adds the band's height to only the low byte of Y.
+			// Retain the upper byte when the bottom edge crosses a byte boundary.
+			bottom := state.Y&^0xff | int(uint8(state.Y)+16)
+			state.Collision = CollisionRect{Left: state.X, Top: state.Y, Right: state.X + part.Health, Bottom: bottom}
 		}
 	}
 	return event
