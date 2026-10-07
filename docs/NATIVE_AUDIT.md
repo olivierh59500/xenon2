@@ -1532,3 +1532,25 @@ about 0.86 ms per decision before and after; allocations fall from 80,896 bytes 
 eight objects to zero. This reduces recurring garbage collection pressure,
 not the arithmetic cost or a measured rendered-frame rate. The maintained
 benchmark uses the same original map, stencil and actor data.
+
+## Fourth capsule constructor counter
+
+Both capsule sides share the constructor at 0x5529e–0x55300, where 0x552f2
+clears the physical counter at +0x28. The capsule updater at 0x5541e and its
+in-place common explosion conversion at 0x55450–0x55470 retain that word.
+Construction now performs the missing clear; subsequent storage remains
+unchanged.
+
+The original-resource regression observes an ordinary laser expire with
+counter 65, then follows the same physical slot through capsule construction,
+finite explosion expiry and flamer construction. Both sides now leave the
+flamer counter at zero, avoiding the spurious unheld effect cleanup triggered
+by the inherited 65. Removing only the constructor clear reproduces all four
+counter and cleanup failures for both sides. The existing conversion test
+still preserves a counter supplied after construction through pod updates and
+explosion expiry.
+
+The two-side regression and six existing capsule, child, spawner, flamer and
+launcher/native trace tests pass under the race detector in 1.596 seconds.
+The complete engine suite also passes in 4.810 seconds. This is a constructor
+and natural slot-reuse proof; it does not establish a full campaign victory.

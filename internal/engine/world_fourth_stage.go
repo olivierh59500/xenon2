@@ -54,6 +54,7 @@ func (w *World) spawnFourthPod(side, x, y int) {
 	}
 	state := NewFourthPod(side, x, y, art)
 	actor := &WorldActor{ID: binding.EntityID, Binding: binding, Active: true, Visible: true, ActorList: "transient", Atlas: "fixed", X: float64(x), Y: float64(y), PreviousX: float64(x), PreviousY: float64(y), fourthPod: &state, part: &visualassets.ActorPart{ResourceTag: art.Variants[side*2].PodTag, DamageMode: "block-shot", MotionMode: "fourth-pod"}}
+	actor.Binding.Residue.Counter = 0
 	actor.Sprite = state.Animation.Sprite(art.Variants[side*2].PodAnimation)
 	w.poolActors[binding.Slot] = actor
 	w.Actors = append([]*WorldActor{actor}, w.Actors...)
