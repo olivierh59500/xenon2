@@ -1349,3 +1349,8 @@ two-stage routes and their full-intro variants still pass unchanged. Vet and the
 desktop rebuild pass. These results establish the requested first-level video
 and new controller behavior, while the full five-level conversion audit remains
 open.
+
+The corresponding Android ARM64 APK rebuild, signature, 16 KiB alignment and
+touch lifecycle checks pass. The connected Pixel 10a accepts replacement
+installation and cold launch; its process remains active afterward. Device
+graphics were not rechecked while locked. The generated APK remains excluded.
