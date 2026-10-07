@@ -34,8 +34,13 @@ func TestOriginalExplosionRetainsPhysicalResidueThroughExpiryOptional(t *testing
 		t.Fatal(err)
 	}
 	body := w.thirdMiddleActors[0]
-	if body.Binding.Slot != slot || body.Health != int(want.Health) || w.ThirdMiddle.ResidualFireRate != want.FireRate() {
-		t.Fatal("middle guardian did not inherit the expired explosion slot's health and firing rate")
+	if body.Binding.Slot != slot || body.Health != int(want.Health) {
+		t.Fatal("middle guardian did not inherit the expired explosion slot's health")
+	}
+	// The explosion retains the word; the later guardian constructor at
+	// 0x55e68 explicitly clears it before the first member update.
+	if w.ThirdMiddle.ResidualFireRate != 0 || body.Binding.Residue.EmitterClock != 0 || w.Pool.Slot(slot).Residue.EmitterClock != 0 {
+		t.Fatal("middle constructor retained the expired explosion slot's cleared emitter")
 	}
 }
 

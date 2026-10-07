@@ -124,6 +124,7 @@ versions differ: neither number establishes a mobile frame budget for the final
 policy. CPU and allocation reduction remain necessary before calling the full
 boss controller ready for smooth Android playback.
 
-The current connected route still stalls in the post-merchant third-stage
-corridor. Third-stage completion, levels four and five, ending and near-lossless
-campaign play are not established by this boss result.
+The connected post-merchant third-stage route remains under validation.
+Third-stage completion, levels four and five, ending and near-lossless campaign
+play are not established by this boss result. A diagnostic time limit must be
+reported separately from a genuine lack of camera progress.
