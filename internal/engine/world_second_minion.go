@@ -110,6 +110,7 @@ func (w *World) spawnSecondRandomExplosions(count, left, top, width, height int)
 		w.spawnSecondNamedExplosion(left+int(x), top+int(y), "explosion-large")
 	}
 	w.SoundRequests[1], w.SoundRequests[2] = "sampled-effect-03", "sampled-effect-03"
+	w.ImmediateSoundRequests[0] = "sampled-effect-03"
 }
 func (w *World) spawnSecondCashPairs(pairs int, exit bool) {
 	if exit {
