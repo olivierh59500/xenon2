@@ -1275,3 +1275,23 @@ the correction, including the flamer's missing release-time effect cleanup.
 The basic-shot control passes before and after. Both now pass, together with
 the complete engine/native suite and its 43.173-second race run. No controller
 outcome snapshots change.
+
+## Read-only actor forecasts for presentation targeting
+
+Ordinary path actors now have a presentation forecast that copies motion,
+animation, collision-prefix selection and random state. It reproduces delayed
+formation release instead of extending the previous zero movement forever.
+Original third-level paths 23/24 match World.Step for all eighteen forecast
+passes; the former linear estimates missed delayed release by 33/36 pixels.
+Heading-prefix and actor-phase camera tests also pass, with unchanged live
+state. Unsupported specialized controllers are reported explicitly.
+
+Random branches include this actor's own copied firing draws; unrelated future
+draws and combat deaths are outside the forecast. The predictor is used for
+presentation aiming and recovery planning. A bounded trial in the reference
+controller exposed a held-action scoring limitation rather than a source motion
+error, so its existing general policy remains separately validated.
+
+The original-resource 18-pass forecast benchmark measures 495–507 ns/op with
+zero allocations on the tested M4 Max, Go 1.27.1 and one CPU thread. This excludes
+rendering and does not establish mobile frame rate.
