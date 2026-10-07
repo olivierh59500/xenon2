@@ -39,7 +39,7 @@ this is not yet a completed five-level demonstration.
 
 ## Optional trainer settings
 
-Select CHEATS on the menu or press F3 during a game. The submenu provides
+Select CHEATS on the menu, use `-cheats` at launch, or press F3 during a game. The submenu provides
 infinite ships, continues, money and energy, optional equipment keys, and a
 starting level from one to five. All aids are disabled by default; active aids
 are marked on the playfield. F3 or Escape returns to the caller.

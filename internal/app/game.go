@@ -616,6 +616,9 @@ func Run(bundle *Bundle, config Config) error {
 		g.rememberFrameHistory()
 	}
 	g.Screen = config.StartScreen
+	if config.StartScreen == CheatScreen {
+		g.cheatReturn = TitleScreen
+	}
 	if config.StartScreen == LevelScreen {
 		g.gameMusicRunning = true
 	}

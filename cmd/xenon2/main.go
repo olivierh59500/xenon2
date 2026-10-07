@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"xenon2/internal/app"
+	"xenon2/internal/engine"
 )
 
 func main() {
@@ -15,6 +16,7 @@ func main() {
 	screenshot := flag.String("screenshot", "", "save the final frame as PNG")
 	level := flag.Int("level", 1, "reference level, from one to five")
 	view := flag.String("view", "attract", "initial view: menu, attract, level or shop")
+	trainer := flag.Bool("cheats", false, "open the optional trainer settings before starting")
 	demo := flag.Bool("demo", false, "enable the normal-input demonstration pilot; any key or click returns manual control")
 	logicRefreshes := flag.Int("logic-pal-refreshes", 2, "PAL refreshes per logic pass: 2 is the source maximum, 3 the measured A500 early-game profile")
 	mute := flag.Bool("mute", false, "disable audio output")
@@ -44,6 +46,10 @@ func main() {
 		config.StartScreen = app.PresentationScreen
 	default:
 		fail(fmt.Errorf("unknown view %q", *view))
+	}
+	if *trainer {
+		config.StartScreen = app.CheatScreen
+		config.Cheats = engine.CheatOptions{}
 	}
 	if err = app.Run(bundle, config); err != nil {
 		fail(err)
