@@ -556,3 +556,12 @@ with an exact rational accumulator. It preserves the independent 60 Hz display
 and 50 Hz audio/effect/fade clocks. The default remains the original two-refresh
 maximum until further gameplay intervals establish the appropriate rates for
 dense combat and other levels. Presentation and shop clocks are unaffected.
+
+The rebuilt desktop executable was also started from its ordinary menu with
+this measured gameplay profile. Separate Enter and fire inputs admitted READY
+and gameplay; a bounded capture after the fade shows the normal ship, terrain
+actors, starfield and HUD. The clock test preserves 60,000 logic passes and
+180,000 independent PAL ticks over one hour, without fractional-rate rounding.
+Frontend admission/fade tests retain the selected profile while presentation
+and shop timing remain unchanged. This validates the selectable profile, not
+complete original cadence equivalence.
