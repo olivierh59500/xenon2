@@ -434,3 +434,9 @@ decision. Comparisons cover eighty path-to-guardian chains, 1,200 bouncing
 callbacks, 5,120 pod-creature callbacks, 341 hatch-creature callbacks, 14,400
 final-minion returns and 416 player-shadow cases. The runtime carries semantic
 direction outcomes rather than original register state.
+
+Sixteen accepted-continue routes compare saved ships, zeroed score, consumed
+credit and admission of the other surviving incomplete player. Single-player
+restoration remains a single checkpoint operation. Gameplay Escape now restarts
+the attract sequence, while P preserves the image and continuing audio until
+the next key or fire input.

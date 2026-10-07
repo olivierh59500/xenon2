@@ -59,9 +59,19 @@ The current build is in development and is not yet a complete conversion.
 Checkpoint restoration across alternating turns, the second guardian's
 crowded-scene direction, retained hatch/pod state, and death-image attachment
 centers now have explicit implementations and source comparisons. Accepted
-continue admission is being checked as the last shared player-flow boundary.
+continue admission follows the original surviving-player route.
 
 Resource checks exercise every fixed record over 96 callback passes and every
 moving wave over 64 passes, verifying animation images, emitted shots, body
 patches and overlays against the exported atlases. They do not replace an actual
 renderer comparison or a complete game played through its normal controls.
+
+The remaining live checks are:
+
+- Play all five stages from the normal menu, including both shop boundaries,
+  ending and the next difficulty loop.
+- Exercise actual deaths, score entry, accepted/refused continues and alternating
+  two-player checkpoints.
+- Compare integrated artwork, palette fades, sound transitions and elapsed
+  cadence with the Amiga reference.
+- Check 60 Hz display smoothness and continuous audio during dense combat.
