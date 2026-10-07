@@ -22,7 +22,7 @@ func TestDemoSecondCorridorProactiveLeftExitOptional(t *testing.T) {
 	for pass := 0; pass < 1100; pass++ {
 		w = session.ActiveWorld()
 		if w.ScrollY < 800 {
-			if pass != 909 || w.Equipment.Lives != 1 || w.Equipment.Shield != 7 || w.Cheats.Enabled() {
+			if pass != 909 || w.Equipment.Lives != 1 || w.Equipment.Shield != 23 || w.Cheats.Enabled() {
 				t.Fatalf("corridor outcome pass%d ships%d shield%d", pass, w.Equipment.Lives, w.Equipment.Shield)
 			}
 			t.Logf("Proactive corridor reached camera%d after%d ordinary commands: lives%d shield%d xy%d,%d", w.ScrollY, pass, w.Equipment.Lives, w.Equipment.Shield, w.Player.X, w.Player.Y)

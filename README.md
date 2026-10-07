@@ -34,10 +34,11 @@ It does not grant health, equipment or money, skip guardians or change terrain.
 Full-game autonomous playback is still in development. The current pilot
 completes levels one and two from the normal menu, including guardian destruction
 and both merchants on each stage, and starts level three. The full-intro startup
-also traverses all six credit pairs and wins both stages, carrying one ship into
-stage three; the direct-menu regression now carries one after finite explosions
-were corrected. Its carried third-stage route still loses its ships before the
-middle guardian, including after a legal continue. Cached terrain routes, ordinary bonus
+also traverses all six credit pairs and wins both stages, carrying two ships into
+stage three; the direct-menu regression carries three after native fractional
+bullet coordinates were corrected. The separate third-stage no-loss check still
+detects a lost ship; connected third-stage victory remains unverified.
+Cached terrain routes, ordinary bonus
 collection, dive requests and shop purchases retain normal game rules. A
 separate second-stage opening reaches its first checkpoint with all three ships.
 The remaining stages and full campaign still need validated pilot strategies;

@@ -47,7 +47,7 @@ func TestDemoThirdOpeningFirstCheckpointWithoutShipLossOptional(t *testing.T) {
 		}
 		w = session.ActiveWorld()
 		if w.Checkpoint.ScrollY <= 4032 {
-			if pass+1 != 578 || w.Checkpoint.ScrollY != 4032 || w.ScrollY != 4031 || w.Equipment.Lives != 3 || w.Equipment.Shield != 3 || w.ContinueCredits != 2 || w.LevelFinished {
+			if pass+1 != 578 || w.Checkpoint.ScrollY != 4032 || w.ScrollY != 4031 || w.Equipment.Lives != 3 || w.Equipment.Shield != 7 || w.ContinueCredits != 2 || w.LevelFinished {
 				t.Fatalf("opening differs: pass%d checkpoint%d camera%d lives%d shield%d credits%d", pass+1, w.Checkpoint.ScrollY, w.ScrollY, w.Equipment.Lives, w.Equipment.Shield, w.ContinueCredits)
 			}
 			t.Log("Reached checkpoint 4032 in 578 ordinary commands with all 3 ships and both continues")

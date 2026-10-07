@@ -1216,3 +1216,25 @@ middle guardian, fifth tiled middle guardian and both early defense streams.
 Their composed frames differ from the same backdrop and are captured locally.
 These are rendering/constructor checks with fixture invulnerability and isolated
 coverage; they do not prove full arena victories or a complete playthrough.
+
+## Ordinary enemy bullet fractional slot inheritance
+
+The constructor at 0x318c writes whole coordinate words at 0x31ce/0x31d2,
+retaining their low fractional words. Update at 0x3912–0x394c adds to those full
+fixed-point coordinates. Go creation previously zeroed the fractions. It now
+starts from the physical slot's retained low words.
+
+The resource regression lets an ordinary diagonal bullet expire naturally and
+releases its slot, then creates the next bullet in that same slot. It fails
+before the correction: retained fractions 0x6cf0/0x9310 should move the new bullet
+to (104,87), while the zeroed version moves to (104,86). Afterward its trajectory
+and stored physical state match the native table addition. Existing native
+directional and weapon traces still pass.
+
+Reverting only this initializer through a local Go overlay restores five former
+pilot snapshots. Their exact current outcomes are reconciled while retaining
+real damage, deaths, rewards, guardian defeats and exit requirements. Actual
+frontend routes now win both first stages with three ships from the menu or two
+through the full intro, at either gameplay cadence. The third no-loss regression
+still reports a lost ship at pass 1,260 and camera 4,032; this does not prove or
+disprove completion through its ordinary remaining lives and continue UI.

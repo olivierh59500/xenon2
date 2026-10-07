@@ -1133,7 +1133,8 @@ func (w *World) spawnEnemyShot(x, y int, shot EnemyShot) {
 	}
 	p := &WorldProjectile{ID: binding.EntityID, Binding: binding, X: float64(x), Y: float64(y), PreviousX: float64(x), PreviousY: float64(y),
 		Sprite: w.Level.Rules.DefaultEnemyShot, Atlas: "enemy-shots", Active: true,
-		Motion: DirectionalProjectile{X: int32(x) << 16, Y: int32(y) << 16, Direction: shot.Direction, Speed: shot.Speed}}
+		// The native constructor replaces only the whole coordinate words.
+		Motion: DirectionalProjectile{X: int32(x)<<16 | int32(binding.Residue.XFraction), Y: int32(y)<<16 | int32(binding.Residue.YFraction), Direction: shot.Direction, Speed: shot.Speed}}
 	w.poolProjectiles[binding.Slot] = p
 	w.Projectiles = append([]*WorldProjectile{p}, w.Projectiles...)
 }

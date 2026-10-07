@@ -77,7 +77,7 @@ func TestDemoSecondDefenseMiddleShopThroughPublicCommandsOptional(t *testing.T) 
 			w = session.ActiveWorld()
 		}
 		if w.ShopReady {
-			if pass != 4291 || !w.secondMiddleReleased || w.secondDefenseRemaining != 0 || nodeDeaths != 3 || nodeHits != 36 || w.LevelFinished || w.Equipment.Lives != 1 || w.Equipment.Shield != 31 || w.Score != 3100 || w.Money != 1100 || losses != 5 || continues != 1 {
+			if pass != 3841 || !w.secondMiddleReleased || w.secondDefenseRemaining != 0 || nodeDeaths != 3 || nodeHits != 36 || w.LevelFinished || w.Equipment.Lives != 1 || w.Equipment.Shield != 23 || w.Score != 2600 || w.Money != 1250 || losses != 5 || continues != 1 {
 				t.Fatalf("middle boundary differs: pass%d released=%v nodes=%d kills=%d hits=%d final=%v lives%d shield%d score%d cash%d losses%d continues%d", pass, w.secondMiddleReleased, w.secondDefenseRemaining, nodeDeaths, nodeHits, w.LevelFinished, w.Equipment.Lives, w.Equipment.Shield, w.Score, w.Money, losses, continues)
 			}
 			t.Logf("Middle shop after %d public commands: lives=%d shield=%d score=%d money=%d losses=%d continues=%d", pass, w.Equipment.Lives, w.Equipment.Shield, w.Score, w.Money, losses, continues)

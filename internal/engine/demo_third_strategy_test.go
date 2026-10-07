@@ -32,10 +32,10 @@ func TestDemoThirdFinalWormBoundaryOptional(t *testing.T) {
 			w = session.ActiveWorld()
 		}
 		if w.ShopReady {
-			if pass != 1540 || !w.LevelFinished || !w.ExitReady || !w.ThirdFinal.Defeated || w.ThirdFinal.Health != 0 || w.Equipment.Lives != 1 || w.Equipment.Shield != 31 || continues != 1 || w.PendingExitDrops != 0 {
+			if pass != 1634 || !w.LevelFinished || !w.ExitReady || !w.ThirdFinal.Defeated || w.ThirdFinal.Health != 0 || w.Equipment.Lives != 1 || w.Equipment.Shield != 15 || continues != 1 || w.PendingExitDrops != 0 {
 				t.Fatalf("verified final outcome changed: pass %d HP %d lives %d shield %d continues %d pending %d", pass, w.ThirdFinal.Health, w.Equipment.Lives, w.Equipment.Shield, continues, w.PendingExitDrops)
 			}
-			t.Logf("Final shop after %d ordinary commands with 1 life, shield 31 and 1 legal continue", pass)
+			t.Logf("Final shop after %d ordinary commands with 1 life, shield 15 and 1 legal continue", pass)
 			return
 		}
 		for range 3 {
