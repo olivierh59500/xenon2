@@ -35,6 +35,11 @@ func demoScrollMaximum(w *World, camera, maximum int) int {
 		event := state.Advance(camera, maximum, camera+w.Player.Y, [16]int{})
 		return event.Maximum
 	}
+	if w != nil && w.Level.Number == 3 && w.ThirdFinal != nil {
+		state := w.ThirdStage
+		event := state.Advance(ThirdStageInput{ScrollY: camera, MinimumScrollY: w.MinimumScrollY, MaximumScrollY: maximum, RequestedStep: w.BaseScrollStep, MiddleUpdated: w.thirdMiddleUpdated, FinalUpdated: w.thirdFinalUpdated, FinalDefeated: w.ThirdFinal.Defeated})
+		return event.MaximumScrollY
+	}
 	return maximum
 }
 

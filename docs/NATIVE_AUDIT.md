@@ -1598,3 +1598,23 @@ still unresolved. Vet, the desktop build, Android ARM64 rebuild, signature and
 10a; its process remains alive afterward. Device graphics were not rechecked
 while locked. All source and validation milestones are committed in English;
 original resources, temporary probes and generated recordings stay excluded.
+
+## Third-stage reverse allowance in planning
+
+The third-stage prelude reopens maximum scroll to 2,608 before player movement
+while the camera is above 208. Navigation previously used the smaller limit
+reported at the end of the previous pass and rejected a legal return through the
+right-hand pocket. The shared maximum helper now runs a copy of ThirdStage.Advance;
+ordinary post-middle motion forecasts use that same result.
+
+Seven boundary cases verify the 208/209 transition and middle heartbeat, without
+changing live state. Six held-Down forecasts match actual World.Step player,
+camera, reverse request and history. A source-terrain regression finds the
+right→middle→left U-turn from ship(211,2162), returning through world 2,290 or
+farther before ascending the left corridor. The existing y+192 search cap is
+sufficient once the next-pass allowance is copied correctly.
+
+Separate trials reach farther through the real third stage but have not completed
+it. This corrects the planner's copied rule without modifying game camera limits,
+terrain, health or encounter timing. Live-middle heartbeat forecasting remains
+outside that motion helper's supported scope.
