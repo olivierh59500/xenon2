@@ -231,3 +231,17 @@ random consumption, shot origin and direction, and inclusive collision bounds.
 World integration installs and changes their mutable map patches, restores
 destroyed tiles and uses the exported shot artwork. These checks cover the
 cannons; they do not establish every gate, hatch or guardian in the game.
+
+## First-level middle arena
+
+The five defense streams use independent rotated seeds and sixteen launch
+paths. Each stream has eleven visible followers, an invisible path anchor and
+two collision-list markers. The followers copy the next member's preceding
+position in source traversal order, preserving their integer position writes
+and inherited fractions rather than independently advancing the path.
+
+The scheduler and sixteen gate counters match 160 original passes. The anchor
+and follower helpers match 17,280 source states over all sixteen launch paths;
+an additional World comparison verifies their displayed positions and visibility
+in the integrated physical-slot list. Crossing the middle region requests the
+shop and sets the original camera bounds without finishing the level.

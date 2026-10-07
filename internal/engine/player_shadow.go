@@ -5,9 +5,10 @@ import "fmt"
 // PlayerShadowState is one of the four source thrust silhouettes. Its counter
 // selects a fixed image and a side; no trail or animation countdown is used.
 type PlayerShadowState struct {
-	Counter int
-	X, Y    int
-	Visible bool
+	Counter              int
+	X, Y                 int
+	PreviousX, PreviousY int
+	Visible              bool
 }
 
 var shadowOffsets = [2][7]int{{0, -1, -1, -1, -2, -2, -2}, {0, 1, 1, 1, 2, 2, 2}}

@@ -70,6 +70,9 @@ func TestPrivateGuardianTablesOptional(t *testing.T) {
 					}
 				}
 			}
+			if index == 0 && (len(groups) != 1 || len(groups[0].Components) != 11 || len(groups[0].Launches) != 16 || len(groups[0].Gates) != 16) {
+				t.Fatal("first middle arena formats differ")
+			}
 			if index == 1 && (len(groups) != 3 || len(groups[0].Components) != 12 || len(groups[0].Launches) != 16 || len(groups[1].Components) != 3 || len(groups[1].Gates) != 8 || len(groups[2].DestructibleCells) != 44 || len(visuals.Visuals[0].BodyAnimations) != 3 || len(visuals.Visuals[0].Animations) != 13 || len(visuals.Visuals[0].TurnPoints) != 8) {
 				t.Fatal("second guardian formats differ")
 			}

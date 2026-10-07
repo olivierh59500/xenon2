@@ -69,6 +69,13 @@ type WorldActor struct {
 	fixedTileState             *FixedTileState
 	fixedTileArt               *visualassets.FixedTileKind
 	fixedTileVariant           *visualassets.FixedTileVariant
+	firstMiddleAnchor          *FirstMiddleAnchor
+	firstMiddleFollower        *FirstMiddleFollower
+	firstMiddleFragment        *FirstMiddleFragment
+	firstMiddleSentinel        bool
+	firstMiddleStream          int
+	firstMiddleGate            int
+	firstMiddlePart            *visualassets.GuardianComponent
 	secondNode                 *SecondDefenseNodeState
 	secondPart                 *visualassets.GuardianComponent
 	secondSegment              *SecondDefenseSegment
@@ -120,6 +127,7 @@ type WorldCollectible struct {
 type World struct {
 	Level                            LevelData
 	Player, PreviousPlayer           PlayerMotionState
+	Shadows                          [4]PlayerShadowState
 	ScrollY, PreviousScrollY         int
 	RenderScrollY                    int
 	ScrollDelta                      int
@@ -159,6 +167,7 @@ type World struct {
 	Collectibles                     []*WorldCollectible
 	FirstGuardian                    *FirstGuardianState
 	FirstGuardianSegments            *FirstGuardianSegments
+	FirstMiddle                      *FirstMiddleState
 	SecondGuardian                   *SecondGuardianState
 	PendingGuardianMinions           []SecondGuardianEvents
 	Weapons                          *WeaponRuntime
@@ -189,6 +198,7 @@ type World struct {
 	deathState                       AnimationState
 	blockedFireUntilRelease          bool
 	firstGuardianArt                 *visualassets.GuardianVisual
+	firstMiddleArt                   *visualassets.GuardianGroup
 	firstGuardianActor               *WorldActor
 	firstGuardianParts               [8]*WorldActor
 	secondGuardianArt                *visualassets.GuardianVisual
@@ -352,6 +362,9 @@ func NewWorld(data LevelData) (*World, error) {
 	if err := w.initializeSecondArena(); err != nil {
 		return nil, err
 	}
+	if err := w.initializeFirstMiddle(); err != nil {
+		return nil, err
+	}
 	for i := len(w.Actors) - 1; i >= 0; i-- {
 		if err := w.bindWorldActor(w.Actors[i]); err != nil {
 			return nil, err
@@ -493,6 +506,9 @@ func (w *World) Step(input Input) error {
 	}
 	copy(w.shipTrail[:3], w.shipTrail[1:])
 	w.shipTrail[3] = w.PreviousPlayer
+	if err := w.advancePlayerShadows(input); err != nil {
+		return err
+	}
 	w.secondStreamsUpdated = [2]bool{}
 	w.syncDeadActors()
 	if err := w.advanceActorPhase(ActorPoolMoving, input); err != nil {
@@ -654,6 +670,9 @@ func (w *World) Step(input Input) error {
 		}
 	}
 	var spawnErr error
+	if err := w.advanceFirstMiddleStage(); err != nil {
+		return err
+	}
 	if err := w.advanceSecondDefenseWaves(); err != nil {
 		return err
 	}
@@ -884,6 +903,10 @@ func (w *World) destroyPlayer() {
 }
 
 func (w *World) damageActor(actor *WorldActor, amount uint16) {
+	if actor.firstMiddleFollower != nil {
+		w.damageFirstMiddleFollower(actor, amount)
+		return
+	}
 	if actor.fixedTileState != nil {
 		w.damageFixedTile(actor, amount)
 		return

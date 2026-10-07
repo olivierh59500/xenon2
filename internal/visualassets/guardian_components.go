@@ -89,6 +89,13 @@ func DecodeCompoundGuardianArt(number int, level []byte, palette [16][4]uint8) (
 		names[address] = name
 		return name, nil
 	}
+	if number == 1 {
+		group, err := decodeFirstMiddleDefense(level, add)
+		if err != nil {
+			return nil, SpriteAtlas{}, err
+		}
+		groups = append(groups, group)
+	}
 	if number == 2 {
 		group, err := decodeSecondLevelDefense(level, add)
 		if err != nil {

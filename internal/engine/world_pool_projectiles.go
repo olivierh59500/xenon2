@@ -27,7 +27,9 @@ func (w *World) advancePoolProjectileEntity(id int, context WeaponContext) error
 			continue
 		}
 		actor.PreviousX, actor.PreviousY = actor.X, actor.Y
-		if actor.secondFragment != nil {
+		if actor.firstMiddleFragment != nil {
+			w.advanceFirstMiddleFragment(actor)
+		} else if actor.secondFragment != nil {
 			w.advanceSecondFragment(actor)
 		} else if actor.animation.Ending == "remove" && actor.animationState.Frame == len(actor.animation.Frames)-1 && actor.animationState.Remaining == 1 {
 			actor.Active = false

@@ -50,6 +50,16 @@ func (w *World) advanceActorPhase(list ActorPoolList, input Input) error {
 }
 
 func (w *World) advanceMovingActor(actor *WorldActor) error {
+	if actor.firstMiddleSentinel {
+		return nil
+	}
+	if actor.firstMiddleAnchor != nil {
+		return w.advanceFirstMiddleAnchor(actor)
+	}
+	if actor.firstMiddleFollower != nil {
+		w.advanceFirstMiddleFollower(actor)
+		return nil
+	}
 	if actor.fixedTileState != nil {
 		actor.PreviousX, actor.PreviousY = actor.X, actor.Y
 		actor.Visible = true
