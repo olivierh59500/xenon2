@@ -3,7 +3,6 @@ package app
 import (
 	"fmt"
 	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/hajimehoshi/ebiten/v2/inpututil"
 	"strings"
 	"xenon2/internal/engine"
 	"xenon2/internal/presentation"
@@ -25,14 +24,15 @@ func (g *Game) BeginAttract() {
 
 func (g *Game) SetContinueHandler(handler func() error) { g.onContinue = handler }
 
-func (g *Game) updatePresentation() error {
-	input := presentation.Input{Confirm: inpututil.IsKeyJustPressed(ebiten.KeyEnter) || inpututil.IsKeyJustPressed(ebiten.KeySpace) || inpututil.IsKeyJustPressed(ebiten.KeyControl) || inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft)}
-	if ebiten.IsKeyPressed(ebiten.KeyArrowLeft) {
+func (g *Game) updatePresentation(controls inputFrame) error {
+	input := presentation.Input{Confirm: controls.confirm || controls.mousePressed}
+	if controls.left {
 		input.Horizontal = -1
 	}
-	if ebiten.IsKeyPressed(ebiten.KeyArrowRight) {
+	if controls.right {
 		input.Horizontal = 1
 	}
+
 	g.presentationInput.Confirm = g.presentationInput.Confirm || input.Confirm
 	g.presentationInput.Horizontal = input.Horizontal
 	for ticks := g.menuClock.Advance(); ticks > 0; ticks-- {

@@ -2,8 +2,6 @@ package app
 
 import (
 	"fmt"
-	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/hajimehoshi/ebiten/v2/inpututil"
 
 	"xenon2/internal/engine"
 	"xenon2/internal/presentation"
@@ -42,25 +40,25 @@ func (g *Game) EnterShop(endOfLevel bool) error {
 	return nil
 }
 
-func (g *Game) updateShop() error {
+func (g *Game) updateShop(controls inputFrame) error {
 	if g.shop == nil {
 		return fmt.Errorf("shop state unavailable")
 	}
-	if inpututil.IsKeyJustPressed(ebiten.KeyArrowLeft) {
+	if controls.leftPressed {
 		g.shop.Move(-1, 0)
 	}
-	if inpututil.IsKeyJustPressed(ebiten.KeyArrowRight) {
+	if controls.rightPressed {
 		g.shop.Move(1, 0)
 	}
-	if inpututil.IsKeyJustPressed(ebiten.KeyArrowUp) {
+	if controls.upPressed {
 		g.shop.Move(0, -1)
 	}
-	if inpututil.IsKeyJustPressed(ebiten.KeyArrowDown) {
+	if controls.downPressed {
 		g.shop.Move(0, 1)
 	}
-	confirm := inpututil.IsKeyJustPressed(ebiten.KeyEnter) || inpututil.IsKeyJustPressed(ebiten.KeySpace) || inpututil.IsKeyJustPressed(ebiten.KeyControl)
-	if !g.shop.Busy() && inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) {
-		x, y := ebiten.CursorPosition()
+	confirm := controls.confirm
+	if !g.shop.Busy() && controls.mousePressed {
+		x, y := controls.mouseX, controls.mouseY
 		matched := false
 		for _, cell := range g.Bundle.ShopScene.Cells {
 			if x >= cell.X-4 && x < cell.X+36 && y >= cell.Y-4 && y < cell.Y+36 {

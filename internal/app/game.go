@@ -10,7 +10,6 @@ import (
 
 	"github.com/hajimehoshi/ebiten/v2"
 	ebitenaudio "github.com/hajimehoshi/ebiten/v2/audio"
-	"github.com/hajimehoshi/ebiten/v2/inpututil"
 
 	"xenon2/internal/audio"
 	"xenon2/internal/engine"
@@ -206,7 +205,9 @@ func (g *Game) ResetDiagnosticLevel(level int) {
 	g.clock = engine.NewFrameClock(25, 60)
 }
 
-func (g *Game) Update() error {
+func (g *Game) Update() error { return g.advanceWithInput(sampleInput()) }
+
+func (g *Game) advanceWithInput(controls inputFrame) error {
 	if g.err != nil {
 		return g.err
 	}
@@ -230,7 +231,7 @@ func (g *Game) Update() error {
 		}
 		return nil
 	}
-	if inpututil.IsKeyJustPressed(ebiten.KeyEscape) {
+	if controls.escape {
 		g.paused = false
 		if g.Screen == TitleScreen {
 			return ebiten.Termination
@@ -239,12 +240,12 @@ func (g *Game) Update() error {
 		g.stream.StopEffects()
 		g.BeginAttract()
 	}
-	if inpututil.IsKeyJustPressed(ebiten.KeyM) {
+	if controls.music {
 		g.music = !g.music
 		g.selectMusic()
 	}
 	if g.paused {
-		if len(inpututil.AppendJustPressedKeys(nil)) != 0 || inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) {
+		if controls.anyKey || controls.mousePressed {
 			g.paused = false
 		}
 		if g.Config.Frames > 0 && g.updates >= g.Config.Frames {
@@ -252,7 +253,7 @@ func (g *Game) Update() error {
 		}
 		return nil
 	}
-	if g.Screen == LevelScreen && !g.View.Ready && !g.View.GameOver && inpututil.IsKeyJustPressed(ebiten.KeyP) {
+	if g.Screen == LevelScreen && !g.View.Ready && !g.View.GameOver && controls.pause {
 		g.paused, g.pauseFraction = true, g.clock.Fraction()
 		if g.Config.Frames > 0 && g.updates >= g.Config.Frames {
 			g.capturePending = true
@@ -261,7 +262,7 @@ func (g *Game) Update() error {
 	}
 	switch g.Screen {
 	case PresentationScreen:
-		if err := g.updatePresentation(); err != nil {
+		if err := g.updatePresentation(controls); err != nil {
 			return err
 		}
 	case TitleScreen:
@@ -273,9 +274,9 @@ func (g *Game) Update() error {
 				}
 			}
 		}
-		g.updateTitle()
+		g.updateTitle(controls)
 	case ShopScreen:
-		if err := g.updateShop(); err != nil {
+		if err := g.updateShop(controls); err != nil {
 			return err
 		}
 	case LevelScreen:
@@ -321,24 +322,21 @@ func (g *Game) Update() error {
 				}
 			}
 		}
-		if g.View.Diagnostic && inpututil.IsKeyJustPressed(ebiten.KeyF2) {
+		if g.View.Diagnostic && controls.referenceShop {
 			if err := g.EnterShop(false); err != nil {
 				return err
 			}
 			break
 		}
-		if g.View.Diagnostic {
-			for n, key := range []ebiten.Key{ebiten.KeyDigit1, ebiten.KeyDigit2, ebiten.KeyDigit3, ebiten.KeyDigit4, ebiten.KeyDigit5} {
-				if inpututil.IsKeyJustPressed(key) {
-					if err := g.StartLevel(n + 1); err != nil {
-						return err
-					}
-				}
+		if g.View.Diagnostic && controls.referenceLevel > 0 {
+			if err := g.StartLevel(controls.referenceLevel); err != nil {
+				return err
 			}
 		}
-		g.pendingFire = g.pendingFire || inpututil.IsKeyJustPressed(ebiten.KeySpace) || inpututil.IsKeyJustPressed(ebiten.KeyControl)
-		g.pendingDive = g.pendingDive || inpututil.IsKeyJustPressed(ebiten.KeyAlt)
-		input := Input{Motion: engine.MotionInput{Left: ebiten.IsKeyPressed(ebiten.KeyArrowLeft) || ebiten.IsKeyPressed(ebiten.KeyA), Right: ebiten.IsKeyPressed(ebiten.KeyArrowRight) || ebiten.IsKeyPressed(ebiten.KeyD), Up: ebiten.IsKeyPressed(ebiten.KeyArrowUp) || ebiten.IsKeyPressed(ebiten.KeyW), Down: ebiten.IsKeyPressed(ebiten.KeyArrowDown) || ebiten.IsKeyPressed(ebiten.KeyS)}, Fire: ebiten.IsKeyPressed(ebiten.KeySpace) || ebiten.IsKeyPressed(ebiten.KeyControl) || g.pendingFire, DivePressed: g.pendingDive}
+
+		g.pendingFire = g.pendingFire || controls.firePressed
+		g.pendingDive = g.pendingDive || controls.divePressed
+		input := Input{Motion: controls.gameMotion, Fire: controls.fire || g.pendingFire, DivePressed: g.pendingDive}
 		for steps := g.clock.Advance(); steps > 0; steps-- {
 			g.rememberFrameHistory()
 			if g.Driver != nil {
@@ -468,15 +466,15 @@ func (g *Game) consumeDriverAudio() error {
 	return nil
 }
 
-func (g *Game) updateTitle() {
-	if inpututil.IsKeyJustPressed(ebiten.KeyArrowUp) {
+func (g *Game) updateTitle(controls inputFrame) {
+	if controls.upPressed {
 		g.menu = (g.menu + 2) % 3
 	}
-	if inpututil.IsKeyJustPressed(ebiten.KeyArrowDown) {
+	if controls.downPressed {
 		g.menu = (g.menu + 1) % 3
 	}
-	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) {
-		x, y := ebiten.CursorPosition()
+	if controls.mousePressed {
+		x, y := controls.mouseX, controls.mouseY
 		if x >= 0 && x < 320 {
 			for i, line := range g.Bundle.Presentation.Menu {
 				if y >= line.CenterY-8 && y < line.CenterY+14 {
@@ -487,7 +485,7 @@ func (g *Game) updateTitle() {
 			}
 		}
 	}
-	if inpututil.IsKeyJustPressed(ebiten.KeyEnter) || inpututil.IsKeyJustPressed(ebiten.KeySpace) {
+	if controls.menuConfirm {
 		g.activateMenu()
 	}
 }
