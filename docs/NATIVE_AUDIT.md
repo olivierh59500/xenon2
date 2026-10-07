@@ -1238,3 +1238,9 @@ frontend routes now win both first stages with three ships from the menu or two
 through the full intro, at either gameplay cadence. The third no-loss regression
 still reports a lost ship at pass 1,260 and camera 4,032; this does not prove or
 disprove completion through its ordinary remaining lives and continue UI.
+
+The full engine race run passes in 44.100 seconds. The full production GPU/audio
+frontend suite passes in 81.986 seconds with the known optional third-stage
+no-loss assertion explicitly excluded; that assertion remains enabled when
+requested and its failure is retained. Resource import/export, sound, controls,
+presentation and merchant suites pass, as do vet and the desktop rebuild.

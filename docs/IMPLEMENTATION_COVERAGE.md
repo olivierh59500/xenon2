@@ -96,11 +96,13 @@ their owning tiled body, and the middle body retains its last normal muzzle
 table during flash callbacks. A real basic-gun hit also passes the production
 GPU pixel check for the final body.
 
-After finite explosions were corrected, the current direct-menu route enters
-stage three with one ship. Its separate no-loss third-middle regression fails
-before the arena; a bounded legal-continue probe also exhausts the remaining
-ships before admission. The regression is retained and this controller limitation
-remains open. Isolated arena wins are not substitutes for that carried route.
+After native fractional enemy-shot coordinates were corrected, the current
+direct-menu route enters stage three with three ships; the complete-intro route
+enters it with two. Both gameplay cadences retain real shop/guardian/exit gates.
+The separate no-loss third-middle regression still detects a lost ship before
+the arena. The earlier legal-continue probe predates the fractional correction
+and does not establish the current carried route. Isolated arena wins are not
+substitutes for a connected victory through ordinary controls.
 
 The remaining live checks are:
 
