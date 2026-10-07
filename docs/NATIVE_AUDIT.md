@@ -654,3 +654,12 @@ current frontend progress. It does not prove the remaining four stages or
 a strong full-campaign pilot. Cached navigation without a changing route
 measured about 2 microseconds with no allocations on the tested Mac; route
 replanning and dense-combat rendering have separate costs.
+
+A longer bounded frontend run reaches the second-stage middle merchant and
+continues into its second section, but loses the last ship near camera 1476.
+After a fresh game, another first-stage route can still enter a terrain/rewind
+cycle near camera 2619. The first-stage victory above is a reproducible specific
+normal-menu run, not a general guarantee over arbitrary presentation RNG states.
+The long-run check reports progress and does not treat exhausted lives or
+restarting attract as campaign completion. Later guardian strategies and robust
+recovery from terrain cycles remain required for the requested full-game pilot.

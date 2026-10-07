@@ -65,9 +65,13 @@ func TestDemoBoundedCampaignProgressOptional(t *testing.T) {
 	g := frontendGame(t)
 	g.Config.Demo = true
 	g.Config.LogicPALRefreshes = 3
+	duration := 600
+	if os.Getenv("XENON2_DEMO_LONG_RUN") != "" {
+		duration = 7200
+	}
 	minScroll := 4608
 	levels := map[int]bool{}
-	for update := 0; update < 60*600; update++ {
+	for update := 0; update < 60*duration; update++ {
 		advanceFrontend(t, g, inputFrame{})
 		if d, ok := g.Driver.(*worldDriver); ok && d.session != nil {
 			levels[d.world.Level.Number] = true
@@ -78,7 +82,7 @@ func TestDemoBoundedCampaignProgressOptional(t *testing.T) {
 		}
 	}
 	d := g.Driver.(*worldDriver)
-	t.Logf("Bounded 600 s pilot: stages%v minimumcamera%d level%d lives%d shield%d cash%d; full campaign remains unproven", levels, minScroll, d.world.Level.Number, d.world.Equipment.Lives, d.world.Equipment.Shield, d.world.Money)
+	t.Logf("Bounded %d s pilot: stages%v minimumcamera%d level%d lives%d shield%d cash%d; full campaign remains unproven", duration, levels, minScroll, d.world.Level.Number, d.world.Equipment.Lives, d.world.Equipment.Shield, d.world.Money)
 }
 
 func TestDemoCompletesFirstLevelFromNormalMenuOptional(t *testing.T) {
