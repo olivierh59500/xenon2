@@ -695,3 +695,18 @@ one legal continue after five ship losses. The first opening checkpoint remains
 unchanged at 578 commands. A normal-menu carried-loadout run also passes the
 middle arena, but currently needs corridor recovery near camera 910 and a
 validated final-barrier/guardian strategy. This is not a second-level victory.
+
+## Second final barrier and guardian control
+
+An explicit post-middle checkpoint fixture retains original terrain/stencil,
+basic equipment and 75 HP guardian health. The pilot's ordinary firing opens
+three columns of the lower destructible barrier. A cached safe path reaches
+the activation threshold, then retreats through the real opening and aims
+below the central rock. No tile, health or damage is assigned by the pilot.
+
+The regression requires actual final-shop readiness after 754 public commands:
+guardian HP 0, two surviving ships, 11 shield points, 11 cells cleared, no continue
+and all 20 exit coins collected or expired. It also checks that a negative wait
+during active guardian travel is not mistaken for the initial dormant phase.
+This proves the arranged final-arena route, not a completed second stage or
+five-stage campaign. Corridor recovery before this arena remains open.
