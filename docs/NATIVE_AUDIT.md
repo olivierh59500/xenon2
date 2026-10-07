@@ -1733,3 +1733,20 @@ Seven shield points remain. The helper is applied only until that checkpoint;
 a later bounded continuation still loses the ship before the middle guardian.
 This is a verified survival improvement for that opening, not near-lossless
 mastery of all levels.
+
+## Route-risk forecast reuse
+
+Changing-direction search now computes the supported ordinary path and enemy
+shot forecasts once per decision. Candidate camera changes translate only the
+world-anchored bounds; unresolved entry clips and actors beyond the fixed cache
+retain their former prediction route. Two separate fixed scratch arrays avoid a
+large combined heap object. The existing no-shot planning path is unchanged.
+
+The actual original path 33 wave, supported active colliders, two enemy shots and
+clear terrain form the maintained fixture. All 224 commands at 112 camera/player
+poses match the immutable prior implementation, with both shot-avoidance modes.
+Actor/projectile/pool/RNG/player/camera/history stay unchanged; both versions
+allocate zero objects per decision. Sequential 500 ms M4 Max samples measure 0.939 ms
+before and 0.707 ms after (about 25% lower fixture cost). This is not a Pixel FPS
+measurement. The connected opening survival, real cannon destruction and title
+idle checks pass after the optimization.

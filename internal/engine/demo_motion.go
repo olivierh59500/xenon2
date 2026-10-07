@@ -63,6 +63,54 @@ func demoRouteMotion(w *World, x, worldY int) MotionInput {
 }
 
 func demoRouteMotionWithOptions(w *World, x, worldY, comfortY int, avoidShots bool) MotionInput {
+	if avoidShots {
+		return demoRouteMotionAvoidingShots(w, x, worldY, comfortY)
+	}
+	return demoRouteMotionSearch(w, x, worldY, comfortY, nil)
+}
+
+type demoRouteRisk struct {
+	bounds            CollisionRect
+	active, supported bool
+}
+
+type demoRouteRisks struct {
+	actors, shots *[6][ActorPoolCapacity]demoRouteRisk
+}
+
+func demoRouteActorCacheable(actor *WorldActor) bool {
+	// An unselected world-anchor entry clip can depend on the candidate camera.
+	return actor.part == nil || actor.part.MotionMode != "world-anchored" || actor.entrySelected || len(actor.part.EntryAnimations) == 0
+}
+
+func demoRouteMotionAvoidingShots(w *World, x, worldY, comfortY int) MotionInput {
+	var actorRisks, shotRisks [6][ActorPoolCapacity]demoRouteRisk
+	risks := demoRouteRisks{actors: &actorRisks, shots: &shotRisks}
+	for index, actor := range w.Actors {
+		if index >= ActorPoolCapacity {
+			break
+		}
+		if !actor.Active || actor.Collision.Empty() || actor.ActorList != "moving" && actor.ActorList != "scenery" || !demoRouteActorCacheable(actor) {
+			continue
+		}
+		for depth := range risks.actors {
+			view, supported := demoActorPrediction(w, actor, depth+1, w.ScrollY)
+			risks.actors[depth][index] = demoRouteRisk{bounds: view.Bounds, active: view.Active, supported: supported}
+		}
+	}
+	for index, shot := range w.Projectiles {
+		if index >= ActorPoolCapacity {
+			break
+		}
+		for depth := range risks.shots {
+			sx, sy, active := demoProjectilePosition(w, shot, depth+1, w.ScrollDelta)
+			risks.shots[depth][index] = demoRouteRisk{bounds: CollisionRect{Left: sx, Top: sy}, active: active, supported: true}
+		}
+	}
+	return demoRouteMotionSearch(w, x, worldY, comfortY, &risks)
+}
+
+func demoRouteMotionSearch(w *World, x, worldY, comfortY int, risks *demoRouteRisks) MotionInput {
 	type branch struct {
 		motion demoMotionForecast
 		first  int
@@ -89,7 +137,7 @@ func demoRouteMotionWithOptions(w *World, x, worldY, comfortY int, avoidShots bo
 					candidate.score += float64(absDemo(player.Y-comfortY) * 2)
 				}
 				bounds := thirdMiddlePlayerBounds(w, player)
-				for _, actor := range w.Actors {
+				for actorIndex, actor := range w.Actors {
 					if !actor.Active || actor.Collision.Empty() || actor.ActorList != "moving" && actor.ActorList != "scenery" {
 						continue
 					}
@@ -97,19 +145,37 @@ func demoRouteMotionWithOptions(w *World, x, worldY, comfortY int, avoidShots bo
 					other := actor.Collision
 					other.Left, other.Right = other.Left+dx, other.Right+dx
 					other.Top, other.Bottom = other.Top+dy, other.Bottom+dy
-					if predicted, supported := demoActorPrediction(w, actor, depth+1, actorCamera); supported {
-						if !predicted.Active {
+					var predicted demoRouteRisk
+					if risks != nil && actorIndex < ActorPoolCapacity && demoRouteActorCacheable(actor) {
+						predicted = risks.actors[depth][actorIndex]
+						if predicted.supported && actor.part.MotionMode == "world-anchored" {
+							change := w.ScrollY - actorCamera
+							predicted.bounds.Top, predicted.bounds.Bottom = predicted.bounds.Top+change, predicted.bounds.Bottom+change
+						}
+					} else {
+						view, supported := demoActorPrediction(w, actor, depth+1, actorCamera)
+						predicted = demoRouteRisk{bounds: view.Bounds, active: view.Active, supported: supported}
+					}
+					if predicted.supported {
+						if !predicted.active {
 							continue
 						}
-						other = predicted.Bounds
+						other = predicted.bounds
 					}
 					if bounds.Intersects(other) {
 						candidate.score += 100000
 					}
 				}
-				if avoidShots {
-					for _, shot := range w.Projectiles {
-						sx, sy, active := demoProjectilePosition(w, shot, depth+1, w.ScrollDelta)
+				if risks != nil {
+					for shotIndex, shot := range w.Projectiles {
+						var sx, sy int
+						var active bool
+						if shotIndex < ActorPoolCapacity {
+							predicted := risks.shots[depth][shotIndex]
+							sx, sy, active = predicted.bounds.Left, predicted.bounds.Top, predicted.active
+						} else {
+							sx, sy, active = demoProjectilePosition(w, shot, depth+1, w.ScrollDelta)
+						}
 						if active && sx >= bounds.Left-5 && sx <= bounds.Right+5 && sy >= bounds.Top-5 && sy <= bounds.Bottom+5 {
 							candidate.score += 100000
 						}
