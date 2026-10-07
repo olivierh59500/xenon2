@@ -41,6 +41,10 @@ GOWORK=off go run ./cmd/xenon2 -view menu -frames 120 -screenshot .local/menu.pn
 GOWORK=off go test ./...
 ```
 
+`./scripts/check-desktop.sh` runs the renderer tests and bounded menu, attract,
+shop and five-level captures. It needs an active desktop session and rebuilt
+local assets. Captures are saved under `.local/captures/desktop-check/`.
+
 Rendering runs at 60 display updates per second. Ship motion, paths, firing and
 scrolling use a separate simulation clock; interpolation does not speed up the
 game. Audio follows its own original 50 Hz replay clock.
