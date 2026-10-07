@@ -92,3 +92,12 @@ The remaining live checks are:
 - Compare integrated artwork, palette fades, sound transitions and elapsed
   cadence with the Amiga reference.
 - Check 60 Hz display smoothness and continuous audio during dense combat.
+
+Frontend boundary checks now cover collision death, score initials, accepted and
+unanswered continues, real merchant quote/purchase controls, same-stage reload
+and the two-player final ending gate. Explicit boundary fixtures do not count
+as victories. GPU regressions verify that outgoing fades uncover the new
+shop caption and ending dot, and that READY uses the correct player's director
+on its first draw. A bounded native A500 capture also establishes that the
+credit sequence's elapsed cadence differs from the maximum source clock; full
+gameplay timing and soundtrack comparisons remain open.

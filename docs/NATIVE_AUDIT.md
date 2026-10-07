@@ -503,3 +503,40 @@ direct path reduced observed allocation per draw from about 167 KB and 6,081
 objects to 85 KB and 3,005 objects on the tested Mac. Backend allocations remain
 substantial. Both probes sustained approximately sixty update calls per second;
 display-rate changes during the runs prevent claiming an FPS improvement.
+
+## Live Amiga presentation and frontend boundaries
+
+The supplied disk was booted in FS-UAE 3.1.66 with an A500, PAL video,
+512 KiB chip memory, 512 KiB slow memory and cycle-exact CPU/blitter timing.
+All five trainer options were set to NO and the starting level remained one.
+The trainer uses vertical mouse movement and its mouse buttons; the game's
+joystick controls are separate. The configuration and window captures remain
+local.
+
+A forty-second window-only capture contains 400 timestamped images. Five
+successive credit-pair onsets are separated by approximately 6.11, 5.80, 5.80
+and 6.30 seconds. The source director uses 93 passes between pairs, giving an
+approximate observed presentation rate of 15.5 passes per second in this run.
+Caption width and zoom affect threshold-based onset identification. The capture
+begins inside a cycle, and it does not measure gameplay cadence. The source's
+25-pass rate is a maximum when processing fits two PAL refreshes; it is not a
+measurement of every original scene. The Go clock has not been changed solely
+on this presentation observation.
+
+The installed reference emulator's OpenAL backend failed to create its sources.
+The capture used its silent fallback, so it provides no live soundtrack
+comparison. Original audio-event comparisons and Go audio integration tests
+remain separate evidence.
+
+Integrated frontend checks enter through the ordinary menu and exercise actual
+collision death, three-letter score entry, accepted and unanswered continues,
+middle-shop quotes and purchases, same-stage reload, and the shared two-player
+fifth-stage ending gate. Last-life/ranking and shop-completion arrangements are
+explicit boundary fixtures, not a completed campaign.
+
+GPU checks found an outgoing fade still covering the entering-shop caption and
+the ending dot. Completed outgoing fades are now removed before callbacks can
+install their next scene or fade. A terminal fade without a callback still
+retains its black palette. New READY and final-loss states enter their original
+presentation directors before the next draw, eliminating a one-frame static
+logo and player-one caption on player-two admission.

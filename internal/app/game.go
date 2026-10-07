@@ -221,6 +221,7 @@ func (g *Game) advanceWithInput(controls inputFrame) error {
 		}
 		if g.fade.Done && g.whenFadeEnds != nil {
 			after := g.whenFadeEnds
+			g.fade = nil
 			g.whenFadeEnds = nil
 			if err := after(); err != nil {
 				return err
@@ -280,32 +281,7 @@ func (g *Game) advanceWithInput(controls inputFrame) error {
 			return err
 		}
 	case LevelScreen:
-		if g.View.Ready && !g.readyRunning {
-			player := g.View.PlayerNumber
-			if player == 0 {
-				player = 1
-			}
-			g.resetPresentationStars(presentation.ReadyMessage)
-			g.director.BeginReady(player)
-			g.stream.StopEffects()
-			g.Screen = PresentationScreen
-			g.readyRunning = true
-			g.selectMusic()
-			break
-		}
-		if g.View.GameOver && !g.gameOverRunning {
-			g.gameOverRunning = true
-			g.stream.StopEffects()
-			if g.director.InsertScore(g.View.Score) {
-				g.continueAfterScores = true
-			} else if g.View.ContinueCredits > 0 {
-				g.director.BeginContinue()
-			} else {
-				g.director.BeginGameOver()
-			}
-			g.resetPresentationStars(g.director.Phase)
-			g.Screen = PresentationScreen
-			g.selectMusic()
+		if g.beginPendingWorldPresentation() {
 			break
 		}
 		for ticks := g.palClock.Advance(); ticks > 0; ticks-- {
@@ -320,7 +296,13 @@ func (g *Game) advanceWithInput(controls inputFrame) error {
 					g.readyRunning = false
 					g.gameOverRunning = false
 				}
+				if g.beginPendingWorldPresentation() {
+					break
+				}
 			}
+		}
+		if g.Screen != LevelScreen {
+			break
 		}
 		if g.View.Diagnostic && controls.referenceShop {
 			if err := g.EnterShop(false); err != nil {
@@ -352,6 +334,9 @@ func (g *Game) advanceWithInput(controls inputFrame) error {
 					g.rememberFrameHistory()
 					g.readyRunning = false
 					g.gameOverRunning = false
+				}
+				if g.beginPendingWorldPresentation() {
+					break
 				}
 			}
 			g.pendingFire, g.pendingDive = false, false

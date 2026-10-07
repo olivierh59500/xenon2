@@ -10,6 +10,7 @@ import (
 
 // BeginAttract starts the source presentation loop without changing game rules.
 func (g *Game) BeginAttract() {
+	g.fade, g.whenFadeEnds = nil, nil
 	if g.updates > 0 {
 		g.resetPresentationStars(presentation.LogoDelay)
 	}
@@ -20,6 +21,36 @@ func (g *Game) BeginAttract() {
 	g.presentationStarPhase = presentation.LogoDelay
 	g.Screen = PresentationScreen
 	g.selectMusic()
+}
+
+// beginPendingWorldPresentation admits the source director before the first
+// draw of a new READY or final-loss state. No fallback logo frame is inserted.
+func (g *Game) beginPendingWorldPresentation() bool {
+	if g.View.Ready && !g.readyRunning {
+		player := max(1, g.View.PlayerNumber)
+		g.resetPresentationStars(presentation.ReadyMessage)
+		g.director.BeginReady(player)
+		g.stream.StopEffects()
+		g.Screen, g.readyRunning = PresentationScreen, true
+		g.selectMusic()
+		return true
+	}
+	if g.View.GameOver && !g.gameOverRunning {
+		g.gameOverRunning = true
+		g.stream.StopEffects()
+		if g.director.InsertScore(g.View.Score) {
+			g.continueAfterScores = true
+		} else if g.View.ContinueCredits > 0 {
+			g.director.BeginContinue()
+		} else {
+			g.director.BeginGameOver()
+		}
+		g.resetPresentationStars(g.director.Phase)
+		g.Screen = PresentationScreen
+		g.selectMusic()
+		return true
+	}
+	return false
 }
 
 func (g *Game) SetContinueHandler(handler func() error) { g.onContinue = handler }
@@ -89,6 +120,7 @@ func (g *Game) updatePresentation(controls inputFrame) error {
 				}
 				g.Screen = LevelScreen
 				g.gameOverRunning = false
+				g.beginPendingWorldPresentation()
 			} else {
 				g.finishPlayerGame()
 			}
@@ -140,6 +172,7 @@ func (g *Game) finishPlayerGame() {
 		g.rememberFrameHistory()
 		g.readyRunning, g.gameOverRunning = false, false
 		g.Screen = LevelScreen
+		g.beginPendingWorldPresentation()
 		return
 	}
 	g.BeginAttract()

@@ -23,6 +23,7 @@ func (g *Game) levelData(number int) engine.LevelData {
 }
 
 func (g *Game) beginHeader(text string, action headerAction) {
+	g.fade, g.whenFadeEnds = nil, nil
 	g.headerAction = action
 	g.resetPresentationStars(presentation.HeaderIn)
 	g.director.BeginHeader(text)
@@ -47,6 +48,7 @@ func (g *Game) completeHeader() error {
 			return err
 		}
 		g.Screen = LevelScreen
+		g.beginPendingWorldPresentation()
 	case headerShop:
 		return g.EnterShop(g.shopFinal)
 	case headerReload:
@@ -131,6 +133,7 @@ func (g *Game) advanceCompletedStage() error {
 	g.Screen = LevelScreen
 	g.clock = engine.NewFrameClock(25, 60)
 	g.palClock = engine.NewFrameClock(50, 60)
+	g.beginPendingWorldPresentation()
 	return nil
 }
 
