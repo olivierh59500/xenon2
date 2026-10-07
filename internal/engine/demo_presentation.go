@@ -288,6 +288,9 @@ func presentationMotionScore(w *World, motion MotionInput, x, y int) (risk, dist
 // Target selection follows the same moving-list callbacks as player weapons.
 // Body sections that consume hits without taking damage are poor aim targets.
 func presentationTargetBounds(w *World, actor *WorldActor) (CollisionRect, bool) {
+	if actor != nil && actor.Active && actor.secondNode != nil {
+		return actor.Collision, w.secondScheduler != nil && w.secondScheduler.DefenseFlags != 3 && actor.Health > 0 && !actor.Collision.Empty()
+	}
 	if actor == nil || !actor.Active || !actor.Visible || actor.Materializing || actor.ActorList != "moving" || actor.Collision.Empty() {
 		return CollisionRect{}, false
 	}
@@ -357,7 +360,10 @@ func presentationShotOpportunityForMotion(w *World, motion MotionInput) bool {
 		}
 		for future := 1; future <= 18; future++ {
 			predicted := bounds
-			if view, supported := demoActorPrediction(w, actor, future, w.ScrollY-(future-1)*w.BaseScrollStep); supported {
+			if actor.secondNode != nil {
+				camera := w.ScrollY - (future-1)*w.BaseScrollStep
+				predicted = CollisionRect{Left: actor.secondNode.TileX * 16, Right: actor.secondNode.TileX*16 + 15, Top: actor.secondNode.TileY*16 - camera, Bottom: actor.secondNode.TileY*16 - camera + 15}
+			} else if view, supported := demoActorPrediction(w, actor, future, w.ScrollY-(future-1)*w.BaseScrollStep); supported {
 				if !view.Active || !view.Visible {
 					continue
 				}

@@ -1387,3 +1387,19 @@ still completes only level one: repeated tag284 contact in the second arena
 exhausts both legal continues at 676.25 seconds. It never reaches level three.
 That controller limitation remains separate from the passing reference route
 and the source-state corrections.
+
+## Terrain-only second-arena presentation targets
+
+The second arena's nodes are rendered through mutable terrain; their ordinary
+actor visibility flag remains false. Presentation targeting previously rejected
+them before examining their real open collider, so the selective trigger missed
+eligible defenses. It now recognizes an active open node only when both defense
+streams are not shielding it, and predicts its map-anchored rectangle at the
+future camera position.
+
+The original-resource regression fails before the target correction and passes
+afterward. An actual ordinary point shot reduces the node's native health, while
+the shielded node still produces no otherwise-empty firing opportunity. Target
+recognition leaves player, random state and health unchanged; damage remains
+owned by the source projectile callback. Existing empty/immune/terrain trigger
+checks and the complete resource/native engine suite pass.
