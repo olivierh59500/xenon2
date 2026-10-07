@@ -345,3 +345,21 @@ moving-list pieces with two vulnerable ends. The turret retains its eight-state
 spin-up, one-octant aiming turn, carry-triggered fire, original shot artwork and
 conditional neighboring-tile changes. Exported-resource tests exercise both
 families and their shared allocator behavior.
+
+The radial terrain turret adds 920 source update comparisons. Its bursts create
+eight animated projectiles in descending direction order, while the tile
+animation advances every two gameplay passes. Six additional damage cases
+check its five-hundred-point reward and neighboring-tile restoration.
+
+Five hundred and twelve contact cases distinguish the side seekers' displacement
+point probe from the mouth creatures' sprite rectangle. They include dive and
+invulnerability states and the side seekers' expiry explosion. Mouth creatures
+enter the moving-list tail; side seekers enter its head. Their initialized slot
+state and score values are checked with exported resources.
+
+Twenty middle/final core damage cases additionally compare 450 created cash and
+explosion entities, including their creation order, coordinates and final shared
+random state. Middle defeat creates explosions before cash; final defeat creates
+cash first. Nonlethal final-core damage selects the original health-dependent
+image from its twelve-entry table. The common explosion factory also retains
+its immediate audio dispatch alongside the two queued requests.

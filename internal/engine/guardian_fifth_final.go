@@ -148,6 +148,9 @@ func (s *FifthFinalGuardianState) DamagePart(group *visualassets.GuardianGroup, 
 		result := ApplyEnemyDamage(s.CoreHealth, amount)
 		s.CoreHealth = result.Health
 		s.Parts[0].Health = int(result.Health)
+		if denominator := group.MotionParameters["core_health"]; !result.Destroyed && len(group.Components[index].HeadingFrames) == 12 && denominator != 0 {
+			part.Sprite = group.Components[index].HeadingFrames[int(result.Health)*11/denominator]
+		}
 		if result.Destroyed {
 			s.Defeated = true
 			event.Defeated = true

@@ -44,6 +44,8 @@ func enrichFifthGuardianArt(level []byte, group *GuardianGroup, add func(int) (s
 			if part.ResourceTag == 0x118 {
 				table = 0x565c2
 			}
+		case "final-weak-point":
+			table, count = 0x56276, 12
 		}
 		if table != 0 {
 			for frame := 0; frame < count; frame++ {
@@ -54,7 +56,9 @@ func enrichFifthGuardianArt(level []byte, group *GuardianGroup, add func(int) (s
 				}
 				part.HeadingFrames = append(part.HeadingFrames, name)
 			}
-			part.Sprite = part.HeadingFrames[0]
+			if part.Behavior != "final-weak-point" {
+				part.Sprite = part.HeadingFrames[0]
+			}
 		}
 	}
 	for _, entry := range []struct {

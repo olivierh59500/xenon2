@@ -231,6 +231,7 @@ func (w *World) damageFifthGuardian(actor *WorldActor, amount uint16) {
 				}
 			}
 			w.LevelFinished = true
+			w.spawnExitCash(event.Cash)
 			w.spawnSecondRandomExplosions(event.Explosions, 0, 0, 320, 192)
 		} else {
 			for row := 141; row < 151; row++ {
@@ -239,8 +240,8 @@ func (w *World) damageFifthGuardian(actor *WorldActor, amount uint16) {
 				}
 			}
 			w.spawnSecondRandomExplosions(event.Explosions, 112, 2256-w.ScrollY, 96, 160)
+			w.spawnExitCash(event.Cash)
 		}
-		w.spawnExitCash(event.Cash)
 	}
 	w.storeActorResidue(actor)
 }
