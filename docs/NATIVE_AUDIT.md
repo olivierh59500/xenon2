@@ -1117,3 +1117,12 @@ the middle guardian. Its assertion still requires preserving the carried ship
 and reports the precise state. This changes the earlier third-middle success
 claim; it is not hidden by adding lives, skipping collisions or weakening the
 survival requirement. Full-campaign automatic completion remains unproven.
+
+The complete GPU/audio frontend suite passes in 93.026 seconds with that one
+known optional no-loss regression explicitly excluded. The unfiltered run
+retains its failure. Engine, resource import/export, sound, presentation, shop
+and input suites pass. Desktop rebuild and Android touch lifecycle checks pass.
+The corrected ARM64 debug APK verifies its signature, installs on the USB
+Pixel 10a and cold-launches successfully. Its process remains alive and the
+device crash log contains no Xenon 2 entry; on-device visual/touch inspection
+was not repeated while locked. Generated APK and recordings remain excluded.
