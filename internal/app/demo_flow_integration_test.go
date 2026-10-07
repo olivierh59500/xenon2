@@ -191,19 +191,20 @@ func verifyDemoFirstTwoLevels(t *testing.T, refreshes int) {
 
 func TestDemoMenuStartsAnUnaidedSinglePlayerSession(t *testing.T) {
 	g := frontendGame(t)
+	g.Config.Level = 5
 	g.Config.Cheats = engine.CheatOptions{InfiniteLives: true, InfiniteEnergy: true, InfiniteMoney: true}
 	g.applyCheatOptions()
 	for range 4 {
 		advanceFrontend(t, g, inputFrame{downPressed: true})
 	}
 	advanceFrontend(t, g, inputFrame{menuConfirm: true})
-	if !g.DemoActive() || g.Config.Cheats.Enabled() || g.pendingPlayers != 1 {
-		t.Fatal("demo menu reused trainer state or two-player admission")
+	if !g.DemoActive() || g.Config.Cheats.Enabled() || g.Config.Level != 1 || g.pendingPlayers != 1 {
+		t.Fatal("demo menu reused trainer state, starting level or two-player admission")
 	}
 	for update := 0; update < 3600; update++ {
 		advanceFrontend(t, g, inputFrame{})
 		if d, ok := g.Driver.(*worldDriver); ok && d.session != nil && !g.View.Ready && !g.backdropOnly && d.world.Frame > 10 {
-			if d.session.PlayerCount != 1 || d.world.Cheats.Enabled() || d.diagnostic {
+			if d.session.PlayerCount != 1 || d.world.Level.Number != 1 || d.world.Cheats.Enabled() || d.diagnostic {
 				t.Fatal("demo menu bypassed ordinary unaided admission")
 			}
 			return

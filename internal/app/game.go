@@ -526,6 +526,7 @@ func (g *Game) activateMenu() {
 	if g.menu == 4 {
 		g.Config.Demo = true
 		g.Config.Cheats = engine.CheatOptions{}
+		g.Config.Level = 1
 		g.applyCheatOptions()
 		g.demo = nil
 		g.menu = 0

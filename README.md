@@ -20,7 +20,7 @@ in progress; this build is not yet the complete playable game.
 GOWORK=off go run ./cmd/xenon2 -demo
 ```
 
-The menu also offers DEMO MODE. This starts an ordinary single-player session
+The menu also offers DEMO MODE. This starts an ordinary single-player session at level one
 with trainer aids disabled. The development pilot uses ordinary movement, fire
 and dive commands. It enters
 through the normal menu and READY, handles score entry and continues, and buys
