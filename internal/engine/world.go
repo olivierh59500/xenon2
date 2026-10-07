@@ -42,6 +42,8 @@ type WorldActor struct {
 	fifthPart                  *visualassets.GuardianComponent
 	fifthSeeking               *FifthSeekingState
 	fifthColumn                *FifthLaserColumnState
+	fifthTile                  *FifthTileState
+	fifthTileGroup             []*WorldActor
 	Binding                    ActorPoolBinding
 	ID                         int
 	Order                      int
@@ -975,6 +977,10 @@ func (w *World) destroyPlayer() {
 }
 
 func (w *World) damageActor(actor *WorldActor, amount uint16) {
+	if actor.fifthTile != nil {
+		w.damageFifthTile(actor, amount)
+		return
+	}
 	if actor.fourthCrawler != nil {
 		w.damageFourthCrawler(actor, amount)
 		return
@@ -1098,6 +1104,9 @@ func (w *World) spawnEnemyShot(x, y int, shot EnemyShot) {
 }
 
 func (w *World) spawnFixed(record visualassets.FixedEncounter) {
+	if w.spawnFifthTile(record) {
+		return
+	}
 	if w.spawnFourthCrawler(record) {
 		return
 	}

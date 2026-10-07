@@ -13,7 +13,7 @@ establish that the corresponding encounter is playable.
 | 2 | Terrain cannon, bouncing attackers, hatches, both pod emitters and their creatures, middle defense waves/nodes, final body and transforming minions | Complete source effects and full playthrough comparisons |
 | 3 | Terrain cannons, sweeping attacker, turning projectile, extending chain, tile-edge crawler, middle flying guardian, final worm and conditional scenery | Full phase-order and playthrough comparisons |
 | 4 | Terrain cannon, extending beam, nest crawler, twenty-part middle guardian and nineteen-part final guardian | Two stage-generated encounter families; full playthrough comparisons |
-| 5 | Terrain cannon, vertical attacker, aiming projectile, both compound guardians, growing laser columns and mouth creatures | Five additional fixed selector families; full playthrough comparisons |
+| 5 | Terrain cannon, destructible barrier, aiming turret, vertical attacker, aiming projectile, both compound guardians, growing laser columns and mouth creatures | Three additional fixed selector families; full playthrough comparisons |
 
 The supplied encounter streams contain respectively 5, 6, 7, 6 and 10 selectors,
 including the checkpoint selector in each level. Every selector requires an

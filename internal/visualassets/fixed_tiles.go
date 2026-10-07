@@ -21,25 +21,48 @@ type FixedTileVariant struct {
 	Destroyed     TilePatch   `json:"destroyed"`
 }
 
+// FixedTilePart describes one independently collidable piece of a tile assembly.
+type FixedTilePart struct {
+	ResourceTag int          `json:"resource_tag"`
+	OffsetX     int          `json:"offset_x"`
+	Collision   CollisionBox `json:"collision"`
+	Damageable  bool         `json:"damageable"`
+	Initial     TilePatch    `json:"initial"`
+	Frames      []TilePatch  `json:"frames"`
+	Flash       TilePatch    `json:"flash"`
+}
+
+// ConditionalTileReplacement changes a neighbouring column only when its
+// leading tile still has the original expected value.
+type ConditionalTileReplacement struct {
+	ColumnOffset int       `json:"column_offset"`
+	Before       uint16    `json:"before"`
+	After        TilePatch `json:"after"`
+}
+
 type FixedTileKind struct {
-	Kind                int                `json:"kind"`
-	Health              int                `json:"health"`
-	Collision           CollisionBox       `json:"collision"`
-	Mode                string             `json:"mode"`
-	FrameDuration       int                `json:"frame_duration"`
-	Variants            []FixedTileVariant `json:"variants"`
-	FireRate            int                `json:"fire_rate,omitempty"`
-	ShotVariant         int                `json:"shot_variant,omitempty"`
-	ShotSpeed           int                `json:"shot_speed,omitempty"`
-	Behavior            string             `json:"behavior,omitempty"`
-	PhaseLength         int                `json:"phase_length,omitempty"`
-	ShotPhase           int                `json:"shot_phase,omitempty"`
-	FrameBeforeStep     bool               `json:"frame_before_step,omitempty"`
-	IdleRandomThreshold bool               `json:"idle_random_threshold,omitempty"`
-	ShotDirections      [2]uint8           `json:"shot_directions,omitempty"`
-	ShotOffsetX         [2]int             `json:"shot_offset_x,omitempty"`
-	ShotOffsetY         [2]int             `json:"shot_offset_y,omitempty"`
-	TriggerScreenY      int                `json:"trigger_screen_y,omitempty"`
+	Kind                int                          `json:"kind"`
+	Health              int                          `json:"health"`
+	Collision           CollisionBox                 `json:"collision"`
+	Mode                string                       `json:"mode"`
+	FrameDuration       int                          `json:"frame_duration"`
+	Variants            []FixedTileVariant           `json:"variants"`
+	FireRate            int                          `json:"fire_rate,omitempty"`
+	ShotVariant         int                          `json:"shot_variant,omitempty"`
+	ShotSpeed           int                          `json:"shot_speed,omitempty"`
+	Behavior            string                       `json:"behavior,omitempty"`
+	PhaseLength         int                          `json:"phase_length,omitempty"`
+	ShotPhase           int                          `json:"shot_phase,omitempty"`
+	FrameBeforeStep     bool                         `json:"frame_before_step,omitempty"`
+	IdleRandomThreshold bool                         `json:"idle_random_threshold,omitempty"`
+	ShotDirections      [2]uint8                     `json:"shot_directions,omitempty"`
+	ShotOffsetX         [2]int                       `json:"shot_offset_x,omitempty"`
+	ShotOffsetY         [2]int                       `json:"shot_offset_y,omitempty"`
+	TriggerScreenY      int                          `json:"trigger_screen_y,omitempty"`
+	Parts               []FixedTilePart              `json:"parts,omitempty"`
+	InitialChanges      []ConditionalTileReplacement `json:"initial_changes,omitempty"`
+	DestroyedChanges    []ConditionalTileReplacement `json:"destroyed_changes,omitempty"`
+	DirectionalOffsets  [8][2]int                    `json:"directional_offsets,omitempty"`
 }
 
 type FixedTiles struct {
@@ -59,7 +82,7 @@ func DecodeFixedTiles(levelNumber int, data []byte) (*FixedTiles, []uint16, erro
 	case 4:
 		return decodeFourthLevelFixedTiles(data)
 	case 5:
-		return decodeSmallCannonTiles(data, 2, 0x68, 0x57524-levelBase, 0x57514-levelBase, 0x57534-levelBase, 0x57536-levelBase, 8, 1)
+		return decodeFifthFixedTiles(data)
 	default:
 		return nil, nil, nil
 	}
@@ -308,6 +331,32 @@ func RemapFixedTiles(fixed *FixedTiles, ids map[uint16]uint16) error {
 		return nil
 	}
 	for i := range fixed.Kinds {
+		kind := &fixed.Kinds[i]
+		for j := range kind.Parts {
+			part := &kind.Parts[j]
+			for _, patch := range []*TilePatch{&part.Initial, &part.Flash} {
+				if err := convert(patch); err != nil {
+					return err
+				}
+			}
+			for k := range part.Frames {
+				if err := convert(&part.Frames[k]); err != nil {
+					return err
+				}
+			}
+		}
+		for _, changes := range [][]ConditionalTileReplacement{kind.InitialChanges, kind.DestroyedChanges} {
+			for j := range changes {
+				id, ok := ids[changes[j].Before]
+				if !ok && changes[j].Before != 0 {
+					return fmt.Errorf("conditional tile is missing from the atlas")
+				}
+				changes[j].Before = id
+				if err := convert(&changes[j].After); err != nil {
+					return err
+				}
+			}
+		}
 		for j := range fixed.Kinds[i].Variants {
 			variant := &fixed.Kinds[i].Variants[j]
 			if err := convert(&variant.Initial); err != nil {

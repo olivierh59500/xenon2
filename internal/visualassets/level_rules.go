@@ -25,6 +25,7 @@ type LevelRules struct {
 	EnemyShots               SpriteAtlas        `json:"enemy_shots"`
 	TileShotSprites          [2]string          `json:"tile_shot_sprites,omitempty"`
 	TileShotAnimations       [2]ActorAnimation  `json:"tile_shot_animations,omitempty"`
+	AimingTileShotSprites    []string           `json:"aiming_tile_shot_sprites,omitempty"`
 }
 
 // ScrollTransition names a verified stage event and its resulting bounds. The
@@ -109,6 +110,10 @@ func DecodeLevelRules(number int, level, common []byte, palette [16][4]uint8, en
 	}
 	table, choices := pathTable-32, 5
 	if number == 5 {
+		rules.AimingTileShotSprites, err = decodeFifthAimingTileShots(level, add)
+		if err != nil {
+			return nil, err
+		}
 		table, choices = pathTable-24, 4
 	}
 	if table < 0 {

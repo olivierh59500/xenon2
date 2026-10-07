@@ -338,3 +338,10 @@ arena tiles, persistent checkpoint damage and twenty final cash coins. Column
 render descriptors preserve the source cap artwork and twelve-pixel palette
 pattern. The ordinary fixed encounter families and complete runtime comparisons
 remain separate unfinished work.
+
+The fifth-level barrier and aiming turret additionally match 7,744 source update
+states and sixty damage/map cases. The barrier uses three separately allocated
+moving-list pieces with two vulnerable ends. The turret retains its eight-state
+spin-up, one-octant aiming turn, carry-triggered fire, original shot artwork and
+conditional neighboring-tile changes. Exported-resource tests exercise both
+families and their shared allocator behavior.
