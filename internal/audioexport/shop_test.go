@@ -40,6 +40,20 @@ func TestPrivateOriginalShopEffects(t *testing.T) {
 		period, volume, enabled int
 	}
 	var current state
+	apply := func(e audio.Event) {
+		switch e.Kind {
+		case "start":
+			current.sample, current.enabled = e.Sample, 1
+		case "loop":
+			current.sample = e.Sample
+		case "stop":
+			current.enabled = 0
+		case "period":
+			current.period = int(e.Period)
+		case "volume":
+			current.volume = int(e.Volume)
+		}
+	}
 	var sequence audio.Sequence
 	family, effect, age, index := -1, -1, 0, 0
 	for _, row := range rows[1:] {
@@ -53,6 +67,9 @@ func TestPrivateOriginalShopEffects(t *testing.T) {
 				position += 23
 			}
 			sequence = bank.Effects[position]
+			for _, event := range sequence.StartEvents {
+				apply(event)
+			}
 		}
 		if age == sequence.Ticks && sequence.LoopTick >= 0 {
 			age = sequence.LoopTick
@@ -62,20 +79,7 @@ func TestPrivateOriginalShopEffects(t *testing.T) {
 			}
 		}
 		for index < len(sequence.Events) && sequence.Events[index].Tick == age {
-			e := sequence.Events[index]
-			switch e.Kind {
-			case "start":
-				current.sample = e.Sample
-				current.enabled = 1
-			case "loop":
-				current.sample = e.Sample
-			case "stop":
-				current.enabled = 0
-			case "period":
-				current.period = int(e.Period)
-			case "volume":
-				current.volume = int(e.Volume)
-			}
+			apply(sequence.Events[index])
 			index++
 		}
 		age++

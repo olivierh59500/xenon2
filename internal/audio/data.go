@@ -29,11 +29,13 @@ type Event struct {
 
 // Sequence is a finite or looping list of already resolved voice events.
 type Sequence struct {
-	ID             string  `json:"id"`
-	Ticks          int     `json:"ticks"`
-	LoopTick       int     `json:"loop_tick"`
-	PhaseIncrement byte    `json:"phase_increment,omitempty"`
-	Events         []Event `json:"events"`
+	ID             string `json:"id"`
+	Ticks          int    `json:"ticks"`
+	LoopTick       int    `json:"loop_tick"`
+	PhaseIncrement byte   `json:"phase_increment,omitempty"`
+	// StartEvents apply at effect admission, before the first interrupt advances age.
+	StartEvents []Event `json:"start_events,omitempty"`
+	Events      []Event `json:"events"`
 }
 
 // Bank contains no source addresses, executable bytes or tracker bytecode.
@@ -58,17 +60,18 @@ func (b *Bank) Validate(waveforms map[string][]byte) error {
 		}
 		ids[s.ID] = true
 	}
-	for _, group := range [][]Sequence{b.Music, b.Effects} {
+	for groupIndex, group := range [][]Sequence{b.Music, b.Effects} {
 		for _, s := range group {
 			if s.ID == "" || s.Ticks < 1 || s.LoopTick < -1 || s.LoopTick >= s.Ticks {
 				return fmt.Errorf("invalid audio sequence %q", s.ID)
 			}
-			last := -1
-			for _, e := range s.Events {
-				if e.Tick < last || e.Tick < 0 || e.Tick >= s.Ticks || e.Channel < 0 || e.Channel >= 4 {
+			if groupIndex == 0 && len(s.StartEvents) != 0 {
+				return fmt.Errorf("unsupported music admission events in %q", s.ID)
+			}
+			validateEvent := func(e Event) error {
+				if e.Channel < 0 || e.Channel >= 4 {
 					return fmt.Errorf("invalid audio event in %q", s.ID)
 				}
-				last = e.Tick
 				switch e.Kind {
 				case "start", "loop":
 					if !ids[e.Sample] {
@@ -85,6 +88,25 @@ func (b *Bank) Validate(waveforms map[string][]byte) error {
 				case "stop":
 				default:
 					return fmt.Errorf("unsupported voice event %q", e.Kind)
+				}
+				return nil
+			}
+			for _, e := range s.StartEvents {
+				if e.Tick != 0 {
+					return fmt.Errorf("invalid audio admission event in %q", s.ID)
+				}
+				if err := validateEvent(e); err != nil {
+					return err
+				}
+			}
+			last := -1
+			for _, e := range s.Events {
+				if e.Tick < last || e.Tick < 0 || e.Tick >= s.Ticks {
+					return fmt.Errorf("invalid audio event in %q", s.ID)
+				}
+				last = e.Tick
+				if err := validateEvent(e); err != nil {
+					return err
 				}
 			}
 		}

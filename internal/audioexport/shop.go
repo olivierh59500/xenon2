@@ -38,8 +38,8 @@ func DecodeShopAudio(data []byte) (*audio.Bank, map[string][]byte, error) {
 		if stop < 0 {
 			return nil, nil, fmt.Errorf("shop speech timer overflow")
 		}
-		events := []audio.Event{{Tick: 0, Channel: 0, Kind: "period", Period: period}, {Tick: 0, Channel: 0, Kind: "volume", Volume: 64}, {Tick: 0, Channel: 0, Kind: "start", Sample: id}, {Tick: 0, Channel: 0, Kind: "loop", Sample: "shop-silence"}, {Tick: stop, Channel: 0, Kind: "stop"}}
-		c.bank.Effects = append(c.bank.Effects, audio.Sequence{ID: id, Ticks: stop + 1, LoopTick: -1, Events: events})
+		start := []audio.Event{{Channel: 0, Kind: "period", Period: period}, {Channel: 0, Kind: "volume", Volume: 64}, {Channel: 0, Kind: "start", Sample: id}, {Channel: 0, Kind: "loop", Sample: "shop-silence"}}
+		c.bank.Effects = append(c.bank.Effects, audio.Sequence{ID: id, Ticks: stop + 1, LoopTick: -1, StartEvents: start, Events: []audio.Event{{Tick: stop, Channel: 0, Kind: "stop"}}})
 		cursor += 6 + n
 	}
 	if err := c.bank.Validate(c.waveforms); err != nil {

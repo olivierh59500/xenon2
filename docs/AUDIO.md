@@ -129,8 +129,12 @@ ending requests remain queued on voice two. The merchant's effect termination
 waits for the next replay tick rather than clearing voices immediately. A
 mid-tick PCM test preserves the 383 remaining output frames before termination.
 
-Direct sampled setup still has a known latency: its initial sample registers
-are applied at the next tick instead of at the direct call. Exporting separate
-start events is required to distinguish immediate sample setup from synthesized
-effect envelopes. This remaining limitation is not covered by comparing two
-instances of the current Stream at the same direct-call boundary.
+Sampled effects now export separate admission events for the initial sample,
+period, volume and reload buffer. Direct calls apply them immediately, including
+inside an unfinished audio tick; queued calls apply them at their next dispatch.
+IRQ timer events keep their original ages. Synthesized effects retain their
+first envelope update on the next interrupt. A signed first-sample PCM check
+verifies the direct onset without using another instance of the same player.
+All original gameplay/shop effect trace rows still match after the schema
+extension. Previous version-one banks without admission events remain readable;
+rebuilding local resources enables the corrected sampled timing.

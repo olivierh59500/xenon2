@@ -89,12 +89,19 @@ func (s *Stream) PlayEffect(id string, channel int) error {
 	}
 	for i := range s.bank.Effects {
 		if s.bank.Effects[i].ID == id {
-			s.effects[channel] = playback{sequence: &s.bank.Effects[i], active: true}
-			s.voices[channel] = voice{}
+			s.startEffect(&s.bank.Effects[i], channel)
 			return nil
 		}
 	}
 	return fmt.Errorf("unknown audio effect %q", id)
+}
+
+func (s *Stream) startEffect(sequence *Sequence, channel int) {
+	s.effects[channel] = playback{sequence: sequence, active: true}
+	s.voices[channel] = voice{}
+	for _, event := range sequence.StartEvents {
+		s.apply(&s.voices[channel], event)
+	}
 }
 
 // QueueEffect dispatches at the next fifty-Hz tick. Multiple requests for one
@@ -221,8 +228,7 @@ func (s *Stream) tick() {
 	}
 	for ch, sequence := range s.queued {
 		if sequence != nil {
-			s.effects[ch] = playback{sequence: sequence, active: true}
-			s.voices[ch] = voice{}
+			s.startEffect(sequence, ch)
 			s.queued[ch] = nil
 		}
 	}

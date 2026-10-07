@@ -163,14 +163,14 @@ func (c *compiler) sampledEffects() error {
 		}
 		// The effect timer is decremented by the first VBL after the trigger.
 		ticks--
-		events := []audio.Event{{Tick: 0, Channel: 0, Kind: "period", Period: period}, {Tick: 0, Channel: 0, Kind: "volume", Volume: 64}, {Tick: 0, Channel: 0, Kind: "start", Sample: id}, {Tick: 0, Channel: 0, Kind: "loop", Sample: "silence"}, {Tick: ticks, Channel: 0, Kind: "stop"}}
-		sequence := audio.Sequence{ID: id, Ticks: ticks + 1, LoopTick: -1, Events: events}
+		start := []audio.Event{{Channel: 0, Kind: "period", Period: period}, {Channel: 0, Kind: "volume", Volume: 64}, {Channel: 0, Kind: "start", Sample: id}, {Channel: 0, Kind: "loop", Sample: "silence"}}
+		sequence := audio.Sequence{ID: id, Ticks: ticks + 1, LoopTick: -1, StartEvents: start, Events: []audio.Event{{Tick: ticks, Channel: 0, Kind: "stop"}}}
 		// This effect is intentionally sustained until another event replaces it.
 		if c.data[0x1b352+i*16+13] != 0 {
 			sequence.Ticks = 2
 			sequence.LoopTick = 1
-			sequence.Events = events[:4]
-			sequence.Events[3].Sample = id
+			sequence.Events = nil
+			sequence.StartEvents[3].Sample = id
 		}
 		c.bank.Effects = append(c.bank.Effects, sequence)
 		cursor += 6 + n

@@ -617,3 +617,17 @@ voices. The stream now preserves unaffected DMA positions, including queued
 termination. Independent PCM tests distinguish both immediate and queued stops
 from a continuous reference. Live emulator soundtrack/filter comparison remains
 separate.
+
+## Immediate sampled-effect admission
+
+Eighteen gameplay samples and four merchant samples now carry separate named
+admission events. The original initial period, volume, sample and reload-buffer
+setup applies at a direct call rather than waiting for the next IRQ. Queued
+admission performs that setup on its dispatch IRQ; sampled termination ages
+and synthesized envelopes remain unchanged. Independent mid-tick PCM tests
+check the known signed first sample and distinguish these three boundaries.
+
+After rebuilding the excluded audio banks, all 12,300 gameplay-effect, 8,100
+merchant-effect, 18,000 main-score and 6,000 menu-score reference rows still
+match. JSON normalization verifies that only the initial four events moved for
+the sampled sequences; other descriptors and timer events are unchanged.
