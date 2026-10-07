@@ -36,6 +36,9 @@ func (p *DemoPilot) NormalInput(w *World) Input {
 	if p.navigation != nil && p.navigation.world != w {
 		p.retreatGoal = 0
 	}
+	if input, handled := p.FifthBarrierInput(w); handled {
+		return input
+	}
 	if input, handled := p.FourthFinalInput(w); handled {
 		return input
 	}
