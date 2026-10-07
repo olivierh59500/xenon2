@@ -324,14 +324,24 @@ func (g *Game) drawLevel(screen *ebiten.Image) {
 	}
 	if needsMask {
 		g.graphics.terrainMask.Clear()
-		for row := max(0, first); row < min(l.Terrain.Rows, last); row++ {
+		maskTiles, maskCamera := tiles, camera
+		if len(g.View.ActorTerrainMap) == len(tiles) {
+			maskTiles = g.View.ActorTerrainMap
+			maskCamera = lerp(g.previous.ActorCameraY, g.View.ActorCameraY, alpha)
+			if g.previous.Level != g.View.Level {
+				maskCamera = g.View.ActorCameraY
+			}
+		}
+		maskFirst := int(math.Floor(maskCamera / 16))
+		maskLast := int(math.Ceil((maskCamera + PlayfieldHeight) / 16))
+		for row := max(0, maskFirst); row < min(l.Terrain.Rows, maskLast); row++ {
 			for column := 0; column < l.Terrain.Columns; column++ {
-				tile := g.graphics.terrainMaskTiles[level-1][tiles[row*l.Terrain.Columns+column]]
+				tile := g.graphics.terrainMaskTiles[level-1][maskTiles[row*l.Terrain.Columns+column]]
 				if tile == nil {
 					continue
 				}
 				op := ebiten.DrawImageOptions{}
-				op.GeoM.Translate(float64(column*16), float64(row*16)-camera)
+				op.GeoM.Translate(float64(column*16), float64(row*16)-maskCamera)
 				g.graphics.terrainMask.DrawImage(tile, &op)
 			}
 		}

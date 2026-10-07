@@ -7,6 +7,7 @@ import (
 	"os"
 	"testing"
 	"xenon2/internal/engine"
+	"xenon2/internal/visualassets"
 )
 
 func TestOriginalPaletteShaderCompiles(t *testing.T) {
@@ -87,6 +88,63 @@ func TestWrapInterpolationKeepsParallaxContinuous(t *testing.T) {
 	}
 	if got := wrapLerp(18, 20, .5, 192); got != 19 {
 		t.Fatal(got)
+	}
+}
+
+func TestCompoundPieceHistoriesReachRendererSnapshots(t *testing.T) {
+	dir := os.Getenv("XENON2_RUNTIME_TEST_DIR")
+	if dir == "" {
+		t.Skip("local exported resources not supplied")
+	}
+	bundle, err := LoadFS(os.DirFS(dir))
+	if err != nil {
+		t.Fatal(err)
+	}
+	driver, err := newWorldDriver(bundle, 1)
+	if err != nil {
+		t.Fatal(err)
+	}
+	// A compound container carries its own piece endpoints. The renderer must
+	// not replace them with the container's coordinates or drop the histories.
+	driver.world.Actors = []*engine.WorldActor{{ID: 9999, Active: true, Visible: true, ActorList: "moving", DrawKind: "assembly",
+		Extras:       []engine.WorldSpriteAttachment{{Atlas: "common", Sprite: bundle.Common.Sprites[0].Name, X: 90, Y: 45, PreviousX: 74, PreviousY: 44, Interpolate: true}},
+		TileOverlays: []engine.WorldTileOverlay{{Patch: visualassets.TilePatch{Columns: 1, Rows: 1, Tiles: []uint16{0}}, X: 60, Y: 45, PreviousX: 60, PreviousY: 44, Interpolate: true}},
+	}}
+	frame := driver.Frame()
+	pieces := 0
+	for _, sprite := range frame.Sprites {
+		if sprite.ID != 9999 {
+			continue
+		}
+		if !sprite.Interpolate || sprite.PreviousY != 44 || sprite.Y != 45 || sprite.Kind == "assembly" {
+			t.Fatal("compound history was lost or an empty container was emitted")
+		}
+		pieces++
+	}
+	if pieces != 2 {
+		t.Fatalf("compound snapshot contains%d pieces instead of2", pieces)
+	}
+}
+
+func TestBackdropAndActorMaskMapsRemainSeparateInSnapshot(t *testing.T) {
+	dir := os.Getenv("XENON2_RUNTIME_TEST_DIR")
+	if dir == "" {
+		t.Skip("local exported resources not supplied")
+	}
+	bundle, err := LoadFS(os.DirFS(dir))
+	if err != nil {
+		t.Fatal(err)
+	}
+	driver, err := newWorldDriver(bundle, 1)
+	if err != nil {
+		t.Fatal(err)
+	}
+	w := driver.world
+	w.RenderTerrainMap[0], w.ActorRenderTerrainMap[0], w.Level.Terrain.Map[0] = 1, 2, 3
+	w.RenderScrollY, w.ActorRenderScrollY = 4608, 4592
+	frame := driver.Frame()
+	if frame.TerrainMap[0] != 1 || frame.ActorTerrainMap[0] != 2 || frame.CameraY != 4608 || frame.ActorCameraY != 4592 {
+		t.Fatal("source draw phases were merged with late encounter gameplay state")
 	}
 }
 

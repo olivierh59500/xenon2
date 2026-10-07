@@ -83,6 +83,9 @@ type WorldActor struct {
 	secondGuardian             bool
 	firstSegment               int
 	fixedKind                  *visualassets.FixedSpriteKind
+	beamLayout                 FixedSpriteRenderLayout
+	beamLayoutValid            bool
+	snapDisplayHistory         bool
 	fixedState                 FixedSpriteState
 	fixedAiming                *AnimatedAimingFixedProjectile
 	fixedTileState             *FixedTileState
@@ -120,13 +123,17 @@ type WorldActor struct {
 }
 
 type WorldSpriteAttachment struct {
-	Sprite, Atlas string
-	X, Y          float64
+	Sprite, Atlas        string
+	X, Y                 float64
+	PreviousX, PreviousY float64
+	Interpolate          bool
 }
 
 type WorldTileOverlay struct {
-	Patch visualassets.TilePatch
-	X, Y  float64
+	Patch                visualassets.TilePatch
+	X, Y                 float64
+	PreviousX, PreviousY float64
+	Interpolate          bool
 }
 
 type WorldProjectile struct {
@@ -178,6 +185,9 @@ type World struct {
 	Shadows                          [4]PlayerShadowState
 	ScrollY, PreviousScrollY         int
 	RenderScrollY                    int
+	RenderTerrainMap                 []uint16
+	ActorRenderScrollY               int
+	ActorRenderTerrainMap            []uint16
 	ScrollDelta                      int
 	BaseScrollStep                   int
 	BackgroundY, PreviousBackgroundY int
@@ -449,6 +459,8 @@ func NewWorld(data LevelData) (*World, error) {
 	if err := w.initializeFifthStage(); err != nil {
 		return nil, err
 	}
+	w.captureRenderTerrain()
+	w.captureActorRenderTerrain()
 	return w, nil
 }
 
@@ -511,6 +523,7 @@ func (w *World) Step(input Input) error {
 	w.PreviousPlayer = w.Player
 	w.PreviousScrollY = w.ScrollY
 	w.RenderScrollY = w.ScrollY
+	w.captureRenderTerrain()
 	w.PreviousBackgroundY = w.BackgroundY
 	w.advanceBackgroundStars()
 	if difference := w.Score - w.DisplayScore; difference > 0 {
@@ -729,6 +742,7 @@ func (w *World) Step(input Input) error {
 	if err := w.advanceActorPhase(ActorPoolScenery, input); err != nil {
 		return err
 	}
+	w.captureActorRenderTerrain()
 	w.advanceTimedEquipment()
 	if w.Dive.Phase != 0 || !w.PlayerAlive {
 		if w.MaterializationFrames < 16 {

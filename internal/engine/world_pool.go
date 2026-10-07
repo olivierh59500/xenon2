@@ -235,6 +235,16 @@ func (w *World) releaseWorldBinding(binding *ActorPoolBinding) {
 }
 
 func (w *World) finishActorUpdate(actor *WorldActor) {
+	if actor.snapDisplayHistory {
+		actor.PreviousX, actor.PreviousY = actor.X, actor.Y
+		for i := range actor.Extras {
+			actor.Extras[i].PreviousX, actor.Extras[i].PreviousY = actor.Extras[i].X, actor.Extras[i].Y
+		}
+		for i := range actor.TileOverlays {
+			actor.TileOverlays[i].PreviousX, actor.TileOverlays[i].PreviousY = actor.TileOverlays[i].X, actor.TileOverlays[i].Y
+		}
+		actor.snapDisplayHistory = false
+	}
 	w.storeActorResidue(actor)
 }
 

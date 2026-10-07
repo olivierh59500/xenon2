@@ -79,6 +79,8 @@ type SceneFrame struct {
 	Diagnostic                               bool
 	PlayerAlive                              bool
 	TerrainMap                               []uint16
+	ActorTerrainMap                          []uint16
+	ActorCameraY                             float64
 }
 
 // Driver is the boundary between the pure Go game rules and their renderer.
@@ -425,6 +427,7 @@ func (g *Game) rememberFrameHistory() {
 	g.previous.Sprites = nil
 	g.previous.HUD = nil
 	g.previous.TerrainMap = nil
+	g.previous.ActorTerrainMap = nil
 }
 
 func (g *Game) deliverEffectActivity() {

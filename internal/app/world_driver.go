@@ -102,10 +102,10 @@ func (d *worldDriver) Frame() SceneFrame {
 				d.sprites = append(d.sprites, view)
 			}
 			for _, overlay := range actor.TileOverlays {
-				d.sprites = append(d.sprites, SpriteView{ID: actor.ID, Layer: layer, Kind: "tiles", Patch: overlay.Patch, X: overlay.X, Y: overlay.Y})
+				d.sprites = append(d.sprites, SpriteView{ID: actor.ID, Layer: layer, Kind: "tiles", Patch: overlay.Patch, X: overlay.X, Y: overlay.Y, PreviousX: overlay.PreviousX, PreviousY: overlay.PreviousY, Interpolate: overlay.Interpolate})
 			}
 			for _, extra := range actor.Extras {
-				d.sprites = append(d.sprites, SpriteView{ID: actor.ID, Layer: layer, Atlas: extra.Atlas, Sprite: extra.Sprite, X: extra.X, Y: extra.Y})
+				d.sprites = append(d.sprites, SpriteView{ID: actor.ID, Layer: layer, Atlas: extra.Atlas, Sprite: extra.Sprite, X: extra.X, Y: extra.Y, PreviousX: extra.PreviousX, PreviousY: extra.PreviousY, Interpolate: extra.Interpolate})
 			}
 		}
 	}
@@ -204,8 +204,9 @@ func (d *worldDriver) Frame() SceneFrame {
 	for _, item := range w.HUD {
 		d.hud = append(d.hud, SpriteView{Atlas: item.Atlas, Sprite: item.Sprite, X: item.X, Y: item.Y})
 	}
-	frame := SceneFrame{BackgroundStars: w.BackgroundStars, ContinueCredits: w.ContinueCredits, DivePhase: w.RenderDivePhase, Level: w.Level.Number, CameraY: float64(w.RenderScrollY), BackgroundY: float64((192 - w.BackgroundY) % 192), Player: w.Player, PlayerAlive: w.PlayerAlive, PlayerSprite: w.PlayerSprite, Ready: w.Ready, GameOver: w.GameOver, Sprites: d.sprites, TerrainMap: w.Level.Terrain.Map, Score: w.Score, Money: w.Money, Shield: w.Equipment.Shield, Lives: w.Equipment.Lives, Diagnostic: d.diagnostic, FreezeInterpolation: w.ScreenClearFrames > 0, PaletteMask: w.ScreenClearPaletteMask, Shades: w.Equipment.ShadesFrames > 0}
+	frame := SceneFrame{BackgroundStars: w.BackgroundStars, ContinueCredits: w.ContinueCredits, DivePhase: w.RenderDivePhase, Level: w.Level.Number, CameraY: float64(w.RenderScrollY), BackgroundY: float64((192 - w.BackgroundY) % 192), Player: w.Player, PlayerAlive: w.PlayerAlive, PlayerSprite: w.PlayerSprite, Ready: w.Ready, GameOver: w.GameOver, Sprites: d.sprites, TerrainMap: w.RenderTerrainMap, Score: w.Score, Money: w.Money, Shield: w.Equipment.Shield, Lives: w.Equipment.Lives, Diagnostic: d.diagnostic, FreezeInterpolation: w.ScreenClearFrames > 0, PaletteMask: w.ScreenClearPaletteMask, Shades: w.Equipment.ShadesFrames > 0}
 	frame.PlayerNumber, frame.PlayerCount = 1, 1
+	frame.ActorTerrainMap, frame.ActorCameraY = w.ActorRenderTerrainMap, float64(w.ActorRenderScrollY)
 	frame.HUD = d.hud
 	frame.PlayerScores[0] = w.DisplayScore
 	frame.PlayerLives[0] = w.Equipment.Lives

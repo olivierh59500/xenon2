@@ -79,9 +79,14 @@ func (w *World) composeFixedSprite(actor *WorldActor) {
 	}
 	s := &actor.fixedState
 	layout := FixedSpriteBeamLayout(*s)
+	previous := layout
+	if actor.beamLayoutValid {
+		previous = actor.beamLayout
+	}
+	actor.beamLayout, actor.beamLayoutValid = layout, true
 	actor.DrawKind = "assembly"
 	actor.Extras = actor.Extras[:0]
-	actor.Extras = append(actor.Extras, WorldSpriteAttachment{Atlas: "fixed", Sprite: s.Animation.Sprite(FixedSpriteAnimation(*s, *actor.fixedKind)), X: float64(layout.TipX), Y: float64(layout.TipY)})
+	actor.Extras = append(actor.Extras, WorldSpriteAttachment{Atlas: "fixed", Sprite: s.Animation.Sprite(FixedSpriteAnimation(*s, *actor.fixedKind)), X: float64(layout.TipX), Y: float64(layout.TipY), PreviousX: float64(previous.TipX), PreviousY: float64(previous.TipY), Interpolate: true})
 	actor.Sprite = ""
 	actor.TileOverlays = actor.TileOverlays[:0]
 	v, ok := fixedSpriteVariant(*actor.fixedKind, s.Variant)
@@ -89,6 +94,8 @@ func (w *World) composeFixedSprite(actor *WorldActor) {
 		return
 	}
 	for column := 0; column < layout.ShaftColumns; column++ {
-		actor.TileOverlays = append(actor.TileOverlays, WorldTileOverlay{Patch: *v.Cover, X: float64(layout.ShaftX + column*16), Y: float64(layout.ShaftY)})
+		// Keep the native number of shaft tiles for the current pose; only
+		// their placement follows the preceding render endpoint.
+		actor.TileOverlays = append(actor.TileOverlays, WorldTileOverlay{Patch: *v.Cover, X: float64(layout.ShaftX + column*16), Y: float64(layout.ShaftY), PreviousX: float64(previous.ShaftX + column*16), PreviousY: float64(previous.ShaftY), Interpolate: true})
 	}
 }

@@ -4,12 +4,17 @@ import "xenon2/internal/visualassets"
 
 func (w *World) advanceFirstGuardian() {
 	state, actor, art := w.FirstGuardian, w.firstGuardianActor, w.firstGuardianArt
+	wasVisible := actor.Visible
+	actor.PreviousX, actor.PreviousY = actor.X, actor.Y
 	maximum, activate, warning := state.Advance(w.Frame, w.ScrollY, w.MaximumScrollY)
 	w.MaximumScrollY, w.VisitedScrollY = maximum, maximum
 	actor.Active = !state.Defeated
 	actor.Visible = actor.Active && w.ScrollY < 640
 	actor.Collision = state.BodyCollision
 	actor.X, actor.Y = float64(art.BodyX), float64(state.BodyWorldY-w.ScrollY)
+	if !wasVisible {
+		actor.PreviousX, actor.PreviousY = actor.X, actor.Y
+	}
 	if w.firstGuardianBody.Columns == 0 {
 		w.firstGuardianBody = art.Body
 		w.firstGuardianBody.Tiles = append([]uint16(nil), art.Body.Tiles...)
@@ -26,7 +31,7 @@ func (w *World) advanceFirstGuardian() {
 	actor.Flash = state.Flash
 	actor.Extras = actor.Extras[:0]
 	if actor.Visible && len(art.EyeFrames) != 0 {
-		actor.Extras = append(actor.Extras, WorldSpriteAttachment{Atlas: "guardians", Sprite: art.EyeFrames[int(state.EyeClock>>6)%len(art.EyeFrames)], X: float64(art.EyeX), Y: actor.Y + float64(art.EyeOffsetY)})
+		actor.Extras = append(actor.Extras, WorldSpriteAttachment{Atlas: "guardians", Sprite: art.EyeFrames[int(state.EyeClock>>6)%len(art.EyeFrames)], X: float64(art.EyeX), Y: actor.Y + float64(art.EyeOffsetY), PreviousX: float64(art.EyeX), PreviousY: actor.PreviousY + float64(art.EyeOffsetY), Interpolate: true})
 	}
 	if warning {
 		w.SoundRequests[1] = "synthesized-effect-15"

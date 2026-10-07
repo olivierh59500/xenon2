@@ -49,13 +49,24 @@ func (w *World) advanceFourthCrawler(actor *WorldActor) error {
 
 func (w *World) updateFourthCrawlerCover(actor *WorldActor) {
 	state, art := actor.fourthCrawler, actor.fourthCrawlerArt
+	previous := WorldTileOverlay{}
+	hadCover := len(actor.TileOverlays) != 0
+	if hadCover {
+		previous = actor.TileOverlays[0]
+	}
 	actor.TileOverlays = actor.TileOverlays[:0]
 	if !state.Visible || state.Phase >= 2 {
 		return
 	}
 	variant := art.Variants[state.Variant]
 	if variant.Cover != nil {
-		actor.TileOverlays = append(actor.TileOverlays, WorldTileOverlay{Patch: *variant.Cover, X: float64(art.MotionTables["cover_x"][state.Nest]), Y: float64(art.MotionTables["cover_world_y"][state.Nest] - w.ScrollY)})
+		x, y := float64(art.MotionTables["cover_x"][state.Nest]), float64(art.MotionTables["cover_world_y"][state.Nest]-w.ScrollY)
+		previousY := y
+		if hadCover && previous.X == x {
+			previousY = previous.Y
+		}
+		// The cover belongs to the terrain nest, not to the moving crawler.
+		actor.TileOverlays = append(actor.TileOverlays, WorldTileOverlay{Patch: *variant.Cover, X: x, Y: y, PreviousX: x, PreviousY: previousY, Interpolate: true})
 	}
 }
 

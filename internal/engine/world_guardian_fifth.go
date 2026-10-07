@@ -176,7 +176,9 @@ func (w *World) setFifthMouthOverlays(actor *WorldActor, state *FifthGuardianPar
 		if state.Clock < 0 {
 			y = overlay.NegativeOffsetY
 		}
-		actor.Extras = append(actor.Extras, WorldSpriteAttachment{Atlas: "guardian-parts", Sprite: overlay.Frames[index], X: float64(state.X + overlay.OffsetX), Y: float64(state.Y + y)})
+		// A mouth pose changes discretely; its placement follows the same
+		// interpolated translation as the body without blending frame artwork.
+		actor.Extras = append(actor.Extras, WorldSpriteAttachment{Atlas: "guardian-parts", Sprite: overlay.Frames[index], X: float64(state.X + overlay.OffsetX), Y: float64(state.Y + y), PreviousX: actor.PreviousX + float64(overlay.OffsetX), PreviousY: actor.PreviousY + float64(y), Interpolate: true})
 	}
 }
 
@@ -369,6 +371,7 @@ func (w *World) restoreFifthGuardianActors(scrollChange int) {
 		state.Y += scrollChange
 		actor.Y += float64(scrollChange)
 		actor.PreviousY = actor.Y
+		shiftFifthAttachments(actor, scrollChange)
 		w.Actors = append(w.Actors, actor)
 	}
 	for index, actor := range w.fifthFinalActors {
@@ -379,6 +382,14 @@ func (w *World) restoreFifthGuardianActors(scrollChange int) {
 		state.Y += scrollChange
 		actor.Y += float64(scrollChange)
 		actor.PreviousY = actor.Y
+		shiftFifthAttachments(actor, scrollChange)
 		w.Actors = append(w.Actors, actor)
+	}
+}
+
+func shiftFifthAttachments(actor *WorldActor, scrollChange int) {
+	for i := range actor.Extras {
+		actor.Extras[i].Y += float64(scrollChange)
+		actor.Extras[i].PreviousX, actor.Extras[i].PreviousY = actor.Extras[i].X, actor.Extras[i].Y
 	}
 }

@@ -76,6 +76,8 @@ func (w *World) RestartCheckpoint() {
 	w.ShopReady = false
 	w.LevelFinished = false
 	clear(w.WaveBonuses.Entries[:])
+	w.captureRenderTerrain()
+	w.captureActorRenderTerrain()
 }
 
 // suspendTurn removes the outgoing turn's temporary lists without restoring
@@ -112,6 +114,12 @@ func (w *World) prepareCheckpointActors(scrollChange int, rebuildEquipment bool)
 	w.restoreThirdMiddleActors()
 	w.restoreFourthGuardianActors(scrollChange)
 	w.restoreFifthGuardianActors(scrollChange)
+	for _, actor := range w.Actors {
+		// The next callback may recompute camera-relative positions. Snap its
+		// completed presentation instead of interpolating across turn admission.
+		actor.snapDisplayHistory = true
+		actor.beamLayoutValid = false
+	}
 	if w.FirstMiddle != nil {
 		w.FirstMiddle.Updated = [5]bool{}
 		w.FirstMiddle.GateCounters = [16]int{}
