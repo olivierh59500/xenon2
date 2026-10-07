@@ -9,9 +9,18 @@ import (
 // syntheticEffects resolves the original waveform selection, alternating
 // pitch increments, pitch resets and volume envelopes into ordinary events.
 func (c *compiler) syntheticEffects() error {
+	return c.syntheticEffectsAt(syntheticLayout{records: 0x1b792, envelopes: 0x1b9be, relativeBase: musicBase, waveforms: 0x2abe0, prefix: "synthesized-effect", wavePrefix: "waveform"})
+}
+
+type syntheticLayout struct {
+	records, envelopes, relativeBase, waveforms int
+	prefix, wavePrefix                          string
+}
+
+func (c *compiler) syntheticEffectsAt(layout syntheticLayout) error {
 	waves := make(map[string]string)
 	for index := 0; index < 23; index++ {
-		at := 0x1b792 + index*24
+		at := layout.records + index*24
 		delta, initial := int16(c.word(at)), int16(c.word(at+2))
 		pair := c.long(at + 4)
 		period := int16(c.word(at + 8))
@@ -19,7 +28,7 @@ func (c *compiler) syntheticEffects() error {
 		resetRate, alternateRate := c.byte(at+14), c.byte(at+15)
 		selector, waveSelector := c.byte(at+16), c.byte(at+17)
 		remaining, volumeRate := c.byte(at+18), c.byte(at+19)
-		envelope := musicBase + int(c.word(0x1b9be+int(c.byte(at+20))*2))
+		envelope := layout.relativeBase + int(c.word(layout.envelopes+int(c.byte(at+20))*2))
 		words := int(c.word(at + 22))
 		if words < 1 || words > 4096 {
 			return fmt.Errorf("invalid synthesized effect length")
@@ -103,14 +112,14 @@ func (c *compiler) syntheticEffects() error {
 			if waveSelector&128 == 0 {
 				waveOffset = int16(uint16(wavePair >> 16))
 			}
-			start := 0x2abe0 + int(waveOffset)
+			start := layout.waveforms + int(waveOffset)
 			if start < 0 || start+words*2 > len(c.data) {
 				return fmt.Errorf("synthesized waveform leaves sample bank")
 			}
 			key := fmt.Sprintf("%d:%d", start, words)
 			id, ok := waves[key]
 			if !ok {
-				id = fmt.Sprintf("waveform-%02d", len(waves))
+				id = fmt.Sprintf("%s-%02d", layout.wavePrefix, len(waves))
 				waves[key] = id
 				c.addSample(id, c.data[start:start+words*2])
 			}
@@ -129,7 +138,7 @@ func (c *compiler) syntheticEffects() error {
 		if loop >= 0 {
 			length = tick
 		}
-		c.bank.Effects = append(c.bank.Effects, audio.Sequence{ID: fmt.Sprintf("synthesized-effect-%02d", index), Ticks: length, LoopTick: loop, Events: events})
+		c.bank.Effects = append(c.bank.Effects, audio.Sequence{ID: fmt.Sprintf("%s-%02d", layout.prefix, index), Ticks: length, LoopTick: loop, Events: events})
 	}
 	return c.err
 }

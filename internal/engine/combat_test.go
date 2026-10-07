@@ -157,3 +157,89 @@ func TestCombatDirectionalNativeTraceOptional(t *testing.T) {
 		}
 	})
 }
+
+func TestCombatEnemyFireNativeTraceOptional(t *testing.T) {
+	var fire EnemyFireState
+	var random RandomState
+	nativeCombatRows(t, "combat-enemy-fire-trace.csv", func(v []int64) {
+		if v[5] == 0 {
+			fire = EnemyFireState{Rate: uint8(v[1]), Accumulator: uint8(v[2])}
+			random = RandomState{A: 0x12345678, B: 0x6abcdef1}
+		}
+		shot, fired, err := fire.Tick(random.Next, int(v[3]), int(v[4]))
+		if err != nil {
+			t.Fatal(err)
+		}
+		if fire.Accumulator != uint8(v[6]) || fired != (v[7] != 0) || fired && (shot.Direction != uint8(v[8]) || shot.Speed != int(v[9])) || random.A != uint32(v[10]) || random.B != uint32(v[11]) {
+			t.Fatalf("enemy fire %v: got %+v shot=%+v fired=%v random=%+v", v, fire, shot, fired, random)
+		}
+	})
+}
+
+func TestCombatSmallEmittersNativeTraceOptional(t *testing.T) {
+	common, err := os.ReadFile(filepath.Join(os.Getenv("XENON2_NATIVE_TRACE_DIR"), "..", "XenonII-unpacked.bin"))
+	if os.Getenv("XENON2_NATIVE_TRACE_DIR") == "" {
+		t.Skip("set XENON2_NATIVE_TRACE_DIR to compare local original traces")
+	}
+	if err != nil {
+		t.Fatal(err)
+	}
+	images := map[uint32]string{}
+	for variant, root := range []int{0x27ce, 0x27c2, 0x27da, 0x27e6} {
+		for tier := range 3 {
+			at := root + tier*4
+			address := uint32(common[at])<<24 | uint32(common[at+1])<<16 | uint32(common[at+2])<<8 | uint32(common[at+3])
+			images[address] = smallShotImages[variant][tier]
+		}
+	}
+	var shots []SmallShot
+	nativeCombatRows(t, "combat-small-emit-trace.csv", func(v []int64) {
+		if v[2] == 0 {
+			shots, err = AppendSmallWeaponShots(shots[:0], WeaponSlot{Item: Item(v[0]), Tier: int(v[1])}, 160, 176)
+			if err != nil {
+				t.Fatal(err)
+			}
+		}
+		shot := shots[len(shots)-1-int(v[2])]
+		if shot.X != int(v[3]) || shot.Y != int(v[4]) || shot.VelocityX != int(v[5]) || shot.VelocityY != int(v[6]) || shot.Damage != uint16(v[7]) || shot.SpriteName != images[uint32(v[8])] {
+			t.Fatalf("small emitter %v: got %+v", v, shot)
+		}
+	})
+}
+
+func TestCombatCashNativeTraceOptional(t *testing.T) {
+	var cash CashMotion
+	nativeCombatRows(t, "combat-cash-trace.csv", func(v []int64) {
+		if v[5] == 0 {
+			cash = CashMotion{X: int(v[1]), Y: int(v[2]), Mode: int(v[3]), Direction: uint8(v[4])}
+		}
+		alive := cash.Advance()
+		if cash.X != int(v[6]) || cash.Y != int(v[7]) || cash.Mode != int(v[8]) || cash.Direction != uint8(v[9]) || alive != (v[10] != 0) {
+			t.Fatalf("cash %v: got %+v alive=%v", v, cash, alive)
+		}
+	})
+}
+
+func TestCombatLaserBeamNativeTraceOptional(t *testing.T) {
+	var beam LaserBeamState
+	nativeCombatRows(t, "combat-laser-beam-trace.csv", func(v []int64) {
+		if v[1] == 0 {
+			beam = NewLaserBeamState(int(v[0]))
+		}
+		alive, rectangle, damage := beam.Advance(int(v[2]), int(v[3]), false)
+		hasRect := !rectangle.Empty()
+		if beam.X != int(v[4]) || beam.Y != int(v[5]) || beam.Length != int(v[6]) || alive != (v[7] != 0) || hasRect != (v[8] != 0) || hasRect && (rectangle.Left != int(v[9]) || rectangle.Top != int(v[10]) || rectangle.Right != int(v[11]) || rectangle.Bottom != int(v[12]) || damage != uint16(v[13])) {
+			t.Fatalf("laser beam %v: got %+v alive=%v rectangle=%+v damage=%d", v, beam, alive, rectangle, damage)
+		}
+	})
+}
+
+func TestCombatLaserMountNativeTraceOptional(t *testing.T) {
+	mount := NewLaserMountState()
+	nativeCombatRows(t, "combat-laser-mount-trace.csv", func(v []int64) {
+		fired := mount.Tick(v[1] != 0, v[2] != 0)
+		if mount.Cooldown != int(v[3]) || fired != (v[4] != 0) {
+			t.Fatalf("laser mount %v: got %+v emitted=%v", v, mount, fired)
+		}
+	})
+}

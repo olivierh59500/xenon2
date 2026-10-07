@@ -24,8 +24,28 @@ func main() {
 	if err := os.MkdirAll(*output, 0755); err != nil {
 		fail(err)
 	}
-	var palette [16][4]uint8
 	executable, err := os.ReadFile(filepath.Join(*input, assetimport.Executable.Name+".decoded"))
+	if err != nil {
+		fail(err)
+	}
+	firstLevel, err := os.ReadFile(filepath.Join(*input, assetimport.Levels[0].Name+".decoded"))
+	if err != nil {
+		fail(err)
+	}
+	firstTerrain, err := visualassets.DecodeTerrain(firstLevel)
+	if err != nil {
+		fail(err)
+	}
+	palette := firstTerrain.Palette
+	shopData, err := os.ReadFile(filepath.Join(*input, assetimport.Levels[5].Name+".decoded"))
+	if err != nil {
+		fail(err)
+	}
+	shop, err := visualassets.DecodeShopCatalogue(shopData)
+	if err != nil {
+		fail(err)
+	}
+	commonArt, err := visualassets.DecodeCommonActorArtWithEquipment(executable, shopData, shop, palette)
 	if err != nil {
 		fail(err)
 	}
@@ -40,11 +60,46 @@ func main() {
 		if err != nil {
 			fail(err)
 		}
+		baseTerrain, err := visualassets.DecodeTerrain(data)
+		if err != nil {
+			fail(err)
+		}
+		guardians, guardianTiles, err := visualassets.DecodeGuardianArt(index+1, data, baseTerrain.Palette)
+		if err != nil {
+			fail(err)
+		}
+		extraTiles = append(extraTiles, guardianTiles...)
 		terrain, err := visualassets.DecodeTerrainWithTiles(data, extraTiles)
 		if err != nil {
 			fail(fmt.Errorf("level %d: %w", index+1, err))
 		}
 		prefix := filepath.Join(*output, fmt.Sprintf("level-%d", index+1))
+		if guardians != nil {
+			if err := visualassets.RemapGuardianTiles(guardians, terrain.SourceTileIDs); err != nil {
+				fail(err)
+			}
+			if err := writeJSON(prefix+"-guardians.json", guardians); err != nil {
+				fail(err)
+			}
+			if err := writePNG(prefix+"-guardians.png", guardians.Atlas.Image); err != nil {
+				fail(err)
+			}
+		}
+		groups, guardianParts, err := visualassets.DecodeCompoundGuardianArt(index+1, data, terrain.Palette)
+		if err != nil {
+			fail(err)
+		}
+		if len(groups) > 0 {
+			if err := writeJSON(prefix+"-guardian-groups.json", struct {
+				Groups []visualassets.GuardianGroup `json:"groups"`
+				Atlas  visualassets.SpriteAtlas     `json:"atlas"`
+			}{groups, guardianParts}); err != nil {
+				fail(err)
+			}
+			if err := writePNG(prefix+"-guardian-parts.png", guardianParts.Image); err != nil {
+				fail(err)
+			}
+		}
 		if fixed != nil {
 			if err := visualassets.RemapFixedTiles(fixed, terrain.SourceTileIDs); err != nil {
 				fail(err)
@@ -86,7 +141,7 @@ func main() {
 		if err := writePNG(prefix+"-shots.png", rules.EnemyShots.Image); err != nil {
 			fail(err)
 		}
-		actors, err := visualassets.DecodeWaveActors(data, terrain.Palette, encounters)
+		actors, err := visualassets.DecodeWaveActors(data, terrain.Palette, encounters, &commonArt)
 		if err != nil {
 			fail(fmt.Errorf("level %d actors: %w", index+1, err))
 		}
@@ -107,9 +162,6 @@ func main() {
 			fail(err)
 		}
 		fmt.Printf("Exported level %d: %d tiles, %d map rows.\n", index+1, len(terrain.Tiles), terrain.Rows)
-		if index == 0 {
-			palette = terrain.Palette
-		}
 	}
 	font, err := visualassets.DecodeFont(executable, palette)
 	if err != nil {
@@ -131,14 +183,6 @@ func main() {
 	if err := writePNG(filepath.Join(*output, "player-ship.png"), ship.Image); err != nil {
 		fail(err)
 	}
-	shopData, err := os.ReadFile(filepath.Join(*input, assetimport.Levels[5].Name+".decoded"))
-	if err != nil {
-		fail(err)
-	}
-	shop, err := visualassets.DecodeShopCatalogue(shopData)
-	if err != nil {
-		fail(err)
-	}
 	if err := writeJSON(filepath.Join(*output, "shop.json"), shop); err != nil {
 		fail(err)
 	}
@@ -150,10 +194,6 @@ func main() {
 		fail(err)
 	}
 	if err := writePNG(filepath.Join(*output, "ships.png"), shipArt.Atlas.Image); err != nil {
-		fail(err)
-	}
-	commonArt, err := visualassets.DecodeCommonActorArtWithEquipment(executable, shopData, shop, palette)
-	if err != nil {
 		fail(err)
 	}
 	if err := writeJSON(filepath.Join(*output, "common-actors.json"), commonArt); err != nil {

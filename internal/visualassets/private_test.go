@@ -16,6 +16,20 @@ func TestPrivateLevelArtworkOptional(t *testing.T) {
 		name  string
 		tiles int
 	}{{"000B00E5", 176}, {"00FA00FE", 210}, {"02020113", 182}, {"031F0159", 351}, {"04820138", 157}}
+	executable := mustReadPrivate(t, filepath.Join(directory, "XenonII.decoded"))
+	shopData := mustReadPrivate(t, filepath.Join(directory, "05c400f8.decoded"))
+	catalogue, err := DecodeShopCatalogue(shopData)
+	if err != nil {
+		t.Fatal(err)
+	}
+	firstTerrain, err := DecodeTerrain(mustReadPrivate(t, filepath.Join(directory, "000B00E5.decoded")))
+	if err != nil {
+		t.Fatal(err)
+	}
+	commonArt, err := DecodeCommonActorArtWithEquipment(executable, shopData, catalogue, firstTerrain.Palette)
+	if err != nil {
+		t.Fatal(err)
+	}
 	var palette [16][4]uint8
 	for levelIndex, file := range files {
 		t.Run(file.name, func(t *testing.T) {
@@ -72,7 +86,7 @@ func TestPrivateLevelArtworkOptional(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			actors, err := DecodeWaveActors(data, terrain.Palette, encounters)
+			actors, err := DecodeWaveActors(data, terrain.Palette, encounters, &commonArt)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -84,9 +98,19 @@ func TestPrivateLevelArtworkOptional(t *testing.T) {
 				names[sprite.Name] = true
 			}
 			for _, kind := range actors.Kinds {
+				if kind.Kind == 0 && (len(kind.Parts) != 1 || kind.Parts[0].ResourceTag != 100 || kind.MotionBudgetOverride != 3 || !kind.CarriedRewardFromMotionBudget) {
+					t.Fatal("power-up carrier descriptor differs")
+				}
 				for _, part := range kind.Parts {
+					frameNames := names
+					if part.Atlas == "common" {
+						frameNames = map[string]bool{}
+						for _, sprite := range commonArt.Sprites {
+							frameNames[sprite.Name] = true
+						}
+					}
 					for _, frame := range part.Animation.Frames {
-						if !names[frame.Sprite] {
+						if !frameNames[frame.Sprite] {
 							t.Fatalf("missing animation frame%s", frame.Sprite)
 						}
 					}
@@ -110,10 +134,6 @@ func TestPrivateLevelArtworkOptional(t *testing.T) {
 			}
 		})
 	}
-	executable, err := os.ReadFile(filepath.Join(directory, "XenonII.decoded"))
-	if err != nil {
-		t.Fatal(err)
-	}
 	font, err := DecodeFont(executable, palette)
 	if err != nil {
 		t.Fatal(err)
@@ -128,16 +148,7 @@ func TestPrivateLevelArtworkOptional(t *testing.T) {
 	if title.Width != 208 || title.Height != 54 || title.X != 48 || title.Y != 20 {
 		t.Fatal("original title placement differs")
 	}
-	shopData := mustReadPrivate(t, filepath.Join(directory, "05c400f8.decoded"))
-	catalogue, err := DecodeShopCatalogue(shopData)
-	if err != nil {
-		t.Fatal(err)
-	}
-	commonArt, err := DecodeCommonActorArtWithEquipment(executable, shopData, catalogue, palette)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if len(commonArt.Sprites) != 210 || len(commonArt.Equipment) != 25 {
+	if len(commonArt.Sprites) != 214 || len(commonArt.Equipment) != 25 || len(commonArt.Animations) != 24 {
 		t.Fatal("common equipment image bank differs")
 	}
 }

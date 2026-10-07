@@ -33,6 +33,7 @@ type Stream struct {
 	music                     playback
 	musicPhase                byte
 	effects                   [4]playback
+	queued                    [4]*Sequence
 	shadow, voices            [4]voice
 }
 
@@ -95,10 +96,28 @@ func (s *Stream) PlayEffect(id string, channel int) error {
 	return fmt.Errorf("unknown audio effect %q", id)
 }
 
+// QueueEffect dispatches at the next fifty-Hz tick. Multiple requests for one
+// voice replace each other before dispatch, matching the original sound queues.
+func (s *Stream) QueueEffect(id string, channel int) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if channel < 0 || channel >= 4 {
+		return fmt.Errorf("invalid audio channel")
+	}
+	for i := range s.bank.Effects {
+		if s.bank.Effects[i].ID == id {
+			s.queued[channel] = &s.bank.Effects[i]
+			return nil
+		}
+	}
+	return fmt.Errorf("unknown audio effect %q", id)
+}
+
 func (s *Stream) StopEffects() {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	for ch := range s.effects {
+		s.queued[ch] = nil
 		s.effects[ch] = playback{}
 		s.restoreMusic(ch)
 	}
@@ -169,6 +188,13 @@ func (s *Stream) sample(v *voice) int32 {
 }
 
 func (s *Stream) tick() {
+	for ch, sequence := range s.queued {
+		if sequence != nil {
+			s.effects[ch] = playback{sequence: sequence, active: true}
+			s.voices[ch] = voice{}
+			s.queued[ch] = nil
+		}
+	}
 	s.advance(&s.music, func(e Event) {
 		s.apply(&s.shadow[e.Channel], e)
 		if !s.effects[e.Channel].active {

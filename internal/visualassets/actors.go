@@ -19,6 +19,7 @@ type ActorAnimation struct {
 }
 
 type ActorPart struct {
+	Atlas           string           `json:"atlas,omitempty"`
 	ResourceTag     int              `json:"resource_tag"`
 	Score           int              `json:"score"`
 	StrongHealth    bool             `json:"strong_health"`
@@ -33,9 +34,11 @@ type ActorPart struct {
 }
 
 type WaveActor struct {
-	Kind                 int         `json:"kind"`
-	Parts                []ActorPart `json:"parts"`
-	StrongHealthOverride int         `json:"strong_health_override,omitempty"`
+	Kind                          int         `json:"kind"`
+	Parts                         []ActorPart `json:"parts"`
+	StrongHealthOverride          int         `json:"strong_health_override,omitempty"`
+	MotionBudgetOverride          int         `json:"motion_budget_override,omitempty"`
+	CarriedRewardFromMotionBudget bool        `json:"carried_reward_from_motion_budget,omitempty"`
 }
 
 type Actors struct {
@@ -46,7 +49,7 @@ type Actors struct {
 // DecodeWaveActors recognizes the verified offline selector wrappers, then
 // exports only ordinary actor descriptors and their original image animations.
 // Selector instructions and routine addresses do not reach the JSON resource.
-func DecodeWaveActors(level []byte, palette [16][4]uint8, encounters *Encounters) (*Actors, error) {
+func DecodeWaveActors(level []byte, palette [16][4]uint8, encounters *Encounters, commonArt *SpriteAtlas) (*Actors, error) {
 	if len(level) < 0x14 || binary.BigEndian.Uint16(level[0x10:]) != 0x6000 {
 		return nil, fmt.Errorf("unsupported actor selector header")
 	}
@@ -87,7 +90,21 @@ func DecodeWaveActors(level []byte, palette [16][4]uint8, encounters *Encounters
 		}
 		address := int(binary.BigEndian.Uint32(level[field:]))
 		if address == 0xe5a {
-			actors.Kinds = append(actors.Kinds, WaveActor{Kind: kind})
+			if commonArt == nil {
+				return nil, fmt.Errorf("carrier requires the common animation bank")
+			}
+			var carrier *NamedActorAnimation
+			for i := range commonArt.Animations {
+				if commonArt.Animations[i].ID == "power-up-carrier" {
+					carrier = &commonArt.Animations[i]
+					break
+				}
+			}
+			if carrier == nil {
+				return nil, fmt.Errorf("carrier common animation is missing")
+			}
+			part := ActorPart{Atlas: "common", ResourceTag: 100, DamageMode: "drop-equipment", MotionMode: "path", Animation: carrier.Animation}
+			actors.Kinds = append(actors.Kinds, WaveActor{Kind: kind, Parts: []ActorPart{part}, MotionBudgetOverride: 3, CarriedRewardFromMotionBudget: true})
 			continue
 		}
 		wrapper := address - levelBase

@@ -6,16 +6,22 @@ import (
 )
 
 type FixedSpriteVariant struct {
-	ID        int            `json:"id"`
-	Animation ActorAnimation `json:"animation"`
+	ID               int            `json:"id"`
+	OriginOffsetX    int            `json:"origin_offset_x"`
+	OriginOffsetY    int            `json:"origin_offset_y"`
+	InitialVelocityX int            `json:"initial_velocity_x,omitempty"`
+	Animation        ActorAnimation `json:"animation"`
 }
 
 type FixedSpriteKind struct {
-	Kind             int                  `json:"kind"`
-	Health           int                  `json:"health,omitempty"`
-	Score            int                  `json:"score,omitempty"`
-	VariantSelection string               `json:"variant_selection"`
-	Variants         []FixedSpriteVariant `json:"variants"`
+	Kind              int                  `json:"kind"`
+	Health            int                  `json:"health,omitempty"`
+	Score             int                  `json:"score,omitempty"`
+	VariantSelection  string               `json:"variant_selection"`
+	VariantThresholdX int                  `json:"variant_threshold_x,omitempty"`
+	Damageable        bool                 `json:"damageable"`
+	StrongHealth      bool                 `json:"strong_health"`
+	Variants          []FixedSpriteVariant `json:"variants"`
 }
 
 type FixedSprites struct {
@@ -63,6 +69,11 @@ func DecodeFixedSprites(levelNumber int, level []byte, palette [16][4]uint8) (*F
 	}
 	for _, d := range descriptors {
 		kind := FixedSpriteKind{Kind: d.kind, Score: d.score, VariantSelection: d.selection}
+		kind.Damageable = levelNumber != 4
+		kind.StrongHealth = levelNumber == 1 || levelNumber == 3 || levelNumber == 5
+		if levelNumber == 3 {
+			kind.VariantThresholdX = 160
+		}
 		if d.health != 0 {
 			if d.health+2 > len(level) {
 				return nil, fmt.Errorf("fixed sprite health data is truncated")
@@ -74,7 +85,18 @@ func DecodeFixedSprites(levelNumber int, level []byte, palette [16][4]uint8) (*F
 			if err != nil {
 				return nil, err
 			}
-			kind.Variants = append(kind.Variants, FixedSpriteVariant{ID: variant, Animation: animation})
+			v := FixedSpriteVariant{ID: variant, OriginOffsetX: -8, OriginOffsetY: -8, Animation: animation}
+			if (levelNumber == 1 || levelNumber == 5) && variant == 1 {
+				v.OriginOffsetX = 8
+			}
+			if levelNumber == 3 {
+				v.OriginOffsetY = 8
+				v.InitialVelocityX = 2
+				if variant == 1 {
+					v.InitialVelocityX = -2
+				}
+			}
+			kind.Variants = append(kind.Variants, v)
 		}
 		result.Kinds = append(result.Kinds, kind)
 	}

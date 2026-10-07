@@ -93,7 +93,25 @@ func DecodeCommonActorArtWithEquipment(common, shop []byte, catalogue *ShopCatal
 		return SpriteAtlas{}, err
 	}
 	images = append(images, shots...)
+	animations, err := DecodeCommonAnimations(common, func(address int) (string, error) {
+		if name, ok := names[address]; ok {
+			return name, nil
+		}
+		name := fmt.Sprintf("common-actor-%03d", len(images))
+		picture, err := DecodeActorSprite(common, address, name, palette)
+		if err != nil {
+			return "", err
+		}
+		images = append(images, picture)
+		names[address] = name
+		return name, nil
+	})
+	if err != nil {
+		return SpriteAtlas{}, err
+	}
 	atlas := packSprites(images)
 	atlas.Equipment = equipment
+	atlas.Animations = animations
+	atlas.SourceSpriteNames = names
 	return atlas, nil
 }

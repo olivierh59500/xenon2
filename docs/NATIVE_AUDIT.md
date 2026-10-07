@@ -105,3 +105,60 @@ The attract-loop logo is a 208 × 54 image whose sixteen-pixel words interleave 
 ## Offline instruction verification
 
 The installed Ghidra 68000 model does not copy carry into the extend flag after `ADDX`. The offline comparison harness corrects that flag according to the [Motorola instruction reference](https://www.nxp.com/docs/en/reference-manual/M68000PRM.pdf), before recording the shared random stream. The Go random generator matches 320 corrected original calls across four seed cases, including carry boundaries. This correction is confined to local analysis and does not introduce an emulator dependency into the game.
+
+## Combat and scrolling comparisons
+
+The independent combat helpers match bounded executions of the original routines:
+
+| Behavior | Original comparisons |
+| --- | ---: |
+| Eight-direction targeting | 13,225 target deltas |
+| Inclusive actor collisions | 625 cases |
+| Shield, protection and damage suppression | 192 cases |
+| Shared firing cadence | 720 passes |
+| Directional projectiles and clipping | 552 passes |
+| Formation initialization | 78 actor parts |
+| Enemy firing and random consumption | 4,320 passes |
+| Four ordinary player weapon patterns | 18 projectile creations |
+| Cash and pickup movement | 277 passes |
+| Carrier reward selectors | 19 complete equipment outcomes |
+| Eight-entry wave reward cache | 39 operations |
+| Moving scroll bounds | 224 cases |
+
+Actor collision rectangles include their final pixel on each edge. Ordinary
+player bullets use point collisions against the newest enemy first, then the
+level's explicit fixed-object collider. Generic opaque terrain does not stop
+every player bullet. Enemy bullets retain fractional direction vectors and the
+scenery's actual scroll displacement.
+
+The upper scroll limit moves during play. Sustained reverse movement doubles
+after thirty-five passes, while holding down at the upper limit omits the normal
+sixteen-pixel reverse buffer. Guardian controllers can expand these bounds again.
+
+## Carriers and rewards
+
+Moving encounter kind zero creates a power-up carrier. Its path budget is three;
+the encounter's nominal movement-budget value instead selects one of nineteen
+rewards. These carriers use the common artwork bank and their own damage callback.
+
+Reward 13 selects homing missiles. Reward 16 adds 170
+passes of invulnerability, independently of the Nashwan timer used by the shop.
+The screen-clear reward strobes the palette for thirty-one PAL vertical blanks,
+then applies damage through eligible enemies' own callbacks. Guardian resource
+tags 80 and 84 are excluded. This is a timed game sequence, not an unconditional
+delete-all operation.
+
+Waves created within one four-pass period can share an entry in an eight-entry
+reward cache. Killing its last member creates cash; allowing any member to escape
+invalidates that shared entry. Carrier creation registers a count before clearing
+the carrier's own token, so its orphan count can suppress a shared wave reward.
+Preserving that order also preserves subsequent token allocation.
+
+These comparisons verify the listed helpers and exported data. They do not yet
+prove complete guardian behavior, all advanced weapons, the full shop interface,
+death and continue screens, multiplayer progression or a complete five-level run.
+
+The four ordinary weapon families cover all three power tiers, including the
+creation order of double and side shots. Bitmap Shades darken the original
+three-bit palette and apply a short-range damage area around the ship; they are
+separate from both invulnerability and Nashwan equipment.

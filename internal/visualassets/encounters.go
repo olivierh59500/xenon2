@@ -11,7 +11,7 @@ type Wave struct {
 	Count        int `json:"count"`
 	PathID       int `json:"path_id"`
 	Spacing      int `json:"spacing"`
-	FireDelay    int `json:"fire_delay"`
+	FireRate     int `json:"fire_rate"`
 	MotionBudget int `json:"motion_budget"`
 }
 
@@ -66,7 +66,7 @@ func DecodeEncounters(level []byte, paths *Paths) (*Encounters, error) {
 		if v[2] < 0 || v[3] < 1 || v[3] > len(paths.Paths) || v[6] < 0 {
 			return fmt.Errorf("moving encounter has invalid count, path or motion budget")
 		}
-		result.Moving = append(result.Moving, Wave{TriggerY: v[0], EnemyKind: v[1], Count: v[2], PathID: v[3], Spacing: v[4], FireDelay: v[5], MotionBudget: v[6]})
+		result.Moving = append(result.Moving, Wave{TriggerY: v[0], EnemyKind: v[1], Count: v[2], PathID: v[3], Spacing: v[4], FireRate: v[5], MotionBudget: v[6]})
 		return nil
 	}); err != nil {
 		return nil, err

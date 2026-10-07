@@ -19,9 +19,11 @@ type SpriteRegion struct {
 }
 
 type SpriteAtlas struct {
-	Sprites   []SpriteRegion  `json:"sprites"`
-	Equipment []ItemAnimation `json:"equipment,omitempty"`
-	Image     *image.NRGBA    `json:"-"`
+	Sprites           []SpriteRegion        `json:"sprites"`
+	Equipment         []ItemAnimation       `json:"equipment,omitempty"`
+	Animations        []NamedActorAnimation `json:"animations,omitempty"`
+	SourceSpriteNames map[int]string        `json:"-"`
+	Image             *image.NRGBA          `json:"-"`
 }
 
 type ItemAnimation struct {
@@ -165,7 +167,7 @@ func packSprites(sprites []*Sprite) SpriteAtlas {
 	for _, sprite := range sprites {
 		rowHeight = max(rowHeight, sprite.Height)
 	}
-	atlas := SpriteAtlas{Image: image.NewNRGBA(image.Rect(0, 0, columns*cellWidth, ((len(sprites)+columns-1)/columns)*rowHeight))}
+	atlas := SpriteAtlas{Image: image.NewNRGBA(image.Rect(0, 0, columns*cellWidth, max(1, ((len(sprites)+columns-1)/columns)*rowHeight)))}
 	for i, sprite := range sprites {
 		x, y := (i%columns)*cellWidth, (i/columns)*rowHeight
 		draw.Draw(atlas.Image, image.Rect(x, y, x+sprite.Image.Bounds().Dx(), y+sprite.Height), sprite.Image, image.Point{}, draw.Src)

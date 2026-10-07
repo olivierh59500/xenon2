@@ -42,3 +42,14 @@ func (s AnimationState) Sprite(animation visualassets.ActorAnimation) string {
 	}
 	return animation.Frames[s.Frame].Sprite
 }
+
+// AdvanceNamed preserves a finite sequence's removal ending instead of
+// silently turning it into a loop. Held and looping frames remain active.
+func (s *AnimationState) AdvanceNamed(animation visualassets.NamedActorAnimation) bool {
+	if animation.Ending == "remove" && s.Frame == len(animation.Animation.Frames)-1 && s.Remaining == 1 {
+		s.Remaining = 0
+		return false
+	}
+	s.Advance(animation.Animation)
+	return true
+}

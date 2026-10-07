@@ -102,3 +102,37 @@ func BenchmarkStream(b *testing.B) {
 		s.Read(buffer)
 	}
 }
+
+func TestQueuedEffectWaitsForTickAndLastRequestWins(t *testing.T) {
+	bank, waves := testBank()
+	alternate := bank.Effects[0]
+	alternate.ID = "alternate"
+	alternate.Events = append([]Event(nil), alternate.Events...)
+	for i := range alternate.Events {
+		if alternate.Events[i].Kind == "start" || alternate.Events[i].Kind == "loop" {
+			alternate.Events[i].Sample = "positive"
+		}
+	}
+	bank.Effects = append(bank.Effects, alternate)
+	stream, err := NewStream(bank, waves, 44100)
+	if err != nil {
+		t.Fatal(err)
+	}
+	stream.Read(make([]byte, 4))
+	if err = stream.QueueEffect("shot", 2); err != nil {
+		t.Fatal(err)
+	}
+	if err = stream.QueueEffect("alternate", 2); err != nil {
+		t.Fatal(err)
+	}
+	before := make([]byte, 881*4)
+	stream.Read(before)
+	if !bytes.Equal(before, make([]byte, len(before))) {
+		t.Fatal("queued effect changed the current musical tick")
+	}
+	frame := make([]byte, 4)
+	stream.Read(frame)
+	if left, right := int16(binary.LittleEndian.Uint16(frame)), int16(binary.LittleEndian.Uint16(frame[2:])); left != 0 || right != 8128 {
+		t.Fatalf("last queued effect was not dispatched: %d/%d", left, right)
+	}
+}
