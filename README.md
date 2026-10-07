@@ -27,7 +27,8 @@ GOWORK=off go run ./cmd/xenon2
 
 Use the arrow keys or WASD for movement and Space or Control for firing; Alt
 requests a dive. In reference views only, keys 1–5 select a level
-and F2 opens the shop inspection route. Escape returns to the menu. M toggles
+and F2 opens the shop inspection route. Escape restarts the attract sequence;
+from the menu it closes the desktop window. M toggles
 music. P pauses gameplay; any key or a fire click resumes it while the soundtrack
 continues. The normal menu supports one or two alternating players. Full source
 timing and framebuffer comparisons remain in

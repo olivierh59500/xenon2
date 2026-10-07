@@ -233,8 +233,9 @@ func (g *Game) Update() error {
 		if g.Screen == TitleScreen {
 			return ebiten.Termination
 		}
-		g.Screen = TitleScreen
-		g.selectMusic()
+		g.pendingFire, g.pendingDive = false, false
+		g.stream.StopEffects()
+		g.BeginAttract()
 	}
 	if inpututil.IsKeyJustPressed(ebiten.KeyM) {
 		g.music = !g.music
