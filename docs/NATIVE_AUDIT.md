@@ -1850,3 +1850,17 @@ A bounded six-pass guard improves the actual practiced third route: checkpoint
 ship and credits. A further diagnostic reaches the real middle guardian with
 19 shield but still loses there. The guard remains limited to its validated
 opening window; later strategy and branch allocation reuse are still open.
+
+The complete engine/source race suite passes in 175.149 seconds. Production
+GPU/audio/frontend checks pass in 185.780 seconds with the known optional
+third-middle no-loss assertion explicitly excluded. The carried expert checkpoints
+are now permanent regressions: 39 shield at 4,032 and 31 at 3,408, same ship/credits.
+Strict isolation and terrain alias tests also pass under the race detector; the
+visible fifth-arena parity fixture passes after its camera correction.
+
+Vet, desktop rebuild, ARM64 Android build, APK signature and 16 KiB alignment
+pass. Pixel benchmarks are recorded in [EXPERT_FORECAST.md](EXPERT_FORECAST.md) with real callback
+counts and allocation limits. The updated APK installs and cold-launches on the
+Pixel 10a, with its process alive afterward. Device graphics were not rechecked
+while locked. Full-campaign mastery, later boss strategy and branch storage reuse
+remain required; this work does not establish completed conversion.
