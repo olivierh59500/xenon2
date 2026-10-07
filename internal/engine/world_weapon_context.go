@@ -41,6 +41,20 @@ func (w *World) weaponContext(input Input, pulse bool) WeaponContext {
 				w.SoundRequests[voice] = effect
 			}
 		},
+		SoundVoiceIfEmpty: func(voice int, effect string) {
+			if voice >= 0 && voice < len(w.SoundRequests) && w.SoundRequests[voice] == "" {
+				w.SoundRequests[voice] = effect
+			}
+		},
+		ImmediateSoundVoice: func(voice int, effect string) {
+			if voice >= 0 && voice < len(w.ImmediateSoundRequests) {
+				w.ImmediateSoundRequests[voice] = effect
+			}
+		},
+		EffectActive: func(voice int) bool {
+			return voice >= 0 && voice < len(w.EffectActive) && w.EffectActive[voice]
+		},
+		StopEffects: func() { w.StopEffectsRequested = true },
 	}
 }
 
@@ -82,6 +96,9 @@ func (w *World) weaponHitRect(area CollisionRect, damage uint16, all bool) bool 
 		if !all {
 			return true
 		}
+	}
+	if w.strikeSecondTerrain(area) {
+		return true
 	}
 	return hit
 }

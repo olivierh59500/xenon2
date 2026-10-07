@@ -8,8 +8,9 @@ it will not execute the original program or load its code as game logic.
 The conversion is in development. The current reference build displays the
 original menu and five level maps, moves the ship and enemy formations, and
 replays the original soundtrack. It includes source-derived weapon state,
-carrier rewards, checkpoint recovery, alternating player sessions and the first
-final guardian. Original shop, attract, HUD and transition presentation are
+carrier rewards, checkpoint recovery, alternating player sessions, the first
+final guardian and the second level's defense arena and final guardian.
+Original shop, attract, HUD and transition presentation are
 being integrated. The remaining level controllers and complete game progression
 are not finished; this build is not yet the complete playable game.
 

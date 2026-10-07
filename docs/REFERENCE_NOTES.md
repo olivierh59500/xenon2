@@ -102,3 +102,38 @@ A faithful conversion needs comparisons beyond a successful first-level run:
 Exact enemy records, collision masks, score awards, item prices and timing
 constants remain subject to direct disk analysis. A familiar-looking
 enemy shape or a plausible movement curve does not verify those rules.
+
+
+## Presentation comparisons
+
+The exported presentation font has 41 characters, 16-pixel columns and
+22-pixel glyphs. Its zoom uses the original sixteen sampling masks. All
+sixteen logo and caption scales match independently captured framebuffer
+pixels. One credit transition draws the complete first line before its
+shrinking line; a Go word-composition helper preserves that overlap, with
+all pixels checked for the six credit pairs.
+
+The presentation director has been compared with 2,011 original passes:
+the attract loop, delayed READY confirmation, the continue countdown,
+GAME OVER, SELECT entry/exit and three-character high-score entry. Caption
+centers move from the center of the screen toward their target row during
+the zoom. READY uses the original confirmation sentinel; GAME OVER uses
+the same table without waiting there. A final ship loss proceeds through
+score entry, the continue offer, then GAME OVER if the offer expires.
+
+The original SELECT screen is silent. The faster music profile accompanies
+the attract sequence; normal gameplay replay begins after READY. Intro
+music is stopped before an interrupted credit sequence zooms its logo out.
+
+Shop resources include the original monitor switches, merchant headphone
+hand poses, portrait strips, restored border rows, sale hand, cursor
+anchors and all thirty advice strings. The shop director matches 99
+original transition passes: seventeen for portrait entry, twelve for the
+monitors switching on, thirty-five for the headphone hand, eighteen for
+monitors switching off and seventeen for portrait exit. Monitor image
+animations retain their own pass counters.
+
+These comparisons validate exported pixels and isolated sequencing.
+Complete scene transitions, palette fades, ending flow and integrated
+renderer execution remain separate checks. They are not implied by an
+isolated helper comparison.

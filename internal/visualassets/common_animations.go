@@ -28,7 +28,7 @@ func DecodeCommonAnimations(common []byte, resolve func(int) (string, error)) ([
 		{"flamer-particle", 0, 0x2796},
 		{"bomb-flight", 0, 0x25e2}, {"rear-shot-active", 0, 0x283a},
 		{"explosion-small", 0, 0x270e}, {"explosion-large", 0, 0x273a},
-		{"launcher-fire", 0, 0x2c2a}, {"rear-shot-fire", 0, 0x2840},
+		{"launcher-fire", 0, 0x2c2a}, {"rear-shot-fire", 0, 0x2840}, {"cannon-support", 0, 0x28ee},
 	}
 	if len(common) < 0x3aa2+32 {
 		return nil, fmt.Errorf("homing animation table is truncated")

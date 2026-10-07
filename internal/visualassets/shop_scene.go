@@ -34,6 +34,8 @@ type ShopHandFrame struct {
 type ShopScene struct {
 	TransitionArt                                           SpriteAtlas     `json:"transition_art"`
 	TransitionSprites                                       []string        `json:"transition_sprites"`
+	AdviceTips                                              [][]string      `json:"advice_tips"`
+	IntroHand                                               []ShopHandFrame `json:"intro_hand"`
 	SaleHand                                                []ShopHandFrame `json:"sale_hand"`
 	TVTransition                                            []string        `json:"tv_transition"`
 	PageAnimation                                           ItemAnimation   `json:"page_animation"`
@@ -185,11 +187,18 @@ func DecodeShopScene(data []byte, palette [16][4]uint8) (*ShopScene, error) {
 	for y := 120; y > 104; y -= 2 {
 		s.SaleHand = append(s.SaleHand, ShopHandFrame{Sprite: hand0, X: 247, Y: y, Duration: 1})
 	}
-	for _, name := range []string{hand0, hand1, hand0, hand2, hand0, hand1, hand0, hand2, hand0, hand1} {
+	for _, name := range []string{hand0, hand1, hand0, hand2, hand0, hand1, hand0, hand2, hand0} {
 		s.SaleHand = append(s.SaleHand, ShopHandFrame{Sprite: name, X: 247, Y: 104, Duration: 3})
 	}
 	for y := 104; y < 128; y += 2 {
 		s.SaleHand = append(s.SaleHand, ShopHandFrame{Sprite: hand0, X: 247, Y: y, Duration: 1})
+	}
+	for x, y := 262, 136; x <= 284; x, y = x+2, y-2 {
+		s.IntroHand = append(s.IntroHand, ShopHandFrame{Sprite: hand0, X: x, Y: y, Duration: 1})
+	}
+	s.IntroHand = append(s.IntroHand, ShopHandFrame{Sprite: hand2, X: 284, Y: 114, Duration: 6}, ShopHandFrame{Sprite: hand0, X: 284, Y: 114, Duration: 6})
+	for x, y := 284, 114; x > 262; x, y = x-2, y+2 {
+		s.IntroHand = append(s.IntroHand, ShopHandFrame{Sprite: hand0, X: x, Y: y, Duration: 1})
 	}
 	for i := 0; i < 9; i++ {
 		address := int(binary.BigEndian.Uint32(data[0x56a96-base+i*4:]))
@@ -222,6 +231,15 @@ func DecodeShopScene(data []byte, palette [16][4]uint8) (*ShopScene, error) {
 		name := fmt.Sprintf("shop-transition-strip-%d", i)
 		transition = append(transition, &Sprite{Name: name, Width: 112, Height: height, Image: picture})
 	}
+	for i, address := range []int{0x5df76, 0x5e1b6} {
+		picture, err := decodeWordPlanes(data, address-base, 128, 9, palette)
+		if err != nil {
+			return nil, err
+		}
+		cropped := image.NewNRGBA(image.Rect(0, 0, 112, 9))
+		draw.Draw(cropped, cropped.Bounds(), picture, image.Point{}, draw.Src)
+		transition = append(transition, &Sprite{Name: fmt.Sprintf("shop-transition-border-%d", i), Width: 112, Height: 9, Image: cropped})
+	}
 	s.TransitionArt = packPresentationFrames(transition)
 	s.Font = Font{Width: 4, Height: 8, Columns: 16, Image: image.NewNRGBA(image.Rect(0, 0, 64, 32))}
 	for code := 32; code <= 90; code++ {
@@ -245,11 +263,29 @@ func DecodeShopScene(data []byte, palette [16][4]uint8) (*ShopScene, error) {
 		}
 	}
 	s.MoneyX, s.MoneyY, s.MoneyDigits = 136, 172, 7
+	for level := 0; level < 5; level++ {
+		var tips []string
+		for tip := 0; tip < 6; tip++ {
+			start := int(binary.BigEndian.Uint32(data[0x5702c-base+(level*6+tip)*4:])) - base
+			if start < 0 || start >= len(data) {
+				return nil, fmt.Errorf("shop advice pointer leaves source")
+			}
+			end := start
+			for end < len(data) && data[end] != 0 && end-start < 512 {
+				end++
+			}
+			if end >= len(data) || end-start >= 512 {
+				return nil, fmt.Errorf("shop advice is unterminated")
+			}
+			tips = append(tips, string(data[start:end]))
+		}
+		s.AdviceTips = append(s.AdviceTips, tips)
+	}
 	s.Messages = make(map[string]string)
 	for _, message := range []struct {
 		id      string
 		address int
-	}{{"sell-question", 0x56e50}, {"buy-question", 0x56e6e}, {"out-of-stock", 0x55aa6}, {"pay-request", 0x55acd}, {"another-item", 0x55ae2}, {"sale-complete", 0x55c2e}, {"sale-price", 0x55dc8}, {"buy-price", 0x55dd6}, {"cannot-fit", 0x558ba}, {"last-level-welcome", 0x56fd8}, {"last-level-offer", 0x56ffc}, {"last-level-warning", 0x5700f}} {
+	}{{"sell-question", 0x56e50}, {"buy-question", 0x56e6e}, {"out-of-stock", 0x55aa6}, {"pay-request", 0x55acd}, {"another-item", 0x55ae2}, {"sale-complete", 0x55c2e}, {"sale-price", 0x55dc8}, {"buy-price", 0x55dd6}, {"cannot-fit", 0x558ba}, {"power-level", 0x55f56}, {"last-level-welcome", 0x56fd8}, {"last-level-offer", 0x56ffc}, {"last-level-warning", 0x5700f}} {
 		start := message.address - base
 		end := start
 		for end < len(data) && data[end] != 0 {

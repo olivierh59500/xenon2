@@ -46,6 +46,16 @@ func TestPrivateGuardianTablesOptional(t *testing.T) {
 			}
 			for _, group := range groups {
 				for _, part := range group.Components {
+					for _, frame := range part.HeadingFrames {
+						if !names[frame] {
+							t.Fatalf("missing guardian heading frame %s", frame)
+						}
+					}
+					for _, frame := range part.DeathAnimation.Frames {
+						if !names[frame.Sprite] {
+							t.Fatalf("missing guardian death frame %s", frame.Sprite)
+						}
+					}
 					for _, frame := range part.Animation.Frames {
 						if !names[frame.Sprite] {
 							t.Fatalf("missing guardian frame %s", frame.Sprite)
@@ -60,7 +70,7 @@ func TestPrivateGuardianTablesOptional(t *testing.T) {
 					}
 				}
 			}
-			if index == 1 && (len(groups) != 2 || len(groups[0].Components) != 12 || len(groups[0].Launches) != 16 || len(groups[1].DestructibleCells) != 44) {
+			if index == 1 && (len(groups) != 3 || len(groups[0].Components) != 12 || len(groups[0].Launches) != 16 || len(groups[1].Components) != 3 || len(groups[1].Gates) != 8 || len(groups[2].DestructibleCells) != 44 || len(visuals.Visuals[0].BodyAnimations) != 3 || len(visuals.Visuals[0].Animations) != 13 || len(visuals.Visuals[0].TurnPoints) != 8) {
 				t.Fatal("second guardian formats differ")
 			}
 			if index == 2 && (len(groups) != 1 || len(groups[0].Components) != 17 || groups[0].Path == nil || len(groups[0].Path.Commands) != 10) {

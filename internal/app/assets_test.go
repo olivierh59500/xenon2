@@ -15,6 +15,11 @@ func TestOriginalPaletteShaderCompiles(t *testing.T) {
 	if _, err := ebiten.NewShader([]byte(sparkShaderSource)); err != nil {
 		t.Fatal(err)
 	}
+	for _, source := range []string{terrainClippedSpriteShaderSource, backgroundStarShaderSource} {
+		if _, err := ebiten.NewShader([]byte(source)); err != nil {
+			t.Fatal(err)
+		}
+	}
 }
 
 func TestWrapInterpolationKeepsParallaxContinuous(t *testing.T) {
@@ -104,6 +109,8 @@ func TestPrivateExportedBundleAndWorldSnapshots(t *testing.T) {
 				atlas = bundle.Levels[level-1].Rules.EnemyShots
 			case "common":
 				atlas = bundle.Common
+			case "guardian-parts":
+				atlas = *bundle.Levels[level-1].GuardianParts
 			case "guardians":
 				atlas = bundle.Levels[level-1].Guardians.Atlas
 			}

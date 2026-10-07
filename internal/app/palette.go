@@ -40,3 +40,25 @@ func Fragment(dstPos vec4,srcPos vec2,color vec4) vec4 {
  return pixel
 }
 `
+
+// Sprite coverage is masked by terrain coverage before copying its colors.
+const terrainClippedSpriteShaderSource = `//kage:unit pixels
+package main
+var Position vec2
+func Fragment(dstPos vec4,srcPos vec2,color vec4) vec4 {
+ pixel:=imageSrc0At(srcPos)
+ local:=srcPos-imageSrc0Origin()
+ covered:=imageSrc1At(imageSrc1Origin()+Position+local).a
+ return pixel*(1-covered)
+}
+`
+
+const backgroundStarShaderSource = `//kage:unit pixels
+package main
+func Fragment(dstPos vec4,srcPos vec2,color vec4) vec4 {
+ pixel:=imageSrc0At(srcPos)
+ star:=imageSrc1At(imageSrc1Origin()+srcPos-imageSrc0Origin())
+ if star.a>0&&pixel.r==0&&pixel.g==0&&pixel.b==0 {return star}
+ return pixel
+}
+`

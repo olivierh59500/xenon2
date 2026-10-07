@@ -14,7 +14,7 @@ func main() {
 	frames := flag.Int("frames", 0, "stop after this many display updates; zero runs normally")
 	screenshot := flag.String("screenshot", "", "save the final frame as PNG")
 	level := flag.Int("level", 1, "reference level, from one to five")
-	view := flag.String("view", "menu", "initial view: menu, attract, level or shop")
+	view := flag.String("view", "attract", "initial view: menu, attract, level or shop")
 	mute := flag.Bool("mute", false, "disable audio output")
 	flag.Parse()
 	if flag.NArg() != 0 {

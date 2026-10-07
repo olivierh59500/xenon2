@@ -22,10 +22,11 @@ func (s *HomingMountState) Tick(pulse, diving, missilesActive bool) bool {
 
 // WeaponTarget is an ordered moving-enemy candidate. Bounds are inclusive.
 type WeaponTarget struct {
-	ID          int
-	ResourceTag int
-	Bounds      CollisionRect
-	Active      bool
+	ID           int
+	SlotIdentity int
+	ResourceTag  int
+	Bounds       CollisionRect
+	Active       bool
 }
 
 func validHomingTarget(t WeaponTarget) bool {
@@ -76,6 +77,7 @@ type HomingMissileState struct {
 	Direction            uint8
 	TurnTimer            int
 	TargetID             int
+	TargetSlotIdentity   int
 	ExpiredWithoutTarget bool
 }
 
@@ -99,7 +101,11 @@ func (s *HomingMissileState) Advance(targets []WeaponTarget, nextRandom func() u
 		var target WeaponTarget
 		found := false
 		for _, candidate := range targets {
-			if candidate.ID == s.TargetID && validHomingTarget(candidate) {
+			matches := candidate.ID == s.TargetID
+			if s.TargetSlotIdentity != 0 {
+				matches = candidate.SlotIdentity == s.TargetSlotIdentity
+			}
+			if matches && validHomingTarget(candidate) {
 				target, found = candidate, true
 				break
 			}
@@ -111,6 +117,7 @@ func (s *HomingMissileState) Advance(targets []WeaponTarget, nextRandom func() u
 				return false
 			}
 			s.TargetID = target.ID
+			s.TargetSlotIdentity = target.SlotIdentity
 		}
 		if s.TurnTimer != 0 {
 			s.TurnTimer++

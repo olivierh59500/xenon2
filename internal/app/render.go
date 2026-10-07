@@ -25,6 +25,7 @@ type levelGraphics struct {
 	sparkUniforms                       map[string]any
 	flashTiles                          map[uint16]*ebiten.Image
 	guardians                           atlasGraphics
+	guardianParts                       atlasGraphics
 	dive                                atlasGraphics
 	uniforms                            map[string]any
 	paletteMask, shades                 []float32
@@ -33,35 +34,51 @@ type levelGraphics struct {
 	moving, fixed, ships, common, shots atlasGraphics
 }
 type graphics struct {
-	sparkShader         *ebiten.Shader
-	sparkScratch        *ebiten.Image
-	transitionStrips    map[string]*ebiten.Image
-	shopTransition      atlasGraphics
-	textZoomRegions     map[string]visualassets.SpriteRegion
-	hudBase             *ebiten.Image
-	hudScore, hudLives  map[rune]*ebiten.Image
-	logoZoom, textZoom  atlasGraphics
-	presentationFont    map[rune]*ebiten.Image
-	shopNoise           [20]*ebiten.Image
-	shopBase            *ebiten.Image
-	portraits           []*ebiten.Image
-	smallFont, cashFont map[rune]*ebiten.Image
-	shopControls        atlasGraphics
-	paletteShader       *ebiten.Shader
-	title               *ebiten.Image
-	font                map[rune]*ebiten.Image
-	ships, common, shop atlasGraphics
-	levels              [5]levelGraphics
-	playfield           *ebiten.Image
+	materialShader                               *ebiten.Shader
+	terrainMask                                  *ebiten.Image
+	terrainMaskTiles                             [5]map[uint16]*ebiten.Image
+	materialUniforms                             map[string]any
+	materialPosition                             []float32
+	backgroundStarShader                         *ebiten.Shader
+	backgroundStarBackdrop, backgroundStarPoints *ebiten.Image
+	backgroundStarPixels                         []byte
+	creditOverlaps                               map[string]*ebiten.Image
+	creditOverlapPixels                          map[string]*image.NRGBA
+	sparkShader                                  *ebiten.Shader
+	sparkScratch                                 *ebiten.Image
+	transitionStrips                             map[string]*ebiten.Image
+	shopTransition                               atlasGraphics
+	textZoomRegions                              map[string]visualassets.SpriteRegion
+	hudBase                                      *ebiten.Image
+	hudScore, hudLives                           map[rune]*ebiten.Image
+	logoZoom, textZoom                           atlasGraphics
+	presentationFont                             map[rune]*ebiten.Image
+	shopNoise                                    [20]*ebiten.Image
+	shopBase                                     *ebiten.Image
+	portraits                                    []*ebiten.Image
+	smallFont, cashFont                          map[rune]*ebiten.Image
+	shopControls                                 atlasGraphics
+	paletteShader                                *ebiten.Shader
+	title                                        *ebiten.Image
+	font                                         map[rune]*ebiten.Image
+	ships, common, shop                          atlasGraphics
+	levels                                       [5]levelGraphics
+	playfield                                    *ebiten.Image
 }
 
 func prepareGraphics(b *Bundle) graphics {
-	g := graphics{title: ebiten.NewImageFromImage(b.Title.Image), font: make(map[rune]*ebiten.Image), ships: prepareAtlas(b.Ships.Atlas), common: prepareAtlas(b.Common), shop: prepareAtlas(b.ShopArt.Atlas), playfield: ebiten.NewImage(ScreenWidth, PlayfieldHeight)}
+	g := graphics{title: ebiten.NewImageFromImage(b.Title.Image), font: make(map[rune]*ebiten.Image), ships: prepareAtlas(b.Ships.Atlas), common: prepareAtlas(b.Common), shop: prepareAtlas(b.ShopArt.Atlas), playfield: ebiten.NewImage(ScreenWidth, ScreenHeight)}
 	font := ebiten.NewImageFromImage(remapPalette(b.Font.Image, b.Levels[0].Terrain.Palette, b.Title.Palette))
 	for index, char := range b.Font.Characters {
 		x, y := (index%b.Font.Columns)*b.Font.Width, (index/b.Font.Columns)*b.Font.Height
 		g.font[char] = font.SubImage(image.Rect(x, y, x+b.Font.Width, y+b.Font.Height)).(*ebiten.Image)
 	}
+	g.terrainMask = ebiten.NewImage(ScreenWidth, PlayfieldHeight)
+	g.materialPosition = make([]float32, 2)
+	g.materialUniforms = map[string]any{"Position": g.materialPosition}
+	g.backgroundStarBackdrop = ebiten.NewImage(ScreenWidth, PlayfieldHeight)
+	g.backgroundStarPoints = ebiten.NewImage(ScreenWidth, PlayfieldHeight)
+	g.backgroundStarPixels = make([]byte, ScreenWidth*PlayfieldHeight*4)
 	g.shopBase = ebiten.NewImageFromImage(b.ShopScene.Base)
 	portraitImage := ebiten.NewImageFromImage(b.ShopScene.Portraits)
 	for i := 0; i < b.ShopScene.PortraitFrames; i++ {
@@ -88,6 +105,14 @@ func prepareGraphics(b *Bundle) graphics {
 	g.hudLives = prepareFont(b.PlayerPresentation.LivesFont)
 	g.logoZoom = prepareAtlas(b.Presentation.LogoZoom)
 	g.textZoom = prepareAtlas(b.Presentation.TextZoom)
+	g.creditOverlaps = make(map[string]*ebiten.Image, 6)
+	g.creditOverlapPixels = make(map[string]*image.NRGBA, 6)
+	for pair := 0; pair < 6; pair++ {
+		text := b.Presentation.Credits[pair*2]
+		pixels := visualassets.ComposeCreditOverlap(b.Presentation.Font, text, b.Title.Palette)
+		g.creditOverlapPixels[text] = pixels
+		g.creditOverlaps[text] = ebiten.NewImageFromImage(pixels)
+	}
 	g.textZoomRegions = make(map[string]visualassets.SpriteRegion, len(b.Presentation.TextZoom.Sprites))
 	for _, region := range b.Presentation.TextZoom.Sprites {
 		g.textZoomRegions[region.Name] = region
@@ -101,6 +126,9 @@ func prepareGraphics(b *Bundle) graphics {
 		v.shots = prepareAtlas(l.Rules.EnemyShots)
 		if l.Guardians != nil {
 			v.guardians = prepareAtlas(l.Guardians.Atlas)
+		}
+		if l.GuardianParts != nil {
+			v.guardianParts = prepareAtlas(*l.GuardianParts)
 		}
 		palette := make([]float32, 64)
 		for index, c := range l.Terrain.Palette {
@@ -122,6 +150,11 @@ func prepareGraphics(b *Bundle) graphics {
 		for _, tile := range l.Terrain.Tiles {
 			v.tiles[tile.ID] = atlas.SubImage(image.Rect(tile.X, tile.Y, tile.X+16, tile.Y+16)).(*ebiten.Image)
 		}
+		g.terrainMaskTiles[i] = make(map[uint16]*ebiten.Image, len(l.Terrain.Tiles))
+		for _, tile := range l.Terrain.Tiles {
+			pixels := flashPixels(l.Terrain.Atlas, image.Rect(tile.X, tile.Y, tile.X+16, tile.Y+16), [4]uint8{255, 255, 255, 255})
+			g.terrainMaskTiles[i][tile.ID] = ebiten.NewImageFromImage(pixels)
+		}
 		v.flashTiles = make(map[uint16]*ebiten.Image, len(l.Terrain.Tiles))
 		for _, tile := range l.Terrain.Tiles {
 			v.flashTiles[tile.ID] = ebiten.NewImageFromImage(flashPixels(l.Terrain.Atlas, image.Rect(tile.X, tile.Y, tile.X+16, tile.Y+16), l.Terrain.Palette[15]))
@@ -141,6 +174,13 @@ func prepareGraphics(b *Bundle) graphics {
 				graphic := v.guardians[sprite.Name]
 				graphic.flash = ebiten.NewImageFromImage(flashPixels(l.Guardians.Atlas.Image, image.Rect(sprite.X, sprite.Y, sprite.X+sprite.Width, sprite.Y+sprite.Height), l.Terrain.Palette[15]))
 				v.guardians[sprite.Name] = graphic
+			}
+		}
+		if l.GuardianParts != nil {
+			for _, sprite := range l.GuardianParts.Sprites {
+				graphic := v.guardianParts[sprite.Name]
+				graphic.flash = ebiten.NewImageFromImage(flashPixels(l.GuardianParts.Image, image.Rect(sprite.X, sprite.Y, sprite.X+sprite.Width, sprite.Y+sprite.Height), l.Terrain.Palette[15]))
+				v.guardianParts[sprite.Name] = graphic
 			}
 		}
 		g.levels[i] = v
@@ -258,15 +298,32 @@ func (g *Game) drawLevel(screen *ebiten.Image) {
 		op.GeoM.Translate(g.View.BackgroundX, y)
 		field.DrawImage(gpu.background, &op)
 	}
-	if g.View.DivePhase == 4 {
-		g.drawPlayer(field, level, alpha)
-	}
 	tiles := l.Terrain.Map
 	if len(g.View.TerrainMap) == len(tiles) {
 		tiles = g.View.TerrainMap
 	}
 	first := int(math.Floor(camera / 16))
 	last := int(math.Ceil((camera + PlayfieldHeight) / 16))
+	// The special source renderer clips against map coverage, independently of
+	// already drawn actors. Build this mask in a separate pass to keep batching.
+	needsMask := g.View.DivePhase == 4
+	for _, sprite := range g.View.Sprites {
+		needsMask = needsMask || sprite.Materializing
+	}
+	if needsMask {
+		g.graphics.terrainMask.Clear()
+		for row := max(0, first); row < min(l.Terrain.Rows, last); row++ {
+			for column := 0; column < l.Terrain.Columns; column++ {
+				tile := g.graphics.terrainMaskTiles[level-1][tiles[row*l.Terrain.Columns+column]]
+				if tile == nil {
+					continue
+				}
+				op := ebiten.DrawImageOptions{}
+				op.GeoM.Translate(float64(column*16), float64(row*16)-camera)
+				g.graphics.terrainMask.DrawImage(tile, &op)
+			}
+		}
+	}
 	for row := max(0, first); row < min(l.Terrain.Rows, last); row++ {
 		for column := 0; column < l.Terrain.Columns; column++ {
 			id := tiles[row*l.Terrain.Columns+column]
@@ -279,16 +336,19 @@ func (g *Game) drawLevel(screen *ebiten.Image) {
 			field.DrawImage(tile, &op)
 		}
 	}
-	if g.View.DivePhase != 4 {
-		g.drawPlayer(field, level, alpha)
-	}
-	for _, source := range []string{"equipment", "moving", "effects", "scenery"} {
+	g.drawBackgroundStars(field, level, alpha)
+	g.drawPlayer(field, level, alpha)
+	for _, source := range []string{"equipment", "moving", "effects", "scenery", "sparks"} {
 		for _, sprite := range g.View.Sprites {
 			if sprite.Layer == source {
 				g.drawSprite(field, sprite, level, alpha)
 			}
 		}
 	}
+	for _, sprite := range g.View.HUD {
+		g.drawSprite(field, sprite, level, alpha)
+	}
+	g.drawOriginalHUD(field)
 	if g.View.FreezeInterpolation || g.View.Shades {
 		gpu.paletteMask[0] = float32(g.View.PaletteMask)
 		if !g.View.FreezeInterpolation {
@@ -300,14 +360,10 @@ func (g *Game) drawLevel(screen *ebiten.Image) {
 		}
 		op := ebiten.DrawRectShaderOptions{Uniforms: gpu.uniforms}
 		op.Images[0] = field
-		screen.DrawRectShader(ScreenWidth, PlayfieldHeight, g.graphics.paletteShader, &op)
+		screen.DrawRectShader(ScreenWidth, ScreenHeight, g.graphics.paletteShader, &op)
 	} else {
 		screen.DrawImage(field, nil)
 	}
-	for _, sprite := range g.View.HUD {
-		g.drawSprite(screen, sprite, level, alpha)
-	}
-	g.drawOriginalHUD(screen)
 	if g.View.Diagnostic && g.Config.Frames > 0 {
 		ebitenutil.DebugPrintAt(screen, "REFERENCE", 0, 181)
 	}
@@ -351,7 +407,7 @@ func (g *Game) drawPlayer(field *ebiten.Image, level int, alpha float64) {
 		return
 	}
 	if g.View.DivePhase > 0 && g.View.DivePhase <= 4 {
-		g.drawSprite(field, SpriteView{Atlas: "dive", Sprite: g.Bundle.PlayerPresentation.DiveFrames[g.View.DivePhase-1], X: x, Y: y}, level, alpha)
+		g.drawSprite(field, SpriteView{Materializing: g.View.DivePhase == 4, Atlas: "dive", Sprite: g.Bundle.PlayerPresentation.DiveFrames[g.View.DivePhase-1], X: x, Y: y}, level, alpha)
 		return
 	}
 	index := max(0, min(12, g.View.Player.Inertia+6))
@@ -389,6 +445,8 @@ func (g *Game) drawSprite(destination *ebiten.Image, sprite SpriteView, level in
 		atlas = g.graphics.levels[level-1].ships
 	case "dive":
 		atlas = g.graphics.levels[level-1].dive
+	case "guardian-parts":
+		atlas = g.graphics.levels[level-1].guardianParts
 	case "guardians":
 		atlas = g.graphics.levels[level-1].guardians
 	case "common":
@@ -424,7 +482,15 @@ func (g *Game) drawSprite(destination *ebiten.Image, sprite SpriteView, level in
 	if sprite.Flash && image.flash != nil {
 		picture = image.flash
 	}
-	destination.DrawImage(picture, &op)
+	if sprite.Materializing {
+		g.graphics.materialPosition[0], g.graphics.materialPosition[1] = float32(x), float32(y)
+		shaderOp := ebiten.DrawRectShaderOptions{Uniforms: g.graphics.materialUniforms}
+		shaderOp.Images[0], shaderOp.Images[1] = picture, g.graphics.terrainMask
+		shaderOp.GeoM.Translate(x, y)
+		destination.DrawRectShader(image.width, image.height, g.graphics.materialShader, &shaderOp)
+	} else {
+		destination.DrawImage(picture, &op)
+	}
 }
 
 func (g *Game) drawLaser(destination *ebiten.Image, beam SpriteView, level int, alpha float64) {
@@ -447,9 +513,10 @@ func (g *Game) drawLaser(destination *ebiten.Image, beam SpriteView, level int, 
 	if stem.image == nil {
 		return
 	}
-	for row := 0; row < beam.Length; row++ {
+	if beam.Length > 0 {
 		op := ebiten.DrawImageOptions{}
-		op.GeoM.Translate(x, y-float64(row))
+		op.GeoM.Scale(1, float64(beam.Length))
+		op.GeoM.Translate(x, y-float64(beam.Length)+1)
 		destination.DrawImage(stem.image, &op)
 	}
 }
@@ -530,31 +597,34 @@ func (g *Game) drawShop(screen *ebiten.Image) {
 	op.GeoM.Translate(float64(scene.PortraitX), float64(scene.PortraitY))
 	screen.DrawImage(g.graphics.portraits[s.Mouth], &op)
 	for _, ambient := range scene.Ambient {
-		g.drawAtlasSprite(screen, g.graphics.shopControls, animationImage(ambient.Animation, s.Frame), float64(ambient.X), float64(ambient.Y))
+		g.drawAnchoredAtlasSprite(screen, g.graphics.shopControls, animationImage(ambient.Animation, s.Frame), float64(ambient.X), float64(ambient.Y))
 	}
 	if s.BlinkFrames > 0 {
 		for _, control := range scene.Controls {
 			if control.ID == "blink-left" || control.ID == "blink-right" {
-				g.drawAtlasSprite(screen, g.graphics.shopControls, control.Sprite, float64(control.X), float64(control.Y))
+				g.drawAnchoredAtlasSprite(screen, g.graphics.shopControls, control.Sprite, float64(control.X), float64(control.Y))
 			}
 		}
 	}
 	for index, entry := range s.Entries {
 		cell := scene.Cells[index]
 		if s.Television[index] <= 2 || !entry.Available {
-			if entry.Item != 0 || entry.More {
+			if s.Television[index] != -8 {
 				g.drawShopNoise(screen, index, cell.X, cell.Y)
+			}
+			if counter := s.Television[index]; counter < 0 && counter >= -9 && len(scene.TVTransition) > counter+9 {
+				g.drawAnchoredAtlasSprite(screen, g.graphics.shopControls, scene.TVTransition[counter+9], float64(cell.X), float64(cell.Y))
 			}
 			continue
 		}
 		name := ""
 		if entry.More {
-			name = animationImage(scene.PageAnimation, s.Frame)
+			name = animationImage(scene.PageAnimation, max(0, s.IconPasses[index]-1))
 		} else {
 			id := g.Bundle.Shop.Items[int(entry.Item)-1].ID
 			for _, animation := range g.Bundle.ShopArt.Animations {
 				if animation.ID == id {
-					name = animationImage(animation, s.Frame)
+					name = animationImage(animation, max(0, s.IconPasses[index]-1))
 					break
 				}
 			}
@@ -567,7 +637,7 @@ func (g *Game) drawShop(screen *ebiten.Image) {
 		if !ok {
 			continue
 		}
-		g.drawAtlasSprite(screen, atlas, name, float64(cell.X+16-sprite.width/2+sprite.anchorX), float64(cell.Y+14-sprite.height/2+sprite.anchorY))
+		g.drawAtlasSprite(screen, atlas, name, float64(cell.X+16-sprite.width/2), float64(cell.Y+14-sprite.height/2))
 	}
 	action := "buy"
 	if s.Selling {
@@ -576,12 +646,12 @@ func (g *Game) drawShop(screen *ebiten.Image) {
 	for _, control := range scene.Controls {
 		selected := s.Row == 4 && ((s.Column == 0 && strings.HasPrefix(control.ID, "exit")) || (s.Column != 0 && strings.HasPrefix(control.ID, action)))
 		if (control.ID == "exit" || control.ID == action) && !selected || (control.ID == "exit-active" || control.ID == action+"-active") && selected {
-			g.drawAtlasSprite(screen, g.graphics.shopControls, control.Sprite, float64(control.X), float64(control.Y))
+			g.drawAnchoredAtlasSprite(screen, g.graphics.shopControls, control.Sprite, float64(control.X), float64(control.Y))
 		}
 	}
 	if s.Row < 4 {
 		cell := scene.Cells[s.Row*5+s.Column]
-		g.drawAtlasSprite(screen, g.graphics.shopControls, "shop-control-cursor-active", float64(cell.CursorX), float64(cell.CursorY))
+		g.drawAnchoredAtlasSprite(screen, g.graphics.shopControls, "shop-control-cursor-active", float64(cell.CursorX), float64(cell.CursorY))
 	}
 	amount := fmt.Sprintf("%07d", s.DisplayMoney)
 	g.drawGlyphs(screen, g.graphics.cashFont, amount, scene.MoneyX, scene.MoneyY, scene.CashFont.Width)
@@ -590,7 +660,11 @@ func (g *Game) drawShop(screen *ebiten.Image) {
 	}
 	if s.HandRemaining > 0 && s.HandFrame < len(scene.SaleHand) {
 		frame := scene.SaleHand[s.HandFrame]
-		g.drawAtlasSprite(screen, g.graphics.shopControls, frame.Sprite, float64(frame.X), float64(frame.Y))
+		g.drawAnchoredAtlasSprite(screen, g.graphics.shopControls, frame.Sprite, float64(frame.X), float64(frame.Y))
+	}
+	if s.DisplayPhase == shopui.HeadphoneHand && s.IntroHandFrame < len(scene.IntroHand) {
+		frame := scene.IntroHand[s.IntroHandFrame]
+		g.drawAnchoredAtlasSprite(screen, g.graphics.shopControls, frame.Sprite, float64(frame.X), float64(frame.Y))
 	}
 	g.drawShopTransition(screen)
 }
@@ -609,6 +683,10 @@ func (g *Game) drawShopTransition(screen *ebiten.Image) {
 			g.drawAtlasSprite(screen, g.graphics.shopTransition, fmt.Sprintf("shop-headphones-%d", index), float64(x), float64(s.Headphones+1))
 			g.drawAtlasSprite(screen, g.graphics.shopTransition, fmt.Sprintf("shop-headphones-%d", index+3), float64(x), float64(112-s.Headphones))
 		}
+	}
+	if s.Headphones > 0 && s.Headphones < 8 {
+		g.drawAtlasSprite(screen, g.graphics.shopTransition, "shop-transition-border-0", 208, 0)
+		g.drawAtlasSprite(screen, g.graphics.shopTransition, "shop-transition-border-1", 208, 105)
 	}
 	if s.LowerOverlay > 0 {
 		g.drawTransitionStrip(screen, "shop-transition-strip-2", 0, s.LowerOverlay, 215, 114+68-s.LowerOverlay)
@@ -704,4 +782,12 @@ func remapPalette(picture *image.NRGBA, from, to [16][4]uint8) *image.NRGBA {
 		}
 	}
 	return out
+}
+
+func (g *Game) drawAnchoredAtlasSprite(destination *ebiten.Image, atlas atlasGraphics, name string, x, y float64) {
+	sprite, ok := atlas[name]
+	if !ok {
+		return
+	}
+	g.drawAtlasSprite(destination, atlas, name, x-float64(sprite.anchorX), y-float64(sprite.anchorY))
 }

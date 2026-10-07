@@ -5,38 +5,50 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 	"strings"
+	"xenon2/internal/engine"
 	"xenon2/internal/presentation"
 )
 
 // BeginAttract starts the source presentation loop without changing game rules.
 func (g *Game) BeginAttract() {
+	if g.updates > 0 {
+		g.resetPresentationStars(presentation.LogoDelay)
+	}
+	scores := g.director.Scores
 	g.director = presentation.NewDirector(&g.Bundle.Presentation)
+	g.director.Scores = scores
+	g.readyRunning, g.gameOverRunning = false, false
+	g.presentationStarPhase = presentation.LogoDelay
 	g.Screen = PresentationScreen
+	g.selectMusic()
 }
 
 func (g *Game) SetContinueHandler(handler func() error) { g.onContinue = handler }
 
 func (g *Game) updatePresentation() error {
 	input := presentation.Input{Confirm: inpututil.IsKeyJustPressed(ebiten.KeyEnter) || inpututil.IsKeyJustPressed(ebiten.KeySpace) || inpututil.IsKeyJustPressed(ebiten.KeyControl) || inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft)}
-	if inpututil.IsKeyJustPressed(ebiten.KeyArrowLeft) {
+	if ebiten.IsKeyPressed(ebiten.KeyArrowLeft) {
 		input.Horizontal = -1
 	}
-	if inpututil.IsKeyJustPressed(ebiten.KeyArrowRight) {
+	if ebiten.IsKeyPressed(ebiten.KeyArrowRight) {
 		input.Horizontal = 1
 	}
 	g.presentationInput.Confirm = g.presentationInput.Confirm || input.Confirm
-	if input.Horizontal != 0 {
-		g.presentationInput.Horizontal = input.Horizontal
-	}
+	g.presentationInput.Horizontal = input.Horizontal
 	for ticks := g.menuClock.Advance(); ticks > 0; ticks-- {
-		g.starfield.Advance()
 		switch result := g.director.Advance(g.presentationInput); result {
+		case presentation.StartGame:
+			g.Screen = LevelScreen
 		case presentation.ShowMenu:
 			g.Screen = TitleScreen
 			g.selectMusic()
 		case presentation.ResumeGame:
 			if driver, ok := g.Driver.(*worldDriver); ok {
+				g.deliverEffectActivity()
 				if err := driver.Advance(Input{Fire: true}); err != nil {
+					return err
+				}
+				if err := g.consumeDriverAudio(); err != nil {
 					return err
 				}
 				g.View = driver.Frame()
@@ -44,6 +56,7 @@ func (g *Game) updatePresentation() error {
 			}
 			g.Screen = LevelScreen
 			g.readyRunning = false
+			g.selectMusic()
 		case presentation.ContinueAccepted:
 			if g.onContinue != nil {
 				if err := g.onContinue(); err != nil {
@@ -55,17 +68,34 @@ func (g *Game) updatePresentation() error {
 				g.finishPlayerGame()
 			}
 		case presentation.ContinueDeclined:
+			g.resetPresentationStars(presentation.GameOverMessage)
+			g.director.BeginGameOver()
+		case presentation.PlayerGameFinished:
 			g.finishPlayerGame()
 		}
 		if g.continueAfterScores && g.director.Phase == presentation.LogoDelay {
 			g.continueAfterScores = false
 			if g.View.ContinueCredits > 0 {
+				g.resetPresentationStars(presentation.ContinueIn)
 				g.director.BeginContinue()
 			} else {
-				g.finishPlayerGame()
+				g.resetPresentationStars(presentation.GameOverMessage)
+				g.director.BeginGameOver()
 			}
 		}
-		g.presentationInput = presentation.Input{}
+		g.presentationInput.Confirm = false
+		if g.Screen == LevelScreen {
+			g.selectMusic()
+			continue
+		}
+		if g.director.DisplayPhase == presentation.MenuIn && g.presentationStarPhase != presentation.MenuIn {
+			g.resetPresentationStars(presentation.MenuIn)
+		}
+		g.starfield.Advance()
+		if driver, ok := g.Driver.(*worldDriver); ok {
+			driver.world.SetRandomState(*g.starfield.Random)
+		}
+		g.selectMusic()
 		for i, star := range g.starfield.Stars {
 			if g.presentationPixelOccupied(star.ScreenX, star.ScreenY) {
 				g.starfield.Covered(i)
@@ -84,7 +114,8 @@ func (g *Game) finishPlayerGame() {
 		g.Screen = LevelScreen
 		return
 	}
-	g.Screen = TitleScreen
+	g.BeginAttract()
+	g.director.Advance(presentation.Input{})
 }
 
 func (g *Game) presentationPixelOccupied(x, y int) bool {
@@ -99,6 +130,16 @@ func (g *Game) presentationPixelOccupied(x, y int) bool {
 				return true
 			}
 		}
+	}
+	if g.creditOverlapVisible() {
+		pixels := g.graphics.creditOverlapPixels[d.Captions[0].Text]
+		if x >= 0 && x < 320 && y >= 112 && y < 134 {
+			c := pixels.NRGBAAt(x, y-112)
+			if c.R != 0 || c.G != 0 || c.B != 0 {
+				return true
+			}
+		}
+		return false
 	}
 	byName := g.graphics.textZoom
 	for _, caption := range d.Captions {
@@ -129,6 +170,17 @@ func (g *Game) presentationPixelOccupied(x, y int) bool {
 			}
 		}
 	}
+	if d.ShowScores {
+		for index, score := range d.Scores {
+			line := fmt.Sprintf("%2d. %07d %s", index+1, score.Points, score.Initials)
+			if fontPixelOccupied(g.Bundle.Font, line, 32, 38+index*16, 16, x, y) {
+				return true
+			}
+		}
+	}
+	if d.ShowCredits && fontPixelOccupied(g.Bundle.Font, g.creditCaption(g.View.ContinueCredits), 176, 184, 8, x, y) {
+		return true
+	}
 	return false
 }
 
@@ -139,14 +191,23 @@ func (g *Game) drawPresentation(screen *ebiten.Image) {
 		index := min(15, d.LogoScale-1)
 		g.drawAtlasSprite(screen, g.graphics.logoZoom, p.LogoZoom.Sprites[index].Name, float64(p.LogoZoomX[index]), float64(p.LogoZoomY[index]))
 	}
-	for _, caption := range d.Captions {
-		g.drawCaptionZoom(screen, caption)
+	if g.creditOverlapVisible() {
+		op := ebiten.DrawImageOptions{}
+		op.GeoM.Translate(0, 112)
+		screen.DrawImage(g.graphics.creditOverlaps[d.Captions[0].Text], &op)
+	} else {
+		for _, caption := range d.Captions {
+			g.drawCaptionZoom(screen, caption)
+		}
 	}
 	if d.ShowScores {
 		for index, score := range d.Scores {
 			line := fmt.Sprintf("%2d. %07d %s", index+1, score.Points, score.Initials)
 			g.drawGlyphs(screen, g.graphics.font, line, 32, 38+index*16, 16)
 		}
+	}
+	if d.ShowCredits {
+		g.drawGlyphs(screen, g.graphics.font, g.creditCaption(g.View.ContinueCredits), 176, 184, 8)
 	}
 	g.drawStarfield(screen)
 }
@@ -170,4 +231,30 @@ func (g *Game) drawCaptionZoom(screen *ebiten.Image, caption presentation.Captio
 		}
 		x += step
 	}
+}
+
+func (g *Game) resetPresentationStars(phase presentation.Phase) {
+	g.presentationStarPhase = phase
+	random := *g.starfield.Random
+	if driver, ok := g.Driver.(*worldDriver); ok {
+		random = driver.world.RandomState()
+	}
+	g.starfield = presentation.NewStarfield(&random, g.Bundle.Presentation.StarColors)
+	if driver, ok := g.Driver.(*worldDriver); ok {
+		driver.world.SetRandomState(random)
+	}
+	g.menuClock = engine.NewFrameClock(25, 60)
+}
+
+func (g *Game) creditCaption(credits int) string {
+	text := g.Bundle.Presentation.CreditsCaption
+	if len(text) > 0 {
+		text = text[:len(text)-1] + fmt.Sprint(credits)
+	}
+	return text
+}
+
+func (g *Game) creditOverlapVisible() bool {
+	captions := g.director.Captions
+	return len(captions) == 2 && captions[0].Text == captions[1].Text && captions[0].Scale == 16 && captions[1].Scale == 15 && captions[0].CenterY == 120 && captions[1].CenterY == 120
 }

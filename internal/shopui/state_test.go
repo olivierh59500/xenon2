@@ -24,6 +24,7 @@ func TestShopQuoteAndSeparateSaleConfirmation(t *testing.T) {
 	money := 1234
 	s := testShop(&e, &money)
 	finishShopDialogue(s)
+	s.Row, s.Column = 0, 0
 	if err := s.Confirm(); err != nil {
 		t.Fatal(err)
 	}
@@ -82,7 +83,7 @@ func TestShopExitAndPurchasePreserveWorldEquipment(t *testing.T) {
 	}
 	s.Row, s.Column = 4, 0
 	s.Confirm()
-	for i := 0; i < 20 && !s.Done; i++ {
+	for i := 0; i < 50 && !s.Done; i++ {
 		s.Advance()
 	}
 	if !s.Done || e.SpeedTier != 1 {
@@ -95,6 +96,7 @@ func TestShopNavigationAndOriginalStockPage(t *testing.T) {
 	money := 10000
 	s := testShop(&e, &money)
 	finishShopDialogue(s)
+	s.Row, s.Column = 0, 0
 	s.Move(-1, 0)
 	if s.Column != 4 {
 		t.Fatal("column does not wrap")
@@ -110,18 +112,20 @@ func TestShopNavigationAndOriginalStockPage(t *testing.T) {
 	if err := s.Confirm(); err != nil {
 		t.Fatal(err)
 	}
+	finishShopDialogue(s)
 	if s.Offset != 19 || s.Entries[0].Item != engine.ItemBomb {
 		t.Fatalf("more cell: offset=%d first=%d", s.Offset, s.Entries[0].Item)
 	}
 	s.Row, s.Column = 3, 4
 	s.Confirm()
+	finishShopDialogue(s)
 	if s.Offset != 0 {
 		t.Fatal("last stock page does not wrap")
 	}
 }
 
 func finishShopDialogue(s *State) {
-	for i := 0; i < 1000 && (s.Entrance > 0 || s.Revealed < len(s.Dialogue) || s.HandRemaining > 0); i++ {
+	for i := 0; i < 1000 && (s.Busy() || s.Revealed < len(s.Dialogue) || s.HandRemaining > 0); i++ {
 		s.Advance()
 	}
 }
@@ -156,6 +160,9 @@ func TestShopTransitionsKeepIndependentOriginalCounters(t *testing.T) {
 	finishShopDialogue(s)
 	s.Row, s.Column = 4, 0
 	s.Confirm()
+	for s.Phase != PortraitExit {
+		s.Advance()
+	}
 	for pass := 0; pass < 16; pass++ {
 		s.Advance()
 	}
@@ -165,5 +172,44 @@ func TestShopTransitionsKeepIndependentOriginalCounters(t *testing.T) {
 	s.Advance()
 	if !s.Done || s.LowerOverlay != 68 {
 		t.Fatal("exit did not complete after seventeen passes")
+	}
+}
+
+func TestAdviceUsesPersistentVisitIndexAndKeepsMonitorState(t *testing.T) {
+	e := engine.NewEquipment()
+	money := 10000
+	s := testShop(&e, &money)
+	s.scene.AdviceTips = [][]string{{"TIP ZERO", "TIP ONE", "TIP TWO", "TIP THREE", "TIP FOUR", "TIP FIVE"}}
+	finishShopDialogue(s)
+	s.Row, s.Column = 4, 0
+	s.Confirm()
+	finishShopDialogue(s)
+	index := 0
+	s.AdviceIndex = &index
+	for _, wanted := range []struct {
+		text  string
+		index int
+	}{{"TIPZERO", 4}, {"TIPONE", 8}, {"TIPTWO", 8}, {"TIPTWO", 8}} {
+		s.Row, s.Column = 0, 0
+		s.Confirm()
+		finishShopDialogue(s)
+		s.Television[0] = 55
+		s.IconPasses[0] = 12
+		s.Confirm()
+		if shopDialogue(s) != wanted.text || index != wanted.index {
+			t.Fatalf("advice %q index %d", shopDialogue(s), index)
+		}
+		if s.Television[0] != 55 || s.IconPasses[0] != 12 {
+			t.Fatal("purchase reset an existing monitor animation")
+		}
+		finishShopDialogue(s)
+	}
+	index = 12
+	s.Row, s.Column = 0, 0
+	s.Confirm()
+	finishShopDialogue(s)
+	s.Confirm()
+	if shopDialogue(s) != "TIPTHREE" || index != 16 {
+		t.Fatal("later visit advice restarted its first-page tips")
 	}
 }

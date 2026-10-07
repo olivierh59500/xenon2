@@ -9,6 +9,7 @@ import (
 // worldDriver translates snapshots without owning or approximating game rules.
 type worldDriver struct {
 	effects     []SpriteView
+	sparks      []SpriteView
 	weapons     []engine.WeaponRenderItem
 	session     *engine.Session
 	turnChanged bool
@@ -18,11 +19,19 @@ type worldDriver struct {
 
 func newWorldDriver(bundle *Bundle, level int) (*worldDriver, error) {
 	l := bundle.Levels[level-1]
-	world, err := engine.NewWorld(engine.LevelData{Number: level, Terrain: &l.Terrain, Paths: &l.Paths, Encounters: &l.Encounters, Actors: &l.Actors, FixedSprites: &l.FixedSprites, FixedTiles: &l.FixedTiles, PlayerStencil: &bundle.Stencil, Rules: &l.Rules, Ships: &bundle.Ships, Common: &bundle.Common, Guardians: l.Guardians})
+	world, err := engine.NewWorld(engine.LevelData{Number: level, Terrain: &l.Terrain, Paths: &l.Paths, Encounters: &l.Encounters, Actors: &l.Actors, FixedSprites: &l.FixedSprites, FixedTiles: &l.FixedTiles, PlayerStencil: &bundle.Stencil, Rules: &l.Rules, Ships: &bundle.Ships, Common: &bundle.Common, Guardians: l.Guardians, GuardianGroups: l.GuardianGroups, GuardianParts: l.GuardianParts})
 	if err != nil {
 		return nil, err
 	}
 	return &worldDriver{world: world}, nil
+}
+
+func (d *worldDriver) SetEffectActivity(active [4]bool) { d.world.EffectActive = active }
+
+func (d *worldDriver) ConsumeEffectStop() bool {
+	stop := d.world.StopEffectsRequested
+	d.world.StopEffectsRequested = false
+	return stop
 }
 
 func (d *worldDriver) Advance(input Input) error {
@@ -41,6 +50,12 @@ func (d *worldDriver) ConsumeTurnChange() bool {
 	return changed
 }
 
+func (d *worldDriver) ConsumeImmediateSounds() [4]string {
+	requests := d.world.ImmediateSoundRequests
+	d.world.ImmediateSoundRequests = [4]string{}
+	return requests
+}
+
 func (d *worldDriver) ConsumeSoundRequests() [4]string {
 	requests := d.world.SoundRequests
 	d.world.SoundRequests = [4]string{}
@@ -54,7 +69,14 @@ func (d *worldDriver) Frame() SceneFrame {
 	for _, actor := range w.Actors {
 		if actor.Active && actor.Visible && (actor.Sprite != "" || actor.Patch != nil) {
 			layer := actor.ActorList
-			view := SpriteView{ID: actor.ID, Layer: layer, Atlas: actor.Atlas, Sprite: actor.Sprite, X: actor.X, Y: actor.Y, PreviousX: actor.PreviousX, PreviousY: actor.PreviousY, Interpolate: true, Flash: actor.Flash}
+			if layer == "transient" {
+				layer = "effects"
+			}
+			order := actor.Order
+			if order == 0 {
+				order = actor.ID
+			}
+			view := SpriteView{ID: actor.ID, Order: order, Layer: layer, Atlas: actor.Atlas, Sprite: actor.Sprite, X: actor.X, Y: actor.Y, PreviousX: actor.PreviousX, PreviousY: actor.PreviousY, Interpolate: true, Flash: actor.Flash, Materializing: actor.Materializing}
 			if actor.Patch != nil {
 				view.Kind = "tiles"
 				view.Patch = *actor.Patch
@@ -91,16 +113,21 @@ func (d *worldDriver) Frame() SceneFrame {
 				layer := "effects"
 				if item.Kind == "attachment" {
 					layer = "equipment"
+				} else if item.Kind == "spark" {
+					layer = "sparks"
 				}
 				d.sprites = append(d.sprites, SpriteView{ID: item.ID, Order: item.ID, Kind: item.Kind, Layer: layer, Atlas: "common", Sprite: item.Sprite, X: item.X, Y: item.Y, PreviousX: item.PreviousX, PreviousY: item.PreviousY, Interpolate: true, Tier: item.Tier, Length: item.Length})
 			}
 		}
 	}
 	d.effects = d.effects[:0]
+	d.sparks = d.sparks[:0]
 	kept := d.sprites[:0]
 	for _, sprite := range d.sprites {
 		if sprite.Layer == "effects" {
 			d.effects = append(d.effects, sprite)
+		} else if sprite.Layer == "sparks" {
+			d.sparks = append(d.sparks, sprite)
 		} else {
 			kept = append(kept, sprite)
 		}
@@ -116,7 +143,9 @@ func (d *worldDriver) Frame() SceneFrame {
 		return 0
 	})
 	d.sprites = append(d.sprites, d.effects...)
-	frame := SceneFrame{ContinueCredits: w.ContinueCredits, DivePhase: w.RenderDivePhase, Level: w.Level.Number, CameraY: float64(w.RenderScrollY), BackgroundY: float64(w.BackgroundY), Player: w.Player, PlayerAlive: w.PlayerAlive, PlayerSprite: w.PlayerSprite, Ready: w.Ready, GameOver: w.GameOver, Sprites: d.sprites, TerrainMap: w.Level.Terrain.Map, Score: w.Score, Money: w.Money, Shield: w.Equipment.Shield, Lives: w.Equipment.Lives, Diagnostic: true, FreezeInterpolation: w.ScreenClearFrames > 0, PaletteMask: w.ScreenClearPaletteMask, Shades: w.Equipment.ShadesFrames > 0}
+	slices.SortFunc(d.sparks, func(a, b SpriteView) int { return b.ID - a.ID })
+	d.sprites = append(d.sprites, d.sparks...)
+	frame := SceneFrame{ContinueCredits: w.ContinueCredits, DivePhase: w.RenderDivePhase, Level: w.Level.Number, CameraY: float64(w.RenderScrollY), BackgroundY: float64((192 - w.BackgroundY) % 192), Player: w.Player, PlayerAlive: w.PlayerAlive, PlayerSprite: w.PlayerSprite, Ready: w.Ready, GameOver: w.GameOver, Sprites: d.sprites, TerrainMap: w.Level.Terrain.Map, Score: w.Score, Money: w.Money, Shield: w.Equipment.Shield, Lives: w.Equipment.Lives, Diagnostic: true, FreezeInterpolation: w.ScreenClearFrames > 0, PaletteMask: w.ScreenClearPaletteMask, Shades: w.Equipment.ShadesFrames > 0}
 	frame.PlayerNumber, frame.PlayerCount = 1, 1
 	frame.PlayerScores[0] = w.DisplayScore
 	frame.PlayerLives[0] = w.Equipment.Lives
@@ -162,7 +191,7 @@ func (g *Game) StartLevel(level int) error {
 
 func (g *Game) StartSession(level, players int) error {
 	l := g.Bundle.Levels[level-1]
-	data := engine.LevelData{Number: level, Terrain: &l.Terrain, Paths: &l.Paths, Encounters: &l.Encounters, Actors: &l.Actors, FixedSprites: &l.FixedSprites, FixedTiles: &l.FixedTiles, PlayerStencil: &g.Bundle.Stencil, Rules: &l.Rules, Ships: &g.Bundle.Ships, Common: &g.Bundle.Common, Guardians: l.Guardians}
+	data := engine.LevelData{Number: level, Terrain: &l.Terrain, Paths: &l.Paths, Encounters: &l.Encounters, Actors: &l.Actors, FixedSprites: &l.FixedSprites, FixedTiles: &l.FixedTiles, PlayerStencil: &g.Bundle.Stencil, Rules: &l.Rules, Ships: &g.Bundle.Ships, Common: &g.Bundle.Common, Guardians: l.Guardians, GuardianGroups: l.GuardianGroups, GuardianParts: l.GuardianParts}
 	session, err := engine.NewSession(data, players, *g.starfield.Random)
 	if err != nil {
 		return err

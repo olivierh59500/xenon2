@@ -69,11 +69,17 @@ func (w *World) RestartCheckpoint() {
 			w.Actors = append(segments, w.Actors...)
 		}
 	}
+	if w.secondGuardianActor != nil && w.secondGuardianActor.Active {
+		w.Actors = append(w.Actors, w.secondGuardianActor)
+	}
+	w.restoreSecondArenaActors()
 	w.fire = NewFireCadence(w.Equipment)
 	if w.Weapons != nil {
 		w.Weapons.ResetProjectiles()
 	}
 	w.PendingExitDrops = 0
 	w.ExitReady = false
+	w.ShopReady = false
+	w.LevelFinished = false
 	clear(w.WaveBonuses.Entries[:])
 }

@@ -136,3 +136,44 @@ func TestQueuedEffectWaitsForTickAndLastRequestWins(t *testing.T) {
 		t.Fatalf("last queued effect was not dispatched: %d/%d", left, right)
 	}
 }
+
+func TestEffectActivityAndQueuedGlobalStopPreserveNewRequests(t *testing.T) {
+	bank, waves := testBank()
+	stream, err := NewStream(bank, waves, 10000)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err = stream.PlayMusic("test"); err != nil {
+		t.Fatal(err)
+	}
+	stream.tick()
+	if err = stream.PlayEffect("shot", 1); err != nil {
+		t.Fatal(err)
+	}
+	stream.tick()
+	if !stream.EffectActive(1) || stream.EffectActive(4) || stream.EffectActive(-1) {
+		t.Fatal("incorrect native voice ownership")
+	}
+	if err = stream.QueueEffect("shot", 2); err != nil {
+		t.Fatal(err)
+	}
+	if stream.EffectActive(2) {
+		t.Fatal("queued sound became active before dispatch")
+	}
+	stream.QueueStopEffects()
+	if !stream.EffectActive(1) {
+		t.Fatal("queued stop changed ownership before its tick")
+	}
+	stream.tick()
+	if stream.EffectActive(1) || !stream.EffectActive(2) {
+		t.Fatal("global stop discarded the newer dispatch or retained old voice ownership")
+	}
+	if stream.voices[1].current != stream.shadow[1].next {
+		t.Fatal("terminated voice did not restore the music reload buffer")
+	}
+	stream.tick()
+	stream.tick()
+	if stream.EffectActive(2) {
+		t.Fatal("finished effect retained ownership")
+	}
+}

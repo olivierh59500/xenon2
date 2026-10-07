@@ -8,18 +8,20 @@ import (
 
 // LevelData contains decoded graphics and semantic game data only.
 type LevelData struct {
-	Number        int
-	Terrain       *visualassets.Terrain
-	Paths         *visualassets.Paths
-	Encounters    *visualassets.Encounters
-	Actors        *visualassets.Actors
-	FixedSprites  *visualassets.FixedSprites
-	FixedTiles    *visualassets.FixedTiles
-	PlayerStencil *visualassets.PlayerTerrainStencil
-	Rules         *visualassets.LevelRules
-	Ships         *visualassets.ShipArt
-	Common        *visualassets.SpriteAtlas
-	Guardians     *visualassets.Guardians
+	Number         int
+	Terrain        *visualassets.Terrain
+	Paths          *visualassets.Paths
+	Encounters     *visualassets.Encounters
+	Actors         *visualassets.Actors
+	FixedSprites   *visualassets.FixedSprites
+	FixedTiles     *visualassets.FixedTiles
+	PlayerStencil  *visualassets.PlayerTerrainStencil
+	Rules          *visualassets.LevelRules
+	Ships          *visualassets.ShipArt
+	Common         *visualassets.SpriteAtlas
+	Guardians      *visualassets.Guardians
+	GuardianGroups []visualassets.GuardianGroup
+	GuardianParts  *visualassets.SpriteAtlas
 }
 
 type Input struct {
@@ -31,11 +33,13 @@ type Input struct {
 // Fixed actors retain map coordinates; moving actors retain their path state.
 type WorldActor struct {
 	ID                         int
+	Order                      int
 	X, Y, PreviousX, PreviousY float64
 	Sprite, Atlas              string
 	ActorList                  string
 	Active                     bool
 	Visible                    bool
+	Materializing              bool
 	Health, Score              int
 	part                       *visualassets.ActorPart
 	animation                  visualassets.ActorAnimation
@@ -54,7 +58,16 @@ type WorldActor struct {
 	Flash                      bool
 	Extras                     []WorldSpriteAttachment
 	firstGuardian              bool
+	secondGuardian             bool
 	firstSegment               int
+	fixedKind                  *visualassets.FixedSpriteKind
+	fixedState                 FixedSpriteState
+	fixedAiming                *AnimatedAimingFixedProjectile
+	secondNode                 *SecondDefenseNodeState
+	secondPart                 *visualassets.GuardianComponent
+	secondSegment              *SecondDefenseSegment
+	secondFragment             *SecondDefenseFragment
+	secondMinion               *SecondMinionState
 }
 
 type WorldSpriteAttachment struct {
@@ -70,6 +83,7 @@ type WorldProjectile struct {
 	Motion                     DirectionalProjectile
 	animation                  visualassets.ActorAnimation
 	animationState             AnimationState
+	turning                    *TurningFixedProjectile
 }
 
 type WorldSmallShot struct {
@@ -100,6 +114,7 @@ type World struct {
 	ScrollY, PreviousScrollY         int
 	RenderScrollY                    int
 	ScrollDelta                      int
+	BaseScrollStep                   int
 	BackgroundY, PreviousBackgroundY int
 	VisitedScrollY                   int
 	Equipment                        Equipment
@@ -111,15 +126,22 @@ type World struct {
 	InvulnerableFrames               int
 	MaterializationFrames            int
 	SoundRequests                    [4]string
+	ImmediateSoundRequests           [4]string
+	EffectActive                     [4]bool
+	StopEffectsRequested             bool
+	PendingFixedShots                []FixedSpriteEvents
 	ScreenClearFrames                int
 	ScreenClearPaletteMask           uint16
 	PendingExitDrops                 int
 	ExitReady                        bool
+	ShopReady                        bool
+	LevelFinished                    bool
 	Checkpoint                       CheckpointState
 	WaveBonuses                      WaveBonusCache
 	Ready                            bool
 	GameOver                         bool
 	ContinueCredits                  int
+	AdviceIndex                      int
 	PlayerSprite                     string
 	Actors                           []*WorldActor
 	Projectiles                      []*WorldProjectile
@@ -127,8 +149,11 @@ type World struct {
 	Collectibles                     []*WorldCollectible
 	FirstGuardian                    *FirstGuardianState
 	FirstGuardianSegments            *FirstGuardianSegments
+	SecondGuardian                   *SecondGuardianState
+	PendingGuardianMinions           []SecondGuardianEvents
 	Weapons                          *WeaponRuntime
 	Frame                            uint64
+	MovingEnemyCount                 int
 	Money, Score                     int
 	DisplayScore                     int
 	MinimumScrollY, MaximumScrollY   int
@@ -151,6 +176,20 @@ type World struct {
 	firstGuardianArt                 *visualassets.GuardianVisual
 	firstGuardianActor               *WorldActor
 	firstGuardianParts               [8]*WorldActor
+	secondGuardianArt                *visualassets.GuardianVisual
+	secondGuardianActor              *WorldActor
+	secondGuardianBody               visualassets.TilePatch
+	secondScheduler                  *SecondDefenseScheduler
+	secondWaveArt                    *visualassets.GuardianGroup
+	secondNodeArt                    *visualassets.GuardianGroup
+	secondNodes                      [3]*WorldActor
+	secondDefenseRemaining           int
+	secondGateCounters               [8]int
+	secondStreamsUpdated             [2]bool
+	secondMiddleReleased             bool
+	secondBackward                   bool
+	secondMinionConfig               *SecondMinionConfig
+	secondTerrainCells               *SecondTerrainCells
 	nextTailOrder                    int
 	weaponIDs                        []int
 	weaponTargets                    []WeaponTarget
@@ -171,7 +210,7 @@ func NewWorld(data LevelData) (*World, error) {
 	w := &World{
 		Level: data, Player: PlayerMotionState{X: 160, Y: 176},
 		ScrollY: 4608, PreviousScrollY: 4608, RenderScrollY: 4608, VisitedScrollY: 4608,
-		MaximumScrollY: 4608, ScrollDelta: 1, Equipment: NewEquipment(), PlayerAlive: true, MaterializationFrames: 8, cursor: NewEncounterCursor(), random: NewRandomState(),
+		MaximumScrollY: 4608, ScrollDelta: 1, BaseScrollStep: 1, Equipment: NewEquipment(), PlayerAlive: true, MaterializationFrames: 8, cursor: NewEncounterCursor(), random: NewRandomState(),
 		kinds: make(map[int]*visualassets.WaveActor), paths: make(map[int]*visualassets.Path), fixedKinds: make(map[int]*visualassets.FixedSpriteKind),
 	}
 	w.PreviousPlayer = w.Player
@@ -273,6 +312,21 @@ func NewWorld(data LevelData) (*World, error) {
 			Collision: CollisionRect{Right: -1, Bottom: -1}}
 		w.Actors = append(w.Actors, w.firstGuardianActor)
 	}
+	if data.Number == 2 && data.Guardians != nil && len(data.Guardians.Visuals) != 0 {
+		w.secondGuardianArt = &data.Guardians.Visuals[0]
+		state := NewSecondGuardianState()
+		w.SecondGuardian = &state
+		w.secondGuardianBody = w.secondGuardianArt.Body
+		w.secondGuardianBody.Tiles = append([]uint16(nil), w.secondGuardianBody.Tiles...)
+		w.nextActorID++
+		part := &visualassets.ActorPart{ResourceTag: 80, DamageMode: "second-guardian", MotionMode: "second-guardian-controller"}
+		w.secondGuardianActor = &WorldActor{ID: w.nextActorID, Active: true, ActorList: "moving", Atlas: "guardians", part: part,
+			secondGuardian: true, Health: w.secondGuardianArt.InitialHealth, Collision: CollisionRect{Right: -1, Bottom: -1}}
+		w.Actors = append(w.Actors, w.secondGuardianActor)
+	}
+	if err := w.initializeSecondArena(); err != nil {
+		return nil, err
+	}
 	return w, nil
 }
 
@@ -309,6 +363,10 @@ func (w *World) AcceptContinue() bool {
 // the next pass. Drawing never changes these states.
 func (w *World) Step(input Input) error {
 	clear(w.SoundRequests[:])
+	clear(w.ImmediateSoundRequests[:])
+	w.StopEffectsRequested = false
+	w.PendingFixedShots = w.PendingFixedShots[:0]
+	w.PendingGuardianMinions = w.PendingGuardianMinions[:0]
 	if w.ScreenClearFrames != 0 || w.GameOver {
 		return nil
 	}
@@ -344,7 +402,7 @@ func (w *World) Step(input Input) error {
 	backgroundStep := (w.ScrollDelta >> 1) + (int(w.Frame&1) & w.ScrollDelta)
 	w.BackgroundY = (w.BackgroundY - backgroundStep + 192) % 192
 	w.Player.SpeedTier = w.Equipment.SpeedTier
-	w.Player.ScrollStep = 1
+	w.Player.ScrollStep = w.BaseScrollStep
 	w.RenderDivePhase = w.Dive.Phase
 	deathFinished := false
 	if !w.PlayerAlive && len(w.deathAnimation.Animation.Frames) != 0 {
@@ -363,12 +421,10 @@ func (w *World) Step(input Input) error {
 				if w.Equipment.ShadesFrames == 0 {
 					w.damagePlayer(ContactDamage(actor.part.StrongHealth))
 				}
-				if actor.part.ResourceTag != 80 && actor.part.ResourceTag != 84 {
-					if w.Equipment.ShadesFrames != 0 && actor.firstGuardian {
-						w.strikeFirstGuardian(contactRect, 127)
-					} else if actor.part.ResourceTag != 80 && actor.part.ResourceTag != 84 {
-						w.damageActor(actor, 127)
-					}
+				if w.Equipment.ShadesFrames != 0 && actor.firstGuardian {
+					w.strikeFirstGuardian(contactRect, 127)
+				} else if w.Equipment.ShadesFrames != 0 || actor.part.ResourceTag != 80 && actor.part.ResourceTag != 84 {
+					w.damageActor(actor, 127)
 				}
 				break
 			}
@@ -381,13 +437,13 @@ func (w *World) Step(input Input) error {
 		}
 		handled, crushed := false, false
 		if w.Dive.Phase == 0 {
-			handled, crushed = w.Rewind.Advance(&w.Player, w.ScrollY, 1, touching)
+			handled, crushed = w.Rewind.Advance(&w.Player, w.ScrollY, w.BaseScrollStep, touching)
 		}
 		if crushed {
 			w.destroyPlayer()
 		}
 		if !handled {
-			w.Player.Advance(input.Motion, MotionContext{ScrollY: w.ScrollY, VisitedScrollY: w.VisitedScrollY, BaseScrollStep: 1})
+			w.Player.Advance(input.Motion, MotionContext{ScrollY: w.ScrollY, VisitedScrollY: w.VisitedScrollY, BaseScrollStep: w.BaseScrollStep})
 			w.Rewind.Record(w.ScrollY, w.Player.X, w.Player.Y)
 			if w.Dive.Phase == 0 && w.Coverage != nil && w.Coverage.Touches(w.Player.X, w.Player.Y, w.ScrollY, *w.Level.PlayerStencil) {
 				w.Rewind.Timer = 1
@@ -406,6 +462,7 @@ func (w *World) Step(input Input) error {
 	}
 	copy(w.shipTrail[:3], w.shipTrail[1:])
 	w.shipTrail[3] = w.PreviousPlayer
+	w.secondStreamsUpdated = [2]bool{}
 	for _, actor := range w.Actors {
 		if !actor.Active || actor.ActorList != "moving" {
 			continue
@@ -420,8 +477,34 @@ func (w *World) Step(input Input) error {
 		}
 		actor.PreviousX, actor.PreviousY = actor.X, actor.Y
 		actor.Visible = true
+		if actor.secondNode != nil {
+			w.advanceSecondNode(actor)
+			continue
+		}
+		if actor.secondSegment != nil {
+			if err := w.advanceSecondSegment(actor); err != nil {
+				return err
+			}
+			continue
+		}
+		if actor.secondMinion != nil {
+			w.advanceSecondMinion(actor)
+			continue
+		}
 		if actor.firstGuardian {
 			w.advanceFirstGuardian()
+			continue
+		}
+		if actor.fixedAiming != nil {
+			w.advanceFixedAimingActor(actor)
+			continue
+		}
+		if actor.secondGuardian {
+			w.advanceSecondGuardian()
+			continue
+		}
+		if actor.fixedKind != nil {
+			w.advanceFixedSprite(actor)
 			continue
 		}
 		actor.animationState.Advance(actor.animation)
@@ -497,6 +580,22 @@ func (w *World) Step(input Input) error {
 	if w.InvulnerableFrames > 0 && w.MaterializationFrames == 0 {
 		w.InvulnerableFrames--
 	}
+	for _, actor := range w.Actors {
+		if !actor.Active || actor.ActorList != "transient" {
+			continue
+		}
+		actor.PreviousX, actor.PreviousY = actor.X, actor.Y
+		if actor.secondFragment != nil {
+			w.advanceSecondFragment(actor)
+			continue
+		}
+		if actor.animation.Ending == "remove" && actor.animationState.Frame == len(actor.animation.Frames)-1 && actor.animationState.Remaining == 1 {
+			actor.Active = false
+			continue
+		}
+		actor.animationState.Advance(actor.animation)
+		actor.selectSprite()
+	}
 	// Both families belonged to the same newest-first projectile list. Merge
 	// their stable creation IDs to preserve hits and removals in that order.
 	collectiblesAtStart := w.Collectibles
@@ -555,6 +654,10 @@ func (w *World) Step(input Input) error {
 		}
 		actor.PreviousX, actor.PreviousY = actor.X, actor.Y
 		actor.Visible = true
+		if actor.fixedKind != nil {
+			w.advanceFixedSprite(actor)
+			continue
+		}
 		actor.animationState.Advance(actor.animation)
 		actor.Y = float64(actor.mapY - w.ScrollY)
 		actor.selectSprite()
@@ -577,7 +680,16 @@ func (w *World) Step(input Input) error {
 		}
 		w.Weapons.Compact()
 	}
+	w.MovingEnemyCount = 0
+	for _, actor := range w.Actors {
+		if actor.Active && actor.ActorList == "moving" && actor.part.ResourceTag != 80 && actor.part.ResourceTag != 84 && !(actor.part.Linked && actor.leader != nil) {
+			w.MovingEnemyCount++
+		}
+	}
 	var spawnErr error
+	if err := w.advanceSecondDefenseWaves(); err != nil {
+		return err
+	}
 	w.cursor.Activate(w.ScrollY, w.Level.Encounters,
 		func(wave visualassets.Wave) {
 			if spawnErr == nil {
@@ -593,7 +705,7 @@ func (w *World) Step(input Input) error {
 		}
 	}
 	scroll := ScrollState{Y: w.ScrollY, Minimum: w.MinimumScrollY, Maximum: w.MaximumScrollY, DeviationPasses: w.ScrollDeviationPasses}
-	scroll.Advance(w.Player.ScrollStep, 1, input.Motion.Down)
+	scroll.Advance(w.Player.ScrollStep, w.BaseScrollStep, input.Motion.Down)
 	w.ScrollDelta, w.ScrollY = scroll.ActualStep, scroll.Y
 	w.MaximumScrollY, w.VisitedScrollY = scroll.Maximum, scroll.Maximum
 	w.ScrollDeviationPasses = scroll.DeviationPasses
@@ -613,6 +725,9 @@ func (w *World) Step(input Input) error {
 }
 
 func (w *World) advanceEnemyShot(projectile *WorldProjectile) error {
+	if projectile.turning != nil {
+		return w.advanceTurningFixedShot(projectile)
+	}
 	projectile.PreviousX, projectile.PreviousY = projectile.X, projectile.Y
 	if len(projectile.animation.Frames) != 0 {
 		projectile.animationState.Advance(projectile.animation)
@@ -626,6 +741,9 @@ func (w *World) advanceEnemyShot(projectile *WorldProjectile) error {
 	projectile.X, projectile.Y = float64(projectile.Motion.X>>16), float64(projectile.Motion.Y>>16)
 	if projectile.Active && w.PlayerAlive && w.Dive.Phase == 0 {
 		box, ok := w.shotSpriteBoxes[projectile.Sprite]
+		if !ok && projectile.Atlas == "fixed" {
+			box, ok = w.movingSpriteBoxes[projectile.Sprite]
+		}
 		if !ok && projectile.Atlas == "guardians" && w.Level.Guardians != nil {
 			for _, sprite := range w.Level.Guardians.Atlas.Sprites {
 				if sprite.Name == projectile.Sprite && sprite.Collision != nil {
@@ -648,16 +766,8 @@ func (w *World) advanceSmallShot(shot *WorldSmallShot) {
 	if !shot.Active {
 		return
 	}
-	for _, actor := range w.Actors {
-		if actor.Active && actor.ActorList == "moving" && actor.Collision.Contains(shot.Shot.X, shot.Shot.Y) {
-			if actor.firstGuardian {
-				w.strikeFirstGuardian(CollisionRect{Left: shot.Shot.X, Top: shot.Shot.Y, Right: shot.Shot.X, Bottom: shot.Shot.Y}, shot.Shot.Damage)
-			} else {
-				w.damageActor(actor, shot.Shot.Damage)
-			}
-			shot.Active = false
-			return
-		}
+	if w.weaponHitPoint(shot.Shot.X, shot.Shot.Y, shot.Shot.Damage) {
+		shot.Active = false
 	}
 }
 
@@ -796,6 +906,18 @@ func (w *World) destroyPlayer() {
 }
 
 func (w *World) damageActor(actor *WorldActor, amount uint16) {
+	if actor.secondNode != nil {
+		w.damageSecondNode(actor, amount)
+		return
+	}
+	if actor.secondSegment != nil {
+		w.damageSecondSegment(actor, amount)
+		return
+	}
+	if actor.secondGuardian {
+		w.damageSecondGuardian(actor, amount)
+		return
+	}
 	if actor.part != nil && actor.part.DamageMode == "block-shot" {
 		return
 	}
@@ -873,6 +995,8 @@ func (w *World) spawnFixed(record visualassets.FixedEncounter) {
 		a := &WorldActor{ID: w.nextActorID, X: float64(record.X + v.OriginOffsetX), Y: float64(record.Y + v.OriginOffsetY - w.ScrollY), Atlas: "fixed", ActorList: kind.ActorList, Active: true, part: part,
 			mapY: record.Y + v.OriginOffsetY, fixed: true, Health: kind.Health, Score: kind.Score,
 			animation: v.Animation, animationState: NewAnimation(v.Animation)}
+		a.fixedKind = kind
+		a.fixedState = NewFixedSpriteState(*kind, v, record, w.ScrollY)
 		a.PreviousX, a.PreviousY = a.X, a.Y
 		a.selectSprite()
 		if kind.CollisionMode == "sprite-prefix" {

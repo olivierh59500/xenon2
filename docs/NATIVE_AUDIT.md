@@ -182,3 +182,31 @@ The integrated controller remains subject to full scene, checkpoint and stage
 progression comparisons. Other guardians and scripted scenery require their
 own independent Go controllers; their extracted artwork does not establish
 complete behavior.
+
+## Saved player state
+
+The original player-switch routine exchanges 202 four-byte values from the
+saved gameplay region, the complete ship state and all 6,000 map cells. The
+continue counter and advice offset are inside the saved region, so both belong
+to each player's game. The global random generator remains outside it and is
+shared across turns and menu/shop animation.
+
+This confirms the Go session's independent mutable maps, inventory, checkpoint,
+advice and continue credits. Two available continue offers correspond to the
+original counter initialized to three and decremented before displaying an offer.
+
+## Second-level arena and fixed-object attacks
+
+The second level's body controller matches 12,000 source passes, including its
+preceding-pass moving-enemy count. Node callbacks, two defense streams, segment
+breakup, hatch creatures and turret conversion have separate source comparisons.
+The Go World connects their damage callbacks, gate counters, reversible camera,
+mutable tiles and reward counts. Its integration tests distinguish the middle
+shop request from final guardian completion and delayed stage exit.
+
+Fixed scenery attacks now use their source movement and animation state rather
+than a generic scrolling placeholder. The third level's turning shots retain
+fractional motion, while fifth-level aiming shots retain their lifetime and
+octant steering. Expiration creates the original centered explosion and sound.
+Shared-capacity actor allocation is verified separately; its complete World
+integration remains in progress.

@@ -20,10 +20,15 @@ func (g *Game) EnterShop(endOfLevel bool) error {
 	if endOfLevel {
 		stock = w.Level.Terrain.EndShopStockLimit
 	}
+	if endOfLevel && w.AdviceIndex < 12 {
+		w.AdviceIndex = 12
+	}
 	g.shop = shopui.New(&w.Equipment, &w.Money, engine.ShopRules{Level: w.Level.Number, StockLimit: stock}, &g.Bundle.Shop, &g.Bundle.ShopScene, w.NextUIRandom)
+	g.shop.AdviceIndex = &w.AdviceIndex
 	g.Screen = ShopScreen
 	g.clock = engine.NewFrameClock(25, 60)
 	g.stream.StopMusic()
+	g.soundtrack = ""
 	g.stream.StopEffects()
 	if !g.Config.Mute {
 		return g.stream.QueueEffect("shop-synthesized-effect-08", 2)
@@ -48,7 +53,7 @@ func (g *Game) updateShop() error {
 		g.shop.Move(0, 1)
 	}
 	confirm := inpututil.IsKeyJustPressed(ebiten.KeyEnter) || inpututil.IsKeyJustPressed(ebiten.KeySpace) || inpututil.IsKeyJustPressed(ebiten.KeyControl)
-	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) {
+	if !g.shop.Busy() && inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) {
 		x, y := ebiten.CursorPosition()
 		matched := false
 		for _, cell := range g.Bundle.ShopScene.Cells {
@@ -77,6 +82,10 @@ func (g *Game) updateShop() error {
 	for ticks := g.clock.Advance(); ticks > 0; ticks-- {
 		g.shop.Advance()
 	}
+	if g.shop.StopEffectsRequested {
+		g.shop.StopEffectsRequested = false
+		g.stream.StopEffects()
+	}
 	for _, id := range g.shop.TakeCues() {
 		channel := 2
 		if len(id) >= len("shop-sampled") && id[:len("shop-sampled")] == "shop-sampled" {
@@ -89,6 +98,9 @@ func (g *Game) updateShop() error {
 		}
 	}
 	if g.shop.Done {
+		if driver, ok := g.Driver.(*worldDriver); ok {
+			driver.world.AdviceIndex = 12
+		}
 		g.View = g.Driver.Frame()
 		g.rememberFrameHistory()
 		g.Screen = LevelScreen

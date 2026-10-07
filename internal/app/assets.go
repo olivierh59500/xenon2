@@ -17,14 +17,16 @@ import (
 
 // LevelAssets holds exported graphics and ordinary gameplay descriptors.
 type LevelAssets struct {
-	Guardians    *visualassets.Guardians
-	Terrain      visualassets.Terrain
-	Paths        visualassets.Paths
-	Encounters   visualassets.Encounters
-	Actors       visualassets.Actors
-	FixedSprites visualassets.FixedSprites
-	FixedTiles   visualassets.FixedTiles
-	Rules        visualassets.LevelRules
+	GuardianGroups []visualassets.GuardianGroup
+	GuardianParts  *visualassets.SpriteAtlas
+	Guardians      *visualassets.Guardians
+	Terrain        visualassets.Terrain
+	Paths          visualassets.Paths
+	Encounters     visualassets.Encounters
+	Actors         visualassets.Actors
+	FixedSprites   visualassets.FixedSprites
+	FixedTiles     visualassets.FixedTiles
+	Rules          visualassets.LevelRules
 }
 
 // Bundle retains no packed disk resources, original program or machine state.
@@ -163,7 +165,26 @@ func LoadFS(resources fs.FS) (*Bundle, error) {
 		} else if !os.IsNotExist(err) {
 			return nil, err
 		}
+		groupName := prefix + "-guardian-groups.json"
+		if _, err := fs.Stat(resources, groupName); err == nil {
+			var decoded struct {
+				Groups []visualassets.GuardianGroup `json:"groups"`
+				Atlas  visualassets.SpriteAtlas     `json:"atlas"`
+			}
+			if err = readJSON(resources, groupName, &decoded); err != nil {
+				return nil, err
+			}
+			picture, err := readPNG(resources, prefix+"-guardian-parts.png")
+			if err != nil {
+				return nil, err
+			}
+			decoded.Atlas.Image = picture
+			l.GuardianGroups, l.GuardianParts = decoded.Groups, &decoded.Atlas
+		} else if !os.IsNotExist(err) {
+			return nil, err
+		}
 	}
+
 	var err error
 	b.AudioBank, b.Waveforms, err = audio.LoadFS(resources, "audio")
 	if err != nil {
@@ -242,6 +263,11 @@ func (b *Bundle) Validate() error {
 		return err
 	}
 	for _, l := range b.Levels {
+		if l != nil && l.GuardianParts != nil {
+			if err := validateAtlas(l.GuardianParts); err != nil {
+				return err
+			}
+		}
 		if err := validateLevel(l); err != nil {
 			return err
 		}

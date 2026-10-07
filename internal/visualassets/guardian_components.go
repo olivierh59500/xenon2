@@ -26,7 +26,12 @@ type GuardianComponent struct {
 	AngularVelocityFixed int32             `json:"angular_velocity_fixed,omitempty"`
 	Sprite               string            `json:"sprite,omitempty"`
 	Animation            ActorAnimation    `json:"animation"`
+	HeadingFrames        []string          `json:"heading_frames,omitempty"`
+	DeathAnimation       ActorAnimation    `json:"death_animation"`
 	TileFrames           []TilePatch       `json:"tile_frames,omitempty"`
+	DamageFlash          *TilePatch        `json:"damage_flash,omitempty"`
+	FlashOffsetX         int               `json:"flash_offset_x,omitempty"`
+	FlashOffsetY         int               `json:"flash_offset_y,omitempty"`
 	Overlays             []GuardianOverlay `json:"overlays,omitempty"`
 }
 
@@ -50,6 +55,14 @@ type GuardianGroup struct {
 	PathOffsetY       int                   `json:"path_offset_y,omitempty"`
 	Launches          []GuardianLaunch      `json:"launches,omitempty"`
 	DestructibleCells []GuardianTerrainCell `json:"destructible_cells,omitempty"`
+	Gates             []GuardianGate        `json:"gates,omitempty"`
+}
+
+type GuardianGate struct {
+	ID     int         `json:"id"`
+	Column int         `json:"column"`
+	Row    int         `json:"row"`
+	Frames []TilePatch `json:"frames"`
 }
 
 // DecodeCompoundGuardianArt reads the verified component tables. Motion and
@@ -77,6 +90,11 @@ func DecodeCompoundGuardianArt(number int, level []byte, palette [16][4]uint8) (
 			return nil, SpriteAtlas{}, err
 		}
 		groups = append(groups, group)
+		nodes, err := decodeSecondGuardianDefenseNodes(level)
+		if err != nil {
+			return nil, SpriteAtlas{}, err
+		}
+		groups = append(groups, nodes)
 		cells, err := decodeSecondGuardianCells(level)
 		if err != nil {
 			return nil, SpriteAtlas{}, err
@@ -331,16 +349,26 @@ func DecodeCompoundGuardianArt(number int, level []byte, palette [16][4]uint8) (
 		}
 		groups = append(groups, final)
 	}
-	return groups, packSprites(images), nil
+	atlas := packSprites(images)
+	atlas.SourceSpriteNames = names
+	return groups, atlas, nil
 }
 
 func GuardianGroupTileCodes(groups []GuardianGroup) []uint16 {
 	var codes []uint16
 	for _, group := range groups {
+		for _, gate := range group.Gates {
+			for _, patch := range gate.Frames {
+				codes = append(codes, patch.Tiles...)
+			}
+		}
 		for _, cell := range group.DestructibleCells {
-			codes = append(codes, cell.DestroyedTile)
+			codes = append(codes, cell.RestoredTile)
 		}
 		for _, part := range group.Components {
+			if part.DamageFlash != nil {
+				codes = append(codes, part.DamageFlash.Tiles...)
+			}
 			for _, patch := range part.TileFrames {
 				codes = append(codes, patch.Tiles...)
 			}
@@ -351,14 +379,34 @@ func GuardianGroupTileCodes(groups []GuardianGroup) []uint16 {
 
 func RemapGuardianGroupTiles(groups []GuardianGroup, ids map[uint16]uint16) error {
 	for i := range groups {
+		for j := range groups[i].Gates {
+			for k := range groups[i].Gates[j].Frames {
+				for n, code := range groups[i].Gates[j].Frames[k].Tiles {
+					id, ok := ids[code]
+					if !ok && code != 0 {
+						return fmt.Errorf("guardian gate tile is missing")
+					}
+					groups[i].Gates[j].Frames[k].Tiles[n] = id
+				}
+			}
+		}
 		for j, cell := range groups[i].DestructibleCells {
-			id, ok := ids[cell.DestroyedTile]
-			if !ok && cell.DestroyedTile != 0 {
+			id, ok := ids[cell.RestoredTile]
+			if !ok && cell.RestoredTile != 0 {
 				return fmt.Errorf("guardian destroyed tile is missing")
 			}
-			groups[i].DestructibleCells[j].DestroyedTile = id
+			groups[i].DestructibleCells[j].RestoredTile = id
 		}
 		for j := range groups[i].Components {
+			if patch := groups[i].Components[j].DamageFlash; patch != nil {
+				for n, code := range patch.Tiles {
+					id, ok := ids[code]
+					if !ok && code != 0 {
+						return fmt.Errorf("guardian damage tile is missing")
+					}
+					patch.Tiles[n] = id
+				}
+			}
 			for k := range groups[i].Components[j].TileFrames {
 				patch := &groups[i].Components[j].TileFrames[k]
 				for n, code := range patch.Tiles {

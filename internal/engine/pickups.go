@@ -113,7 +113,8 @@ func (w *World) consumeExitDrop() {
 	if w.PendingExitDrops > 0 {
 		w.PendingExitDrops--
 		if w.PendingExitDrops == 0 {
-			w.ExitReady = true
+			w.ShopReady = true
+			w.ExitReady = w.LevelFinished
 		}
 	}
 }

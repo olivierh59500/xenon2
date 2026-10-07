@@ -41,7 +41,6 @@ func TestContinueDirectorOriginalCountdownAndExit(t *testing.T) {
 	for d.Phase != ContinueHold {
 		d.Advance(Input{})
 	}
-	d.Advance(Input{})
 	if d.Countdown != 9 {
 		t.Fatal("continue does not start at nine")
 	}
@@ -69,11 +68,14 @@ func TestHighScoreInsertionKeepsTenRowsAndThreeInitials(t *testing.T) {
 	if !d.InsertScore(500) {
 		t.Fatal("positive score rejected")
 	}
+	for d.Phase != Initials {
+		d.Advance(Input{})
+	}
 	for i := 0; i < 3; i++ {
 		d.Advance(Input{Horizontal: 1})
 		d.Advance(Input{Confirm: true})
 	}
-	if d.Scores[0].Points != 500 || d.Scores[0].Initials != "BBB" || d.Phase != ScoresHold {
+	if d.Scores[0].Points != 500 || d.Scores[0].Initials != "BBB" || d.Phase != InitialsHold {
 		t.Fatalf("wrong inserted score %+v", d.Scores[0])
 	}
 	if !d.InsertScore(1000) || d.Scores[1].Points != 500 {

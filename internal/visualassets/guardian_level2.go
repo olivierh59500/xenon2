@@ -19,7 +19,7 @@ type GuardianTerrainCell struct {
 	X                  int    `json:"x"`
 	WorldY             int    `json:"world_y"`
 	InitiallyDestroyed bool   `json:"initially_destroyed"`
-	DestroyedTile      uint16 `json:"destroyed_tile"`
+	RestoredTile       uint16 `json:"restored_tile"`
 }
 
 func decodeSecondGuardianCells(level []byte) ([]GuardianTerrainCell, error) {
@@ -41,7 +41,9 @@ func decodeSecondGuardianCells(level []byte) ([]GuardianTerrainCell, error) {
 		}
 		for i := range count {
 			entry := level[cursor+i*8 : cursor+(i+1)*8]
-			result = append(result, GuardianTerrainCell{Quadrant: quadrant, X: int(int16(binary.BigEndian.Uint16(entry[2:]))), WorldY: int(int16(binary.BigEndian.Uint16(entry[4:]))), InitiallyDestroyed: binary.BigEndian.Uint16(entry) != 0, DestroyedTile: binary.BigEndian.Uint16(entry[6:])})
+			// Stage initialization marks every cell intact, independently of
+			// the unused flags stored in the recovered resource file.
+			result = append(result, GuardianTerrainCell{Quadrant: quadrant, X: int(int16(binary.BigEndian.Uint16(entry[2:]))), WorldY: int(int16(binary.BigEndian.Uint16(entry[4:]))), InitiallyDestroyed: false, RestoredTile: binary.BigEndian.Uint16(entry[6:])})
 		}
 	}
 	return result, nil
@@ -67,6 +69,24 @@ func decodeSecondLevelDefense(level []byte, add func(int) (string, error)) (Guar
 			behavior = "defense-tail"
 		}
 		part := GuardianComponent{Index: index, ResourceTag: int(binary.BigEndian.Uint16(entry)), Behavior: behavior, DamageBehavior: "defense-part-damage", ParentIndex: index - 1, PathBudget: int(binary.BigEndian.Uint16(level[0x54:])), Health: int(binary.BigEndian.Uint16(level[0x52:])), Score: int(binary.BigEndian.Uint16(entry[10:])), InitialDelay: -index * 10, Sprite: name, RenderMode: "sprite", Animation: ActorAnimation{Frames: []AnimationFrame{{Sprite: name}}, Static: true}}
+		headingTable, deathRoot := 0x5681a, 0x5509e
+		if index == 0 {
+			headingTable, deathRoot = 0x567fa, 0x55062
+		}
+		if index == 11 {
+			headingTable, deathRoot = 0x5683a, 0x550da
+		}
+		for heading := range 8 {
+			frame, err := add(int(binary.BigEndian.Uint32(level[headingTable-levelBase+heading*4:])))
+			if err != nil {
+				return group, err
+			}
+			part.HeadingFrames = append(part.HeadingFrames, frame)
+		}
+		part.DeathAnimation, err = decodeActorAnimation(level, deathRoot-levelBase, add)
+		if err != nil {
+			return group, err
+		}
 		group.Components = append(group.Components, part)
 	}
 	const launches = 0x55f56 - levelBase
@@ -112,4 +132,43 @@ func decodeTerminatedGuardianPath(data []byte, start int) ([]PathCommand, error)
 		cursor += length
 	}
 	return nil, fmt.Errorf("guardian path has no terminator")
+}
+
+func decodeSecondGuardianDefenseNodes(level []byte) (GuardianGroup, error) {
+	group := GuardianGroup{ID: "middle-defense-nodes"}
+	if len(level) < 0x5725e-levelBase {
+		return group, fmt.Errorf("defense nodes are truncated")
+	}
+	for i := range 3 {
+		// The source allocates node identities in descending order.
+		at := 0x57252 - levelBase + (2-i)*4
+		column := int(binary.BigEndian.Uint16(level[at:]))
+		row := int(binary.BigEndian.Uint16(level[at+2:]))
+		part := GuardianComponent{Index: i, Behavior: "defense-node", DamageBehavior: "defense-node-damage", ParentIndex: -1, ResourceTag: 84, InitialX: column * 16, InitialWorldY: row * 16, Health: int(binary.BigEndian.Uint16(level[0x60:])), RenderMode: "terrain-node"}
+		flashStart, flashRows := 0x56926, 2
+		part.FlashOffsetX, part.FlashOffsetY = -32, -16
+		if i == 1 {
+			flashStart = 0x5691a
+			part.FlashOffsetX = 0
+		}
+		if i == 2 {
+			flashStart, flashRows = 0x56932, 3
+			part.FlashOffsetX, part.FlashOffsetY = -16, -32
+		}
+		flash := readTilePatch(level, flashStart-levelBase, 3, flashRows)
+		part.DamageFlash = &flash
+		for frame := range 5 {
+			part.TileFrames = append(part.TileFrames, readTilePatch(level, 0x56b4e-levelBase+frame*2, 1, 1))
+		}
+		part.TileFrames = append(part.TileFrames, TilePatch{Columns: 1, Rows: 1, Tiles: []uint16{0x8e45}})
+		group.Components = append(group.Components, part)
+	}
+	for i := range 8 {
+		at := 0x56b58 - levelBase + i*18
+		cell := int(binary.BigEndian.Uint16(level[at:])) / 2
+		gate := GuardianGate{ID: i + 1, Column: cell % 20, Row: cell / 20}
+		gate.Frames = []TilePatch{readTilePatch(level, at+2, 2, 2), readTilePatch(level, at+10, 2, 2)}
+		group.Gates = append(group.Gates, gate)
+	}
+	return group, nil
 }

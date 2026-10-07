@@ -12,12 +12,15 @@ type FixedSpriteVariant struct {
 	InitialVelocityX int            `json:"initial_velocity_x,omitempty"`
 	Animation        ActorAnimation `json:"animation"`
 	AttackAnimation  ActorAnimation `json:"attack_animation"`
+	ReverseAnimation ActorAnimation `json:"reverse_animation"`
 	ShotMode         string         `json:"shot_mode,omitempty"`
 	ShotDirections   []int          `json:"shot_directions,omitempty"`
 	ShotSpeed        int            `json:"shot_speed,omitempty"`
 	ShotSprite       string         `json:"shot_sprite,omitempty"`
 	ShotOffsetX      int            `json:"shot_offset_x,omitempty"`
 	ShotOffsetY      int            `json:"shot_offset_y,omitempty"`
+	ShotMotionBudget int            `json:"shot_motion_budget,omitempty"`
+	ShotAnimation    ActorAnimation `json:"shot_animation"`
 }
 
 type FixedSpriteKind struct {
@@ -37,8 +40,9 @@ type FixedSpriteKind struct {
 }
 
 type FixedSprites struct {
-	Kinds []FixedSpriteKind `json:"kinds"`
-	Atlas SpriteAtlas       `json:"atlas"`
+	Kinds      []FixedSpriteKind       `json:"kinds"`
+	Atlas      SpriteAtlas             `json:"atlas"`
+	Projectile *FixedProjectileArtwork `json:"projectile,omitempty"`
 }
 
 // DecodeFixedSprites exports the checked ordinary sprite animations used by
@@ -136,6 +140,41 @@ func DecodeFixedSprites(levelNumber int, level []byte, palette [16][4]uint8) (*F
 				if variant == 1 {
 					v.InitialVelocityX = -2
 				}
+				attackRoot, shotImage := 0x567f2, 0x5b330
+				v.ShotOffsetX, v.ShotOffsetY = -5, 4
+				v.ShotDirections = []int{3}
+				if variant == 1 {
+					attackRoot, shotImage = 0x56840, 0x5b386
+					v.ShotOffsetX, v.ShotDirections = 5, []int{5}
+				}
+				v.AttackAnimation, err = decodeActorAnimation(level, attackRoot-levelBase, add)
+				if err != nil {
+					return nil, err
+				}
+				v.ShotSprite, err = add(shotImage)
+				if err != nil {
+					return nil, err
+				}
+				v.ShotMode = "turning-projectile"
+				v.ShotMotionBudget = int(binary.BigEndian.Uint16(level[0x54:]))
+			}
+			if levelNumber == 5 {
+				reverseRoot, shotRoot := 0x5555e, 0x5574e
+				v.ShotOffsetX, v.ShotDirections = 32, []int{2}
+				if variant == 1 {
+					reverseRoot, shotRoot = 0x55582, 0x557ae
+					v.ShotOffsetX, v.ShotDirections = -32, []int{6}
+				}
+				v.ReverseAnimation, err = decodeActorAnimation(level, reverseRoot-levelBase, add)
+				if err != nil {
+					return nil, err
+				}
+				v.ShotAnimation, err = decodeActorAnimation(level, shotRoot-levelBase, add)
+				if err != nil {
+					return nil, err
+				}
+				v.ShotMode = "animated-aiming-projectile"
+				v.ShotSpeed = int(binary.BigEndian.Uint16(level[0x4c:]))
 			}
 			if levelNumber == 1 || levelNumber == 2 {
 				attackRoot := 0x551f8 - levelBase
@@ -182,6 +221,12 @@ func DecodeFixedSprites(levelNumber int, level []byte, palette [16][4]uint8) (*F
 		}
 		result.Kinds = append(result.Kinds, kind)
 	}
+	var err error
+	result.Projectile, err = decodeFixedProjectileArtwork(levelNumber, level, add)
+	if err != nil {
+		return nil, err
+	}
 	result.Atlas = packSprites(images)
+	result.Atlas.SourceSpriteNames = names
 	return result, nil
 }

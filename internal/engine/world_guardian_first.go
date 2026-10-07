@@ -92,6 +92,7 @@ func (w *World) strikeFirstGuardian(hit CollisionRect, amount uint16) {
 				segment.Active = false
 			}
 		}
+		w.LevelFinished = true
 		w.spawnExitCash(9)
 	}
 }

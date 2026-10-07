@@ -94,6 +94,15 @@ The isolated driver comparisons establish audio-data conversion. Correct
 timing and channel selection for every game event also depend on the
 gameplay and interface integrations; those are separate comparisons.
 
+The held flamer reads the effect ownership flag of voice one before
+requesting another short loop. Releasing it marks all four effect records
+for termination. `EffectActive` exposes ownership without counting queued
+requests as active; `QueueStopEffects` applies the termination at the next
+50 Hz audio tick. Requests already awaiting that tick still dispatch after
+the stop, and terminated voices recover their music reload buffers. The
+frontend delivers these status and stop boundaries before and after each
+original logic pass.
+
 The stream benchmark renders 1,024 stereo frames in approximately 23
 microseconds on an Apple M4 Max, with no steady playback allocations.
 This is a desktop measurement, not a Pixel performance result.

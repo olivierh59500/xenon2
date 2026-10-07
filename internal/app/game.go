@@ -43,6 +43,7 @@ type Input struct {
 
 // SpriteView identifies exported artwork and screen-space anchor coordinates.
 type SpriteView struct {
+	Materializing        bool
 	Order                int
 	Tier, Length         int
 	Kind                 string
@@ -59,6 +60,7 @@ type SpriteView struct {
 
 // SceneFrame is a presentation snapshot, independent of original memory.
 type SceneFrame struct {
+	BackgroundStars                          *engine.BackgroundStarfield
 	PlayerNumber, PlayerCount                int
 	PlayerScores, PlayerLives, PlayerShields [2]int
 	ContinueCredits                          int
@@ -95,6 +97,7 @@ type Config struct {
 
 type Game struct {
 	gameOverRunning          bool
+	presentationStarPhase    presentation.Phase
 	continueAfterScores      bool
 	presentationInput        presentation.Input
 	director                 *presentation.Director
@@ -115,6 +118,7 @@ type Game struct {
 	stream                   *audio.Stream
 	player                   *ebitenaudio.Player
 	music                    bool
+	soundtrack               string
 	menu                     int
 	updates                  int
 	pendingFire, pendingDive bool
@@ -151,6 +155,16 @@ func New(bundle *Bundle) (*Game, error) {
 	}
 	g.graphics.sparkShader = sparkShader
 	g.graphics.sparkScratch = ebiten.NewImage(3, 3)
+	materialShader, err := ebiten.NewShader([]byte(terrainClippedSpriteShaderSource))
+	if err != nil {
+		return nil, err
+	}
+	g.graphics.materialShader = materialShader
+	backgroundStarShader, err := ebiten.NewShader([]byte(backgroundStarShaderSource))
+	if err != nil {
+		return nil, err
+	}
+	g.graphics.backgroundStarShader = backgroundStarShader
 	g.ResetDiagnosticLevel(1)
 	if err = g.StartLevel(1); err != nil {
 		return nil, err
@@ -221,22 +235,27 @@ func (g *Game) Update() error {
 			if player == 0 {
 				player = 1
 			}
+			g.resetPresentationStars(presentation.ReadyMessage)
 			g.director.BeginReady(player)
+			g.stream.StopEffects()
 			g.Screen = PresentationScreen
 			g.readyRunning = true
+			g.selectMusic()
 			break
 		}
 		if g.View.GameOver && !g.gameOverRunning {
 			g.gameOverRunning = true
+			g.stream.StopEffects()
 			if g.director.InsertScore(g.View.Score) {
 				g.continueAfterScores = true
 			} else if g.View.ContinueCredits > 0 {
 				g.director.BeginContinue()
 			} else {
-				g.finishPlayerGame()
-				break
+				g.director.BeginGameOver()
 			}
+			g.resetPresentationStars(g.director.Phase)
 			g.Screen = PresentationScreen
+			g.selectMusic()
 			break
 		}
 		for ticks := g.palClock.Advance(); ticks > 0; ticks-- {
@@ -274,6 +293,7 @@ func (g *Game) Update() error {
 		for steps := g.clock.Advance(); steps > 0; steps-- {
 			g.rememberFrameHistory()
 			if g.Driver != nil {
+				g.deliverEffectActivity()
 				if err := g.Driver.Advance(input); err != nil {
 					return err
 				}
@@ -323,7 +343,7 @@ func (g *Game) menuPixelOccupied(x, y int) bool {
 			return true
 		}
 	}
-	return fontPixelOccupied(g.Bundle.Font, p.CreditsCaption, 176, 184, 8, x, y)
+	return fontPixelOccupied(g.Bundle.Font, g.creditCaption(3), 176, 184, 8, x, y)
 }
 
 func fontPixelOccupied(font visualassets.Font, text string, left, top, advance, x, y int) bool {
@@ -354,7 +374,32 @@ func (g *Game) rememberFrameHistory() {
 	g.previous.TerrainMap = nil
 }
 
+func (g *Game) deliverEffectActivity() {
+	if target, ok := g.Driver.(interface{ SetEffectActivity([4]bool) }); ok {
+		var active [4]bool
+		for channel := range active {
+			active[channel] = g.stream.EffectActive(channel)
+		}
+		target.SetEffectActivity(active)
+	}
+}
+
 func (g *Game) consumeDriverAudio() error {
+	if source, ok := g.Driver.(interface{ ConsumeEffectStop() bool }); ok {
+		if source.ConsumeEffectStop() && !g.Config.Mute {
+			g.stream.QueueStopEffects()
+		}
+	}
+
+	if source, ok := g.Driver.(interface{ ConsumeImmediateSounds() [4]string }); ok {
+		for channel, id := range source.ConsumeImmediateSounds() {
+			if id != "" && !g.Config.Mute {
+				if err := g.stream.PlayEffect(id, channel); err != nil {
+					return err
+				}
+			}
+		}
+	}
 	if source, ok := g.Driver.(interface{ ConsumeSoundRequests() [4]string }); ok {
 		for channel, id := range source.ConsumeSoundRequests() {
 			if id != "" && !g.Config.Mute {
@@ -397,11 +442,12 @@ func (g *Game) activateMenu() {
 		g.selectMusic()
 		return
 	}
-	if err := g.StartSession(g.View.Level, g.menu+1); err != nil {
+	if err := g.StartSession(max(1, g.Config.Level), g.menu+1); err != nil {
 		g.err = err
 		return
 	}
-	g.Screen = LevelScreen
+	g.director.BeginStart()
+	g.Screen = PresentationScreen
 	g.selectMusic()
 }
 
@@ -426,13 +472,24 @@ func (g *Game) EnableAudio() error {
 }
 
 func (g *Game) selectMusic() {
-	if !g.music || g.Config.Mute || g.Screen == ShopScreen {
-		g.stream.StopMusic()
+	id := ""
+	if !g.Config.Mute {
+		if g.music && g.Screen == LevelScreen && !g.View.Ready && !g.View.GameOver {
+			id = "megablast-main"
+		}
+		if g.Screen == PresentationScreen && !g.readyRunning && !g.gameOverRunning {
+			if g.director.AttractMusic() {
+				id = "megablast-menu"
+			}
+		}
+	}
+	if id == g.soundtrack {
 		return
 	}
-	id := "megablast-main"
-	if g.Screen == TitleScreen {
-		id = "megablast-menu"
+	g.soundtrack = id
+	if id == "" {
+		g.stream.StopMusic()
+		return
 	}
 	if err := g.stream.PlayMusic(id); err != nil {
 		g.err = err

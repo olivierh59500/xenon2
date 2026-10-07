@@ -34,6 +34,7 @@ type Stream struct {
 	musicPhase                byte
 	effects                   [4]playback
 	queued                    [4]*Sequence
+	queuedStop                bool
 	shadow, voices            [4]voice
 }
 
@@ -113,9 +114,26 @@ func (s *Stream) QueueEffect(id string, channel int) error {
 	return fmt.Errorf("unknown audio effect %q", id)
 }
 
+// EffectActive reports the original effect ownership flag for one voice.
+// Queued effects do not own their voice until the next audio tick.
+func (s *Stream) EffectActive(channel int) bool {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	return channel >= 0 && channel < 4 && s.effects[channel].active
+}
+
+// QueueStopEffects marks the four active records for termination on the next
+// audio tick. Existing sound requests still dispatch afterward, as in the driver.
+func (s *Stream) QueueStopEffects() {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.queuedStop = true
+}
+
 func (s *Stream) StopEffects() {
 	s.mu.Lock()
 	defer s.mu.Unlock()
+	s.queuedStop = false
 	for ch := range s.effects {
 		s.queued[ch] = nil
 		s.effects[ch] = playback{}
@@ -188,6 +206,13 @@ func (s *Stream) sample(v *voice) int32 {
 }
 
 func (s *Stream) tick() {
+	if s.queuedStop {
+		for ch := range s.effects {
+			s.effects[ch] = playback{}
+			s.restoreMusic(ch)
+		}
+		s.queuedStop = false
+	}
 	for ch, sequence := range s.queued {
 		if sequence != nil {
 			s.effects[ch] = playback{sequence: sequence, active: true}

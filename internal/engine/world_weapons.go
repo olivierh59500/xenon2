@@ -25,6 +25,14 @@ type WeaponContext struct {
 	HitRect                                           func(CollisionRect, uint16, bool) bool
 	Sound                                             func(string)
 	SoundVoice                                        func(int, string)
+	SoundVoiceIfEmpty                                 func(int, string)
+	ImmediateSoundVoice                               func(int, string)
+	EffectActive                                      func(int) bool
+	StopEffects                                       func()
+	ReserveActor                                      func(int16, ActorPoolList, bool) (ActorPoolBinding, error)
+	RetireActor                                       func(ActorPoolBinding)
+	StoreActorResidue                                 func(ActorPoolBinding)
+	ReadActorResidue                                  func(int) (ActorResidue, bool)
 }
 
 // WeaponRenderItem is a named attachment or projectile at a display anchor.
@@ -38,25 +46,33 @@ type WeaponRenderItem struct {
 }
 
 type runtimeMount struct {
-	Serial               uint32
-	Item                 Item
-	Animation            AnimationState
-	AnimationData        visualassets.NamedActorAnimation
-	Cannon               CannonMountState
-	Launcher             MissileMountState
-	Laser                LaserMountState
-	Drone                DroneMountState
-	Electro              ElectroBallState
-	Mine                 MineState
-	Bomb                 BombMountState
-	Homing               HomingMountState
-	X, Y                 int
-	PreviousX, PreviousY int
-	RearPending          bool
-	Visible              bool
+	Binding, SupportBinding                                ActorPoolBinding
+	Serial                                                 uint32
+	Item                                                   Item
+	Animation                                              AnimationState
+	AnimationData                                          visualassets.NamedActorAnimation
+	Cannon                                                 CannonMountState
+	Launcher                                               MissileMountState
+	Laser                                                  LaserMountState
+	Drone                                                  DroneMountState
+	Electro                                                ElectroBallState
+	Mine                                                   MineState
+	Bomb                                                   BombMountState
+	Homing                                                 HomingMountState
+	FlamerSound                                            FlamerSoundState
+	X, Y                                                   int
+	PreviousX, PreviousY                                   int
+	RearPending                                            bool
+	Visible                                                bool
+	SupportAnimation                                       AnimationState
+	SupportData                                            visualassets.NamedActorAnimation
+	SupportX, SupportY, PreviousSupportX, PreviousSupportY int
+	SupportVisible                                         bool
+	SupportActive                                          bool
 }
 
 type runtimeWeaponProjectile struct {
+	Binding       ActorPoolBinding
 	Render        WeaponRenderItem
 	Animation     AnimationState
 	AnimationData visualassets.NamedActorAnimation
@@ -76,17 +92,78 @@ type runtimeWeaponProjectile struct {
 // Equipment and projectile phases are separate so the world can retain its
 // player/enemy/equipment/projectile ordering.
 type WeaponRuntime struct {
-	mounts      [7]runtimeMount
-	projectiles []runtimeWeaponProjectile
-	animations  map[string]visualassets.NamedActorAnimation
-	boxes       map[string]visualassets.CollisionBox
-	regions     map[string]visualassets.SpriteRegion
-	MineContext MineContext
-	nextID      int
-	newID       func() int
-	available   int
-	limited     bool
-	order       [7]int
+	mounts          [7]runtimeMount
+	projectiles     []runtimeWeaponProjectile
+	animations      map[string]visualassets.NamedActorAnimation
+	boxes           map[string]visualassets.CollisionBox
+	regions         map[string]visualassets.SpriteRegion
+	MineContext     MineContext
+	nextID          int
+	newID           func() int
+	available       int
+	limited         bool
+	order           [7]int
+	context         WeaponContext
+	allocationError error
+}
+
+func equipmentResourceTag(item Item) int16 {
+	switch item {
+	case ItemForwardShot:
+		return 160
+	case ItemDoubleShot:
+		return 24
+	case ItemRearShot:
+		return 68
+	case ItemSideShot:
+		return 152
+	case ItemCannon:
+		return 52
+	case ItemMissileLauncher:
+		return 144
+	case ItemLaser:
+		return 32
+	case ItemFlamer:
+		return 28
+	case ItemDrone:
+		return 44
+	case ItemElectroBall:
+		return 76
+	case ItemMineSmall:
+		return 56
+	case ItemMineLarge:
+		return 60
+	case ItemBomb:
+		return 40
+	case ItemHomingMissile:
+		return 72
+	}
+	return 0
+}
+
+func weaponProjectileTag(kind string, tier int) int16 {
+	switch kind {
+	case "small-shot", "launcher-missile":
+		return 16
+	case "cannon-ball":
+		return 48
+	case "laser":
+		return 36
+	case "flame":
+		return 180
+	case "mine":
+		if tier == 0 {
+			return 56
+		}
+		return 60
+	case "bomb":
+		return 40
+	case "homing":
+		return 72
+	case "explosion":
+		return 12
+	}
+	return 0
 }
 
 func weaponSound(c WeaponContext, voice int, effect string) {
@@ -141,20 +218,85 @@ func weaponAnimation(item Item) string {
 	return ""
 }
 
-func (r *WeaponRuntime) synchronize(c WeaponContext) {
-	for i, slot := range c.Equipment.slots() {
+func (r *WeaponRuntime) synchronize(c WeaponContext) error {
+	slots := c.Equipment.slots()
+	order := [7]int{0, 1, 2, 3, 4, 5, 6}
+	for i := 1; i < len(order); i++ {
+		for j := i; j > 0 && slots[order[j]].Serial < slots[order[j-1]].Serial; j-- {
+			order[j], order[j-1] = order[j-1], order[j]
+		}
+	}
+	for _, i := range order {
+		slot := slots[i]
 		m := &r.mounts[i]
 		if m.Serial == slot.Serial && m.Item == slot.Item {
+			m.Mine.Tier = slot.Tier
+			if slot.Item != ItemNone {
+				r.storeMount(c, m, *slot)
+			}
 			continue
 		}
-		*m = runtimeMount{Serial: slot.Serial, Item: slot.Item, Laser: NewLaserMountState(), Bomb: NewBombMountState(), Homing: NewHomingMountState(), Mine: MineState{Tier: slot.Tier}}
+		if c.RetireActor != nil {
+			if m.Binding.EntityID != 0 {
+				c.RetireActor(m.Binding)
+			}
+			if m.SupportActive && m.SupportBinding.EntityID != 0 {
+				c.RetireActor(m.SupportBinding)
+			}
+		}
+		*m = runtimeMount{Binding: ActorPoolBinding{Slot: NoActorSlot}, SupportBinding: ActorPoolBinding{Slot: NoActorSlot}, Serial: slot.Serial, Item: slot.Item, Laser: NewLaserMountState(), Bomb: NewBombMountState(), Homing: NewHomingMountState(), Mine: MineState{Tier: slot.Tier}}
+		if slot.Item != ItemNone && c.ReserveActor != nil {
+			binding, err := c.ReserveActor(equipmentResourceTag(slot.Item), ActorPoolEquipment, false)
+			if err != nil {
+				return err
+			}
+			m.Binding = binding
+			m.FlamerSound.Started = binding.Residue.Counter != 0
+			m.FlamerSound.Counter = binding.Residue.Counter
+		}
 		if a, ok := r.animations[weaponAnimation(slot.Item)]; ok {
 			m.AnimationData = a
 			m.Animation = NewAnimation(a.Animation)
 		}
+		if slot.Item == ItemCannon {
+			if a, ok := r.animations["cannon-support"]; ok {
+				m.SupportData, m.SupportAnimation = a, NewAnimation(a.Animation)
+			}
+			m.SupportActive = true
+			if c.ReserveActor != nil {
+				binding, err := c.ReserveActor(64, ActorPoolProjectile, true)
+				if err != nil {
+					return err
+				}
+				m.SupportBinding = binding
+				m.SupportBinding.Residue.OwnerSlot = m.Binding.Slot
+			}
+		}
 		m.Electro.X, m.Electro.Y = c.ShipX, c.ShipY+25
 		m.Mine.X, m.Mine.Y = c.ShipX, c.ShipY+25
+		m.X, m.Y = c.ShipX, c.ShipY
+		if i >= 1 && i <= 4 {
+			m.X += WeaponMountOffset[i-1].X
+			m.Y += WeaponMountOffset[i-1].Y
+		}
+		if slot.Item == ItemDrone || slot.Item == ItemElectroBall || slot.Item == ItemMineSmall || slot.Item == ItemMineLarge {
+			m.Y += 25
+		}
+		m.SupportX, m.SupportY = m.X, m.Y
+		m.PreviousX, m.PreviousY, m.PreviousSupportX, m.PreviousSupportY = m.X, m.Y, m.SupportX, m.SupportY
+		m.Binding.Residue.EmitterClock = 0xffff
+		r.storeMount(c, m, *slot)
 	}
+	return nil
+}
+
+// SynchronizeEquipment applies construction immediately after pickups or shop
+// trades, without advancing animation, fire timers or projectile movement.
+func (r *WeaponRuntime) SynchronizeEquipment(c WeaponContext) error {
+	if c.Equipment == nil {
+		return fmt.Errorf("weapon construction needs equipment")
+	}
+	return r.synchronize(c)
 }
 
 func (r *WeaponRuntime) add(kind, animation string, x, y, tier int) *runtimeWeaponProjectile {
@@ -185,21 +327,32 @@ func (r *WeaponRuntime) add(kind, animation string, x, y, tier int) *runtimeWeap
 			countActors++
 		}
 	}
-	if kind != "spark" && countActors >= 159 {
+	if kind != "spark" && r.context.ReserveActor == nil && countActors >= 159 {
 		return nil
 	}
 	id := -1001 - sparkSlot
+	binding := ActorPoolBinding{Slot: NoActorSlot}
 	if kind != "spark" {
-		r.nextID++
-		if r.newID != nil {
-			r.nextID = r.newID()
+		if r.context.ReserveActor != nil {
+			var err error
+			binding, err = r.context.ReserveActor(weaponProjectileTag(kind, tier), ActorPoolProjectile, false)
+			if err != nil {
+				r.allocationError = err
+				return nil
+			}
+			id = binding.EntityID
+		} else {
+			r.nextID++
+			if r.newID != nil {
+				r.nextID = r.newID()
+			}
+			id = r.nextID
 		}
-		id = r.nextID
 	}
 	if r.limited && kind != "spark" {
 		r.available--
 	}
-	p := runtimeWeaponProjectile{SparkSlot: sparkSlot, Render: WeaponRenderItem{ID: id, Kind: kind, X: float64(x), Y: float64(y), PreviousX: float64(x), PreviousY: float64(y), Tier: tier, Active: true}}
+	p := runtimeWeaponProjectile{Binding: binding, SparkSlot: sparkSlot, Render: WeaponRenderItem{ID: id, Kind: kind, X: float64(x), Y: float64(y), PreviousX: float64(x), PreviousY: float64(y), Tier: tier, Active: true}}
 	if a, ok := r.animations[animation]; ok {
 		p.AnimationData = a
 		p.Animation = NewAnimation(a.Animation)
@@ -224,7 +377,10 @@ func (r *WeaponRuntime) AdvanceEquipment(c WeaponContext) error {
 	if c.Equipment == nil {
 		return fmt.Errorf("weapon phase needs equipment")
 	}
-	r.synchronize(c)
+	r.context, r.allocationError = c, nil
+	if err := r.synchronize(c); err != nil {
+		return err
+	}
 	r.newID = c.NextID
 	r.limited = c.AvailableActorSlots > 0
 	r.available = c.AvailableActorSlots
@@ -260,6 +416,7 @@ func (r *WeaponRuntime) AdvanceEquipment(c WeaponContext) error {
 		case ItemForwardShot, ItemDoubleShot, ItemSideShot, ItemRearShot:
 			if c.SkipSmallWeapons || !c.Pulse || c.Diving || c.Materializing && slot.Item != ItemForwardShot {
 				r.materializeMount(m, slot.Item, c)
+				r.storeMount(c, m, *slot)
 				continue
 			}
 			if slot.Item == ItemRearShot && m.Animation.Remaining == 0 {
@@ -274,10 +431,23 @@ func (r *WeaponRuntime) AdvanceEquipment(c WeaponContext) error {
 				if p := r.add("small-shot", "", shot.X, shot.Y, slot.Tier); p != nil {
 					p.Small = shot
 					p.Render.Sprite = shot.SpriteName
+					r.storeProjectile(c, p, false)
 				}
 			}
-			weaponSound(c, 2, "sampled-effect-09")
+			if c.SoundVoiceIfEmpty != nil {
+				c.SoundVoiceIfEmpty(2, "sampled-effect-09")
+			} else {
+				weaponSound(c, 2, "sampled-effect-09")
+			}
 		case ItemCannon:
+			m.PreviousSupportX, m.PreviousSupportY = m.SupportX, m.SupportY
+			m.SupportX, m.SupportY, m.SupportVisible = m.X, m.Y, m.SupportActive
+			m.SupportAnimation.Advance(m.SupportData.Animation)
+			if c.MaterializationFrames != 0 {
+				if region, ok := r.regions[m.SupportAnimation.Sprite(m.SupportData.Animation)]; ok {
+					m.SupportX, m.SupportY, m.SupportVisible = MaterializeAttachment(m.SupportX, m.SupportY, region, c.ShipCenterX, c.ShipCenterY, c.MaterializationFrames)
+				}
+			}
 			fired := m.Cannon.Tick(c.Pulse, c.Materializing)
 			if m.Cannon.Phase == 1 {
 				if a, ok := r.animations["cannon-fire"]; ok {
@@ -289,6 +459,7 @@ func (r *WeaponRuntime) AdvanceEquipment(c WeaponContext) error {
 			if fired {
 				if p := r.add("cannon-ball", "cannon-ball", m.X, m.Y-11, 0); p != nil {
 					p.Cannon = CannonBallMotion{X: m.X, Y: m.Y - 11}
+					r.storeProjectile(c, p, false)
 				}
 			}
 		case ItemMissileLauncher:
@@ -304,6 +475,7 @@ func (r *WeaponRuntime) AdvanceEquipment(c WeaponContext) error {
 				for _, shot := range AppendLauncherMissiles(storage[:0], m.X, m.Y, "") {
 					if p := r.add("launcher-missile", "launcher-flight", shot.X, shot.Y, 0); p != nil {
 						p.Small = shot
+						r.storeProjectile(c, p, false)
 					}
 				}
 			}
@@ -313,6 +485,8 @@ func (r *WeaponRuntime) AdvanceEquipment(c WeaponContext) error {
 				if p := r.add("laser", "", m.X, m.Y, slot.Tier); p != nil {
 					p.Laser = NewLaserBeamState(slot.Tier)
 					p.Owner = index
+					p.Binding.Residue.OwnerSlot = m.Binding.Slot
+					r.storeProjectile(c, p, false)
 				}
 			}
 		case ItemDrone:
@@ -330,15 +504,38 @@ func (r *WeaponRuntime) AdvanceEquipment(c WeaponContext) error {
 				}
 			}
 		case ItemFlamer:
+			effectActive := m.FlamerSound.Started
+			if c.EffectActive != nil {
+				effectActive = c.EffectActive(1)
+			}
+			start, stop := m.FlamerSound.Advance(c.Held, c.Materializing, effectActive)
+			if start {
+				weaponSound(c, 1, "synthesized-effect-01")
+			}
+			if stop && c.StopEffects != nil {
+				c.StopEffects()
+			}
 			if c.Held && !c.Materializing {
-				var storage [2]FlameShot
-				shots, err := AppendFlamerShotsWithResidue(storage[:0], slot.Tier, c.ShipX, c.ShipY, c.NextRandom, c.NextActorDriftResidue)
-				if err != nil {
-					return err
+				if c.NextRandom == nil {
+					return fmt.Errorf("flamer needs the world random stream")
 				}
-				for _, shot := range shots {
-					if p := r.add("flame", "flamer-particle", int(shot.X>>16), shot.Y, slot.Tier); p != nil {
-						p.Flame = shot
+				for particle := 0; particle < 2; particle++ {
+					p := r.add("flame", "flamer-particle", c.ShipX, c.ShipY, slot.Tier)
+					y := c.ShipY - 16 - particle*6 + int(c.NextRandom()&3)
+					drift := int16(int8(uint8(c.NextRandom())))
+					residue := uint16(0)
+					if p != nil {
+						residue = p.Binding.Residue.HorizontalDriftRemainder
+					}
+					if c.ReserveActor == nil && c.NextActorDriftResidue != nil {
+						residue = c.NextActorDriftResidue()
+					}
+					if p != nil {
+						p.Binding.Residue.Direction = drift
+						p.Flame = FlameShot{X: int32(c.ShipX)<<16 | 0x8000, Y: y, VelocityX: int32(drift)<<10 + int32(residue>>6), Tier: slot.Tier, Damaging: particle == 0}
+						p.Render.X, p.Render.Y = float64(p.Flame.X)/65536, float64(y)
+						p.Render.PreviousX, p.Render.PreviousY = p.Render.X, p.Render.Y
+						r.storeProjectile(c, p, false)
 					}
 				}
 			}
@@ -355,6 +552,12 @@ func (r *WeaponRuntime) AdvanceEquipment(c WeaponContext) error {
 			if mine != nil {
 				if p := r.add("mine", weaponAnimation(slot.Item), mine.X, mine.Y, slot.Tier); p != nil {
 					p.Mine = *mine
+					p.AnimationData, p.Animation = m.AnimationData, m.Animation
+					if p.Animation.Frame < len(p.AnimationData.Animation.Frames) {
+						p.Animation.Remaining = p.AnimationData.Animation.Frames[p.Animation.Frame].Duration
+					}
+					p.Render.Sprite = p.Animation.Sprite(p.AnimationData.Animation)
+					r.storeProjectile(c, p, false)
 				}
 			}
 		case ItemBomb:
@@ -362,6 +565,7 @@ func (r *WeaponRuntime) AdvanceEquipment(c WeaponContext) error {
 				b := NewBombState(c.ShipX, c.ShipY)
 				if p := r.add("bomb", "bomb-flight", b.X, b.Y, 0); p != nil {
 					p.Bomb = b
+					r.storeProjectile(c, p, false)
 				}
 			}
 		case ItemHomingMissile:
@@ -370,6 +574,7 @@ func (r *WeaponRuntime) AdvanceEquipment(c WeaponContext) error {
 				for _, direction := range []uint8{7, 5, 3, 1} {
 					if p := r.add("homing", fmt.Sprintf("homing-%d", direction), c.ShipX, c.ShipY, 0); p != nil {
 						p.Homing = NewHomingMissileState(c.ShipX, c.ShipY, direction)
+						r.storeProjectile(c, p, false)
 					}
 				}
 			}
@@ -377,8 +582,9 @@ func (r *WeaponRuntime) AdvanceEquipment(c WeaponContext) error {
 			return fmt.Errorf("unsupported installed weapon %d", slot.Item)
 		}
 		r.materializeMount(m, slot.Item, c)
+		r.storeMount(c, m, *slot)
 	}
-	return nil
+	return r.allocationError
 }
 
 func (r *WeaponRuntime) materializeMount(m *runtimeMount, item Item, c WeaponContext) {
@@ -413,6 +619,7 @@ func (r *WeaponRuntime) AdvanceProjectiles(c WeaponContext) error {
 }
 
 func (r *WeaponRuntime) advanceProjectiles(c WeaponContext, onlyID int) error {
+	r.context, r.allocationError = c, nil
 	for i := len(r.projectiles) - 1; i >= 0; i-- {
 		if onlyID != 0 && r.projectiles[i].Render.ID != onlyID {
 			continue
@@ -427,6 +634,7 @@ func (r *WeaponRuntime) advanceProjectiles(c WeaponContext, onlyID int) error {
 		p.Render.PreviousX, p.Render.PreviousY = p.Render.X, p.Render.Y
 		if len(p.AnimationData.Animation.Frames) != 0 && !p.Animation.AdvanceNamed(p.AnimationData) {
 			p.Render.Active = false
+			r.storeProjectile(c, p, true)
 			continue
 		}
 		if len(p.AnimationData.Animation.Frames) != 0 {
@@ -450,7 +658,13 @@ func (r *WeaponRuntime) advanceProjectiles(c WeaponContext, onlyID int) error {
 			queryRect = p.Render.Active
 		case "laser":
 			m := &r.mounts[p.Owner]
-			p.Render.Active, area, damage = p.Laser.Advance(m.X, m.Y, c.ShipDestroyed)
+			x, y := m.X, m.Y
+			if c.ReadActorResidue != nil && p.Binding.Residue.OwnerSlot != NoActorSlot {
+				if owner, ok := c.ReadActorResidue(p.Binding.Residue.OwnerSlot); ok {
+					x, y = int(owner.X), int(owner.Y)
+				}
+			}
+			p.Render.Active, area, damage = p.Laser.Advance(x, y, c.ShipDestroyed)
 			p.Render.X, p.Render.Y = float64(p.Laser.X), float64(p.Laser.Y)
 			p.Render.Length = p.Laser.Length
 			queryRect = p.Render.Active
@@ -502,15 +716,6 @@ func (r *WeaponRuntime) advanceProjectiles(c WeaponContext, onlyID int) error {
 		default:
 			return fmt.Errorf("unknown runtime projectile %q", p.Render.Kind)
 		}
-		if queryPoint && c.HitPoint != nil && c.HitPoint(int(p.Render.X), int(p.Render.Y), damage) {
-			p.Render.Active = false
-		}
-		if queryRect && c.HitRect != nil && !area.Empty() {
-			hit := c.HitRect(area, damage, p.Render.Kind == "laser" || p.Render.Kind == "mine" || p.Render.Kind == "bomb")
-			if hit && (p.Render.Kind == "cannon-ball" || p.Render.Kind == "flame") {
-				p.Render.Active = false
-			}
-		}
 		if explosion != "" {
 			var effects [4]WeaponExplosion
 			items, err := AppendWeaponExplosions(effects[:0], explosion, int(p.Render.X), int(p.Render.Y), c.NextRandom)
@@ -525,11 +730,28 @@ func (r *WeaponRuntime) advanceProjectiles(c WeaponContext, onlyID int) error {
 			} else {
 				weaponSound(c, 1, "sampled-effect-03")
 				weaponSound(c, 2, "sampled-effect-03")
+				if c.ImmediateSoundVoice != nil {
+					c.ImmediateSoundVoice(0, "sampled-effect-03")
+				} else {
+					weaponSound(c, 0, "sampled-effect-03")
+				}
+			}
+			// Appending effects can grow storage; reacquire the current projectile.
+			p = &r.projectiles[i]
+		}
+		if queryPoint && c.HitPoint != nil && c.HitPoint(int(p.Render.X), int(p.Render.Y), damage) {
+			p.Render.Active = false
+		}
+		if queryRect && c.HitRect != nil && !area.Empty() {
+			hit := c.HitRect(area, damage, p.Render.Kind == "laser" || p.Render.Kind == "mine" || p.Render.Kind == "bomb")
+			if hit && (p.Render.Kind == "cannon-ball" || p.Render.Kind == "flame") {
+				p.Render.Active = false
 			}
 		}
+		r.storeProjectile(c, p, true)
 	}
 	if onlyID != 0 {
-		return nil
+		return r.allocationError
 	}
 	kept := r.projectiles[:0]
 	for _, p := range r.projectiles {
@@ -538,7 +760,7 @@ func (r *WeaponRuntime) advanceProjectiles(c WeaponContext, onlyID int) error {
 		}
 	}
 	r.projectiles = kept
-	return nil
+	return r.allocationError
 }
 
 // RenderState appends active named weapon state to caller-owned storage.
@@ -555,6 +777,13 @@ func (r *WeaponRuntime) RenderState(dst []WeaponRenderItem) []WeaponRenderItem {
 	}
 	for _, p := range r.projectiles {
 		dst = append(dst, p.Render)
+	}
+	for i, m := range r.mounts {
+		if m.Item == ItemCannon && m.SupportActive && m.SupportVisible {
+			if sprite := m.SupportAnimation.Sprite(m.SupportData.Animation); sprite != "" {
+				dst = append(dst, WeaponRenderItem{ID: -100 - i, Kind: "cannon-support", Sprite: sprite, X: float64(m.SupportX), Y: float64(m.SupportY), PreviousX: float64(m.PreviousSupportX), PreviousY: float64(m.PreviousSupportY), Active: true})
+			}
+		}
 	}
 	return dst
 }
