@@ -79,9 +79,11 @@ and 120 draw calls per second on its 120 Hz display after warm-up. That run does
 not establish dense-combat performance or a complete playthrough. A historical
 public-input replay completed the first level before the lethal-contact
 correction. Its observed state now diverges at step 920, so it no longer proves
-current first-level completion. A new normal-menu pilot regression now completes level one through the current
-engine, including both merchants and guardian/exit-coin gates, then admits level
-two. The remaining stages and complete campaign require current validation.
+current first-level completion. Current normal-menu pilot regressions complete
+levels one and two through the corrected engine, including all four merchants
+and guardian/exit-coin gates, then admit level three. The third opening, middle
+and final arenas have separate ordinary-input resource proofs. The remaining
+connected stages and complete campaign require current validation.
 
 The remaining live checks are:
 
