@@ -1648,8 +1648,11 @@ ship anchors at X 142/150/160 and world Y 1,453/1,454/1,455. Every result matche
 contact at 1,453, clear at 1,454 and 1,455. The blocking covered pixel lies in opaque
 tile 27 or 3, with no local alpha/mask discrepancy. This rules out that specific
 collision interpretation as the cause; it does not prove the whole route or that
-diving is required. Earlier branch selection, available equipment and relevant
-terrain changes still need investigation. The incomplete route remains excluded.
+diving is required. The captured ship has no dive charges; the third middle
+merchant cannot stock the 4,000-price item under its 2,000 limit. Its left cannon
+at world 1,488 is already destroyed, while other compound cannons remain live.
+Earlier branch selection and relevant terrain changes still need investigation.
+The incomplete route remains excluded.
 
 The combined engine/source race suite passes in 55.237 seconds. Production
 GPU/audio frontend checks pass in 91.217 seconds, including reference two-stage
