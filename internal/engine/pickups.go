@@ -168,12 +168,22 @@ func (w *World) AdvancePALTick() {
 	w.ScreenClearPaletteMask = 0
 	// The original supernova invokes each eligible enemy's own damage
 	// callback. Carriers can release further equipment during the blast.
+	var targets [ActorPoolCapacity]*WorldActor
+	count := 0
 	for _, actor := range w.Actors {
-		if actor.Active && actor.ActorList == "moving" && actor.part.ResourceTag != 0x50 && actor.part.ResourceTag != 0x54 {
+		if actor.Active && actor.ActorList == "moving" && actor.part.ResourceTag != 0x50 && actor.part.ResourceTag != 0x54 && count < len(targets) {
+			targets[count], count = actor, count+1
+		}
+	}
+	for _, actor := range targets[:count] {
+		if actor.Active {
 			w.damageActor(actor, 127)
 		}
 	}
 	for _, projectile := range w.Projectiles {
 		projectile.Active = false
+		if w.Pool != nil {
+			w.retireWorldActor(projectile.Binding)
+		}
 	}
 }

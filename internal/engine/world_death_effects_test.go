@@ -78,3 +78,27 @@ func TestWorldOrdinaryDeathNativeCallbackOptional(t *testing.T) {
 		}
 	})
 }
+
+func TestWorldScreenClearVisitsEveryOriginalTargetDespiteInsertedEffects(t *testing.T) {
+	w := testWorld(t)
+	w.commonAnimations["explosion-small"] = visualassets.NamedActorAnimation{Animation: visualassets.ActorAnimation{Frames: []visualassets.AnimationFrame{{Sprite: "explosion"}}}}
+	var targets []*WorldActor
+	for i := range 12 {
+		actor := &WorldActor{Active: true, ActorList: "moving", Health: 1, Score: 10, part: &visualassets.ActorPart{ResourceTag: 200 + i*4, DamageMode: "individual"}}
+		if err := w.bindWorldActor(actor); err != nil {
+			t.Fatal(err)
+		}
+		targets = append(targets, actor)
+	}
+	w.Actors = append(w.Actors, targets...)
+	w.ScreenClearFrames = 1
+	w.AdvancePALTick()
+	for _, actor := range targets {
+		if actor.Active {
+			t.Fatal("inserted explosions skipped a later original target")
+		}
+	}
+	if w.Score != 120 {
+		t.Fatal("screen clear did not apply each source damage callback exactly once")
+	}
+}
