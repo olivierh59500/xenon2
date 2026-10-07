@@ -310,6 +310,9 @@ func presentationMotionScore(w *World, motion MotionInput, x, y int) (risk, dist
 // Target selection follows the same moving-list callbacks as player weapons.
 // Body sections that consume hits without taking damage are poor aim targets.
 func presentationTargetBounds(w *World, actor *WorldActor) (CollisionRect, bool) {
+	if actor != nil && (actor.fourthIndex > 0 || actor.fifthIndex > 0) {
+		return presentationGuardianTargetBounds(w, actor)
+	}
 	if actor != nil && actor.Active && actor.fifthTile != nil && actor.fixedTileArt != nil && actor.fixedTileArt.Kind == 1 {
 		// Barrier posts are drawn into terrain, so their live damage callback
 		// remains targetable without a sprite. The linking band cannot be damaged.
