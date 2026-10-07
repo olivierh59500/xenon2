@@ -6,7 +6,8 @@ func (w *World) weaponContext(input Input, pulse bool) WeaponContext {
 		w.weaponTargetActors = make(map[int]*WorldActor)
 	}
 	clear(w.weaponTargetActors)
-	for _, actor := range w.Actors {
+	var ordered [ActorPoolCapacity]*WorldActor
+	for _, actor := range w.orderedMovingActors(&ordered) {
 		if actor.ActorList == "moving" && !(actor.part.Linked && actor.leader != nil) {
 			slotIdentity := 0
 			if actor.Binding.EntityID != 0 {
@@ -75,7 +76,8 @@ func (w *World) weaponHitPoint(x, y int, damage uint16) bool {
 func (w *World) weaponHitRect(area CollisionRect, damage uint16, all bool) bool {
 	var groups [159]int
 	count, hit := 0, false
-	for _, actor := range w.Actors {
+	var ordered [ActorPoolCapacity]*WorldActor
+	for _, actor := range w.orderedMovingActors(&ordered) {
 		if !actor.Active || actor.ActorList != "moving" || !actor.Collision.Intersects(area) {
 			continue
 		}
