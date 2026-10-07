@@ -66,3 +66,17 @@ Load plus 6 passes measures 52–142 microseconds with 126–275 KiB. The tested
 guard measures 46 microseconds/133 KiB; searching nine alternatives costs more.
 These are scene-specific measurements, not Pixel frame-rate guarantees. Reusable
 branch storage and mobile measurements remain required before broadening use.
+
+## Pixel measurement
+
+An ARM64 test binary built from a2022de ran on the USB Pixel 10a (Android 17),
+with the game stopped during measurement. All 169 local runtime exports were used;
+no graphics loop or original executable ran. Load plus six real callbacks takes
+2.249/1.377/1.222/1.236/0.865 ms for levels 1–5. The safe-opening guard measures
+0.966 ms, 132,952 bytes and 447 allocations. The nine-alternative fallback is not
+measured by that guard case, and rendered FPS remains unverified.
+
+The longer rows take 7.223/4.442/3.563/2.996/2.980 ms. Levels 1/2/3/5 complete all 24
+callbacks; level 4 reaches actual player death at 21 and intentionally stops. These
+are single 100 ms source-scene samples, not general device budgets. Branch storage
+reuse remains the next performance task.
