@@ -1572,3 +1572,29 @@ shield 39 and no credits. No health, money or inventory is assigned by the pilot
 A further bounded observation loses that ship in the third opening; this proof
 covers two stages, not a complete campaign. The existing first-level MP4 remains
 unchanged because this correction applies only to second-final preparation.
+
+## Current reference third-stage continuation
+
+A full-intro reference observation retains ordinary controls and recovery,
+reaches the third middle guardian, defeats both eyes and visits its merchant.
+An app-test-only repeat confirms the subsequent stationary state: camera 2,440,
+maximum 2,456, ship(171,176), rewind 1, one ship, shield 39 and no credits. The
+middle is defeated, minimum scroll is zero and no reward drops or collectibles
+remain, so this is neither a living-guardian gate nor a missed merchant reward.
+
+An excluded trial enables clear-corner/rear-route handling after middle defeat.
+It clears the stationary point, but the last ship is lost at camera 2,159 before
+final admission. The trial is not incorporated into the production controller;
+a safe connected third-stage victory remains unverified. These observations
+refine the next route investigation without weakening the existing optional
+no-loss assertion or substituting an isolated arena win for a campaign result.
+
+The final engine/native suite passes in 4.852 seconds, and production GPU/audio
+frontend checks pass in 100.732 seconds, including both connected practiced
+stages and unchanged reference routes. The previously known optional third-stage
+no-loss assertion remains excluded explicitly from that combined run and is
+still unresolved. Vet, the desktop build, Android ARM64 rebuild, signature and
+16 KiB alignment pass. The updated APK installs and cold-launches on the Pixel
+10a; its process remains alive afterward. Device graphics were not rechecked
+while locked. All source and validation milestones are committed in English;
+original resources, temporary probes and generated recordings stay excluded.

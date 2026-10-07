@@ -114,7 +114,11 @@ completes stage two, its final merchant and exit rewards, then admits stage thre
 with one ship after ordinary recovery. A permanent real-intro regression covers
 that entire route. The separate reference controller and practiced presentation
 have distinct survival results; connected victory through stages three to five
-remains unverified.
+remains unverified. A current full-intro reference observation reaches and
+defeats the third middle guardian after ordinary recovery and visits its
+merchant, but then stalls in a terrain turn at camera 2,440. An experimental
+route clears that turn and loses its last ship farther ahead; it is not part
+of the production pilot or evidence of a third-stage victory.
 
 Fifth guardian/column creation and updates now preserve the physical emitter,
 phase, direction and untouched fields written or retained by the native callbacks.
