@@ -13,7 +13,10 @@ type DemoPilotConfig struct {
 // DemoPilot produces ordinary player commands. Its zero value uses the verified
 // second-level opening policy and conservative short-horizon obstacle avoidance.
 // It is a development controller, not a guarantee of completing every stage.
-type DemoPilot struct{ Config DemoPilotConfig }
+type DemoPilot struct {
+	Config     DemoPilotConfig
+	navigation *demoNavigation
+}
 
 var demoDirections = [9]MotionInput{{}, {Left: true}, {Right: true}, {Up: true}, {Down: true}, {Left: true, Up: true}, {Right: true, Up: true}, {Left: true, Down: true}, {Right: true, Down: true}}
 
@@ -50,22 +53,45 @@ func (p *DemoPilot) NormalInput(w *World) Input {
 		weak := w.FirstGuardian.WeakPoint(w.ScrollY)
 		x, y = (weak.Left+weak.Right)/2+9, 166
 	}
+	routeX, routeY, route := 0, 0, false
+	if !opening && w.Coverage != nil && w.Level.PlayerStencil != nil && w.ScrollY > 640 {
+		goal := w.ScrollY + w.Player.Y - 128
+		if w.Level.Number == 1 && w.FirstMiddle != nil && !w.FirstMiddle.Crossed && w.ScrollY < 3456 {
+			if w.ScrollY < 2750 {
+				goal = 2685
+			}
+			y = max(25, min(80, 2685-w.ScrollY))
+		}
+		if p.navigation == nil {
+			p.navigation = &demoNavigation{}
+		}
+		routeX, routeY, route = p.navigation.waypoint(w, goal)
+	}
 	if !opening && !c.DisableBonuses {
 		best := math.Inf(1)
 		for _, item := range w.Collectibles {
 			if !item.Active || item.Y < 0 || item.Y > 168 || item.Y < float64(w.Player.Y-50) {
 				continue
 			}
+			if w.Coverage != nil && w.Level.PlayerStencil != nil && w.Coverage.Touches(int(item.X), int(item.Y), w.ScrollY, *w.Level.PlayerStencil) {
+				continue
+			}
 			distance := math.Abs(item.X-float64(w.Player.X)) + math.Abs(item.Y-float64(w.Player.Y))*2
 			if distance < best {
 				best = distance
 				x, y = int(item.X), int(item.Y)
+				route = false
 			}
 		}
 	}
 	x, y = max(20, min(300, x)), max(25, min(170, y))
 	best, bestScore, bestThreat := 0, math.Inf(1), false
 	for action, motion := range demoDirections {
+		// Holding down at the bottom requests reverse scrolling. Short-horizon
+		// risk scoring must not turn that escape into a stationary campaign.
+		if motion.Down && w.Player.Y >= 168 && w.Rewind.Timer == 0 {
+			continue
+		}
 		player := w.Player
 		scroll := ScrollState{Y: w.ScrollY, Minimum: w.MinimumScrollY, Maximum: w.MaximumScrollY, DeviationPasses: w.ScrollDeviationPasses}
 		score := 0.0
@@ -77,8 +103,19 @@ func (p *DemoPilot) NormalInput(w *World) Input {
 				break
 			}
 			scroll.Advance(player.ScrollStep, w.BaseScrollStep, motion.Down)
+			// Scrolling happens after the ship update, so a clear movement endpoint
+			// can still touch terrain at the next pass's camera position.
+			if w.Coverage != nil && w.Level.PlayerStencil != nil && w.Coverage.Touches(player.X, player.Y, scroll.Y, *w.Level.PlayerStencil) {
+				score += 10000000
+				break
+			}
 			dx, dy := float64(player.X-x), float64(player.Y-y)
-			score += (dx*dx*.003 + dy*dy*.005) / float64(c.Lookahead)
+			if route {
+				rx, ry := float64(player.X-routeX), float64(player.Y+scroll.Y-routeY)
+				score += (rx*rx*.006 + ry*ry*.002 + dy*dy*.008) / float64(c.Lookahead)
+			} else {
+				score += (dx*dx*.003 + dy*dy*.005) / float64(c.Lookahead)
+			}
 			for _, actor := range w.Actors {
 				if !actor.Active || actor.Collision.Empty() || actor.ActorList != "moving" && actor.ActorList != "scenery" {
 					continue

@@ -26,11 +26,13 @@ available upgrades through the original merchant quote/confirmation interface.
 A key or click immediately returns control of the current game to the player.
 It does not grant health, equipment or money, skip guardians or change terrain.
 
-Full-game autonomous playback is still in development. The second-stage opening
-reaches its first checkpoint with all three ships in an exact public-input
-regression. The current complete-menu pilot run has not yet finished level one;
-longer terrain routes and guardian strategies remain under development. This
-mode must not be presented as a completed five-level demonstration yet.
+Full-game autonomous playback is still in development. The current pilot
+completes level one from the normal menu, including guardian destruction and
+both merchants, and starts level two. Cached terrain routes, ordinary bonus
+collection, dive requests and shop purchases retain normal game rules. A
+separate second-stage opening reaches its first checkpoint with all three ships.
+The remaining stages and full campaign still need validated pilot strategies;
+this is not yet a completed five-level demonstration.
 
 ## Local resources
 

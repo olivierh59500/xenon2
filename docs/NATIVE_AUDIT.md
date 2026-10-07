@@ -631,3 +631,26 @@ After rebuilding the excluded audio banks, all 12,300 gameplay-effect, 8,100
 merchant-effect, 18,000 main-score and 6,000 menu-score reference rows still
 match. JSON normalization verifies that only the initial four events moved for
 the sampled sequences; other descriptors and timer events are unchanged.
+
+## Current normal-menu pilot first-stage victory
+
+The demonstration controller now caches world-coordinate terrain routes and
+checks ship coverage after scrolling as well as before it. The additional
+check prevents a repeat contact/rewind cycle at the bottom of the first middle
+arena. Route planning and bonus/dive decisions leave game state untouched.
+The verified second-stage opening still reaches checkpoint 4032 after 578
+ordinary commands with three lives and 27 shield points.
+
+A new current-engine frontend regression starts from the ordinary menu and
+completes level one after 28,649 display updates with the three-PAL-refresh
+profile. It explicitly requires the first guardian to be defeated, exit drops
+to be exhausted, intermediate and final merchant visits, and normal admission
+to level two. The next stage starts with one ship, 39 shield points and zero
+cash after real purchases. This is approximately 477.5 seconds of displayed
+gameplay/presentation, not a sped-up game.
+
+This proof replaces the invalidated historical first-level observation as
+current frontend progress. It does not prove the remaining four stages or
+a strong full-campaign pilot. Cached navigation without a changing route
+measured about 2 microseconds with no allocations on the tested Mac; route
+replanning and dense-combat rendering have separate costs.

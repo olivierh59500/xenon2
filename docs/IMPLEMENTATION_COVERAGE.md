@@ -79,8 +79,9 @@ and 120 draw calls per second on its 120 Hz display after warm-up. That run does
 not establish dense-combat performance or a complete playthrough. A historical
 public-input replay completed the first level before the lethal-contact
 correction. Its observed state now diverges at step 920, so it no longer proves
-current first-level completion. All five levels and the complete frontend
-campaign require current public-input playthrough validation.
+current first-level completion. A new normal-menu pilot regression now completes level one through the current
+engine, including both merchants and guardian/exit-coin gates, then admits level
+two. The remaining stages and complete campaign require current validation.
 
 The remaining live checks are:
 
