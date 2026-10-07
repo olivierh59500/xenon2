@@ -144,7 +144,7 @@ func (w *World) applyCarrierReward(reward int) {
 	}
 	switch reward {
 	case 16:
-		w.InvulnerableFrames += 170
+		w.beginInvulnerability()
 	case 18:
 		w.ScreenClearFrames = 31
 		w.ScreenClearPaletteMask = uint16(w.random.Next())

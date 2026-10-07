@@ -77,6 +77,7 @@ type WorldActor struct {
 	fourthFalling              *FourthFallingActor
 	fourthPod                  *FourthPodState
 	fourthChild                *FourthPodChild
+	invulnerability            *InvulnerabilityState
 	fourthCrawlerArt           *visualassets.FixedSpriteKind
 	firstGuardian              bool
 	secondGuardian             bool
@@ -187,6 +188,7 @@ type World struct {
 	Dive                             DiveState
 	RenderDivePhase                  int
 	InvulnerableFrames               int
+	HUD                              []WorldSpriteAttachment
 	MaterializationFrames            int
 	SoundRequests                    [4]string
 	ImmediateSoundRequests           [4]string
@@ -498,6 +500,7 @@ func (w *World) Step(input Input) error {
 		w.blockedFireUntilRelease = input.Fire
 		input.Fire = false
 	}
+	w.HUD = w.HUD[:0]
 	w.Frame++
 	w.WaveBonuses.BeginPass(w.Frame)
 	w.PreviousPlayer = w.Player
@@ -629,9 +632,6 @@ func (w *World) Step(input Input) error {
 			}
 		}
 	}
-	if w.InvulnerableFrames > 0 && w.MaterializationFrames == 0 {
-		w.InvulnerableFrames--
-	}
 	if err := w.advancePooledProjectiles(input); err != nil {
 		return err
 	}
@@ -724,8 +724,7 @@ func (w *World) Step(input Input) error {
 	if err := w.advanceActorPhase(ActorPoolScenery, input); err != nil {
 		return err
 	}
-	w.Equipment.AdvanceTimers()
-	w.Dive.Tick()
+	w.advanceTimedEquipment()
 	if w.Dive.Phase != 0 || !w.PlayerAlive {
 		if w.MaterializationFrames < 16 {
 			w.MaterializationFrames++

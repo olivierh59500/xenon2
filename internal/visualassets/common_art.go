@@ -118,5 +118,13 @@ func DecodeCommonActorArtWithEquipment(common, shop []byte, catalogue *ShopCatal
 	atlas.Equipment = equipment
 	atlas.Animations = animations
 	atlas.SourceSpriteNames = names
+	for i := range 10 {
+		at := int(binary.BigEndian.Uint32(common[0x6336+i*4:]))
+		name, ok := names[at]
+		if !ok {
+			return SpriteAtlas{}, fmt.Errorf("common timer meter image is missing")
+		}
+		atlas.TimerFrames = append(atlas.TimerFrames, name)
+	}
 	return atlas, nil
 }

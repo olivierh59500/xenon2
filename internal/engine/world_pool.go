@@ -148,6 +148,10 @@ func (w *World) bindWorldActor(actor *WorldActor) error {
 }
 
 func (w *World) storeActorResidue(actor *WorldActor) {
+	if actor.invulnerability != nil {
+		w.storeInvulnerabilityResidue(actor)
+		return
+	}
 	if actor.fifthFormation != nil {
 		w.storeFifthFormationResidue(actor)
 		return

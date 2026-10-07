@@ -19,6 +19,7 @@ type SpriteRegion struct {
 }
 
 type SpriteAtlas struct {
+	TimerFrames       []string              `json:"timer_frames,omitempty"`
 	Sprites           []SpriteRegion        `json:"sprites"`
 	Equipment         []ItemAnimation       `json:"equipment,omitempty"`
 	Animations        []NamedActorAnimation `json:"animations,omitempty"`

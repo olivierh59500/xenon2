@@ -47,6 +47,37 @@ func TestNormalSessionSnapshotDisablesReferenceShortcuts(t *testing.T) {
 	}
 }
 
+func TestDiveAndNashwanMetersReachGameplaySnapshots(t *testing.T) {
+	dir := os.Getenv("XENON2_RUNTIME_TEST_DIR")
+	if dir == "" {
+		t.Skip("local exported resources not supplied")
+	}
+	bundle, err := LoadFS(os.DirFS(dir))
+	if err != nil {
+		t.Fatal(err)
+	}
+	driver, err := newWorldDriver(bundle, 1)
+	if err != nil {
+		t.Fatal(err)
+	}
+	w := driver.world
+	w.MaterializationFrames = 0
+	w.Equipment.SuperFrames, w.Dive.Remaining = 1, 1
+	if err := driver.Advance(Input{}); err != nil {
+		t.Fatal(err)
+	}
+	frame := driver.Frame()
+	if len(frame.HUD) != 2 || frame.HUD[0].Sprite != bundle.Common.TimerFrames[0] || frame.HUD[0].X != 152 || frame.HUD[0].Y != 8 || frame.HUD[1].Y != 160 {
+		t.Fatal("source expiry meters did not reach the rendered HUD snapshot")
+	}
+	if err := driver.Advance(Input{}); err != nil {
+		t.Fatal(err)
+	}
+	if len(driver.Frame().HUD) != 0 {
+		t.Fatal("expired meters persisted into the next snapshot")
+	}
+}
+
 func TestWrapInterpolationKeepsParallaxContinuous(t *testing.T) {
 	if got := wrapLerp(191, 0, .5, 192); got != 191.5 {
 		t.Fatalf("forward wrap traverses image: %g", got)
