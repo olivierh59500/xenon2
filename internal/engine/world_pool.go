@@ -152,6 +152,10 @@ func (w *World) storeActorResidue(actor *WorldActor) {
 		w.storeFifthSeekingResidue(actor)
 		return
 	}
+	if actor.fourthFalling != nil || actor.fourthPod != nil || actor.fourthChild != nil {
+		w.storeFourthStageResidue(actor)
+		return
+	}
 	if actor.fifthTile != nil {
 		w.storeFifthTileResidue(actor)
 		return

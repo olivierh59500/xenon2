@@ -121,6 +121,7 @@ func (w *World) spawnThirdChain(record visualassets.FixedEncounter) {
 			w.Actors = append(w.Actors, actor)
 		}
 		w.Pool.Slot(actor.Binding.Slot).Linked = true
+		actor.Binding.Residue.OwnerSlot = leader.Binding.Slot
 		w.storeActorResidue(actor)
 		w.updateSecondActorCollision(actor)
 		group[index] = actor

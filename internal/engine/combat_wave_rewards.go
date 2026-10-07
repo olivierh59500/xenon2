@@ -52,6 +52,20 @@ func (s *WaveBonusCache) Register(heavy bool, count int) uint16 {
 	return token
 }
 
+// RegisterIndependent reserves a fresh token for one spawned child. Unlike an
+// encounter token, its counter advances even when all eight buckets are full.
+func (s *WaveBonusCache) RegisterIndependent() uint16 {
+	token := s.NextID
+	s.NextID++
+	for i := range s.Entries {
+		if s.Entries[i].ID == 0 {
+			s.Entries[i] = WaveBonusEntry{ID: token, Remaining: 1}
+			break
+		}
+	}
+	return token
+}
+
 // Defeat returns true only when the final independent member of a tracked
 // bucket is destroyed. The caller chooses a normal or heavy cash reward.
 func (s *WaveBonusCache) Defeat(token uint16) bool {

@@ -72,6 +72,9 @@ type WorldActor struct {
 	Extras                     []WorldSpriteAttachment
 	TileOverlays               []WorldTileOverlay
 	fourthCrawler              *FourthCrawlerState
+	fourthFalling              *FourthFallingActor
+	fourthPod                  *FourthPodState
+	fourthChild                *FourthPodChild
 	fourthCrawlerArt           *visualassets.FixedSpriteKind
 	firstGuardian              bool
 	secondGuardian             bool
@@ -514,7 +517,10 @@ func (w *World) Step(input Input) error {
 	backgroundStep := (w.ScrollDelta >> 1) + (int(w.Frame&1) & w.ScrollDelta)
 	w.BackgroundY = (w.BackgroundY - backgroundStep + 192) % 192
 	w.Player.SpeedTier = w.Equipment.SpeedTier
-	w.Player.ScrollStep = w.BaseScrollStep
+	w.Player.ScrollStep = 1
+	if err := w.advanceStageBeforeActors(); err != nil {
+		return err
+	}
 	w.RenderDivePhase = w.Dive.Phase
 	deathFinished := false
 	if !w.PlayerAlive && len(w.deathAnimation.Animation.Frames) != 0 {
@@ -528,7 +534,8 @@ func (w *World) Step(input Input) error {
 		if w.Equipment.ShadesFrames > 0 {
 			contactRect = CollisionRect{Left: w.Player.X - 64, Top: w.Player.Y - 64, Right: w.Player.X + 64, Bottom: w.Player.Y + 64}
 		}
-		for _, actor := range w.Actors {
+		var contactStorage [ActorPoolCapacity]*WorldActor
+		for _, actor := range w.orderedMovingActors(&contactStorage) {
 			if actor.Active && actor.ActorList == "moving" && actor.Collision.Intersects(contactRect) {
 				if w.Equipment.ShadesFrames == 0 {
 					w.damagePlayer(ContactDamage(actor.part.StrongHealth))
@@ -577,8 +584,6 @@ func (w *World) Step(input Input) error {
 	if err := w.advancePlayerShadows(input); err != nil {
 		return err
 	}
-	w.secondStreamsUpdated = [2]bool{}
-	w.thirdMiddleUpdated, w.thirdFinalUpdated = false, false
 	w.syncDeadActors()
 	if err := w.advanceActorPhase(ActorPoolMoving, input); err != nil {
 		return err
@@ -734,22 +739,7 @@ func (w *World) Step(input Input) error {
 		}
 		w.Weapons.Compact()
 	}
-	w.MovingEnemyCount = 0
-	for _, actor := range w.Actors {
-		if actor.Active && actor.ActorList == "moving" && actor.part.ResourceTag != 80 && actor.part.ResourceTag != 84 && !(actor.part.Linked && actor.leader != nil) {
-			w.MovingEnemyCount++
-		}
-	}
 	var spawnErr error
-	if err := w.advanceFirstMiddleStage(); err != nil {
-		return err
-	}
-	if err := w.advanceThirdStage(); err != nil {
-		return err
-	}
-	if err := w.advanceSecondDefenseWaves(); err != nil {
-		return err
-	}
 	w.cursor.Activate(w.ScrollY, w.Level.Encounters,
 		func(wave visualassets.Wave) {
 			if spawnErr == nil {

@@ -54,3 +54,34 @@ func TestCombatScrollNativeTraceOptional(t *testing.T) {
 		}
 	})
 }
+
+func TestFourthChildBonusNativeTraceOptional(t *testing.T) {
+	cases := 0
+	nativeCombatRows(t, "fourth-child-bonus-trace.csv", func(v []int64) {
+		cache := WaveBonusCache{NextID: uint16(v[1])}
+		for i := range cache.Entries {
+			if int(v[2])&(1<<i) != 0 {
+				cache.Entries[i] = WaveBonusEntry{ID: uint16(100 + i), Remaining: uint16(2 + i)}
+			}
+		}
+		token := cache.RegisterIndependent()
+		if token != uint16(v[3]) || cache.NextID != uint16(v[4]) {
+			t.Fatalf("fresh child token %v: %+v token=%d", v, cache, token)
+		}
+		for i, entry := range cache.Entries {
+			if entry.ID != uint16(v[5+i*2]) || entry.Remaining != uint16(v[6+i*2]) {
+				t.Fatalf("child bucket %v: %d=%+v", v, i, entry)
+			}
+		}
+		cache.Escape(token)
+		for i, entry := range cache.Entries {
+			if entry.ID != uint16(v[22+i*2]) || entry.Remaining != uint16(v[23+i*2]) {
+				t.Fatalf("escaped child bucket %v: %d=%+v", v, i, entry)
+			}
+		}
+		cases++
+	})
+	if cases != 28 {
+		t.Fatalf("child bonus coverage: %d", cases)
+	}
+}

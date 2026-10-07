@@ -47,6 +47,7 @@ type FixedSprites struct {
 	Kinds          []FixedSpriteKind       `json:"kinds"`
 	Atlas          SpriteAtlas             `json:"atlas"`
 	Projectile     *FixedProjectileArtwork `json:"projectile,omitempty"`
+	FourthStage    *FourthStageArt         `json:"fourth_stage,omitempty"`
 	HatchCreatures *HatchCreatureArtwork   `json:"hatch_creatures,omitempty"`
 	PodCreatures   *PodCreatureArtwork     `json:"pod_creatures,omitempty"`
 }
@@ -234,6 +235,10 @@ func DecodeFixedSprites(levelNumber int, level []byte, palette [16][4]uint8) (*F
 			return nil, err
 		}
 		result.Kinds = append(result.Kinds, crawler)
+		result.FourthStage, err = decodeFourthStageArt(level, add)
+		if err != nil {
+			return nil, err
+		}
 	}
 	var err error
 	if levelNumber == 2 {
