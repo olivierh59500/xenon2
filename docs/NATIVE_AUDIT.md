@@ -257,3 +257,17 @@ periodic inverted aim, direction-specific animation and screen clipping.
 World creates the creatures after the moving phase, so they first advance on
 the following pass. Each uses the shared actor allocator, its original launch
 offset and random delay, source artwork, collision and destruction effect.
+
+## Second-level pods and third-level guardians
+
+Both pod emitter cycles match the original terrain writes and two-creature
+spawn limit. Their ship-seeking creatures match 5,120 source updates over both
+variants and sixteen allocation phases. The allocator carries a named phase
+value for per-object wobble; native addresses are never used at runtime.
+
+The third-level middle guardian has seventeen independently allocated parts
+and two shared eye health values. Its controller matches 20,400 part updates.
+The final eleven-member worm matches 13,627 member updates; its creation retains
+reused fractional positions and the inherited firing-rate value. Stage-boundary
+logic matches 60 original decisions. Integrated tests verify source activation,
+checkpoint preservation, middle rewards/shop admission and final delayed exit.

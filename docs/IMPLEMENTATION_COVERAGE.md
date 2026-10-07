@@ -10,8 +10,8 @@ establish that the corresponding encounter is playable.
 | Level | Integrated families | Remaining work |
 | --- | --- | --- |
 | 1 | Three terrain cannon types, bouncing attackers, five-stream middle arena, final body and articulated chain | Complete damage/removal effects and checkpoint/playthrough comparisons |
-| 2 | Terrain cannon, bouncing attackers, fixed hatches and their eight creatures, middle nodes and articulated defense waves, final body and transforming minions | Two additional fixed sprite families |
-| 3 | Terrain cannon, sweeping attacker and turning projectile | Middle flying guardian and final worm integration; three additional fixed families |
+| 2 | Terrain cannon, bouncing attackers, hatches, both pod emitters and their creatures, middle defense waves/nodes, final body and transforming minions | Complete source effects and full playthrough comparisons |
+| 3 | Terrain cannon, sweeping attacker, turning projectile, middle flying guardian and final worm | Three additional fixed families and initial scenery renderer |
 | 4 | Terrain cannon and extending beam | Middle and final compound guardians; ground encounter family |
 | 5 | Terrain cannon and vertical attacker with aiming projectile | Middle and final compound guardians; six additional fixed families |
 
@@ -30,7 +30,7 @@ sprite transparency use their distinct original coverage formats.
 The session has explicit intermediate-shop and stage-completion boundaries.
 The two-player stage gate preserves each saved game; level five increases
 difficulty and loops to level one. Frontend loading, shop and ending routes are
-being connected and checked independently of these simulation tests.
+connected. Live scene comparisons remain separate from simulation tests.
 
 ## Validation boundaries
 

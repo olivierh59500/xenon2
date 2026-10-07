@@ -30,7 +30,8 @@ func (w *World) reserveWorldActor(tag int16, list ActorPoolList, tail bool) (Act
 	}
 	w.poolActors[allocation.Slot] = nil
 	w.nextActorID++
-	binding := ActorPoolBinding{Slot: allocation.Slot, EntityID: w.nextActorID, Residue: w.Pool.Slot(allocation.Slot).Residue}
+	slot := w.Pool.Slot(allocation.Slot)
+	binding := ActorPoolBinding{Slot: allocation.Slot, EntityID: w.nextActorID, Residue: slot.Residue, AllocationPhase: slot.AllocationPhase}
 	if tail {
 		err = w.Pool.AttachTail(binding.Slot, list, binding.EntityID, tag)
 	} else {

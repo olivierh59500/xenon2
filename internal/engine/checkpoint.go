@@ -73,6 +73,7 @@ func (w *World) RestartCheckpoint() {
 		w.Actors = append(w.Actors, w.secondGuardianActor)
 	}
 	w.restoreSecondArenaActors()
+	w.restoreThirdMiddleActors()
 	if w.FirstMiddle != nil {
 		w.FirstMiddle.Updated = [5]bool{}
 		w.FirstMiddle.GateCounters = [16]int{}

@@ -42,8 +42,7 @@ func (w *World) initializeSecondArena() error {
 	for i := range w.secondNodeArt.Components {
 		descriptor := &w.secondNodeArt.Components[i]
 		state := NewSecondDefenseNodeState(descriptor.Index, descriptor.InitialX/16, descriptor.InitialWorldY/16, descriptor.Health)
-		w.nextActorID++
-		actor := &WorldActor{ID: w.nextActorID, Active: true, ActorList: "moving", Atlas: "guardian-parts", Health: descriptor.Health, part: &visualassets.ActorPart{ResourceTag: 84, DamageMode: "second-defense-node"}, secondNode: &state, secondPart: descriptor, Collision: state.Collision}
+		actor := &WorldActor{Active: true, ActorList: "moving", Atlas: "guardian-parts", Health: descriptor.Health, part: &visualassets.ActorPart{ResourceTag: 84, DamageMode: "second-defense-node"}, secondNode: &state, secondPart: descriptor, Collision: state.Collision}
 		actor.X, actor.Y = float64(descriptor.InitialX), float64(descriptor.InitialWorldY-w.ScrollY)
 		actor.PreviousX, actor.PreviousY = actor.X, actor.Y
 		w.secondNodes[descriptor.Index] = actor

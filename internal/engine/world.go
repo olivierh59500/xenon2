@@ -71,9 +71,14 @@ type WorldActor struct {
 	fixedTileVariant           *visualassets.FixedTileVariant
 	fixedHatch                 *FixedHatchState
 	hatchCreature              *HatchCreatureState
+	fixedPod                   *FixedPodState
+	podCreature                *PodCreatureState
 	firstMiddleAnchor          *FirstMiddleAnchor
 	firstMiddleFollower        *FirstMiddleFollower
 	firstMiddleFragment        *FirstMiddleFragment
+	thirdMiddlePart            int
+	thirdFinalMember           *ThirdFinalMember
+	thirdPart                  *visualassets.GuardianComponent
 	firstMiddleSentinel        bool
 	firstMiddleStream          int
 	firstMiddleGate            int
@@ -150,6 +155,7 @@ type World struct {
 	EffectActive                     [4]bool
 	StopEffectsRequested             bool
 	PendingFixedShots                []FixedSpriteEvents
+	UnimplementedFixedEncounters     []visualassets.FixedEncounter
 	ScreenClearFrames                int
 	ScreenClearPaletteMask           uint16
 	PendingExitDrops                 int
@@ -167,6 +173,14 @@ type World struct {
 	Projectiles                      []*WorldProjectile
 	SmallShots                       []*WorldSmallShot
 	Collectibles                     []*WorldCollectible
+	ThirdMiddle                      *ThirdGuardianState
+	ThirdFinal                       *ThirdFinalState
+	ThirdStage                       ThirdStageState
+	thirdMiddleArt                   *visualassets.GuardianGroup
+	thirdFinalArt                    *visualassets.GuardianGroup
+	thirdMiddleActors                [17]*WorldActor
+	thirdMiddleUpdated               bool
+	thirdFinalUpdated                bool
 	FirstGuardian                    *FirstGuardianState
 	FirstGuardianSegments            *FirstGuardianSegments
 	FirstMiddle                      *FirstMiddleState
@@ -343,9 +357,8 @@ func NewWorld(data LevelData) (*World, error) {
 		w.firstGuardianArt = &data.Guardians.Visuals[0]
 		state := NewFirstGuardianState(w.firstGuardianArt.InitialHealth)
 		w.FirstGuardian = &state
-		w.nextActorID++
 		part := &visualassets.ActorPart{ResourceTag: 80, DamageMode: "first-guardian", MotionMode: "first-guardian-controller"}
-		w.firstGuardianActor = &WorldActor{ID: w.nextActorID, Active: true, ActorList: "moving", Atlas: "guardians", part: part, firstGuardian: true,
+		w.firstGuardianActor = &WorldActor{Active: true, ActorList: "moving", Atlas: "guardians", part: part, firstGuardian: true,
 			Collision: CollisionRect{Right: -1, Bottom: -1}}
 		w.Actors = append(w.Actors, w.firstGuardianActor)
 	}
@@ -355,13 +368,15 @@ func NewWorld(data LevelData) (*World, error) {
 		w.SecondGuardian = &state
 		w.secondGuardianBody = w.secondGuardianArt.Body
 		w.secondGuardianBody.Tiles = append([]uint16(nil), w.secondGuardianBody.Tiles...)
-		w.nextActorID++
 		part := &visualassets.ActorPart{ResourceTag: 80, DamageMode: "second-guardian", MotionMode: "second-guardian-controller"}
-		w.secondGuardianActor = &WorldActor{ID: w.nextActorID, Active: true, ActorList: "moving", Atlas: "guardians", part: part,
+		w.secondGuardianActor = &WorldActor{Active: true, ActorList: "moving", Atlas: "guardians", part: part,
 			secondGuardian: true, Health: w.secondGuardianArt.InitialHealth, Collision: CollisionRect{Right: -1, Bottom: -1}}
 		w.Actors = append(w.Actors, w.secondGuardianActor)
 	}
 	if err := w.initializeSecondArena(); err != nil {
+		return nil, err
+	}
+	if err := w.initializeThirdStage(); err != nil {
 		return nil, err
 	}
 	if err := w.initializeFirstMiddle(); err != nil {
@@ -512,6 +527,7 @@ func (w *World) Step(input Input) error {
 		return err
 	}
 	w.secondStreamsUpdated = [2]bool{}
+	w.thirdMiddleUpdated, w.thirdFinalUpdated = false, false
 	w.syncDeadActors()
 	if err := w.advanceActorPhase(ActorPoolMoving, input); err != nil {
 		return err
@@ -673,6 +689,9 @@ func (w *World) Step(input Input) error {
 	}
 	var spawnErr error
 	if err := w.advanceFirstMiddleStage(); err != nil {
+		return err
+	}
+	if err := w.advanceThirdStage(); err != nil {
 		return err
 	}
 	if err := w.advanceSecondDefenseWaves(); err != nil {
@@ -905,6 +924,14 @@ func (w *World) destroyPlayer() {
 }
 
 func (w *World) damageActor(actor *WorldActor, amount uint16) {
+	if actor.thirdMiddlePart > 0 {
+		w.damageThirdMiddle(actor, amount)
+		return
+	}
+	if actor.thirdFinalMember != nil {
+		w.damageThirdFinal(actor, amount)
+		return
+	}
 	if actor.firstMiddleFollower != nil {
 		w.damageFirstMiddleFollower(actor, amount)
 		return
@@ -989,6 +1016,12 @@ func (w *World) spawnEnemyShot(x, y int, shot EnemyShot) {
 }
 
 func (w *World) spawnFixed(record visualassets.FixedEncounter) {
+	if w.Level.Number == 3 && record.EnemyKind == 3 && w.thirdMiddleArt != nil {
+		if err := w.activateThirdMiddle(); err != nil {
+			w.poolError = err
+		}
+		return
+	}
 	if record.EnemyKind == 0 {
 		w.captureCheckpoint(record.TriggerY, record.X, record.Y)
 		return
@@ -999,8 +1032,12 @@ func (w *World) spawnFixed(record visualassets.FixedEncounter) {
 	if w.spawnFixedHatch(record) {
 		return
 	}
+	if w.spawnFixedPod(record) {
+		return
+	}
 	kind := w.fixedKinds[record.EnemyKind]
 	if kind == nil {
+		w.UnimplementedFixedEncounters = append(w.UnimplementedFixedEncounters, record)
 		return
 	}
 	variant := record.Variant

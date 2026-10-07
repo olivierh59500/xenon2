@@ -177,6 +177,19 @@ func decodeSecondLevelFixedTiles(data []byte) (*FixedTiles, []uint16, error) {
 		hatch.Variants = append(hatch.Variants, v)
 	}
 	result.Kinds = append(result.Kinds, hatch)
+	for _, definition := range []struct{ kind, table, columns, rows, tag int }{{4, 0x5567a, 1, 1, 228}, {5, 0x554c6, 2, 2, 248}} {
+		pod := FixedTileKind{Kind: definition.kind, Behavior: "second-pod", Mode: "screen-triggered-emitter", FrameDuration: 4}
+		variant := FixedTileVariant{ID: 0, ResourceTag: definition.tag, OriginOffsetX: -8, OriginOffsetY: -8}
+		for frame := range 9 {
+			variant.Frames = append(variant.Frames, read(definition.table-levelBase+frame*definition.columns*definition.rows*2, definition.columns, definition.rows))
+		}
+		variant.Initial = variant.Frames[0]
+		variant.Initial.Tiles = append([]uint16(nil), variant.Initial.Tiles...)
+		variant.Destroyed = variant.Frames[len(variant.Frames)-1]
+		variant.Destroyed.Tiles = append([]uint16(nil), variant.Destroyed.Tiles...)
+		pod.Variants = []FixedTileVariant{variant}
+		result.Kinds = append(result.Kinds, pod)
+	}
 	return result, codes, nil
 }
 

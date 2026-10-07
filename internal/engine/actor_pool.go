@@ -37,8 +37,9 @@ type ActorResidue struct {
 // ActorPoolBinding is the small allocation boundary shared by World and weapon
 // state. EntityID changes on reuse; Slot remains the physical reference.
 type ActorPoolBinding struct {
-	Slot, EntityID int
-	Residue        ActorResidue
+	Slot, EntityID  int
+	AllocationPhase uint8
+	Residue         ActorResidue
 }
 
 func (r ActorResidue) FireAccumulator() uint8 { return uint8(r.EmitterClock >> 8) }
@@ -51,6 +52,7 @@ func (r *ActorResidue) SetFireState(accumulator, rate uint8) {
 // creation ID. References to slots can therefore survive entity replacement.
 type ActorPoolSlot struct {
 	EntityID                 int
+	AllocationPhase          uint8
 	ResourceTag              int16
 	Linked                   bool
 	AuxiliaryFlags           [2]bool
@@ -62,6 +64,7 @@ type ActorPoolSlot struct {
 
 type ActorAllocation struct {
 	Slot, PreviousEntityID int
+	AllocationPhase        uint8
 	PreviousList           ActorPoolList
 	PreviousTag            int16
 	Stolen                 bool
@@ -81,6 +84,7 @@ func NewActorPool() *ActorPool {
 		p.first[i], p.last[i] = NoActorSlot, NoActorSlot
 	}
 	for i := range p.slots {
+		p.slots[i].AllocationPhase = [16]uint8{30, 0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28}[i&15]
 		p.slots[i].previous, p.slots[i].next, p.slots[i].freeNext = NoActorSlot, NoActorSlot, i+1
 		p.slots[i].Residue.OwnerSlot, p.slots[i].Residue.LeaderSlot, p.slots[i].Residue.FollowingSlot = NoActorSlot, NoActorSlot, NoActorSlot
 	}
@@ -100,6 +104,13 @@ func (p *ActorPool) First(list ActorPoolList) int {
 		return NoActorSlot
 	}
 	return p.first[list]
+}
+
+func (p *ActorPool) Last(list ActorPoolList) int {
+	if list == ActorPoolNone || int(list) >= len(p.last) {
+		return NoActorSlot
+	}
+	return p.last[list]
 }
 
 func (p *ActorPool) FreeFirst() int { return p.freeFirst }
@@ -150,7 +161,7 @@ func (p *ActorPool) Allocate() (ActorAllocation, error) {
 		return ActorAllocation{}, fmt.Errorf("actor pool has no stealable entry")
 	}
 	node := &p.slots[index]
-	result := ActorAllocation{Slot: index, PreviousEntityID: node.EntityID, PreviousList: node.list, PreviousTag: node.ResourceTag, Stolen: stolen}
+	result := ActorAllocation{Slot: index, AllocationPhase: node.AllocationPhase, PreviousEntityID: node.EntityID, PreviousList: node.list, PreviousTag: node.ResourceTag, Stolen: stolen}
 	if stolen {
 		p.unlink(index)
 	}

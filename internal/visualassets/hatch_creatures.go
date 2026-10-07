@@ -7,7 +7,8 @@ import "encoding/binary"
 type HatchCreatureArtwork struct {
 	Offsets           [8][2]int         `json:"offsets"`
 	HeadingAnimations [8]ActorAnimation `json:"heading_animations"`
-	StepX, StepY      [8]int            `json:"step_x"`
+	StepX             [8]int            `json:"step_x"`
+	StepY             [8]int            `json:"step_y"`
 	Lifetime          int               `json:"lifetime"`
 	InitialAnimations [8]ActorAnimation `json:"initial_animations"`
 }

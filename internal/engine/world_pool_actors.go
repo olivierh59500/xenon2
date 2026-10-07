@@ -50,9 +50,22 @@ func (w *World) advanceActorPhase(list ActorPoolList, input Input) error {
 }
 
 func (w *World) advanceMovingActor(actor *WorldActor) error {
+	if actor.podCreature != nil {
+		w.advancePodCreature(actor)
+		return nil
+	}
 	if actor.hatchCreature != nil {
 		w.advanceHatchCreature(actor)
 		return nil
+	}
+	if actor.thirdMiddlePart > 0 {
+		if actor.thirdMiddlePart == 1 {
+			return w.advanceThirdMiddle()
+		}
+		return nil
+	}
+	if actor.thirdFinalMember != nil {
+		return w.advanceThirdFinal(actor)
 	}
 	if actor.firstMiddleSentinel {
 		return nil
@@ -151,6 +164,10 @@ func (w *World) advanceMovingActor(actor *WorldActor) error {
 }
 
 func (w *World) advanceSceneryActor(actor *WorldActor) error {
+	if actor.fixedPod != nil {
+		w.advanceFixedPod(actor)
+		return nil
+	}
 	if actor.fixedHatch != nil {
 		w.advanceFixedHatch(actor)
 		return nil
