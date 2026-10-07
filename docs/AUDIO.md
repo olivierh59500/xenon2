@@ -125,7 +125,7 @@ The frontend retains this admission state instead of deriving music solely
 from the currently visible screen.
 
 A PCM regression follows an actual collision loss through initials, accepted
-continue and READY. 428,505 output frames from the unaffected left music voices
+continue and READY. 511,560 output frames from the unaffected left music voices
 match an independent uninterrupted score stream. Effect-stop tests also verify
 that terminating inactive effect records does not restart music DMA positions.
 Termination queued for the 50 Hz tick preserves pending dispatch order and only

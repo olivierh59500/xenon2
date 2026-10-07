@@ -33,7 +33,9 @@ It does not grant health, equipment or money, skip guardians or change terrain.
 
 Full-game autonomous playback is still in development. The current pilot
 completes levels one and two from the normal menu, including guardian destruction
-and both merchants on each stage, and starts level three. Cached terrain routes, ordinary bonus
+and both merchants on each stage, and starts level three. The full-intro startup
+also traverses all six credit pairs and wins both stages, carrying one ship into
+stage three; the direct-menu regression carries two. Cached terrain routes, ordinary bonus
 collection, dive requests and shop purchases retain normal game rules. A
 separate second-stage opening reaches its first checkpoint with all three ships.
 The remaining stages and full campaign still need validated pilot strategies;
@@ -94,11 +96,15 @@ scrolling use a separate simulation clock; interpolation does not speed up the
 game. Audio follows its own original 50 Hz replay clock.
 
 The first native A500 gameplay capture scrolls about 16.7 source pixels per
-second, corresponding to three PAL refreshes per pass. To compare that measured
-early-game profile, use `-logic-pal-refreshes 3`. The default remains the source
-two-refresh maximum (`2`, 25 passes/s) while dense-scene and later-level cadence
-comparisons continue. This option affects gameplay only; it does not retime
-the audio, palette fades, menu or shop.
+second, corresponding to three PAL refreshes per pass. This measured early-game
+profile is now the default. Use `-logic-pal-refreshes 2` to select the source's
+two-refresh maximum (25 passes/s) for comparison. Dense-scene and later-level
+cadence still need integrated native measurements.
+
+The intro's expensive credit zoom uses the recorded A500 average: 15.5 passes/s,
+giving six seconds per 93-pass credit pair. This is a stable average adaptation
+of the observed workload-dependent cadence. Menu, shop, audio and palette fades
+retain their separate clocks; changing gameplay timing does not accelerate them.
 
 See [implementation coverage](docs/IMPLEMENTATION_COVERAGE.md),
 [reference notes](docs/REFERENCE_NOTES.md) and the

@@ -18,7 +18,7 @@ func main() {
 	view := flag.String("view", "attract", "initial view: menu, attract, level or shop")
 	trainer := flag.Bool("cheats", false, "open the optional trainer settings before starting")
 	demo := flag.Bool("demo", false, "enable the normal-input demonstration pilot; any key or click returns manual control")
-	logicRefreshes := flag.Int("logic-pal-refreshes", 2, "PAL refreshes per logic pass: 2 is the source maximum, 3 the measured A500 early-game profile")
+	logicRefreshes := flag.Int("logic-pal-refreshes", 3, "PAL refreshes per logic pass: 3 matches measured A500 early play; 2 selects the source maximum")
 	mute := flag.Bool("mute", false, "disable audio output")
 	flag.Parse()
 	if flag.NArg() != 0 {

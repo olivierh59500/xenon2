@@ -930,9 +930,33 @@ now models the two permanent A500 RC stages while preserving that choice.
 Raw digital PCM remains available for source-register diagnostics. Independent
 impulse/frequency checks, stereo isolation, silence decay, arbitrary reader
 chunks and unchanged replay state cover the filter. The filtered frontend PCM
-still matches 428,505 uninterrupted music frames through death, score entry,
+at the source maximum matches 428,505 uninterrupted music frames through death, score entry,
 continue and READY, and merchant direct/queued dispatch checks pass.
 
 Steady filtered output measures about 29 microseconds per 1,024 stereo frames
 with no allocations on the M4 Max. This is a numerical reconstruction model;
 physical-output and complete soundtrack comparisons remain separate work.
+
+## Measured default gameplay and credit pacing
+
+Default gameplay now uses three PAL refreshes per logic pass, matching the
+observed early A500 terrain rate instead of the source's faster two-refresh
+maximum. The explicit two-refresh option remains available. This establishes
+the early-scene default, not unmeasured dense/later-level timing.
+
+The recorded attract sequence has approximately six-second credit-pair intervals
+for 93 source passes. Its zoom now uses a separate rational 31/2 Hz clock,
+preserving that average with no accumulated rounding drift. Actual frontend
+credit-pair transitions occur at display updates 482, 842, 1202 and 1562: every
+subsequent interval is exactly six seconds at 60 display updates per second.
+This deliberately replaces workload-dependent processor delays with their
+measured average; individual native zoom passes need not have uniform duration.
+Menu/shop clocks, 50 Hz audio and palette fades remain independent, and a
+confirmation still leaves credits through the ordinary menu transition.
+
+The complete app suite passes after this change. Filtered music now matches
+511,560 uninterrupted output frames through the death/score/continue/READY route
+at the default cadence. Explicit full-intro pilot checks retain all six credit
+pairs, the real menu, four merchants and both guardian/exit gates. They reach
+stage three with one ship at either gameplay setting. Direct-menu checks still
+reach it with two; neither result proves the remaining campaign.

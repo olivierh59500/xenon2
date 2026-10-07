@@ -17,6 +17,7 @@ func (g *Game) BeginAttract() {
 	}
 	scores := g.director.Scores
 	g.director = presentation.NewDirector(&g.Bundle.Presentation)
+	g.creditClock = engine.NewRationalFrameClock(31, 2, 60)
 	g.director.Scores = scores
 	g.readyRunning, g.gameOverRunning = false, false
 	g.presentationStarPhase = presentation.LogoDelay
@@ -67,7 +68,13 @@ func (g *Game) updatePresentation(controls inputFrame) error {
 
 	g.presentationInput.Confirm = g.presentationInput.Confirm || input.Confirm
 	g.presentationInput.Horizontal = input.Horizontal
-	for ticks := g.menuClock.Advance(); ticks > 0; ticks-- {
+	clock := &g.menuClock
+	if g.director.Phase == presentation.Credits {
+		// The recorded A500 spends about six seconds on each 93-pass pair.
+		// Use that measured average for the expensive credit zoom sequence.
+		clock = &g.creditClock
+	}
+	for ticks := clock.Advance(); ticks > 0; ticks-- {
 		switch result := g.director.Advance(g.presentationInput); result {
 		case presentation.StartGame:
 			g.restoreGameplayStars()

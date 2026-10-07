@@ -122,6 +122,7 @@ type Game struct {
 	readyRunning             bool
 	starfield                *presentation.Starfield
 	menuClock                engine.FrameClock
+	creditClock              engine.FrameClock
 	shop                     *shopui.State
 	palClock                 engine.FrameClock
 	Bundle                   *Bundle
@@ -156,13 +157,14 @@ func New(bundle *Bundle) (*Game, error) {
 	if err != nil {
 		return nil, err
 	}
-	g := &Game{Bundle: bundle, Screen: TitleScreen, clock: engine.NewFrameClock(25, 60), stream: stream, music: true}
+	g := &Game{Bundle: bundle, Screen: TitleScreen, clock: engine.NewRationalFrameClock(50, 3, 60), stream: stream, music: true}
 	g.graphics = prepareGraphics(bundle)
 	g.palClock = engine.NewFrameClock(50, 60)
 	random := engine.NewRandomState()
 	g.starfield = presentation.NewStarfield(&random, bundle.Presentation.StarColors)
 	g.director = presentation.NewDirector(&bundle.Presentation)
 	g.menuClock = engine.NewFrameClock(25, 60)
+	g.creditClock = engine.NewRationalFrameClock(31, 2, 60)
 	shader, err := ebiten.NewShader([]byte(paletteShaderSource))
 	if err != nil {
 		return nil, err

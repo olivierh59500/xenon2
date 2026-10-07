@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"testing"
 	"xenon2/internal/engine"
+	"xenon2/internal/presentation"
 	"xenon2/internal/shopui"
 )
 
@@ -141,15 +142,41 @@ func TestDemoCompletesFirstTwoLevelsFromNormalMenuOptional(t *testing.T) {
 }
 
 func verifyDemoFirstTwoLevels(t *testing.T, refreshes int) *Game {
+	return verifyDemoFirstTwoLevelsFromStart(t, refreshes, false)
+}
+
+func TestDemoFirstTwoLevelsThroughCompleteDefaultIntroOptional(t *testing.T) {
+	if os.Getenv("XENON2_DEMO_PROGRESS_CHECK") == "" {
+		t.Skip("enable real default-intro campaign checks explicitly")
+	}
+	for _, refreshes := range []int{2, 3} {
+		t.Run(strconv.Itoa(refreshes)+"PAL", func(t *testing.T) {
+			verifyDemoFirstTwoLevelsFromStart(t, refreshes, true)
+		})
+	}
+}
+
+func verifyDemoFirstTwoLevelsFromStart(t *testing.T, refreshes int, attract bool) *Game {
 	t.Helper()
 	g := frontendGame(t)
 	g.Config.Demo = true
 	g.Config.LogicPALRefreshes = refreshes
+	if attract {
+		if err := g.StartLevel(1); err != nil {
+			t.Fatal(err)
+		}
+		g.BeginAttract()
+	}
+	lastCreditPair, sawMenu := -1, false
 	shops := [3][2]bool{}
 	defeated := [3]bool{}
 	var lastShop *shopui.State
 	for update := 0; update < 60*1200; update++ {
 		advanceFrontend(t, g, inputFrame{})
+		if g.Screen == PresentationScreen && g.director.Phase == presentation.Credits {
+			lastCreditPair = max(lastCreditPair, g.director.CreditPair)
+		}
+		sawMenu = sawMenu || g.Screen == TitleScreen
 		d, ok := g.Driver.(*worldDriver)
 		if !ok || d.session == nil {
 			continue
@@ -179,8 +206,15 @@ func verifyDemoFirstTwoLevels(t *testing.T, refreshes int) *Game {
 			}
 		}
 		if level == 3 {
-			if shops[1] != ([2]bool{true, true}) || shops[2] != ([2]bool{true, true}) || !defeated[1] || !defeated[2] || w.Cheats.Enabled() || w.GameOver || d.diagnostic || w.Equipment.Lives < 2 {
+			minimumShips := 2
+			if attract {
+				minimumShips = 1
+			}
+			if shops[1] != ([2]bool{true, true}) || shops[2] != ([2]bool{true, true}) || !defeated[1] || !defeated[2] || w.Cheats.Enabled() || w.GameOver || d.diagnostic || w.Equipment.Lives < minimumShips {
 				t.Fatalf("two-stage route incomplete: shops%v defeated%v", shops, defeated)
+			}
+			if attract && (lastCreditPair != 5 || !sawMenu) {
+				t.Fatal("default demo skipped credit pairs or the real menu")
 			}
 			t.Logf("Normal-menu pilot completed levels1 and2 after%d display updates; next stage ships%d shield%d cash%d", update+1, w.Equipment.Lives, w.Equipment.Shield, w.Money)
 			return g
