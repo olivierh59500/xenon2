@@ -41,7 +41,7 @@ func (g *Game) beginPendingWorldPresentation() bool {
 		g.stream.QueueStopEffects()
 		if g.director.InsertScore(g.View.Score) {
 			g.continueAfterScores = true
-		} else if g.View.ContinueCredits > 0 {
+		} else if g.View.ContinueCredits > 0 || g.Config.Cheats.InfiniteCredits {
 			g.director.BeginContinue()
 		} else {
 			g.director.BeginGameOver()
@@ -139,7 +139,7 @@ func (g *Game) updatePresentation(controls inputFrame) error {
 		if g.continueAfterScores && g.director.Phase == presentation.LogoDelay {
 			g.continueAfterScores = false
 			g.restoreGameplayStars()
-			if g.View.ContinueCredits > 0 {
+			if g.View.ContinueCredits > 0 || g.Config.Cheats.InfiniteCredits {
 				g.resetPresentationStars(presentation.ContinueIn)
 				g.director.BeginContinue()
 			} else {

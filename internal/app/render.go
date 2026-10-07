@@ -222,6 +222,8 @@ func prepareAtlas(a visualassets.SpriteAtlas) atlasGraphics {
 func (g *Game) drawScreen(screen *ebiten.Image) {
 	screen.Fill(color.Black)
 	switch g.Screen {
+	case CheatScreen:
+		g.drawCheatMenu(screen)
 	case TitleScreen:
 		g.drawTitle(screen)
 	case ShopScreen:
@@ -256,6 +258,11 @@ func (g *Game) drawTitle(screen *ebiten.Image) {
 		}
 		g.drawGlyphs(screen, g.graphics.presentationFont, text, 0, line.CenterY-8, p.Font.Width)
 	}
+	text := "       CHEATS       "
+	if g.menu == 3 {
+		text = "      >CHEATS<      "
+	}
+	g.drawGlyphs(screen, g.graphics.presentationFont, text, 0, 140, g.Bundle.Presentation.Font.Width)
 	g.drawGlyphs(screen, g.graphics.font, g.creditCaption(3), 176, 184, 8)
 	g.drawStarfield(screen)
 	if g.Driver == nil || g.View.Diagnostic {
@@ -390,6 +397,9 @@ func (g *Game) drawLevel(screen *ebiten.Image) {
 		screen.DrawRectShader(ScreenWidth, ScreenHeight, g.graphics.paletteShader, &op)
 	} else {
 		screen.DrawImage(field, nil)
+	}
+	if g.Config.Cheats.Enabled() {
+		g.drawCheatText(screen, "CHEATS ON", 8, 180, 8)
 	}
 	if g.View.Diagnostic && g.Config.Frames > 0 {
 		ebitenutil.DebugPrintAt(screen, "REFERENCE", 0, 181)

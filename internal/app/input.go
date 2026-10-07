@@ -17,6 +17,9 @@ type inputFrame struct {
 	mouseX, mouseY                                    int
 	referenceLevel                                    int
 	referenceShop                                     bool
+	cheatMenu                                         bool
+	cheatItem                                         engine.Item
+	cheatEnergy                                       int
 	gameMotion                                        engine.MotionInput
 }
 
@@ -42,5 +45,31 @@ func sampleInput() inputFrame {
 		}
 	}
 	i.referenceShop = pressed(ebiten.KeyF2)
+	i.cheatMenu = pressed(ebiten.KeyF3)
+	for _, binding := range []struct {
+		key  ebiten.Key
+		item engine.Item
+	}{
+		{ebiten.KeyF1, engine.ItemSpeedup}, {ebiten.KeyF2, engine.ItemHealth1},
+		{ebiten.KeyF4, engine.ItemAutofire}, {ebiten.KeyF5, engine.ItemSuperNashwan},
+		{ebiten.KeyF6, engine.ItemHealth2}, {ebiten.KeyF7, engine.ItemRearShot},
+		{ebiten.KeyF8, engine.ItemMineSmall}, {ebiten.KeyF9, engine.ItemSideShot},
+		{ebiten.KeyF10, engine.ItemExtraLife},
+		{ebiten.KeyNumpad0, engine.ItemFlamer}, {ebiten.KeyNumpad1, engine.ItemElectroBall},
+		{ebiten.KeyNumpad2, engine.ItemPowerup}, {ebiten.KeyNumpad3, engine.ItemMineLarge},
+		{ebiten.KeyNumpad4, engine.ItemDoubleShot}, {ebiten.KeyNumpad5, engine.ItemCannon},
+		{ebiten.KeyNumpad6, engine.ItemDive}, {ebiten.KeyNumpad7, engine.ItemMissileLauncher},
+		{ebiten.KeyNumpad8, engine.ItemLaser}, {ebiten.KeyNumpad9, engine.ItemDrone},
+	} {
+		if pressed(binding.key) {
+			i.cheatItem = binding.item
+		}
+	}
+	if pressed(ebiten.KeyDelete) {
+		i.cheatEnergy = 1
+	}
+	if pressed(ebiten.KeyInsert) {
+		i.cheatEnergy = -1
+	}
 	return i
 }

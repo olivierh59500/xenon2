@@ -22,7 +22,7 @@ func (g *Game) EnterShop(endOfLevel bool) error {
 	if endOfLevel && w.AdviceIndex < 12 {
 		w.AdviceIndex = 12
 	}
-	g.shop = shopui.New(&w.Equipment, &w.Money, engine.ShopRules{Level: w.Level.Number, StockLimit: stock}, &g.Bundle.Shop, &g.Bundle.ShopScene, w.NextUIRandom)
+	g.shop = shopui.New(&w.Equipment, &w.Money, w.PrepareShop(engine.ShopRules{Level: w.Level.Number, StockLimit: stock}), &g.Bundle.Shop, &g.Bundle.ShopScene, w.NextUIRandom)
 	g.shop.AdviceIndex = &w.AdviceIndex
 	g.shop.Ending = endOfLevel && w.Level.Number == 5
 	g.shopFinal = endOfLevel

@@ -234,6 +234,7 @@ func (g *Game) StartLevel(level int) error {
 		return err
 	}
 	g.SetDriver(driver)
+	g.applyCheatOptions()
 	if g.starfield != nil && g.Screen == TitleScreen {
 		driver.world.SetRandomState(*g.starfield.Random)
 	}
@@ -267,6 +268,7 @@ func (g *Game) StartSession(level, players int) error {
 	}
 	driver := &worldDriver{world: session.ActiveWorld(), session: session}
 	g.SetDriver(driver)
+	g.applyCheatOptions()
 	g.clock = g.newLogicClock()
 	g.palClock = engine.NewFrameClock(50, 60)
 	g.readyRunning, g.gameOverRunning = false, false

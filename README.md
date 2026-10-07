@@ -34,6 +34,24 @@ separate second-stage opening reaches its first checkpoint with all three ships.
 The remaining stages and full campaign still need validated pilot strategies;
 this is not yet a completed five-level demonstration.
 
+## Optional trainer settings
+
+Select CHEATS on the menu or press F3 during a game. The submenu provides
+infinite ships, continues, money and energy, optional equipment keys, and a
+starting level from one to five. All aids are disabled by default; active aids
+are marked on the playfield. F3 or Escape returns to the caller.
+
+The settings reproduce the supplied Amiga trainer's boundaries: infinite energy
+suppresses shield damage but does not prevent terrain crushing. Infinite money
+grants 5,000,000 at merchant entry with a 30,000 stock limit; purchases still cost
+the original prices and retain equipment compatibility. Infinite ships retain
+death/checkpoint recovery and alternating player turns.
+
+Equipment keys work only when KEY FUNCTIONS is ON. The KEY HELP page lists the
+adapted desktop controls. The shortcut layout reserves F3 for settings and uses F1/F2/F4–F10 for common
+upgrades, numeric keypad 0–9 for weapons/dive, and Delete/Insert for energy.
+These aids are optional player choices; ordinary demo validation keeps them off.
+
 ## Local resources
 
 Supply a compatible original Amiga ADF in a local directory. Original disks,

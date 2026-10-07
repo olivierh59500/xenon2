@@ -125,6 +125,7 @@ func (g *Game) advanceCompletedStage() error {
 		return err
 	}
 	driver.world = driver.session.ActiveWorld()
+	g.applyCheatOptions()
 	g.gameMusicAfterFade = transition == engine.LoadedNextStage
 	driver.turnChanged = true
 	g.View = driver.Frame()

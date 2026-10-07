@@ -31,6 +31,7 @@ const (
 	LevelScreen
 	ShopScreen
 	PresentationScreen
+	CheatScreen
 )
 
 // Input is sampled at the display rate and consumed by the simulation driver.
@@ -96,9 +97,13 @@ type Config struct {
 	StartScreen       Screen
 	LogicPALRefreshes int
 	Demo              bool
+	Cheats            engine.CheatOptions
 }
 
 type Game struct {
+	cheatHelp                bool
+	cheatRow                 int
+	cheatReturn              Screen
 	demo                     *demoDirector
 	paused                   bool
 	pauseFraction            float64
@@ -238,6 +243,21 @@ func (g *Game) advanceWithInput(controls inputFrame) error {
 		}
 		return nil
 	}
+	if controls.cheatMenu && (g.fade == nil || g.fade.Done) {
+		if g.Screen == CheatScreen {
+			g.closeCheatMenu()
+		} else {
+			g.openCheatMenu()
+		}
+	}
+	if controls.escape && g.Screen == CheatScreen {
+		if g.cheatHelp {
+			g.cheatHelp = false
+		} else {
+			g.closeCheatMenu()
+		}
+		return nil
+	}
 	if controls.escape {
 		g.paused = false
 		if g.Screen == TitleScreen {
@@ -251,7 +271,7 @@ func (g *Game) advanceWithInput(controls inputFrame) error {
 		g.music = !g.music
 		g.selectMusic()
 	}
-	if g.paused {
+	if g.paused && g.Screen != CheatScreen {
 		if controls.anyKey || controls.mousePressed {
 			g.paused = false
 		}
@@ -268,6 +288,8 @@ func (g *Game) advanceWithInput(controls inputFrame) error {
 		return nil
 	}
 	switch g.Screen {
+	case CheatScreen:
+		g.updateCheatMenu(controls)
 	case PresentationScreen:
 		if err := g.updatePresentation(controls); err != nil {
 			return err
@@ -290,6 +312,17 @@ func (g *Game) advanceWithInput(controls inputFrame) error {
 		if g.beginPendingWorldPresentation() {
 			break
 		}
+		if g.Config.Cheats.KeyFunctions {
+			if driver, ok := g.Driver.(*worldDriver); ok {
+				if controls.cheatItem != engine.ItemNone {
+					driver.world.ApplyCheatItem(controls.cheatItem)
+				}
+				if controls.cheatEnergy != 0 {
+					g.Config.Cheats.InfiniteEnergy = controls.cheatEnergy > 0
+					g.applyCheatOptions()
+				}
+			}
+		}
 		for ticks := g.palClock.Advance(); ticks > 0; ticks-- {
 			if source, ok := g.Driver.(interface{ AdvancePALTick() }); ok {
 				source.AdvancePALTick()
@@ -310,7 +343,7 @@ func (g *Game) advanceWithInput(controls inputFrame) error {
 		if g.Screen != LevelScreen {
 			break
 		}
-		if g.View.Diagnostic && controls.referenceShop {
+		if g.View.Diagnostic && !g.Config.Cheats.KeyFunctions && controls.referenceShop {
 			if err := g.EnterShop(false); err != nil {
 				return err
 			}
@@ -459,10 +492,10 @@ func (g *Game) consumeDriverAudio() error {
 
 func (g *Game) updateTitle(controls inputFrame) {
 	if controls.upPressed {
-		g.menu = (g.menu + 2) % 3
+		g.menu = (g.menu + 3) % 4
 	}
 	if controls.downPressed {
-		g.menu = (g.menu + 1) % 3
+		g.menu = (g.menu + 1) % 4
 	}
 	if controls.mousePressed {
 		x, y := controls.mouseX, controls.mouseY
@@ -476,13 +509,21 @@ func (g *Game) updateTitle(controls inputFrame) {
 			}
 		}
 	}
+	if controls.mousePressed && controls.mouseY >= 136 && controls.mouseY < 162 {
+		g.menu = 3
+		g.activateMenu()
+	}
 	if controls.menuConfirm {
 		g.activateMenu()
 	}
 }
 
 func (g *Game) activateMenu() {
-	if g.menu >= 2 {
+	if g.menu == 3 {
+		g.openCheatMenu()
+		return
+	}
+	if g.menu == 2 {
 		g.music = !g.music
 		g.selectMusic()
 		return

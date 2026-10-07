@@ -28,7 +28,7 @@ func (g *Game) demoControls(manual inputFrame) inputFrame {
 	if !g.Config.Demo {
 		return manual
 	}
-	if manual.anyKey || manual.mousePressed || manual.escape || manual.firePressed || manual.divePressed || manual.gameMotion != (engine.MotionInput{}) {
+	if manual.anyKey || manual.cheatMenu || manual.mousePressed || manual.escape || manual.firePressed || manual.divePressed || manual.gameMotion != (engine.MotionInput{}) {
 		g.Config.Demo = false
 		g.demo = nil
 		return manual

@@ -104,6 +104,7 @@ func advanceStageWorld(old *World, data LevelData, random RandomState, difficult
 	}
 	world.Score, world.DisplayScore = old.Score, old.DisplayScore
 	world.ContinueCredits = old.ContinueCredits
+	world.SetCheats(old.Cheats)
 	world.Ready = true
 	world.GameOver = old.GameOver
 	world.PlayerAlive = !old.GameOver

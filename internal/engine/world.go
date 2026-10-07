@@ -173,6 +173,8 @@ type WorldCollectible struct {
 // World is the independent game simulation. Scenery mechanisms, weapons and
 // stage transitions are integrated as their original rules are verified.
 type World struct {
+	Cheats                           CheatOptions
+	shipLossCompleted                bool
 	deferCheckpointRestart           bool
 	turnPrepared                     bool
 	FifthMiddle                      *FifthMiddleGuardianState
@@ -479,10 +481,12 @@ func (w *World) RandomState() RandomState { return w.random }
 // AcceptContinue restores three ships at the same checkpoint. The original
 // resets score while retaining the recorded weapons, wallet and stage state.
 func (w *World) AcceptContinue() bool {
-	if !w.GameOver || w.ContinueCredits == 0 {
+	if !w.GameOver || w.ContinueCredits == 0 && !w.Cheats.InfiniteCredits {
 		return false
 	}
-	w.ContinueCredits--
+	if !w.Cheats.InfiniteCredits {
+		w.ContinueCredits--
+	}
 	w.GameOver = false
 	w.Equipment.Lives = 3
 	w.Score = 0
@@ -498,6 +502,7 @@ func (w *World) AcceptContinue() bool {
 // and actor lists. Timers, encounters and scroll follow. Stage births move in
 // the current pass; encounter-table births wait for the next pass.
 func (w *World) Step(input Input) error {
+	w.shipLossCompleted = false
 	clear(w.SoundRequests[:])
 	clear(w.ImmediateSoundRequests[:])
 	w.StopEffectsRequested = false
@@ -792,7 +797,10 @@ func (w *World) Step(input Input) error {
 		return w.poolError
 	}
 	if deathFinished {
-		w.Equipment.Lives--
+		w.shipLossCompleted = true
+		if !w.Cheats.InfiniteLives {
+			w.Equipment.Lives--
+		}
 		w.Equipment.Shield = 39
 		w.Equipment.FireAdvance = 1
 		if w.Equipment.Lives == 0 {
@@ -981,7 +989,7 @@ func (w *World) updatePlayerCollision() {
 }
 
 func (w *World) damagePlayer(amount int) {
-	result := ApplyShieldDamage(w.Equipment.Shield, amount, w.Equipment.Protection, w.InvulnerableFrames != 0 || w.PendingExitDrops != 0)
+	result := ApplyShieldDamage(w.Equipment.Shield, amount, w.Equipment.Protection, w.InvulnerableFrames != 0 || w.PendingExitDrops != 0 || w.Cheats.InfiniteEnergy)
 	w.Equipment.Shield = result.Shield
 	if result.Destroyed {
 		w.destroyPlayer()
