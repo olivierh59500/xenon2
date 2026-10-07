@@ -80,3 +80,21 @@ The longer rows take 7.223/4.442/3.563/2.996/2.980 ms. Levels 1/2/3/5 complete a
 callbacks; level 4 reaches actual player death at 21 and intentionally stops. These
 are single 100 ms source-scene samples, not general device budgets. Branch storage
 reuse remains the next performance task.
+
+## Reusable copy storage
+
+Forecast loads now retain typed storage for world/pool/controller records, maps,
+entity lists, actor parts, patches and cyclic links. Pointer-stable chunks prevent
+arena growth from relocating referenced actors. Reload clears memo tables and
+unused pointer tails, and assigns every source record before reconnecting links.
+Self-State loading is an isolated no-op; overlapping shallow wrappers are staged
+before arena reset. Separate forecasts retain independent storage.
+
+Two reload cycles cover sparse/arena scenes across all five levels, predicted
+births followed by frozen-source reload, cross-forecast copying, self/wrapper
+loads, nil invalidation and a 40→1→40 cyclic actor graph with shrinking attachments.
+Retained weapon callbacks still update only the current forecast. Existing
+all-five parity and isolation pass under the race detector. Warm Load measures
+about 3–8 microseconds and 386–4,358 bytes on M4 Max, compared with 17–41 microseconds
+and 91–147 KiB initially. Future World.Step callbacks still allocate; this change
+reduces copy pressure, not the whole tactical policy's cost.
