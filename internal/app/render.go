@@ -34,6 +34,10 @@ type levelGraphics struct {
 	moving, fixed, ships, common, shots atlasGraphics
 }
 type graphics struct {
+	fadeShader                                   *ebiten.Shader
+	fadeScene                                    *ebiten.Image
+	fadeAmount                                   []float32
+	fadeUniforms                                 map[string]any
 	materialShader                               *ebiten.Shader
 	terrainMask                                  *ebiten.Image
 	terrainMaskTiles                             [5]map[uint16]*ebiten.Image
@@ -73,6 +77,9 @@ func prepareGraphics(b *Bundle) graphics {
 		x, y := (index%b.Font.Columns)*b.Font.Width, (index/b.Font.Columns)*b.Font.Height
 		g.font[char] = font.SubImage(image.Rect(x, y, x+b.Font.Width, y+b.Font.Height)).(*ebiten.Image)
 	}
+	g.fadeScene = ebiten.NewImage(ScreenWidth, ScreenHeight)
+	g.fadeAmount = make([]float32, 1)
+	g.fadeUniforms = map[string]any{"Deduction": g.fadeAmount}
 	g.terrainMask = ebiten.NewImage(ScreenWidth, PlayfieldHeight)
 	g.materialPosition = make([]float32, 2)
 	g.materialUniforms = map[string]any{"Position": g.materialPosition}
@@ -280,7 +287,7 @@ func (g *Game) drawLevel(screen *ebiten.Image) {
 	l := g.Bundle.Levels[level-1]
 	gpu := &g.graphics.levels[level-1]
 	alpha := g.clock.Fraction()
-	if g.View.FreezeInterpolation {
+	if g.View.FreezeInterpolation || g.backdropOnly {
 		alpha = 1
 	}
 	camera := lerp(g.previous.CameraY, g.View.CameraY, alpha)
@@ -337,11 +344,13 @@ func (g *Game) drawLevel(screen *ebiten.Image) {
 		}
 	}
 	g.drawBackgroundStars(field, level, alpha)
-	g.drawPlayer(field, level, alpha)
-	for _, source := range []string{"equipment", "moving", "effects", "scenery", "sparks"} {
-		for _, sprite := range g.View.Sprites {
-			if sprite.Layer == source {
-				g.drawSprite(field, sprite, level, alpha)
+	if !g.backdropOnly {
+		g.drawPlayer(field, level, alpha)
+		for _, source := range []string{"shadows", "equipment", "moving", "effects", "scenery", "sparks"} {
+			for _, sprite := range g.View.Sprites {
+				if sprite.Layer == source {
+					g.drawSprite(field, sprite, level, alpha)
+				}
 			}
 		}
 	}
@@ -581,6 +590,21 @@ func flashPixels(source *image.NRGBA, region image.Rectangle, c [4]uint8) *image
 }
 
 func (g *Game) drawShop(screen *ebiten.Image) {
+	if g.shop != nil {
+		switch g.shop.Phase {
+		case shopui.EndingDot, shopui.EndingDotFade:
+			pattern := [3][4]uint8{{5, 7, 7, 5}, {7, 7, 7, 7}, {5, 7, 7, 5}}
+			for y, row := range pattern {
+				for x, index := range row {
+					c := g.Bundle.ShopScene.EndingPalette[index]
+					vector.FillRect(screen, float32(172+x), float32(100+y), 1, 1, color.RGBA{c[0], c[1], c[2], c[3]}, false)
+				}
+			}
+			return
+		case shopui.EndingWait:
+			return
+		}
+	}
 	if g.shop == nil {
 		return
 	}

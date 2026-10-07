@@ -15,7 +15,7 @@ func TestOriginalPaletteShaderCompiles(t *testing.T) {
 	if _, err := ebiten.NewShader([]byte(sparkShaderSource)); err != nil {
 		t.Fatal(err)
 	}
-	for _, source := range []string{terrainClippedSpriteShaderSource, backgroundStarShaderSource} {
+	for _, source := range []string{terrainClippedSpriteShaderSource, backgroundStarShaderSource, fadeShaderSource} {
 		if _, err := ebiten.NewShader([]byte(source)); err != nil {
 			t.Fatal(err)
 		}
@@ -91,7 +91,7 @@ func TestPrivateExportedBundleAndWorldSnapshots(t *testing.T) {
 			t.Fatalf("level %d snapshot lost its terrain", level)
 		}
 		for _, sprite := range frame.Sprites {
-			if sprite.ID < 1 {
+			if sprite.ID == 0 {
 				t.Fatal("unstable sprite identity")
 			}
 			if sprite.Kind == "tiles" {

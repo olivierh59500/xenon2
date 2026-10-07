@@ -96,6 +96,11 @@ type Config struct {
 }
 
 type Game struct {
+	fade                     *presentation.PaletteFade
+	whenFadeEnds             func() error
+	backdropOnly             bool
+	headerAction             headerAction
+	shopFinal                bool
 	pendingPlayers           int
 	gameOverRunning          bool
 	presentationStarPhase    presentation.Phase
@@ -166,6 +171,11 @@ func New(bundle *Bundle) (*Game, error) {
 		return nil, err
 	}
 	g.graphics.backgroundStarShader = backgroundStarShader
+	fadeShader, err := ebiten.NewShader([]byte(fadeShaderSource))
+	if err != nil {
+		return nil, err
+	}
+	g.graphics.fadeShader = fadeShader
 	g.ResetDiagnosticLevel(1)
 	if err = g.StartLevel(1); err != nil {
 		return nil, err
@@ -200,6 +210,22 @@ func (g *Game) Update() error {
 		return ebiten.Termination
 	}
 	g.updates++
+	if g.fade != nil && !g.fade.Done {
+		for ticks := g.palClock.Advance(); ticks > 0; ticks-- {
+			g.fade.AdvancePAL()
+		}
+		if g.fade.Done && g.whenFadeEnds != nil {
+			after := g.whenFadeEnds
+			g.whenFadeEnds = nil
+			if err := after(); err != nil {
+				return err
+			}
+		}
+		if g.Config.Frames > 0 && g.updates >= g.Config.Frames {
+			g.capturePending = true
+		}
+		return nil
+	}
 	if inpututil.IsKeyJustPressed(ebiten.KeyEscape) {
 		if g.Screen == TitleScreen {
 			return ebiten.Termination
@@ -309,6 +335,12 @@ func (g *Game) Update() error {
 				}
 			}
 			g.pendingFire, g.pendingDive = false, false
+			if driver, ok := g.Driver.(*worldDriver); ok && driver.world.ShopReady {
+				if err := g.requestShop(); err != nil {
+					return err
+				}
+				break
+			}
 		}
 	}
 	if g.Config.Frames > 0 && g.updates >= g.Config.Frames {
@@ -495,7 +527,16 @@ func (g *Game) selectMusic() {
 }
 
 func (g *Game) Draw(screen *ebiten.Image) {
-	g.drawScreen(screen)
+	if g.fade != nil && g.fade.Deduction > 0 {
+		g.graphics.fadeScene.Clear()
+		g.drawScreen(g.graphics.fadeScene)
+		g.graphics.fadeAmount[0] = float32(g.fade.Deduction)
+		op := ebiten.DrawRectShaderOptions{Uniforms: g.graphics.fadeUniforms}
+		op.Images[0] = g.graphics.fadeScene
+		screen.DrawRectShader(ScreenWidth, ScreenHeight, g.graphics.fadeShader, &op)
+	} else {
+		g.drawScreen(screen)
+	}
 	if g.capturePending {
 		if g.Config.Screenshot != "" {
 			g.err = saveScreenshot(screen, g.Config.Screenshot)

@@ -39,10 +39,14 @@ func (g *Game) updatePresentation() error {
 		switch result := g.director.Advance(g.presentationInput); result {
 		case presentation.StartGame:
 			g.restoreGameplayStars()
-			if err := g.StartSession(max(1, g.Config.Level), g.pendingPlayers); err != nil {
+			g.beginLoading(max(1, g.Config.Level), false, headerStart)
+		case presentation.HeaderShown:
+			g.director.BeginHeaderExit()
+		case presentation.HeaderFinished:
+			g.restoreGameplayStars()
+			if err := g.completeHeader(); err != nil {
 				return err
 			}
-			g.Screen = LevelScreen
 		case presentation.ShowMenu:
 			g.Screen = TitleScreen
 			g.selectMusic()
@@ -62,6 +66,7 @@ func (g *Game) updatePresentation() error {
 			}
 			g.Screen = LevelScreen
 			g.readyRunning = false
+			g.startLevelFade()
 			g.selectMusic()
 		case presentation.ContinueAccepted:
 			g.restoreGameplayStars()
@@ -118,6 +123,10 @@ func (g *Game) updatePresentation() error {
 func (g *Game) finishPlayerGame() {
 	if driver, ok := g.Driver.(*worldDriver); ok && driver.session != nil && driver.session.DeclineContinue() {
 		driver.world = driver.session.ActiveWorld()
+		if driver.session.Completed[driver.session.Current] {
+			g.beginLoading(driver.world.Level.Number%5+1, false, headerNextStage)
+			return
+		}
 		g.View = driver.Frame()
 		g.rememberFrameHistory()
 		g.readyRunning, g.gameOverRunning = false, false

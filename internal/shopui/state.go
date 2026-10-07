@@ -19,6 +19,11 @@ const (
 	Selling          Phase = "selling"
 	Buying           Phase = "buying"
 	PortraitExit     Phase = "portrait-exit"
+	MerchantEnding   Phase = "merchant-ending"
+	EndingFade       Phase = "ending-fade"
+	EndingDot        Phase = "ending-dot"
+	EndingDotFade    Phase = "ending-dot-fade"
+	EndingWait       Phase = "ending-wait"
 )
 
 type Entry struct {
@@ -35,6 +40,9 @@ type Glyph struct {
 
 // State preserves equipment and cash owned by the active game world.
 type State struct {
+	Ending                   bool
+	EndingMessage            int
+	EndingHold               int
 	DisplayPhase             Phase
 	StopEffectsRequested     bool
 	AdviceIndex              *int
@@ -438,6 +446,12 @@ func (s *State) advanceTransition() bool {
 			total += frame.Duration
 		}
 		if s.PhasePass == total {
+			if s.Ending {
+				s.Phase = MerchantEnding
+				s.EndingMessage = 0
+				s.say(s.scene.Messages["ending-viewers"])
+				break
+			}
 			s.Phase = Selling
 			s.Column, s.Row = 0, 0
 			s.say(s.scene.Messages["sell-question"])
@@ -463,6 +477,47 @@ func (s *State) advanceTransition() bool {
 		s.Headphones = min(48, s.Headphones+4)
 		s.LowerOverlay = min(68, s.LowerOverlay+4)
 		if s.LowerOverlay == 68 {
+			if s.Ending {
+				s.Phase = EndingFade
+			} else {
+				s.Done = true
+			}
+		}
+	case MerchantEnding:
+		if s.Revealed < len(s.Dialogue) {
+			return false
+		}
+		s.EndingHold++
+		hold := 30
+		if s.EndingMessage == 2 {
+			hold = 17
+		}
+		if s.EndingHold == hold {
+			s.EndingMessage++
+			s.EndingHold = 0
+			if s.EndingMessage == 3 {
+				s.beginTelevisionsOff(PortraitExit)
+			} else {
+				text := s.scene.Messages["ending-viewers"] + s.scene.Messages["ending-switch-off"]
+				if s.EndingMessage == 1 {
+					revealed := s.Revealed
+					s.say(text)
+					s.Revealed = revealed
+				} else {
+					s.say(s.scene.Messages["ending-question"])
+				}
+			}
+		}
+	case EndingFade, EndingDotFade:
+		return true
+	case EndingDot:
+		s.PhasePass++
+		if s.PhasePass == 150 {
+			s.Phase = EndingDotFade
+		}
+	case EndingWait:
+		s.PhasePass++
+		if s.PhasePass == 80 {
 			s.Done = true
 		}
 	default:
@@ -509,4 +564,14 @@ func (s *State) advanceTelevisions() {
 			s.advanceNoise(i)
 		}
 	}
+}
+
+func (s *State) BeginEndingDot() {
+	s.Phase, s.PhasePass = EndingDot, 0
+	s.Dialogue = nil
+	s.cues = append(s.cues, "shop-synthesized-effect-18")
+}
+func (s *State) BeginEndingWait() {
+	s.Phase, s.PhasePass = EndingWait, 0
+	s.StopEffectsRequested = true
 }

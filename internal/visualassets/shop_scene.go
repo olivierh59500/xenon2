@@ -32,6 +32,7 @@ type ShopHandFrame struct {
 
 // ShopScene retains the original static composition, portrait, grid and font.
 type ShopScene struct {
+	EndingPalette                                           [16][4]uint8    `json:"ending_palette"`
 	TransitionArt                                           SpriteAtlas     `json:"transition_art"`
 	TransitionSprites                                       []string        `json:"transition_sprites"`
 	AdviceTips                                              [][]string      `json:"advice_tips"`
@@ -281,11 +282,15 @@ func DecodeShopScene(data []byte, palette [16][4]uint8) (*ShopScene, error) {
 		}
 		s.AdviceTips = append(s.AdviceTips, tips)
 	}
+	for index := range s.EndingPalette {
+		word := binary.BigEndian.Uint16(data[0x55118-base+index*2:])
+		s.EndingPalette[index] = [4]uint8{uint8(word>>8&7) * 34, uint8(word>>4&7) * 34, uint8(word&7) * 34, 255}
+	}
 	s.Messages = make(map[string]string)
 	for _, message := range []struct {
 		id      string
 		address int
-	}{{"sell-question", 0x56e50}, {"buy-question", 0x56e6e}, {"out-of-stock", 0x55aa6}, {"pay-request", 0x55acd}, {"another-item", 0x55ae2}, {"sale-complete", 0x55c2e}, {"sale-price", 0x55dc8}, {"buy-price", 0x55dd6}, {"cannot-fit", 0x558ba}, {"power-level", 0x55f56}, {"last-level-welcome", 0x56fd8}, {"last-level-offer", 0x56ffc}, {"last-level-warning", 0x5700f}} {
+	}{{"sell-question", 0x56e50}, {"buy-question", 0x56e6e}, {"out-of-stock", 0x55aa6}, {"pay-request", 0x55acd}, {"another-item", 0x55ae2}, {"sale-complete", 0x55c2e}, {"sale-price", 0x55dc8}, {"buy-price", 0x55dd6}, {"cannot-fit", 0x558ba}, {"power-level", 0x55f56}, {"ending-viewers", 0x55138}, {"ending-switch-off", 0x55153}, {"ending-question", 0x5517a}, {"last-level-welcome", 0x56fd8}, {"last-level-offer", 0x56ffc}, {"last-level-warning", 0x5700f}} {
 		start := message.address - base
 		end := start
 		for end < len(data) && data[end] != 0 {

@@ -62,3 +62,13 @@ func Fragment(dstPos vec4,srcPos vec2,color vec4) vec4 {
  return pixel
 }
 `
+
+const fadeShaderSource = `//kage:unit pixels
+package main
+var Deduction float
+func Fragment(dstPos vec4,srcPos vec2,color vec4) vec4 {
+ pixel:=imageSrc0At(srcPos)
+ rgb:=max(vec3(0),floor(pixel.rgb*255.0/34.0+0.00001)-vec3(Deduction))*34.0/255.0
+ return vec4(rgb,pixel.a)
+}
+`

@@ -67,6 +67,11 @@ func (d *worldDriver) AdvancePALTick() { d.world.AdvancePALTick() }
 func (d *worldDriver) Frame() SceneFrame {
 	w := d.world
 	d.sprites = d.sprites[:0]
+	for index, shadow := range w.Shadows {
+		if shadow.Visible {
+			d.sprites = append(d.sprites, SpriteView{ID: -2001 - index, Layer: "shadows", Atlas: "common", Sprite: fmt.Sprintf("player-shadow-%d", shadow.Counter), X: float64(shadow.X), Y: float64(shadow.Y), PreviousX: float64(shadow.PreviousX), PreviousY: float64(shadow.PreviousY), Interpolate: true})
+		}
+	}
 	for _, actor := range w.Actors {
 		if actor.Active && actor.Visible && (actor.Sprite != "" || actor.Patch != nil) {
 			layer := actor.ActorList

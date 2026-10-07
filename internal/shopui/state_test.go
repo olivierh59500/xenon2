@@ -213,3 +213,61 @@ func TestAdviceUsesPersistentVisitIndexAndKeepsMonitorState(t *testing.T) {
 		t.Fatal("later visit advice restarted its first-page tips")
 	}
 }
+
+func TestMerchantEndingKeepsTelevisionHoldsAndReturnsAfterShutdown(t *testing.T) {
+	e := engine.NewEquipment()
+	money := 0
+	s := testShop(&e, &money)
+	s.Ending = true
+	s.scene.Messages["ending-viewers"] = "VIEWERS\r\r"
+	s.scene.Messages["ending-switch-off"] = "SWITCH OFF\r\r"
+	s.scene.Messages["ending-question"] = "GOOD ENOUGH"
+	s.scene.IntroHand = []visualassets.ShopHandFrame{{Sprite: "hand", Duration: 1}}
+	for i := 0; i < 1000 && s.Phase != MerchantEnding; i++ {
+		s.Advance()
+	}
+	if s.Phase != MerchantEnding {
+		t.Fatal("merchant ending entered ordinary selling")
+	}
+	for s.Revealed < len(s.Dialogue) {
+		s.Advance()
+	}
+	for i := 0; i < 29; i++ {
+		s.Advance()
+	}
+	if s.EndingMessage != 0 {
+		t.Fatal("first closing caption omitted its thirty-pass hold")
+	}
+	s.Advance()
+	if s.EndingMessage != 1 || s.Revealed != 7 {
+		t.Fatal("second closing caption retyped the first paragraph")
+	}
+	for i := 0; i < 1000 && s.Phase != EndingFade; i++ {
+		s.Advance()
+	}
+	if s.Phase != EndingFade {
+		t.Fatal("closing dialogue did not shut the monitors and portrait")
+	}
+	s.BeginEndingDot()
+	for i := 0; i < 149; i++ {
+		s.Advance()
+	}
+	if s.Phase != EndingDot {
+		t.Fatal("shutdown point disappeared before 150 passes")
+	}
+	s.Advance()
+	if s.Phase != EndingDotFade {
+		t.Fatal("shutdown point never entered its palette fade")
+	}
+	s.BeginEndingWait()
+	for i := 0; i < 79; i++ {
+		s.Advance()
+	}
+	if s.Done {
+		t.Fatal("black ending wait finished before eighty passes")
+	}
+	s.Advance()
+	if !s.Done {
+		t.Fatal("ending did not return to the difficulty loop")
+	}
+}

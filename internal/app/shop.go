@@ -6,6 +6,7 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 
 	"xenon2/internal/engine"
+	"xenon2/internal/presentation"
 	"xenon2/internal/shopui"
 )
 
@@ -25,14 +26,19 @@ func (g *Game) EnterShop(endOfLevel bool) error {
 	}
 	g.shop = shopui.New(&w.Equipment, &w.Money, engine.ShopRules{Level: w.Level.Number, StockLimit: stock}, &g.Bundle.Shop, &g.Bundle.ShopScene, w.NextUIRandom)
 	g.shop.AdviceIndex = &w.AdviceIndex
+	g.shop.Ending = endOfLevel && w.Level.Number == 5
+	g.shopFinal = endOfLevel
 	g.Screen = ShopScreen
 	g.clock = engine.NewFrameClock(25, 60)
 	g.stream.StopMusic()
 	g.soundtrack = ""
 	g.stream.StopEffects()
-	if !g.Config.Mute {
-		return g.stream.QueueEffect("shop-synthesized-effect-08", 2)
-	}
+	g.startFade(presentation.NewPaletteFadeIn(), func() error {
+		if !g.Config.Mute {
+			return g.stream.QueueEffect("shop-synthesized-effect-08", 2)
+		}
+		return nil
+	})
 	return nil
 }
 
@@ -97,15 +103,15 @@ func (g *Game) updateShop() error {
 			}
 		}
 	}
-	if g.shop.Done {
-		if driver, ok := g.Driver.(*worldDriver); ok {
-			driver.world.AdviceIndex = 12
-		}
-		g.View = g.Driver.Frame()
-		g.rememberFrameHistory()
-		g.Screen = LevelScreen
-		g.clock = engine.NewFrameClock(25, 60)
-		g.selectMusic()
+	switch g.shop.Phase {
+	case shopui.EndingFade:
+		g.startFade(presentation.NewPaletteFadeOut(2), func() error { g.shop.BeginEndingDot(); return nil })
+	case shopui.EndingDotFade:
+		g.startFade(presentation.NewPaletteFadeOut(4), func() error { g.shop.BeginEndingWait(); return nil })
 	}
+	if g.shop.Done {
+		return g.leaveShop()
+	}
+
 	return nil
 }
