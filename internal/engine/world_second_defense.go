@@ -58,6 +58,28 @@ func (w *World) setSecondMapCell(column, row int, tile uint16) {
 	}
 	w.Level.Terrain.Map[row*w.Level.Terrain.Columns+column] = tile
 }
+
+// Defense nodes retain tile coordinates in physical memory. Their screen and
+// damage-flash anchors do not replace those words or the spare slot values.
+func (w *World) initializeSecondNodeResidue(actor *WorldActor) {
+	s, r := actor.secondNode, &actor.Binding.Residue
+	r.X, r.Y, r.Counter = int16(s.TileX), int16(s.TileY), 0
+	r.VerticalFraction, r.Health, r.EmitterClock = uint16(s.Index), s.Health, 0
+	w.storeWorldResidue(actor.Binding)
+}
+
+func (w *World) storeSecondNodeResidue(actor *WorldActor) {
+	if actor.Binding.EntityID == 0 {
+		return
+	}
+	s, r := actor.secondNode, &actor.Binding.Residue
+	r.X, r.Y, r.Counter = int16(s.TileX), int16(s.TileY), int16(s.Phase)
+	r.VerticalFraction, r.Health = uint16(s.Index), s.Health
+	w.storeWorldResidue(actor.Binding)
+	if !actor.Active {
+		w.retireWorldActor(actor.Binding)
+	}
+}
 func (w *World) setSecondMapPatch(column, row int, patch visualassets.TilePatch) {
 	for y := range patch.Rows {
 		for x := range patch.Columns {

@@ -207,6 +207,10 @@ func (w *World) bindWorldActor(actor *WorldActor) error {
 }
 
 func (w *World) storeActorResidue(actor *WorldActor) {
+	if actor.secondNode != nil {
+		w.storeSecondNodeResidue(actor)
+		return
+	}
 	if actor.thirdChainPart > 0 {
 		w.storeThirdChainResidue(actor)
 		return

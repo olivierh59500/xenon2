@@ -459,6 +459,9 @@ func NewWorld(data LevelData) (*World, error) {
 		if err := w.bindWorldActor(w.Actors[i]); err != nil {
 			return nil, err
 		}
+		if w.Actors[i].secondNode != nil {
+			w.initializeSecondNodeResidue(w.Actors[i])
+		}
 	}
 	if err := w.initializeFifthStage(); err != nil {
 		return nil, err

@@ -127,6 +127,15 @@ members in source callback order: 1,152 positions, images and collision prefixes
 match actual world steps. It does not forecast new scheduler births or combat
 deaths; using it in an arena policy still requires a connected victory proof.
 
+Second-defense nodes now retain tile-unit coordinates through normal updates and
+damage flash, publish their source phase/index/health, and preserve unused slot
+fractions, rewards and strength. Post-bind initialization retains the original
+body and descending node allocation identities. An actual open-phase node,
+ordinary lethal hit and same-slot flamer reuse verify the later native effect
+cleanup; the original generic storage fails that regression. Constructor and
+live node comparisons pass alongside 1,152 native node and 16,890 defense-wave
+passes. These are source-state fixtures, not additional campaign progress.
+
 The remaining live checks are:
 
 - Play all five stages from the normal menu, including both shop boundaries,

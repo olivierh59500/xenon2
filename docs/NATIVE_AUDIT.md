@@ -1474,9 +1474,46 @@ The practiced corridor waypoint now retains a clear first leg instead of cutting
 an occupied corner. This removes its stationary camera-1,189 loop; the bounded
 continuation reaches camera 801 before later losses and exhaustion at 1,133.23
 seconds. Second-stage final completion remains unproved. The unchanged reference
-strategy remains separately covered.
+strategy remains separately covered. A source-map regression starts at world
+(174, 1365), searches the actual full-stencil route and verifies the selected
+first leg stays clear while retreating toward the right turn. Restoring the old
+eight-node shortcut selects (192, 1365) through occupied terrain and fails the
+regression; the guarded waypoint passes.
 
 The real-resource beam benchmark improved from about 3.6 ms/139 KiB allocated
 per call to about 48 microseconds with zero allocations after scratch setup on
 the tested M4 Max. The measured fixture includes an actual open-node objective
 and active formations; it does not establish rendered FPS or Pixel performance.
+
+## Second defense node physical state
+
+Node construction at 0x57158–0x5718e writes tile-unit X/Y, health, zero phase and
+emitter, and the node index at 0x30. The 0x56a4a updater publishes phase 0–7;
+damage rendering at 0x568c6 and the hit callback at 0x56944 retain those physical
+coordinates and phase. Generic bookkeeping previously stored pixel/screen or
+flash anchors and left the physical phase at zero. Specialized node storage now
+publishes the source values while retaining spare fractions, rewards and strength.
+The initializer runs after the existing bind operation: original body slot 5 and
+descending node identities at slots 6/7/8 are unchanged.
+
+An original-resource node reaches eligible phase 4 through its real callback,
+takes an ordinary lethal hit, and releases its slot for flamer construction.
+Before the fix, the flamer inherited zero and missed the native unheld effect
+cleanup; it now inherits phase 4, requests cleanup and clears that counter.
+The constructor comparison also verifies all three slot identities and spare
+word retention. Removing only the node storage dispatch from the corrected code
+reproduces the pixel/flash-coordinate and missing-cleanup failures.
+
+The two new node regressions, native node damage/update checks, all 1,152 native
+node passes, 16,890 defense-wave passes and original world-resource integration
+pass in the focused six-test race run (1.628 seconds). This callback and reuse
+proof does not establish a campaign victory or change controller policy.
+
+The combined engine/source race suite passes in 56.223 seconds. Production
+GPU/audio frontend checks, including the complete first-level presentation and
+carried second middle merchant, pass in 111.770 seconds with the previously
+known optional third-stage no-loss assertion explicitly excluded. Vet and the
+desktop build pass. The Android ARM64 APK rebuild, signature and 16 KiB alignment
+checks pass; replacement installation and a cold launch succeed on the USB
+Pixel 10a, with its process alive afterward. Device graphics were not rechecked
+while locked. The existing complete-level-one MP4 still decodes without error.
