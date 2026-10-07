@@ -3,6 +3,7 @@ package app
 import (
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
+	"xenon2/internal/controls"
 	"xenon2/internal/engine"
 )
 
@@ -72,6 +73,34 @@ func sampleInput() inputFrame {
 	}
 	if pressed(ebiten.KeyInsert) {
 		i.cheatEnergy = -1
+	}
+	return i
+}
+
+// mergeTouchInput routes mobile edges through the same controls as the keyboard.
+// Menu and shop navigation keep their original one-press selection semantics.
+func mergeTouchInput(i inputFrame, touch controls.Frame) inputFrame {
+	i.anyKey = i.anyKey || touch.AnyPressed
+	i.escape = i.escape || touch.Pressed[controls.Menu]
+	i.pause = i.pause || touch.Pressed[controls.Pause]
+	i.cheatMenu = i.cheatMenu || touch.Pressed[controls.Cheats]
+	i.confirm = i.confirm || touch.Pressed[controls.Enter] || touch.Pressed[controls.Fire]
+	i.menuConfirm = i.menuConfirm || touch.Pressed[controls.Enter] || touch.Pressed[controls.Fire]
+	i.firePressed = i.firePressed || touch.Pressed[controls.Fire]
+	i.divePressed = i.divePressed || touch.Pressed[controls.Dive]
+	i.fire = i.fire || touch.Held[controls.Fire]
+	i.left = i.left || touch.X < 0
+	i.right = i.right || touch.X > 0
+	i.leftPressed = i.leftPressed || touch.LeftPressed
+	i.rightPressed = i.rightPressed || touch.RightPressed
+	i.upPressed = i.upPressed || touch.UpPressed
+	i.downPressed = i.downPressed || touch.DownPressed
+	i.gameMotion.Left = i.gameMotion.Left || touch.X < 0
+	i.gameMotion.Right = i.gameMotion.Right || touch.X > 0
+	i.gameMotion.Up = i.gameMotion.Up || touch.Y < 0
+	i.gameMotion.Down = i.gameMotion.Down || touch.Y > 0
+	if touch.Tap {
+		i.mousePressed, i.mouseX, i.mouseY = true, int(touch.TapX), int(touch.TapY)
 	}
 	return i
 }
