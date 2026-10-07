@@ -1634,3 +1634,19 @@ Restoring only the old constructor emits an extra projectile, leaves 49 and chan
 RNG. The existing eleven-member fraction/completion fixture now expects the native
 clear rather than erroneous inheritance. Five focused source tests pass under
 -race, including 13,627 member passes across all eight launches.
+
+## Third post-middle terrain investigation
+
+An excluded ordinary-control route crosses the measured U-turn and reaches the
+later terrain around camera 1,360, where repeated contact/rewind prevents forward
+progress. A live map capture distinguishes the mutable destroyed-cannon patch from
+the untouched band ahead. Pixel-level full-stencil searches cannot pass world 1,454
+within the current native reverse allowance.
+
+A bounded offline call of the original terrain routine 0x300a checks nine exact
+ship anchors at X 142/150/160 and world Y 1,453/1,454/1,455. Every result matches Go:
+contact at 1,453, clear at 1,454 and 1,455. The blocking covered pixel lies in opaque
+tile 27 or 3, with no local alpha/mask discrepancy. This rules out that specific
+collision interpretation as the cause; it does not prove the whole route or that
+diving is required. Earlier branch selection, available equipment and relevant
+terrain changes still need investigation. The incomplete route remains excluded.
