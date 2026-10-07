@@ -663,3 +663,18 @@ normal-menu run, not a general guarantee over arbitrary presentation RNG states.
 The long-run check reports progress and does not treat exhausted lives or
 restarting attract as campaign completion. Later guardian strategies and robust
 recovery from terrain cycles remain required for the requested full-game pilot.
+
+## Demonstration merchant budget
+
+The pilot chooses one affordable compatible item across both merchant pages.
+Original repairs add 20 or 40 and clamp to 39; at shield 19 or above the smaller
+repair already reaches full energy. Repeated rear upgrades are capped while
+autofire, one speed step, a base rear weapon, one cannon and primary power are
+selected. Low ship-count savings are retained only where that merchant can
+actually stock an extra ship.
+
+Real-UI merchant fixtures verify the cheaper repair/base-rear budget and an
+extra ship selected on the second page before affordable optional first-page
+items. These fixtures do not claim guardian victories. The updated normal-menu
+pilot still completes level one after 28,354 display updates; next-stage survival
+and a complete autonomous campaign remain under validation.

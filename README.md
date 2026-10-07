@@ -23,6 +23,9 @@ GOWORK=off go run ./cmd/xenon2 -demo
 The development pilot uses ordinary movement, fire and dive commands. It enters
 through the normal menu and READY, handles score entry and continues, and buys
 available upgrades through the original merchant quote/confirmation interface.
+It chooses the cheapest sufficient shield repair, saves for extra ships when
+the current merchant stocks them, and avoids repeatedly upgrading rear weapons
+at the expense of the basic loadout. Priorities work across both shop pages.
 A key or click immediately returns control of the current game to the player.
 It does not grant health, equipment or money, skip guardians or change terrain.
 

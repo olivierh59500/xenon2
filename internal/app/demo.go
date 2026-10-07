@@ -9,16 +9,15 @@ import (
 // demoDirector supplies the same sampled controls as a human player. It never
 // grants equipment, changes collisions or advances past an undefeated guardian.
 type demoDirector struct {
-	pilot           engine.DemoPilot
-	screen          Screen
-	phase           presentation.Phase
-	wait            int
-	logicFrame      uint64
-	level           int
-	controls        inputFrame
-	shop            *shopui.State
-	shopWait        int
-	shopPageChecked bool
+	pilot      engine.DemoPilot
+	screen     Screen
+	phase      presentation.Phase
+	wait       int
+	logicFrame uint64
+	level      int
+	controls   inputFrame
+	shop       *shopui.State
+	shopWait   int
 }
 
 // DemoActive reports whether the normal-input pilot still owns the controls.
@@ -106,7 +105,6 @@ func (g *Game) demoShopControls() inputFrame {
 	if d.shop != s {
 		d.shop = s
 		d.shopWait = 0
-		d.shopPageChecked = false
 	}
 	if s.Busy() || s.HandRemaining > 0 || s.Revealed < len(s.Dialogue) || s.DisplayMoney != *s.Money {
 		d.shopWait = 0
@@ -135,38 +133,24 @@ func (g *Game) demoShopControls() inputFrame {
 		return inputFrame{}
 	}
 	w := g.Driver.(*worldDriver).world
-	// Purchases go through the original quote and confirmation UI. Availability,
-	// compatibility and money are re-evaluated after each completed transaction.
-	wanted := []engine.Item{engine.ItemHealth2, engine.ItemHealth1, engine.ItemAutofire, engine.ItemRearShot, engine.ItemCannon, engine.ItemProtection, engine.ItemExtraLife, engine.ItemDive, engine.ItemSpeedup, engine.ItemPowerup, engine.ItemSuperNashwan}
-	for _, item := range wanted {
-		if item == engine.ItemCannon {
-			hasCannon := false
-			for _, mount := range w.Equipment.Mounts {
-				hasCannon = hasCannon || mount.Item == item
-			}
-			if hasCannon {
-				continue
-			}
-		}
-		if !w.Equipment.CanInstall(item) {
+	// Select one purchase across both pages so a priority on the second page
+	// cannot be replaced by a cheaper optional upgrade on the first page.
+	item := demoShopPurchase(w.Equipment, w.Money, s.Rules)
+	if item == engine.ItemNone {
+		return click(0, 4)
+	}
+	for index, entry := range s.Entries {
+		if !entry.Available || entry.More || entry.Item != item {
 			continue
 		}
-		for index, entry := range s.Entries {
-			if !entry.Available || entry.More || entry.Item != item {
-				continue
-			}
-			if s.QuoteValid && s.Quoted == index {
-				return inputFrame{confirm: true}
-			}
-			return click(index%5, index/5)
+		if s.QuoteValid && s.Quoted == index {
+			return inputFrame{confirm: true}
 		}
+		return click(index%5, index/5)
 	}
-	if s.Offset == 0 && !d.shopPageChecked {
-		for index, entry := range s.Entries {
-			if entry.More && entry.Available {
-				d.shopPageChecked = true
-				return click(index%5, index/5)
-			}
+	for index, entry := range s.Entries {
+		if entry.More {
+			return click(index%5, index/5)
 		}
 	}
 	return click(0, 4)
