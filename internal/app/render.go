@@ -253,7 +253,7 @@ func (g *Game) drawTitle(screen *ebiten.Image) {
 		}
 		g.drawGlyphs(screen, g.graphics.presentationFont, text, 0, line.CenterY-8, p.Font.Width)
 	}
-	g.drawGlyphs(screen, g.graphics.font, g.Bundle.Presentation.CreditsCaption, 176, 184, 8)
+	g.drawGlyphs(screen, g.graphics.font, g.creditCaption(3), 176, 184, 8)
 	g.drawStarfield(screen)
 	if g.Driver == nil || g.View.Diagnostic {
 		ebitenutil.DebugPrintAt(screen, "REFERENCE BUILD - GAME RULES IN PROGRESS", 8, 184)
