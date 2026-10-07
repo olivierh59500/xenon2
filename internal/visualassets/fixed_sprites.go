@@ -43,6 +43,7 @@ type FixedSpriteKind struct {
 }
 
 type FixedSprites struct {
+	FifthFormation *FifthFormationArt      `json:"fifth_formation,omitempty"`
 	Third          *ThirdFixedArt          `json:"third,omitempty"`
 	Kinds          []FixedSpriteKind       `json:"kinds"`
 	Atlas          SpriteAtlas             `json:"atlas"`
@@ -137,8 +138,13 @@ func DecodeFixedSprites(levelNumber int, level []byte, palette [16][4]uint8) (*F
 			if err != nil {
 				return nil, err
 			}
-			tags := [5][2]int{{208, 212}, {252, 256}, {208, 208}, {268, 272}, {256, 260}}
+			tags := [5][2]int{{208, 212}, {260, 256}, {208, 208}, {268, 272}, {256, 260}}
 			v := FixedSpriteVariant{ID: variant, ResourceTag: tags[levelNumber-1][variant], OriginOffsetX: -8, OriginOffsetY: -8, Animation: animation}
+			if levelNumber == 4 {
+				code := binary.BigEndian.Uint16(level[0x56c30-levelBase:])
+				patch := TilePatch{Columns: 1, Rows: 1, Tiles: []uint16{code}}
+				v.Cover = &patch
+			}
 			if (levelNumber == 1 || levelNumber == 5) && variant == 1 {
 				v.OriginOffsetX = 8
 			}
@@ -258,6 +264,12 @@ func DecodeFixedSprites(levelNumber int, level []byte, palette [16][4]uint8) (*F
 	if levelNumber == 3 {
 		var err error
 		result.Third, err = decodeThirdFixedArt(level, add)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if levelNumber == 5 {
+		result.FifthFormation, err = decodeFifthFormationArt(level, add)
 		if err != nil {
 			return nil, err
 		}

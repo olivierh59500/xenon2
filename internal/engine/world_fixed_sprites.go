@@ -46,4 +46,5 @@ func (w *World) advanceFixedSprite(actor *WorldActor) {
 			}
 		}
 	}
+	w.composeFixedSprite(actor)
 }

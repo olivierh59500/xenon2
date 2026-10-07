@@ -148,6 +148,10 @@ func (w *World) bindWorldActor(actor *WorldActor) error {
 }
 
 func (w *World) storeActorResidue(actor *WorldActor) {
+	if actor.fixedKind != nil {
+		w.storeFixedSpriteResidue(actor)
+		return
+	}
 	if actor.fifthSeeking != nil {
 		w.storeFifthSeekingResidue(actor)
 		return

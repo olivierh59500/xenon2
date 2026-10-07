@@ -48,7 +48,7 @@ func NewFixedSpriteState(kind visualassets.FixedSpriteKind, variant visualassets
 		state.Distance = state.Amplitude
 	}
 	if kind.Behavior == "vertical-oscillator" {
-		state.VelocityY = 1
+		state.VelocityY = 20
 	}
 	return state
 }
@@ -164,7 +164,11 @@ func StepFixedSpriteMotion(state *FixedSpriteState, kind visualassets.FixedSprit
 			}
 		}
 	case "vertical-oscillator":
-		state.Y += state.VelocityY
+		if state.VelocityY < 0 {
+			state.Y--
+		} else {
+			state.Y++
+		}
 		worldY := state.Y + input.ScrollY
 		if state.VelocityY >= 0 && worldY >= kind.MotionParameters["maximum_world_y"] {
 			state.VelocityY = -1

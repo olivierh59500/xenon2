@@ -91,9 +91,6 @@ func TestFixedSpriteMotionNativeTraceOptional(t *testing.T) {
 		if level == 4 {
 			velocity = state.PhaseDirection
 		}
-		if level == 5 && values[9] > 0 {
-			values[9] = 1
-		}
 		phase := state.Phase
 		if level <= 2 {
 			phase = state.VelocityY

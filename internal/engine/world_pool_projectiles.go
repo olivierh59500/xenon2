@@ -51,6 +51,12 @@ func (w *World) advancePoolProjectileEntity(id int, context WeaponContext) error
 }
 
 func (w *World) advanceTransientActor(actor *WorldActor) error {
+	if actor.fixedKind != nil {
+		actor.PreviousX, actor.PreviousY = actor.X, actor.Y
+		w.advanceFixedSprite(actor)
+		w.finishActorUpdate(actor)
+		return nil
+	}
 	if actor.fourthPod != nil {
 		return w.advanceFourthPod(actor)
 	}

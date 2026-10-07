@@ -911,6 +911,11 @@ func (w *World) spawnWave(wave visualassets.Wave) error {
 				}
 			}
 			group = append(group, actor)
+			w.Pool.Slot(actor.Binding.Slot).Linked = part.Linked
+			if part.Linked {
+				actor.Binding.Residue.OwnerSlot = leader.Binding.Slot
+				w.storeWorldResidue(actor.Binding)
+			}
 			spawned = append(spawned, actor)
 		}
 		// The original prepends each formation member to its actor list while
@@ -1150,7 +1155,7 @@ func (w *World) spawnFixed(record visualassets.FixedEncounter) {
 		if v.ID != variant {
 			continue
 		}
-		part := &visualassets.ActorPart{Atlas: "fixed", StrongHealth: kind.StrongHealth, Score: kind.Score, MotionMode: "world-anchored", DamageMode: "individual"}
+		part := &visualassets.ActorPart{ResourceTag: v.ResourceTag, Atlas: "fixed", StrongHealth: kind.StrongHealth, Score: kind.Score, MotionMode: "world-anchored", DamageMode: "individual"}
 		a := &WorldActor{X: float64(record.X + v.OriginOffsetX), Y: float64(record.Y + v.OriginOffsetY - w.ScrollY), Atlas: "fixed", ActorList: kind.ActorList, Active: true, part: part,
 			mapY: record.Y + v.OriginOffsetY, fixed: true, Health: kind.Health, Score: kind.Score,
 			animation: v.Animation, animationState: NewAnimation(v.Animation)}
@@ -1169,6 +1174,8 @@ func (w *World) spawnFixed(record visualassets.FixedEncounter) {
 			w.poolError = err
 			return
 		}
+		w.initializeFixedSpriteResidue(a)
+		w.composeFixedSprite(a)
 		w.Actors = append([]*WorldActor{a}, w.Actors...)
 		return
 	}

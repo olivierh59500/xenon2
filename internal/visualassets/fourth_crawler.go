@@ -58,6 +58,7 @@ func FourthCrawlerTileCodes(data []byte) ([]uint16, error) {
 	for _, address := range []int{0x56ffe, 0x57004} {
 		codes = append(codes, readTilePatch(data, address-levelBase, 1, 3).Tiles...)
 	}
+	codes = append(codes, binary.BigEndian.Uint16(data[0x56c30-levelBase:]))
 	return codes, nil
 }
 
