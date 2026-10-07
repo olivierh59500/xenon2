@@ -2,6 +2,7 @@ package app
 
 import (
 	"os"
+	"strconv"
 	"testing"
 	"xenon2/internal/engine"
 	"xenon2/internal/shopui"
@@ -132,9 +133,18 @@ func TestDemoCompletesFirstTwoLevelsFromNormalMenuOptional(t *testing.T) {
 	if os.Getenv("XENON2_DEMO_PROGRESS_CHECK") == "" {
 		t.Skip("enable current-engine normal-menu campaign check explicitly")
 	}
+	for _, refreshes := range []int{2, 3} {
+		t.Run(strconv.Itoa(refreshes)+"PAL", func(t *testing.T) {
+			verifyDemoFirstTwoLevels(t, refreshes)
+		})
+	}
+}
+
+func verifyDemoFirstTwoLevels(t *testing.T, refreshes int) {
+	t.Helper()
 	g := frontendGame(t)
 	g.Config.Demo = true
-	g.Config.LogicPALRefreshes = 3
+	g.Config.LogicPALRefreshes = refreshes
 	shops := [3][2]bool{}
 	defeated := [3]bool{}
 	var lastShop *shopui.State
@@ -163,10 +173,13 @@ func TestDemoCompletesFirstTwoLevelsFromNormalMenuOptional(t *testing.T) {
 					}
 				}
 				shops[level][slot] = true
+				if level == 1 && !g.shopFinal && (w.Equipment.Lives != 3 || w.ContinueCredits != 2) {
+					t.Fatal("first defense streams consumed a ship or continue")
+				}
 			}
 		}
 		if level == 3 {
-			if shops[1] != ([2]bool{true, true}) || shops[2] != ([2]bool{true, true}) || !defeated[1] || !defeated[2] || w.Cheats.Enabled() || w.GameOver || d.diagnostic {
+			if shops[1] != ([2]bool{true, true}) || shops[2] != ([2]bool{true, true}) || !defeated[1] || !defeated[2] || w.Cheats.Enabled() || w.GameOver || d.diagnostic || w.Equipment.Lives < 2 {
 				t.Fatalf("two-stage route incomplete: shops%v defeated%v", shops, defeated)
 			}
 			t.Logf("Normal-menu pilot completed levels1 and2 after%d display updates; next stage ships%d shield%d cash%d", update+1, w.Equipment.Lives, w.Equipment.Shield, w.Money)

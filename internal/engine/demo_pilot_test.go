@@ -176,10 +176,10 @@ func TestDemoPilotFirstMiddleShopThroughPublicCommandsOptional(t *testing.T) {
 		}
 		w = s.ActiveWorld()
 		if w.ShopReady {
-			if pass != 3802 || w.FirstMiddle == nil || !w.FirstMiddle.Crossed || w.ScrollY != 2495 || w.Equipment.Lives != 2 || w.Equipment.Shield != 15 || w.Money != 500 || w.Score != 7280 || w.ContinueCredits != 1 || losses != 4 || continues != 1 || w.LevelFinished {
+			if pass != 2025 || w.FirstMiddle == nil || !w.FirstMiddle.Crossed || w.ScrollY != 2495 || w.Equipment.Lives != 3 || w.Equipment.Shield != 39 || w.Money != 800 || w.Score != 11300 || w.ContinueCredits != 2 || losses != 0 || continues != 0 || w.LevelFinished {
 				t.Fatalf("bounded middle-shop outcome: pass%d camera%d lives%d shield%d score%d money%d losses%d continues%d", pass, w.ScrollY, w.Equipment.Lives, w.Equipment.Shield, w.Score, w.Money, losses, continues)
 			}
-			t.Logf("Reached the genuine middle-shop request after%d ordinary commands,4 ship losses and1 legal continue", pass)
+			t.Logf("Reached the genuine middle-shop request after%d ordinary commands with all three ships, full shield and both continues", pass)
 			return
 		}
 		for range 3 {

@@ -833,3 +833,19 @@ visible movement, health, rewards and physical pool tags remain unchanged.
 Both factories are covered before and after admission, including the ordinary
 World.Step player-contact ordering. The full original-resource engine suite,
 race suite, vet and desktop build pass.
+
+## First-stage pilot crossing and carried lives
+
+The default pilot gives navigation priority over loose bonuses inside the first
+defense-stream arena. Ordinary trigger releases and a lower formation target
+reach the real crossing without rewriting gates, collisions, health or RNG.
+Explicit pilot configurations retain their own preferences.
+
+The complete resource engine run now reaches the intermediate merchant after
+2,025 commands with all three ships, full shield and both continue credits.
+Normal-menu frontend regressions cover both two- and three-PAL-refresh gameplay
+profiles and all four first/second-stage merchants. Both routes admit stage
+three with two ships, full shield and no credits, improving the previous one-ship
+admission. Shops use their real dialogues, random stream, quotes and purchases.
+A connected third-stage victory is still unverified; separate arena wins and
+the excluded instantaneous-shop replay do not establish that campaign outcome.

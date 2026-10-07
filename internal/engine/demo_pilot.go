@@ -42,7 +42,7 @@ func (p *DemoPilot) NormalInput(w *World) Input {
 	if input, handled := p.StageInput(w); handled {
 		return input
 	}
-	c := thirdOpeningConfig(w, p.Config)
+	c := firstStageConfig(w, thirdOpeningConfig(w, p.Config))
 	if w.Level.Number == 2 && w.Checkpoint.ScrollY <= 4032 {
 		if c.TargetY == 0 {
 			c.TargetY = 166
@@ -84,6 +84,9 @@ func (p *DemoPilot) NormalInput(w *World) Input {
 				goal = 2685
 			}
 			y = max(25, min(80, 2685-w.ScrollY))
+			if p.Config == (DemoPilotConfig{}) {
+				y = c.TargetY
+			}
 		}
 		if p.navigation == nil {
 			p.navigation = &demoNavigation{}
