@@ -4,7 +4,7 @@ set -eu
 project_root=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 cd "$project_root"
 exclude=$(git rev-parse --git-path info/exclude)
-for pattern in '/previous/' '/captures/' '/new/' '/.local/' '/assets/original/' '/assets/runtime/*' '!/assets/runtime/GENERATED.txt' '!/assets/runtime/embed.go' '/assets/imported/' '/bin/' '/dist/' '/.gitignore' '/*.test' '/*.pprof' '*.adf' '*.dms' '*.rom'; do
+for pattern in '/previous/' '/captures/' '/new/' '/.local/' '/assets/original/' '/assets/runtime/*' '!/assets/runtime/GENERATED.txt' '!/assets/runtime/embed.go' '/assets/imported/' '/bin/' '/dist/' '/.gitignore' '/*.test' '/*.pprof' '.DS_Store' '*.adf' '*.dms' '*.rom'; do
     if ! grep -Fqx "$pattern" "$exclude"; then
         printf '%s\n' "$pattern" >> "$exclude"
     fi
