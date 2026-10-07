@@ -3,6 +3,9 @@ package engine
 import (
 	"encoding/json"
 	"fmt"
+	"image"
+	"image/draw"
+	"image/png"
 	"os"
 	"path/filepath"
 	"testing"
@@ -56,6 +59,66 @@ func originalWorldData(t testing.TB, number int) LevelData {
 	}
 	data.GuardianGroups, data.GuardianParts = groups.Groups, &groups.Atlas
 	return data
+}
+
+// playableOriginalWorldData adds the actual tile coverage and ship stencil.
+// Tests using metadata alone cannot verify wall contact or crushing behavior.
+func playableOriginalWorldData(t testing.TB, number int) LevelData {
+	t.Helper()
+	data := originalWorldData(t, number)
+	root := os.Getenv("XENON2_RUNTIME_ASSET_DIR")
+	file, err := os.Open(filepath.Join(root, fmt.Sprintf("level-%d-tiles.png", number)))
+	if err != nil {
+		t.Fatal(err)
+	}
+	picture, err := png.Decode(file)
+	file.Close()
+	if err != nil {
+		t.Fatal(err)
+	}
+	data.Terrain.Atlas = image.NewNRGBA(picture.Bounds())
+	draw.Draw(data.Terrain.Atlas, picture.Bounds(), picture, picture.Bounds().Min, draw.Src)
+	stencilBytes, err := os.ReadFile(filepath.Join(root, "player-terrain-stencil.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	data.PlayerStencil = &visualassets.PlayerTerrainStencil{}
+	if err := json.Unmarshal(stencilBytes, data.PlayerStencil); err != nil {
+		t.Fatal(err)
+	}
+	return data
+}
+
+func TestOriginalLevelStartsExerciseTerrainAndNormalShipLossOptional(t *testing.T) {
+	for number := 1; number <= 5; number++ {
+		t.Run(fmt.Sprint(number), func(t *testing.T) {
+			w, err := NewWorld(playableOriginalWorldData(t, number))
+			if err != nil {
+				t.Fatal(err)
+			}
+			if w.Coverage == nil {
+				t.Fatal("normal resource test omitted terrain coverage")
+			}
+			for pass := range 800 {
+				motion := MotionInput{Left: pass%120 < 30, Right: pass%120 >= 60 && pass%120 < 90}
+				if err := w.Step(Input{Motion: motion, Fire: pass%12 < 8}); err != nil {
+					t.Fatalf("pass%d:%v", pass, err)
+				}
+				if w.Ready {
+					if err := w.Step(Input{Fire: true}); err != nil {
+						t.Fatal(err)
+					}
+				}
+				if w.GameOver {
+					break
+				}
+			}
+			if w.Frame == 0 || len(w.Level.Terrain.Map) != 6000 || w.poolError != nil {
+				t.Fatal("normal game loop lost playable state")
+			}
+			t.Logf("Normal input exercised %d passes; remaining ships=%d shield=%d", w.Frame, w.Equipment.Lives, w.Equipment.Shield)
+		})
+	}
 }
 
 func BenchmarkOriginalMiddleArenaWorld(b *testing.B) {
