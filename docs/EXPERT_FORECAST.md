@@ -170,6 +170,25 @@ three workers and 12.97 ms with nine, versus about 67 ms for the sequential
 comparison. These are source-scene CPU samples; rendering, other fight phases
 and serial fallback can still exceed a 60 Hz frame budget.
 
+## Later-stage target roles
+
+Terrain-rendered fifth-stage barrier posts remain damageable even without a
+visible sprite; their linking band does not. A native-motion alignment helper
+holds the legal reverse allowance while shooting and releases it when the
+barrier breaks. With all original encounters and starting equipment, the first
+barrier opens at frame 77 with three ships and all 39 shield points. This is a
+standalone fifth-stage opening test, not a carried campaign result.
+
+Fourth/fifth guardian aiming now follows the source damage roles and gates.
+The fourth middle core waits for the tail and four satellites; satellite outer
+armor lines are excluded. The fourth final core waits for both eyes. Fifth
+middle mounts and the cannon are targets; fifth final core admission waits for
+all eighteen outer parts. Tiled vulnerable parts do not require sprite visibility,
+and retained wrecks are rejected. Original-scene tests invoke real destruction
+callbacks to open the gates and compare roles with copied damage callbacks.
+These role tests do not establish complete fourth/fifth boss victories or correct
+firing lanes through intervening armor bands.
+
 The six-pass exact guard also protects the post-merchant third corridor. Cannon
 preparation derives firing lanes from each live source instance, selects the
 nearest passed row and tries another reachable target when a neighboring gun is
