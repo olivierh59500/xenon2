@@ -14,6 +14,24 @@ HUD, loading and ending presentation are connected. All fixed encounter families
 are implemented. Shared-state and artwork audits and full-game validation remain
 in progress; this build is not yet the complete playable game.
 
+## Demonstration pilot
+
+```sh
+GOWORK=off go run ./cmd/xenon2 -demo
+```
+
+The development pilot uses ordinary movement, fire and dive commands. It enters
+through the normal menu and READY, handles score entry and continues, and buys
+available upgrades through the original merchant quote/confirmation interface.
+A key or click immediately returns control of the current game to the player.
+It does not grant health, equipment or money, skip guardians or change terrain.
+
+Full-game autonomous playback is still in development. The second-stage opening
+reaches its first checkpoint with all three ships in an exact public-input
+regression. The current complete-menu pilot run has not yet finished level one;
+longer terrain routes and guardian strategies remain under development. This
+mode must not be presented as a completed five-level demonstration yet.
+
 ## Local resources
 
 Supply a compatible original Amiga ADF in a local directory. Original disks,

@@ -95,9 +95,11 @@ type Config struct {
 	Mute              bool
 	StartScreen       Screen
 	LogicPALRefreshes int
+	Demo              bool
 }
 
 type Game struct {
+	demo                     *demoDirector
 	paused                   bool
 	pauseFraction            float64
 	fade                     *presentation.PaletteFade
@@ -216,6 +218,7 @@ func (g *Game) advanceWithInput(controls inputFrame) error {
 		return ebiten.Termination
 	}
 	g.updates++
+	controls = g.demoControls(controls)
 	if g.fade != nil && !g.fade.Done {
 		for ticks := g.palClock.Advance(); ticks > 0; ticks-- {
 			g.fade.AdvancePAL()
@@ -571,6 +574,9 @@ func saveScreenshot(screen *ebiten.Image, path string) error {
 
 // Run keeps display updates at sixty per second; driver steps use their own clock.
 func Run(bundle *Bundle, config Config) error {
+	if config.Demo && (config.StartScreen == LevelScreen || config.StartScreen == ShopScreen) {
+		config.StartScreen = TitleScreen
+	}
 	if config.Level == 0 {
 		config.Level = 1
 	}
