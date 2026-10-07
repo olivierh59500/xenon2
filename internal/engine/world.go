@@ -166,6 +166,8 @@ type WorldCollectible struct {
 // World is the independent game simulation. Scenery mechanisms, weapons and
 // stage transitions are integrated as their original rules are verified.
 type World struct {
+	deferCheckpointRestart           bool
+	turnPrepared                     bool
 	FifthMiddle                      *FifthMiddleGuardianState
 	FifthFinal                       *FifthFinalGuardianState
 	fifthMiddleArt, fifthFinalArt    *visualassets.GuardianGroup
@@ -772,7 +774,9 @@ func (w *World) Step(input Input) error {
 		if w.Equipment.Lives == 0 {
 			w.GameOver = true
 		} else {
-			w.RestartCheckpoint()
+			if !w.deferCheckpointRestart {
+				w.RestartCheckpoint()
+			}
 			w.Ready = true
 		}
 	}

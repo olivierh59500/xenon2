@@ -287,6 +287,10 @@ func (w *World) finishCollectibleUpdate(item *WorldCollectible) {
 // restoreCheckpointPool performs the bulk cleanup used between ship turns.
 // Surviving scripted actors retain their physical slots and named residues.
 func (w *World) restoreCheckpointPool() error {
+	return w.prepareCheckpointPool(true)
+}
+
+func (w *World) prepareCheckpointPool(rebuildEquipment bool) error {
 	keep := make(map[int]bool, len(w.Actors)+4)
 	for _, binding := range w.poolShadows {
 		keep[binding.EntityID] = true
@@ -309,7 +313,9 @@ func (w *World) restoreCheckpointPool() error {
 			w.Weapons.mounts[i] = runtimeMount{Binding: ActorPoolBinding{Slot: NoActorSlot}, SupportBinding: ActorPoolBinding{Slot: NoActorSlot}}
 		}
 		w.Weapons.ResetProjectiles()
-		return w.Weapons.SynchronizeEquipment(w.weaponContext(Input{}, false))
+		if rebuildEquipment {
+			return w.Weapons.SynchronizeEquipment(w.weaponContext(Input{}, false))
+		}
 	}
 	return nil
 }

@@ -11,6 +11,8 @@ func TestSessionChangesTurnsWithoutSharingWeaponsOrWallet(t *testing.T) {
 	first := s.ActiveWorld()
 	first.Equipment.ApplyItem(ItemDoubleShot)
 	first.Money = 1200
+	first.Checkpoint.Money = first.Money
+	first.Checkpoint.Loadout = first.Equipment.WeaponLoadout
 	first.NextUIRandom()
 	wantRandom := first.RandomState()
 	if !s.switchTurn() || s.Current != 1 {

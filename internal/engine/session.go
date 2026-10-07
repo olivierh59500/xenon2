@@ -41,7 +41,11 @@ func (s *Session) ActiveWorld() *World { return s.Players[s.Current] }
 func (s *Session) Advance(input Input) (turnChanged bool, err error) {
 	world := s.ActiveWorld()
 	lives := world.Equipment.Lives
-	if err = world.Step(input); err != nil {
+	other := s.Current ^ 1
+	world.deferCheckpointRestart = s.PlayerCount == 2 && !s.Completed[other] && !s.Players[other].GameOver && s.Players[other].Equipment.Lives > 0
+	err = world.Step(input)
+	world.deferCheckpointRestart = false
+	if err != nil {
 		return false, err
 	}
 	if world.Equipment.Lives < lives && !world.GameOver {
@@ -73,13 +77,13 @@ func (s *Session) switchTurn() bool {
 		return false
 	}
 	random := s.ActiveWorld().RandomState()
+	s.ActiveWorld().suspendTurn()
 	s.Current = next
 	world := s.ActiveWorld()
 	world.SetRandomState(random)
-	if !s.hasPlayed[next] {
-		world.RestartCheckpoint()
-		s.hasPlayed[next] = true
-	}
+	world.RestartCheckpoint()
+	world.LevelFinished = s.Completed[next]
+	s.hasPlayed[next] = true
 	world.Ready = true
 	return true
 }

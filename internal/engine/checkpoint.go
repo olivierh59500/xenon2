@@ -43,7 +43,9 @@ func (e *Equipment) RestoreCheckpointLoadout(loadout WeaponLoadout) {
 // death and ready screens. The mutable level map is deliberately retained.
 func (w *World) RestartCheckpoint() {
 	scrollChange := w.ScrollY - w.Checkpoint.ScrollY
+	shield, advance := w.Equipment.Shield, w.Equipment.FireAdvance
 	w.Equipment.RestoreCheckpointLoadout(w.Checkpoint.Loadout)
+	w.Equipment.Shield, w.Equipment.FireAdvance = shield, advance
 	w.Money = w.Checkpoint.Money
 	w.Player = PlayerMotionState{X: w.Checkpoint.PlayerX, Y: 176, SpeedTier: w.Equipment.SpeedTier}
 	w.PreviousPlayer = w.Player
@@ -55,6 +57,40 @@ func (w *World) RestartCheckpoint() {
 	w.PlayerAlive = true
 	w.PlayerSprite = ""
 	w.MaterializationFrames = 8
+	if w.turnPrepared {
+		if w.Weapons != nil {
+			if err := w.Weapons.SynchronizeEquipment(w.weaponContext(Input{}, false)); err != nil {
+				w.poolError = err
+			}
+		}
+	} else {
+		w.prepareCheckpointActors(scrollChange, true)
+	}
+	w.turnPrepared = false
+	w.fire = NewFireCadence(w.Equipment)
+	if w.Weapons != nil {
+		w.Weapons.ResetProjectiles()
+	}
+	w.PendingExitDrops = 0
+	w.ExitReady = false
+	w.ShopReady = false
+	w.LevelFinished = false
+	clear(w.WaveBonuses.Entries[:])
+}
+
+// suspendTurn removes the outgoing turn's temporary lists without restoring
+// its ship, wallet or equipment. Scripted guardian positions are adjusted once
+// for the saved checkpoint and retain their physical pool bindings.
+func (w *World) suspendTurn() {
+	if w.turnPrepared {
+		return
+	}
+	w.Equipment.RestoreSuperLoadout()
+	w.prepareCheckpointActors(w.ScrollY-w.Checkpoint.ScrollY, false)
+	w.turnPrepared = true
+}
+
+func (w *World) prepareCheckpointActors(scrollChange int, rebuildEquipment bool) {
 	w.Actors, w.Projectiles, w.SmallShots, w.Collectibles = nil, nil, nil, nil
 	if w.firstGuardianActor != nil && !w.FirstGuardian.Defeated {
 		w.Actors = append(w.Actors, w.firstGuardianActor)
@@ -80,16 +116,7 @@ func (w *World) RestartCheckpoint() {
 		w.FirstMiddle.Updated = [5]bool{}
 		w.FirstMiddle.GateCounters = [16]int{}
 	}
-	if err := w.restoreCheckpointPool(); err != nil {
+	if err := w.prepareCheckpointPool(rebuildEquipment); err != nil {
 		w.poolError = err
 	}
-	w.fire = NewFireCadence(w.Equipment)
-	if w.Weapons != nil {
-		w.Weapons.ResetProjectiles()
-	}
-	w.PendingExitDrops = 0
-	w.ExitReady = false
-	w.ShopReady = false
-	w.LevelFinished = false
-	clear(w.WaveBonuses.Entries[:])
 }

@@ -12,6 +12,7 @@ func TestCheckpointRestoresRecordedGunsAndWallet(t *testing.T) {
 	w.captureCheckpoint(3200, 80, 3376)
 	w.Equipment.ApplyItem(ItemRearShot)
 	w.Equipment.ApplyItem(ItemAutofire)
+	retainedAdvance := w.Equipment.FireAdvance
 	w.Money = 2000
 	w.PlayerAlive = false
 	w.ScrollY = 3000
@@ -22,8 +23,8 @@ func TestCheckpointRestoresRecordedGunsAndWallet(t *testing.T) {
 	if w.Equipment.Primary.Item != ItemDoubleShot || w.Equipment.Primary.Tier != 2 || w.Equipment.Mounts[0].Item != ItemCannon || w.Equipment.Rear.Item != ItemNone {
 		t.Fatalf("checkpoint guns differ: %+v", w.Equipment)
 	}
-	if w.Equipment.SpeedTier != 1 || w.Equipment.Shield != 39 || w.Equipment.FireAdvance != 1 || w.MaximumScrollY != 3200 || w.cursor.FixedHighWater != 3392 {
-		t.Fatal("persistent speed, restored shield or restart limits differ")
+	if w.Equipment.SpeedTier != 1 || w.Equipment.Shield != 39 || w.Equipment.FireAdvance != retainedAdvance || w.MaximumScrollY != 3200 || w.cursor.FixedHighWater != 3392 {
+		t.Fatal("checkpoint admission changed persistent upgrades or restart limits")
 	}
 }
 
