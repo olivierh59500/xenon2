@@ -10,6 +10,7 @@ type PresentationPilot struct {
 	PALRefreshes            int
 	forecast                WorldForecast
 	middleForecastPolicy    DemoPilot
+	middleWorkers           *thirdMiddleForecastWorkers
 	planner                 DemoPilot
 	world                   *World
 	frame                   uint64

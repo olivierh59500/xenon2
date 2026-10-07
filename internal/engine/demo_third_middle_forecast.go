@@ -1,67 +1,55 @@
 package engine
 
-// forecastThirdMiddleInput compares source-calibrated moves through a complete
+import "runtime"
+
+// forecastThirdMiddleInput compares all nine ordinary moves through a complete
 // arm extension and retreat, then applies only the first ordinary command.
 func (p *PresentationPilot) forecastThirdMiddleInput(w *World, fallback Input) Input {
 	if w.Level.Number != 3 || w.ThirdMiddle == nil || w.ThirdMiddle.Defeated || !w.PlayerAlive || w.Ready {
 		return fallback
 	}
-	pal := p.PALRefreshes
-	if pal <= 0 {
-		pal = 3
-	}
-	forecast := &p.forecast
-	best := fallback
-	bestAlive, bestShield, bestHP, bestDistance := false, -1, 1000000, 1000000
 	policy := &p.middleForecastPolicy
+	if runtime.GOMAXPROCS(0) <= 1 || policy.Config.DisableBossAlignment || w.GameOver || w.thirdMiddleArt == nil || w.Coverage == nil || w.Level.PlayerStencil == nil {
+		return p.forecastThirdMiddleSerial(w, fallback)
+	}
+	return p.forecastThirdMiddleParallel(w, fallback)
+}
+
+func prepareThirdMiddlePolicy(policy *DemoPilot, state *World, camera int) {
+	if policy.navigation == nil {
+		policy.navigation = &demoNavigation{}
+	}
+	policy.navigation.refresh(state)
+	policy.navigation.cacheTouchWindow(camera)
+	// Only the continuation proposal freezes terrain; every predicted
+	// World.Step still owns exact mutable-map contact and source callbacks.
+	policy.middleTerrainFrozen = true
+}
+
+func thirdMiddlePALRefreshes(pal int) int {
+	if pal <= 0 {
+		return 3
+	}
+	return pal
+}
+
+func (p *PresentationPilot) forecastThirdMiddleSerial(w *World, fallback Input) Input {
+	best := fallback
+	score := emptyThirdMiddleCandidate()
 	for index, motion := range demoDirections {
-		if err := forecast.Load(w); err != nil {
+		if err := p.forecast.Load(w); err != nil {
 			return fallback
 		}
 		if index == 0 {
-			if policy.navigation == nil {
-				policy.navigation = &demoNavigation{}
-			}
-			policy.navigation.refresh(forecast.State())
-			policy.navigation.cacheTouchWindow(w.ScrollY)
-			// This is only the continuation proposal's terrain cache. Every
-			// candidate still executes exact mutable-map contact in World.Step.
-			policy.middleTerrainFrozen = true
+			prepareThirdMiddlePolicy(&p.middleForecastPolicy, p.forecast.State(), w.ScrollY)
 		}
-		var result ForecastResult
-		for pass := 0; pass < 36; pass++ {
-			state := forecast.State()
-			input := fallback
-			if pass < 3 {
-				input.Motion = motion
-			} else {
-				input = policy.NormalInput(state)
-			}
-			input.Fire = !state.blockedFireUntilRelease && state.Dive.Phase == 0 && presentationShotOpportunityForMotion(state, input.Motion)
-			for range pal {
-				forecast.AdvancePALTick()
-			}
-			var err error
-			result, err = forecast.Advance(input)
-			if err != nil {
-				return fallback
-			}
-			if result.Boundary != ForecastRunning {
-				break
-			}
+		candidate, err := evaluateThirdMiddleCandidate(&p.forecast, &p.middleForecastPolicy, motion, fallback, thirdMiddlePALRefreshes(p.PALRefreshes), false)
+		if err != nil {
+			return fallback
 		}
-		end := forecast.State()
-		hp := max(0, int(int16(end.ThirdMiddle.EyeHealth[0]))) + max(0, int(int16(end.ThirdMiddle.EyeHealth[1])))
-		target := 3
-		if int16(end.ThirdMiddle.EyeHealth[0]) <= 0 {
-			target = 4
-		}
-		x := end.ThirdMiddle.Parts[target].X
-		distance := absDemo(end.Player.X-x) + absDemo(end.Player.Y-176)
-		if result.Alive && !bestAlive || result.Alive == bestAlive && (result.Shield > bestShield || result.Shield == bestShield && (hp < bestHP || hp == bestHP && distance < bestDistance)) {
-			best = fallback
+		if thirdMiddleCandidateBetter(candidate, score) {
+			best, score = fallback, candidate
 			best.Motion = motion
-			bestAlive, bestShield, bestHP, bestDistance = result.Alive, result.Shield, hp, distance
 		}
 	}
 	best.Fire = !w.blockedFireUntilRelease && w.Dive.Phase == 0 && presentationShotOpportunityForMotion(w, best.Motion)
