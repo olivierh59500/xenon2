@@ -88,3 +88,46 @@ func TestOriginalFixedEncounterVisualReferencesOptional(t *testing.T) {
 		}
 	}
 }
+
+func TestOriginalMovingWaveVisualReferencesOptional(t *testing.T) {
+	for level := 1; level <= 5; level++ {
+		data := originalWorldData(t, level)
+		names := make(map[string]map[string]bool)
+		for name, atlas := range map[string]*visualassets.SpriteAtlas{"moving": &data.Actors.Atlas, "common": data.Common, "enemy-shots": &data.Rules.EnemyShots} {
+			names[name] = make(map[string]bool)
+			for _, sprite := range atlas.Sprites {
+				names[name][sprite.Name] = true
+			}
+		}
+		for index, record := range data.Encounters.Moving {
+			t.Run(fmt.Sprintf("%d/%d", level, index), func(t *testing.T) {
+				w, err := NewWorld(data)
+				if err != nil {
+					t.Fatal(err)
+				}
+				if err := w.spawnWave(record); err != nil {
+					t.Fatal(err)
+				}
+				for range 64 {
+					if err := w.advanceActorPhase(ActorPoolMoving, Input{}); err != nil {
+						t.Fatal(err)
+					}
+					if err := w.advancePooledProjectiles(Input{}); err != nil {
+						t.Fatal(err)
+					}
+					for _, actor := range w.Actors {
+						if actor.Active && actor.Visible && !actor.firstGuardian && !actor.secondGuardian && actor.secondNode == nil && !names[actor.Atlas][actor.Sprite] {
+							t.Fatalf("wave%d level%d references missing %s/%s", index, level, actor.Atlas, actor.Sprite)
+						}
+					}
+					for _, shot := range w.Projectiles {
+						if shot.Active && !names[shot.Atlas][shot.Sprite] {
+							t.Fatalf("wave%d level%d shot references missing %s/%s", index, level, shot.Atlas, shot.Sprite)
+						}
+					}
+					w.compactActors()
+				}
+			})
+		}
+	}
+}
