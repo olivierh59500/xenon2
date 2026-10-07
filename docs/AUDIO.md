@@ -106,3 +106,19 @@ original logic pass.
 The stream benchmark renders 1,024 stereo frames in approximately 23
 microseconds on an Apple M4 Max, with no steady playback allocations.
 This is a desktop measurement, not a Pixel performance result.
+
+## Music continuity across player transitions
+
+The source main score keeps running during ship loss, score initials, continue
+and subsequent READY. Only the first READY starts the main score; merchant
+returns and a newly loaded stage have their separate post-fade replay starts.
+The frontend retains this admission state instead of deriving music solely
+from the currently visible screen.
+
+A PCM regression follows an actual collision loss through initials, accepted
+continue and READY. 428,505 output frames from the unaffected left music voices
+match an independent uninterrupted score stream. Effect-stop tests also verify
+that terminating inactive effect records does not restart music DMA positions.
+Termination queued for the 50 Hz tick preserves pending dispatch order and only
+restores channels that an effect actually owns. These checks open no audio
+device and do not establish the unmodelled Amiga analogue filter response.

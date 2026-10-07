@@ -136,8 +136,11 @@ func (s *Stream) StopEffects() {
 	s.queuedStop = false
 	for ch := range s.effects {
 		s.queued[ch] = nil
+		owned := s.effects[ch].active
 		s.effects[ch] = playback{}
-		s.restoreMusic(ch)
+		if owned {
+			s.restoreMusic(ch)
+		}
 	}
 }
 
@@ -208,8 +211,11 @@ func (s *Stream) sample(v *voice) int32 {
 func (s *Stream) tick() {
 	if s.queuedStop {
 		for ch := range s.effects {
+			owned := s.effects[ch].active
 			s.effects[ch] = playback{}
-			s.restoreMusic(ch)
+			if owned {
+				s.restoreMusic(ch)
+			}
 		}
 		s.queuedStop = false
 	}

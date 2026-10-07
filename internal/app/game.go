@@ -131,6 +131,8 @@ type Game struct {
 	player                   *ebitenaudio.Player
 	music                    bool
 	soundtrack               string
+	gameMusicRunning         bool
+	gameMusicAfterFade       bool
 	menu                     int
 	updates                  int
 	pendingFire, pendingDive bool
@@ -511,31 +513,6 @@ func (g *Game) EnableAudio() error {
 	return nil
 }
 
-func (g *Game) selectMusic() {
-	id := ""
-	if !g.Config.Mute {
-		if g.music && g.Screen == LevelScreen && !g.View.Ready && !g.View.GameOver {
-			id = "megablast-main"
-		}
-		if g.Screen == PresentationScreen && !g.readyRunning && !g.gameOverRunning {
-			if g.director.AttractMusic() {
-				id = "megablast-menu"
-			}
-		}
-	}
-	if id == g.soundtrack {
-		return
-	}
-	g.soundtrack = id
-	if id == "" {
-		g.stream.StopMusic()
-		return
-	}
-	if err := g.stream.PlayMusic(id); err != nil {
-		g.err = err
-	}
-}
-
 func (g *Game) Draw(screen *ebiten.Image) {
 	if g.fade != nil && g.fade.Deduction > 0 {
 		g.graphics.fadeScene.Clear()
@@ -598,6 +575,9 @@ func Run(bundle *Bundle, config Config) error {
 		g.rememberFrameHistory()
 	}
 	g.Screen = config.StartScreen
+	if config.StartScreen == LevelScreen {
+		g.gameMusicRunning = true
+	}
 	if config.StartScreen == PresentationScreen {
 		g.BeginAttract()
 	}

@@ -73,8 +73,7 @@ func (g *Game) requestShop() error {
 	}
 	world := driver.world
 	g.shopFinal = world.LevelFinished
-	g.stream.StopMusic()
-	g.soundtrack = ""
+	g.stopGameplayMusic()
 	// In the last stage, the first surviving player waits without seeing the
 	// merchant ending. The final surviving completion shows it once.
 	if g.shopFinal && world.Level.Number == 5 && driver.session != nil && driver.session.PlayerCount == 2 {
@@ -121,11 +120,12 @@ func (g *Game) advanceCompletedStage() error {
 		driver.session = &engine.Session{Players: [2]*engine.World{driver.world, nil}, PlayerCount: 1, Difficulty: 1}
 	}
 	next := driver.world.Level.Number%5 + 1
-	_, err := driver.session.CompleteStage(g.levelData(next))
+	transition, err := driver.session.CompleteStage(g.levelData(next))
 	if err != nil {
 		return err
 	}
 	driver.world = driver.session.ActiveWorld()
+	g.gameMusicAfterFade = transition == engine.LoadedNextStage
 	driver.turnChanged = true
 	g.View = driver.Frame()
 	g.rememberFrameHistory()
@@ -145,5 +145,12 @@ func (g *Game) startFade(fade presentation.PaletteFade, after func() error) {
 
 func (g *Game) startLevelFade() {
 	g.backdropOnly = true
-	g.startFade(presentation.NewPaletteFadeIn(), func() error { g.backdropOnly = false; g.clock = g.newLogicClock(); return nil })
+	g.startFade(presentation.NewPaletteFadeIn(), func() error {
+		g.backdropOnly = false
+		g.clock = g.newLogicClock()
+		if g.gameMusicAfterFade {
+			g.beginGameplayMusic()
+		}
+		return nil
+	})
 }

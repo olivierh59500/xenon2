@@ -258,6 +258,7 @@ func (g *Game) StartLevel(level int) error {
 }
 
 func (g *Game) StartSession(level, players int) error {
+	g.gameMusicRunning, g.gameMusicAfterFade = false, false
 	l := g.Bundle.Levels[level-1]
 	data := engine.LevelData{Number: level, Terrain: &l.Terrain, Paths: &l.Paths, Encounters: &l.Encounters, Actors: &l.Actors, FixedSprites: &l.FixedSprites, FixedTiles: &l.FixedTiles, PlayerStencil: &g.Bundle.Stencil, Rules: &l.Rules, Ships: &g.Bundle.Ships, Common: &g.Bundle.Common, Guardians: l.Guardians, GuardianGroups: l.GuardianGroups, GuardianParts: l.GuardianParts}
 	session, err := engine.NewSession(data, players, *g.starfield.Random)

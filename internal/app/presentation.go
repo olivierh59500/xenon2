@@ -10,6 +10,7 @@ import (
 
 // BeginAttract starts the source presentation loop without changing game rules.
 func (g *Game) BeginAttract() {
+	g.gameMusicRunning, g.gameMusicAfterFade = false, false
 	g.fade, g.whenFadeEnds = nil, nil
 	if g.updates > 0 {
 		g.resetPresentationStars(presentation.LogoDelay)
@@ -30,14 +31,14 @@ func (g *Game) beginPendingWorldPresentation() bool {
 		player := max(1, g.View.PlayerNumber)
 		g.resetPresentationStars(presentation.ReadyMessage)
 		g.director.BeginReady(player)
-		g.stream.StopEffects()
+		g.stream.QueueStopEffects()
 		g.Screen, g.readyRunning = PresentationScreen, true
 		g.selectMusic()
 		return true
 	}
 	if g.View.GameOver && !g.gameOverRunning {
 		g.gameOverRunning = true
-		g.stream.StopEffects()
+		g.stream.QueueStopEffects()
 		if g.director.InsertScore(g.View.Score) {
 			g.continueAfterScores = true
 		} else if g.View.ContinueCredits > 0 {
@@ -109,6 +110,9 @@ func (g *Game) updatePresentation(controls inputFrame) error {
 				if g.Screen != LevelScreen {
 					break
 				}
+			}
+			if !g.gameMusicAfterFade {
+				g.beginGameplayMusic()
 			}
 			g.startLevelFade()
 			g.selectMusic()

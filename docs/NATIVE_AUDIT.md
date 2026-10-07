@@ -601,3 +601,19 @@ observation CSV: its first mismatch is step 920, immediately after a lethal
 contact. The old local CSV is retained unchanged and no longer selected
 automatically by tests. Explicitly supplying it still reports the mismatch.
 A new current-engine first-level victory and full campaign remain unproven.
+
+## Integrated music admission and free DMA voices
+
+The main music replay remains active during death, score initials, continue and
+subsequent READY. The initial gameplay admission starts before its first fade;
+shop return and newly loaded-stage admissions restart after their fade. Explicit
+frontend state preserves these distinct native calls. PCM comparison over
+428,505 output frames covers a real collision/continue route against an
+independent uninterrupted musical replay.
+
+Stopping all effects previously restored every musical voice and reset free
+voices' sample positions. The native effect records restore only owned active
+voices. The stream now preserves unaffected DMA positions, including queued
+termination. Independent PCM tests distinguish both immediate and queued stops
+from a continuous reference. Live emulator soundtrack/filter comparison remains
+separate.

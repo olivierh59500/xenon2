@@ -28,9 +28,7 @@ func (g *Game) EnterShop(endOfLevel bool) error {
 	g.shopFinal = endOfLevel
 	g.Screen = ShopScreen
 	g.clock = engine.NewFrameClock(25, 60)
-	g.stream.StopMusic()
-	g.soundtrack = ""
-	g.stream.StopEffects()
+	g.stopGameplayMusic()
 	g.startFade(presentation.NewPaletteFadeIn(), func() error {
 		if !g.Config.Mute {
 			return g.stream.QueueEffect("shop-synthesized-effect-08", 2)
