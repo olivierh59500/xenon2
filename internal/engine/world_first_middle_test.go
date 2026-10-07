@@ -54,6 +54,36 @@ func TestFirstMiddleWorldSpawnsFiveStreamsAndOpensShopOptional(t *testing.T) {
 	}
 }
 
+func TestFirstMiddleStationaryArenaDoesNotLoseEveryStreamEachPassOptional(t *testing.T) {
+	w, err := NewWorld(originalWorldData(t, 1))
+	if err != nil {
+		t.Fatal(err)
+	}
+	w.ScrollY, w.MaximumScrollY, w.VisitedScrollY = 3000, 3344, 3344
+	w.cursor = RestartEncounterCursor(3000)
+	w.InvulnerableFrames = 10000
+	total := 0
+	for pass := range 10000 {
+		w.Player.X, w.Player.Y = 160, 176
+		w.ScrollY, w.MaximumScrollY = 3000, 3344
+		before := w.nextActorID
+		if err := w.Step(Input{Fire: true}); err != nil {
+			t.Fatal(err)
+		}
+		total += w.nextActorID - before
+		if pass > 1 && w.nextActorID-before > 60 {
+			counts := map[int]int{}
+			for _, slot := range w.Pool.slots {
+				if slot.allocated {
+					counts[int(slot.ResourceTag)]++
+				}
+			}
+			t.Fatalf("arena replaced almost every chain at once on pass%d: slots=%v actors=%d", pass, counts, len(w.Actors))
+		}
+	}
+	t.Logf("Total constructions: %d live actors: %d", total, len(w.Actors))
+}
+
 func TestFirstMiddleDestroyedFollowerBecomesFragmentWithoutBreakingChainOptional(t *testing.T) {
 	w, err := NewWorld(originalWorldData(t, 1))
 	if err != nil {
@@ -97,7 +127,7 @@ func TestFirstMiddleWorldNativeChainOptional(t *testing.T) {
 		t.Skip("set XENON2_NATIVE_TRACE_DIR to local source comparisons")
 	}
 	data := originalWorldData(t, 1)
-	file, err := os.Open(filepath.Join(root, "first-middle-parts-trace.csv"))
+	file, err := os.Open(filepath.Join(root, "first-middle-parts-long-trace.csv"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -144,10 +174,25 @@ func TestFirstMiddleWorldNativeChainOptional(t *testing.T) {
 			}
 			previousPass = pass
 		}
-		if part < 1 || part > 12 || v[3] == 4 || v[3] == 0 {
+		if part < 0 || part > 13 {
 			continue
 		}
 		actor := chain[part]
+		tag := 0
+		if actor.Binding.EntityID != 0 {
+			if slot := w.Pool.Slot(actor.Binding.Slot); slot.allocated && slot.EntityID == actor.ID {
+				tag = int(slot.ResourceTag)
+			}
+		}
+		if tag != int(v[3]) {
+			t.Fatalf("World chain removal differs launch%d pass%d part%d: tag=%d want%d", launch, pass, part, tag, v[3])
+		}
+		if v[3] == 0 || v[3] == 4 {
+			continue
+		}
+		if part == 0 || part == 13 {
+			continue
+		}
 		if int(actor.X) != int(int32(v[4])>>16) || int(actor.Y) != int(int32(v[5])>>16) || actor.Visible != (v[9] != 0) {
 			t.Fatalf("World chain differs %v: x/y=%v/%v visible=%t", v[:8], actor.X, actor.Y, actor.Visible)
 		}

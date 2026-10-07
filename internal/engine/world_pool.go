@@ -29,6 +29,9 @@ func (w *World) reserveWorldActor(tag int16, list ActorPoolList, tail bool) (Act
 		w.discardWorldEntity(allocation.PreviousEntityID)
 	}
 	w.poolActors[allocation.Slot] = nil
+	w.poolProjectiles[allocation.Slot] = nil
+	w.poolSmallShots[allocation.Slot] = nil
+	w.poolCollectibles[allocation.Slot] = nil
 	w.nextActorID++
 	slot := w.Pool.Slot(allocation.Slot)
 	binding := ActorPoolBinding{Slot: allocation.Slot, EntityID: w.nextActorID, Residue: slot.Residue, AllocationPhase: slot.AllocationPhase}
@@ -69,6 +72,13 @@ func (w *World) discardWorldEntity(id int) {
 	if w.Weapons != nil {
 		w.Weapons.DropActor(id)
 	}
+}
+
+func (w *World) clearPoolReferences(index int) {
+	w.poolActors[index] = nil
+	w.poolProjectiles[index] = nil
+	w.poolSmallShots[index] = nil
+	w.poolCollectibles[index] = nil
 }
 
 func (w *World) storeWorldResidue(binding ActorPoolBinding) {

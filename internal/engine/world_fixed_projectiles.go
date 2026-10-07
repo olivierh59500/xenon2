@@ -38,6 +38,7 @@ func (w *World) spawnSpecializedFixedShot(event FixedSpriteEvents) bool {
 		shot := &WorldProjectile{ID: binding.EntityID, Binding: binding, X: float64(event.ShotX), Y: float64(event.ShotY),
 			PreviousX: float64(event.ShotX), PreviousY: float64(event.ShotY), Sprite: event.ShotSprite,
 			Atlas: "fixed", Active: true, turning: &state}
+		w.poolProjectiles[binding.Slot] = shot
 		w.Projectiles = append([]*WorldProjectile{shot}, w.Projectiles...)
 	case "animated-aiming-projectile":
 		state, err := NewAnimatedAimingFixedProjectile(event, art)
@@ -77,6 +78,7 @@ func (w *World) advanceTurningFixedShot(shot *WorldProjectile) error {
 }
 
 func (w *World) advanceFixedAimingActor(actor *WorldActor) {
+	actor.Flash = false
 	state, art := actor.fixedAiming, w.Level.FixedSprites.Projectile
 	event := state.Advance(art, w.fixedProjectileInputs(), func(name string) visualassets.CollisionBox {
 		return w.movingSpriteBoxes[name]

@@ -10,7 +10,7 @@ import (
 	"xenon2/internal/visualassets"
 )
 
-func originalWorldData(t *testing.T, number int) LevelData {
+func originalWorldData(t testing.TB, number int) LevelData {
 	t.Helper()
 	root := os.Getenv("XENON2_RUNTIME_ASSET_DIR")
 	if root == "" {
@@ -56,6 +56,31 @@ func originalWorldData(t *testing.T, number int) LevelData {
 	}
 	data.GuardianGroups, data.GuardianParts = groups.Groups, &groups.Atlas
 	return data
+}
+
+func BenchmarkOriginalMiddleArenaWorld(b *testing.B) {
+	data := originalWorldData(b, 1)
+	w, err := NewWorld(data)
+	if err != nil {
+		b.Fatal(err)
+	}
+	w.ScrollY, w.MaximumScrollY, w.VisitedScrollY = 3000, 3344, 3344
+	w.InvulnerableFrames = 1 << 30
+	w.cursor = RestartEncounterCursor(w.ScrollY)
+	if err := w.advanceFirstMiddleStage(); err != nil {
+		b.Fatal(err)
+	}
+	b.ReportAllocs()
+	b.ResetTimer()
+	for range b.N {
+		w.Player.X = 160
+		w.Player.Y = 176
+		w.ScrollY, w.MaximumScrollY = 3000, 3344
+		w.ShopReady, w.Ready, w.GameOver = false, false, false
+		if err := w.Step(Input{Fire: true}); err != nil {
+			b.Fatal(err)
+		}
+	}
 }
 
 func TestWorldWeaponsSharePoolWithOriginalEnemiesOptional(t *testing.T) {

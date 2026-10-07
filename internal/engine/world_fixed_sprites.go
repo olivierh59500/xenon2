@@ -1,6 +1,7 @@
 package engine
 
 func (w *World) advanceFixedSprite(actor *WorldActor) {
+	actor.Flash = false
 	state, kind := &actor.fixedState, actor.fixedKind
 	events := StepFixedSpriteMotion(state, *kind, FixedSpriteInputs{
 		ScrollDelta: w.ScrollDelta, ScrollY: w.ScrollY, MaximumScrollY: w.MaximumScrollY,

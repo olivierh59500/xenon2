@@ -68,6 +68,7 @@ func (w *World) advanceMovingActor(actor *WorldActor) error {
 		return w.advanceThirdFinal(actor)
 	}
 	if actor.firstMiddleSentinel {
+		w.advanceFirstMiddleMarker(actor)
 		return nil
 	}
 	if actor.firstMiddleAnchor != nil {
@@ -93,6 +94,7 @@ func (w *World) advanceMovingActor(actor *WorldActor) error {
 	}
 	actor.PreviousX, actor.PreviousY = actor.X, actor.Y
 	actor.Visible = true
+	actor.Flash = false
 	if actor.secondNode != nil {
 		w.advanceSecondNode(actor)
 		return nil

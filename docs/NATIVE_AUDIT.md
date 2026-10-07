@@ -271,3 +271,23 @@ The final eleven-member worm matches 13,627 member updates; its creation retains
 reused fractional positions and the inherited firing-rate value. Stage-boundary
 logic matches 60 original decisions. Integrated tests verify source activation,
 checkpoint preservation, middle rewards/shop admission and final delayed exit.
+
+## Combat rendering and prolonged arena state
+
+Ordinary damage now flashes surviving enemies and emits the source-centered
+small or large explosion at destruction. Eight isolated source callback cases
+verify the health result, effect origin, sampled sound and score. Linked groups
+omit the invisible linked pieces' explosions. The first final guardian also
+uses its four-phase lower-body tile decoration and twenty-explosion death burst;
+the decoration matches 1,200 source passes.
+
+A prolonged first-arena run exposed retained collision-list markers after their
+chain disappeared. The cleanup now preserves the source pair: the trailing
+marker is released with the last follower, then the leading marker is released
+on its next visit. A 400-pass comparison over all sixteen paths checks actor
+types, visible positions and exact removal timing. A 10,000-pass stationary arena
+test checks that completed groups do not accumulate reserved slots.
+
+Direct physical-slot lookups now serve projectile updates. The local simulation
+benchmark exercises the original middle arena and weapon fire; renderer/GPU
+performance still requires live testing and is not established by this benchmark.

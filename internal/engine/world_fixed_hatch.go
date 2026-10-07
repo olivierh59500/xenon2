@@ -65,6 +65,7 @@ func (w *World) spawnHatchCreatures(x, y int) {
 }
 
 func (w *World) advanceHatchCreature(actor *WorldActor) {
+	actor.Flash = false
 	actor.PreviousX, actor.PreviousY = actor.X, actor.Y
 	state := actor.hatchCreature
 	event := state.Advance(w.Level.FixedSprites.HatchCreatures, w.fixedProjectileInputs(), func(name string) visualassets.CollisionBox { return w.movingSpriteBoxes[name] })

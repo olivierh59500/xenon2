@@ -32,6 +32,7 @@ func (w *World) spawnWaveCash(x, y int, heavy bool) {
 	p := &WorldCollectible{ID: binding.EntityID, Binding: binding, Cash: CashValue(heavy), X: float64(x), Y: float64(y), PreviousX: float64(x), PreviousY: float64(y), Active: true,
 		Motion: CashMotion{X: x, Y: y, Mode: 7, Direction: uint8(w.random.Next() & 7)}, animation: animation, animationState: NewAnimation(animation.Animation)}
 	p.Sprite = p.animationState.Sprite(animation.Animation)
+	w.poolCollectibles[binding.Slot] = p
 	w.Collectibles = append([]*WorldCollectible{p}, w.Collectibles...)
 }
 
@@ -63,6 +64,7 @@ func (w *World) spawnExitCash(pairs int) {
 				Motion: CashMotion{X: int(x) + 10, Y: int(y) + 6, Mode: 7}, animation: animation, animationState: NewAnimation(animation.Animation)}
 			p.PreviousX, p.PreviousY = p.X, p.Y
 			p.Sprite = p.animationState.Sprite(animation.Animation)
+			w.poolCollectibles[binding.Slot] = p
 			w.PendingExitDrops++
 			if heavy {
 				w.nextTailOrder--
@@ -91,6 +93,7 @@ func (w *World) spawnPickup(reward, x, y int) {
 	p := &WorldCollectible{ID: binding.EntityID, Binding: binding, Reward: reward, X: float64(x), Y: float64(y), PreviousX: float64(x), PreviousY: float64(y), Active: true,
 		Motion: CashMotion{X: x, Y: y, Mode: 7}, animation: animation, animationState: NewAnimation(animation.Animation)}
 	p.Sprite = p.animationState.Sprite(animation.Animation)
+	w.poolCollectibles[binding.Slot] = p
 	w.Collectibles = append([]*WorldCollectible{p}, w.Collectibles...)
 }
 

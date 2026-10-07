@@ -68,10 +68,11 @@ func (w *World) spawnFirstMiddleStream(stream, launchIndex int) error {
 	if err != nil {
 		return err
 	}
+	markers := &[2]*WorldActor{}
 	// One trailing marker is reserved before the anchor; its type changes to188
 	// only after the chain and leading184 marker have been constructed.
 	for _, tag := range []int{188, 268} {
-		actor := &WorldActor{Active: true, ActorList: "moving", Visible: false, firstMiddleSentinel: tag == 188, part: &visualassets.ActorPart{ResourceTag: tag, DamageMode: "block-shot"}, Collision: CollisionRect{Right: -1, Bottom: -1}}
+		actor := &WorldActor{Active: true, ActorList: "moving", Visible: false, firstMiddleSentinel: tag == 188, firstMiddleStream: stream, part: &visualassets.ActorPart{ResourceTag: tag, DamageMode: "block-shot"}, Collision: CollisionRect{Right: -1, Bottom: -1}}
 		if tag == 268 {
 			actor.firstMiddleAnchor = &state
 			actor.path = &launch.Path
@@ -80,6 +81,10 @@ func (w *World) spawnFirstMiddleStream(stream, launchIndex int) error {
 		}
 		if err := w.bindWorldActor(actor); err != nil {
 			return err
+		}
+		actor.firstMiddleMarkers = markers
+		if tag == 188 {
+			markers[1] = actor
 		}
 		w.Actors = append([]*WorldActor{actor}, w.Actors...)
 	}
@@ -96,13 +101,16 @@ func (w *World) spawnFirstMiddleStream(stream, launchIndex int) error {
 			return err
 		}
 		actor.PreviousX, actor.PreviousY = actor.X, actor.Y
+		actor.firstMiddleMarkers = markers
 		previous = actor
 		w.Actors = append([]*WorldActor{actor}, w.Actors...)
 	}
-	sentinel := &WorldActor{Active: true, ActorList: "moving", firstMiddleSentinel: true, part: &visualassets.ActorPart{ResourceTag: 184, DamageMode: "block-shot"}, Collision: CollisionRect{Right: -1, Bottom: -1}}
+	sentinel := &WorldActor{Active: true, ActorList: "moving", firstMiddleSentinel: true, firstMiddleStream: stream, part: &visualassets.ActorPart{ResourceTag: 184, DamageMode: "block-shot"}, Collision: CollisionRect{Right: -1, Bottom: -1}}
 	if err := w.bindWorldActor(sentinel); err != nil {
 		return err
 	}
+	markers[0] = sentinel
+	sentinel.firstMiddleMarkers = markers
 	w.Actors = append([]*WorldActor{sentinel}, w.Actors...)
 	return nil
 }
@@ -117,13 +125,7 @@ func (w *World) advanceFirstMiddleAnchor(actor *WorldActor) error {
 	actor.X, actor.Y = float64(actor.firstMiddleAnchor.Motion.X>>16), float64(actor.firstMiddleAnchor.Motion.Y>>16)
 	if !actor.Active {
 		w.FirstMiddle.GateCounters[actor.firstMiddleGate] = max(w.FirstMiddle.GateCounters[actor.firstMiddleGate], 20)
-		next := w.Pool.Next(actor.Binding.Slot)
-		if next != NoActorSlot {
-			if sentinel := w.poolActors[next]; sentinel != nil && sentinel.firstMiddleSentinel {
-				sentinel.Active = false
-				w.storeActorResidue(sentinel)
-			}
-		}
+		w.releaseWorldBinding(&actor.Binding)
 	}
 	return nil
 }
@@ -140,6 +142,14 @@ func (w *World) advanceFirstMiddleFollower(actor *WorldActor) {
 	}
 	if parent == nil || parent.firstMiddleSentinel {
 		actor.Active = false
+		remaining := false
+		for _, member := range w.Actors {
+			remaining = remaining || member.Active && member.firstMiddleFollower != nil && member.firstMiddleMarkers == actor.firstMiddleMarkers
+		}
+		if !remaining {
+			w.clearFirstMiddleMarkers(actor)
+		}
+		w.releaseWorldBinding(&actor.Binding)
 		if w.FirstMiddle.GateCounters[actor.firstMiddleGate] == 0 {
 			w.FirstMiddle.GateCounters[actor.firstMiddleGate] = 20
 		}
@@ -168,6 +178,36 @@ func (w *World) advanceFirstMiddleFollower(actor *WorldActor) {
 	if !actor.Active && w.FirstMiddle.GateCounters[actor.firstMiddleGate] == 0 {
 		w.FirstMiddle.GateCounters[actor.firstMiddleGate] = 20
 	}
+	if !actor.Active {
+		remaining := false
+		for _, member := range w.Actors {
+			remaining = remaining || member.Active && member.firstMiddleFollower != nil && member.firstMiddleMarkers == actor.firstMiddleMarkers
+		}
+		if !remaining {
+			w.clearFirstMiddleMarkers(actor)
+		}
+	}
+}
+
+func (w *World) clearFirstMiddleMarkers(member *WorldActor) {
+	if member.firstMiddleMarkers == nil {
+		return
+	}
+	if marker := member.firstMiddleMarkers[1]; marker != nil && marker.Active {
+		marker.Active = false
+		w.storeActorResidue(marker)
+		w.releaseWorldBinding(&marker.Binding)
+	}
+}
+
+func (w *World) advanceFirstMiddleMarker(actor *WorldActor) {
+	if actor.part.ResourceTag == 184 && actor.firstMiddleMarkers != nil {
+		tail := actor.firstMiddleMarkers[1]
+		if tail == nil || !tail.Active {
+			actor.Active = false
+			w.releaseWorldBinding(&actor.Binding)
+		}
+	}
 }
 
 func (w *World) damageFirstMiddleFollower(actor *WorldActor, amount uint16) {
@@ -178,6 +218,13 @@ func (w *World) damageFirstMiddleFollower(actor *WorldActor, amount uint16) {
 	}
 	actor.Active = false
 	w.storeActorResidue(actor)
+	activeFollowers := false
+	for _, member := range w.Actors {
+		activeFollowers = activeFollowers || member.Active && member.firstMiddleFollower != nil && member.firstMiddleMarkers == actor.firstMiddleMarkers
+	}
+	if !activeFollowers {
+		w.clearFirstMiddleMarkers(actor)
+	}
 	state := FirstMiddleFragment{X: int(actor.X), Y: int(actor.Y), Heading: uint8(w.random.Next())}
 	fragment := &WorldActor{Active: true, Visible: true, ActorList: "transient", Atlas: "guardian-parts", firstMiddleFragment: &state,
 		X: actor.X, Y: actor.Y, PreviousX: actor.X, PreviousY: actor.Y, animation: actor.firstMiddlePart.DeathAnimation, animationState: NewAnimation(actor.firstMiddlePart.DeathAnimation), part: &visualassets.ActorPart{ResourceTag: actor.part.ResourceTag, DamageMode: "block-shot"}}

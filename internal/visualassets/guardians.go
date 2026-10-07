@@ -155,6 +155,18 @@ func DecodeGuardianArt(number int, level []byte, palette [16][4]uint8) (*Guardia
 	}
 	body := readTilePatch(level, bodyStart, 6, 7)
 	guardian := GuardianVisual{ID: "final-guardian", InitialHealth: int(binary.BigEndian.Uint16(level[0x58:])), InitialWorldY: 16, BodyX: 112, Body: body, EyeX: 152, EyeOffsetY: 66}
+	extra := append([]uint16(nil), body.Tiles...)
+	decoration := GuardianBodyAnimation{ID: "lower-body-decoration", Column: 1, Row: 5}
+	for frame := range 4 {
+		start, err := offset(level, 0x565fc-levelBase+frame*4, 16)
+		if err != nil {
+			return nil, nil, err
+		}
+		patch := readTilePatch(level, start, 4, 2)
+		decoration.Frames = append(decoration.Frames, patch)
+		extra = append(extra, patch.Tiles...)
+	}
+	guardian.BodyAnimations = append(guardian.BodyAnimations, decoration)
 	images := make([]*Sprite, 0, 3)
 	names := map[int]string{}
 	for i := range 4 {
@@ -201,7 +213,7 @@ func DecodeGuardianArt(number int, level []byte, palette [16][4]uint8) (*Guardia
 		return nil, nil, err
 	}
 	guardian.FlameAnimation = flame
-	return &Guardians{Visuals: []GuardianVisual{guardian}, Atlas: packSprites(images)}, append([]uint16(nil), body.Tiles...), nil
+	return &Guardians{Visuals: []GuardianVisual{guardian}, Atlas: packSprites(images)}, extra, nil
 }
 
 func RemapGuardianTiles(guardians *Guardians, ids map[uint16]uint16) error {

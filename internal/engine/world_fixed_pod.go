@@ -62,6 +62,7 @@ func (w *World) spawnPodCreature(x, y, variant int) {
 }
 
 func (w *World) advancePodCreature(actor *WorldActor) {
+	actor.Flash = false
 	actor.PreviousX, actor.PreviousY = actor.X, actor.Y
 	state := actor.podCreature
 	state.Advance(w.Frame, w.Player.X, w.Level.FixedSprites.PodCreatures)

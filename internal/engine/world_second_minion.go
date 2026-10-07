@@ -87,6 +87,10 @@ func (w *World) spawnSecondExplosion(x, y int) {
 }
 
 func (w *World) spawnSecondNamedExplosion(x, y int, name string) {
+	w.SoundRequests[2] = "sampled-effect-05"
+	if name == "explosion-large" {
+		w.SoundRequests[2] = "sampled-effect-03"
+	}
 	animation, ok := w.commonAnimations[name]
 	if !ok {
 		return

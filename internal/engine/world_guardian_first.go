@@ -10,7 +10,19 @@ func (w *World) advanceFirstGuardian() {
 	actor.Visible = actor.Active && w.ScrollY < 640
 	actor.Collision = state.BodyCollision
 	actor.X, actor.Y = float64(art.BodyX), float64(state.BodyWorldY-w.ScrollY)
-	actor.Patch = &art.Body
+	if w.firstGuardianBody.Columns == 0 {
+		w.firstGuardianBody = art.Body
+		w.firstGuardianBody.Tiles = append([]uint16(nil), art.Body.Tiles...)
+	}
+	if state.Active && !state.Defeated {
+		for _, animation := range art.BodyAnimations {
+			patch := animation.Frames[(w.Frame&12)>>2]
+			for row := range patch.Rows {
+				copy(w.firstGuardianBody.Tiles[(animation.Row+row)*w.firstGuardianBody.Columns+animation.Column:][:patch.Columns], patch.Tiles[row*patch.Columns:][:patch.Columns])
+			}
+		}
+	}
+	actor.Patch = &w.firstGuardianBody
 	actor.Flash = state.Flash
 	actor.Extras = actor.Extras[:0]
 	if actor.Visible && len(art.EyeFrames) != 0 {
@@ -105,5 +117,6 @@ func (w *World) strikeFirstGuardian(hit CollisionRect, amount uint16) {
 		w.syncDeadActors()
 		w.LevelFinished = true
 		w.spawnExitCash(9)
+		w.spawnSecondRandomExplosions(20, 0, 0, 320, 192)
 	}
 }

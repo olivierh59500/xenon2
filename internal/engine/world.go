@@ -83,6 +83,7 @@ type WorldActor struct {
 	firstMiddleStream          int
 	firstMiddleGate            int
 	firstMiddlePart            *visualassets.GuardianComponent
+	firstMiddleMarkers         *[2]*WorldActor
 	secondNode                 *SecondDefenseNodeState
 	secondPart                 *visualassets.GuardianComponent
 	secondSegment              *SecondDefenseSegment
@@ -203,6 +204,9 @@ type World struct {
 	poolBindings                     map[int]ActorPoolBinding
 	poolShadows                      [4]ActorPoolBinding
 	poolActors                       [ActorPoolCapacity]*WorldActor
+	poolProjectiles                  [ActorPoolCapacity]*WorldProjectile
+	poolSmallShots                   [ActorPoolCapacity]*WorldSmallShot
+	poolCollectibles                 [ActorPoolCapacity]*WorldCollectible
 	poolError                        error
 	fire                             FireCadence
 	previousFire                     bool
@@ -214,6 +218,7 @@ type World struct {
 	deathState                       AnimationState
 	blockedFireUntilRelease          bool
 	firstGuardianArt                 *visualassets.GuardianVisual
+	firstGuardianBody                visualassets.TilePatch
 	firstMiddleArt                   *visualassets.GuardianGroup
 	firstGuardianActor               *WorldActor
 	firstGuardianParts               [8]*WorldActor
@@ -355,6 +360,8 @@ func NewWorld(data LevelData) (*World, error) {
 	}
 	if data.Number == 1 && data.Guardians != nil && len(data.Guardians.Visuals) != 0 {
 		w.firstGuardianArt = &data.Guardians.Visuals[0]
+		w.firstGuardianBody = w.firstGuardianArt.Body
+		w.firstGuardianBody.Tiles = append([]uint16(nil), w.firstGuardianBody.Tiles...)
 		state := NewFirstGuardianState(w.firstGuardianArt.InitialHealth)
 		w.FirstGuardian = &state
 		part := &visualassets.ActorPart{ResourceTag: 80, DamageMode: "first-guardian", MotionMode: "first-guardian-controller"}
@@ -563,7 +570,9 @@ func (w *World) Step(input Input) error {
 					if err != nil {
 						return err
 					}
-					w.SmallShots = append([]*WorldSmallShot{{ID: binding.EntityID, Binding: binding, PreviousX: shot.X, PreviousY: shot.Y, Shot: shot, Active: true}}, w.SmallShots...)
+					projectile := &WorldSmallShot{ID: binding.EntityID, Binding: binding, PreviousX: shot.X, PreviousY: shot.Y, Shot: shot, Active: true}
+					w.poolSmallShots[binding.Slot] = projectile
+					w.SmallShots = append([]*WorldSmallShot{projectile}, w.SmallShots...)
 				}
 			}
 		}
@@ -968,20 +977,33 @@ func (w *World) damageActor(actor *WorldActor, amount uint16) {
 	}
 	result := ApplyEnemyDamage(uint16(target.Health), amount)
 	target.Health = int(result.Health)
+	target.Flash = true
 	if !result.Destroyed {
 		return
 	}
 	target.Active = false
 	w.storeActorResidue(target)
-	if target.hatchCreature != nil {
-		region := w.fixedProjectileRegion(target.Sprite)
-		w.spawnSecondExplosion(int(target.X)-region.AnchorX+region.Width/2, int(target.Y)-region.AnchorY+(region.Height-1)/2)
+	if actor.part != nil && actor.part.DamageMode == "group" {
+		var effects [159]*WorldActor
+		count := 0
+		for _, member := range w.Actors {
+			if (member == target || member.leader == target) && (member == target || !member.part.Linked) {
+				if count < len(effects) {
+					effects[count] = member
+					count++
+				}
+			}
+		}
+		for _, member := range effects[:count] {
+			w.spawnActorDeathEffect(member)
+		}
+	} else {
+		w.spawnActorDeathEffect(target)
 	}
 	w.Score += target.Score
 	if w.WaveBonuses.Defeat(target.WaveToken) {
 		w.spawnWaveCash(int(target.X), int(target.Y), target.part.StrongHealth)
 	}
-	w.SoundRequests[2] = "synthesized-effect-17"
 	if actor.part != nil && actor.part.DamageMode == "group" {
 		w.despawnGroup(target)
 	}
@@ -1012,6 +1034,7 @@ func (w *World) spawnEnemyShot(x, y int, shot EnemyShot) {
 	p := &WorldProjectile{ID: binding.EntityID, Binding: binding, X: float64(x), Y: float64(y), PreviousX: float64(x), PreviousY: float64(y),
 		Sprite: w.Level.Rules.DefaultEnemyShot, Atlas: "enemy-shots", Active: true,
 		Motion: DirectionalProjectile{X: int32(x) << 16, Y: int32(y) << 16, Direction: shot.Direction, Speed: shot.Speed}}
+	w.poolProjectiles[binding.Slot] = p
 	w.Projectiles = append([]*WorldProjectile{p}, w.Projectiles...)
 }
 

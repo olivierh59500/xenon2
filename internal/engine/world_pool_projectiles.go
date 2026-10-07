@@ -13,6 +13,7 @@ func (w *World) advancePooledProjectiles(input Input) error {
 			if err := w.Pool.Release(index); err != nil {
 				return err
 			}
+			w.clearPoolReferences(index)
 		} else if err := w.advancePoolProjectileEntity(slot.EntityID, context); err != nil {
 			return err
 		}
@@ -22,23 +23,55 @@ func (w *World) advancePooledProjectiles(input Input) error {
 }
 
 func (w *World) advancePoolProjectileEntity(id int, context WeaponContext) error {
+	if binding, ok := w.poolBindings[id]; ok {
+		index := binding.Slot
+		if actor := w.poolActors[index]; actor != nil && actor.ID == id && actor.Active && actor.ActorList == "transient" {
+			return w.advanceTransientActor(actor)
+		}
+		if item := w.poolCollectibles[index]; item != nil && item.ID == id && item.Active {
+			w.advanceCollectible(item)
+			w.finishCollectibleUpdate(item)
+			return nil
+		}
+		if shot := w.poolProjectiles[index]; shot != nil && shot.ID == id && shot.Active {
+			if err := w.advanceEnemyShot(shot); err != nil {
+				return err
+			}
+			w.finishProjectileUpdate(shot)
+			return nil
+		}
+		if shot := w.poolSmallShots[index]; shot != nil && shot.ID == id && shot.Active {
+			w.advanceSmallShot(shot)
+			w.finishSmallShotUpdate(shot)
+			return nil
+		}
+		return w.advancePoolWeapon(id, context)
+	}
+	return w.advanceUnboundProjectileEntity(id, context)
+}
+
+func (w *World) advanceTransientActor(actor *WorldActor) error {
+	actor.PreviousX, actor.PreviousY = actor.X, actor.Y
+	if actor.firstMiddleFragment != nil {
+		w.advanceFirstMiddleFragment(actor)
+	} else if actor.secondFragment != nil {
+		w.advanceSecondFragment(actor)
+	} else if actor.animation.Ending == "remove" && actor.animationState.Frame == len(actor.animation.Frames)-1 && actor.animationState.Remaining == 1 {
+		actor.Active = false
+	} else {
+		actor.animationState.Advance(actor.animation)
+		actor.selectSprite()
+	}
+	w.finishActorUpdate(actor)
+	return nil
+}
+
+func (w *World) advanceUnboundProjectileEntity(id int, context WeaponContext) error {
 	for _, actor := range w.Actors {
 		if actor.ID != id || !actor.Active || actor.ActorList != "transient" {
 			continue
 		}
-		actor.PreviousX, actor.PreviousY = actor.X, actor.Y
-		if actor.firstMiddleFragment != nil {
-			w.advanceFirstMiddleFragment(actor)
-		} else if actor.secondFragment != nil {
-			w.advanceSecondFragment(actor)
-		} else if actor.animation.Ending == "remove" && actor.animationState.Frame == len(actor.animation.Frames)-1 && actor.animationState.Remaining == 1 {
-			actor.Active = false
-		} else {
-			actor.animationState.Advance(actor.animation)
-			actor.selectSprite()
-		}
-		w.finishActorUpdate(actor)
-		return nil
+		return w.advanceTransientActor(actor)
 	}
 	for _, item := range w.Collectibles {
 		if item.ID == id && item.Active {
@@ -63,6 +96,10 @@ func (w *World) advancePoolProjectileEntity(id int, context WeaponContext) error
 			return nil
 		}
 	}
+	return w.advancePoolWeapon(id, context)
+}
+
+func (w *World) advancePoolWeapon(id int, context WeaponContext) error {
 	if w.Weapons != nil {
 		context.ShipDestroyed = !w.PlayerAlive
 		for i := range context.Targets {
