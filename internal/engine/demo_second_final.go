@@ -108,6 +108,15 @@ func (p *DemoPilot) secondFinalWaypoint(w *World, goal int) (int, int, bool) {
 		n.frame = 0
 		return 0, 0, false
 	}
+	if p.practicedRoute {
+		for index := min(len(n.path)-1, nearest+8); index >= nearest; index-- {
+			point := n.path[index]
+			if n.clearSegment(x, y, point) {
+				return point.x, point.y, true
+			}
+		}
+		return 0, 0, false
+	}
 	point := n.path[min(len(n.path)-1, nearest+8)]
 	return point.x, point.y, true
 }

@@ -152,3 +152,49 @@ func TestPresentationPilotCompletesFirstLevelFromDefaultIntroOptional(t *testing
 	w := g.Driver.(*worldDriver).world
 	t.Fatalf("bounded full first-level presentation not complete: frame%d camera%d xy%d,%d ships%d shield%d cash%d middle%v final%v guardian%v", w.Frame, w.ScrollY, w.Player.X, w.Player.Y, w.Equipment.Lives, w.Equipment.Shield, w.Money, middle, final, guardian)
 }
+
+func TestPresentationPilotCarriesFirstLevelIntoSecondMiddleShopOptional(t *testing.T) {
+	if os.Getenv("XENON2_HUMAN_PRESENTATION_CHECK") == "" {
+		t.Skip("enable the real carried presentation progression explicitly")
+	}
+	g := presentationFrontendGame(t)
+	firstMiddle, firstFinal, firstGuardian := false, false, false
+	var lastShop *shopui.State
+	for update := 0; update < 60*900; update++ {
+		advanceFrontend(t, g, inputFrame{})
+		d, ok := g.Driver.(*worldDriver)
+		if !ok || d.session == nil {
+			continue
+		}
+		w := d.world
+		if w.Cheats.Enabled() || d.diagnostic {
+			t.Fatal("carried presentation became assisted")
+		}
+		if w.Level.Number == 1 && w.FirstGuardian != nil && w.FirstGuardian.Defeated {
+			firstGuardian = true
+		}
+		if g.Screen == ShopScreen && g.shop != nil && g.shop != lastShop {
+			lastShop = g.shop
+			if w.Level.Number == 1 {
+				if g.shopFinal {
+					firstFinal = true
+					if !firstGuardian || !w.ExitReady || w.PendingExitDrops != 0 {
+						t.Fatal("first final merchant skipped source gates")
+					}
+				} else {
+					firstMiddle = true
+				}
+			} else if w.Level.Number == 2 && !g.shopFinal {
+				if !firstMiddle || !firstFinal || !firstGuardian || w.LevelFinished || w.PendingExitDrops != 0 || w.GameOver || w.Equipment.Lives < 1 {
+					t.Fatal("second middle merchant omitted genuine carried completion gates")
+				}
+				t.Logf("Carried second middle merchant at%.2fs: ships%d shield%d credits%d cash%d", float64(update+1)/60, w.Equipment.Lives, w.Equipment.Shield, w.ContinueCredits, w.Money)
+				return
+			}
+		}
+		if w.GameOver && w.ContinueCredits == 0 {
+			t.Fatal("ordinary recovery exhausted before the second middle merchant")
+		}
+	}
+	t.Fatal("bounded carried presentation did not defeat the second arena and collect its merchant drops")
+}

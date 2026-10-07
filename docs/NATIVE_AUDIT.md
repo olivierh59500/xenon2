@@ -1452,3 +1452,31 @@ known optional third-stage no-loss check excluded explicitly. The reference
 first/two-stage routes and the completed first-level presentation still pass.
 Vet and the desktop rebuild also pass; the worktree is clean after milestone
 commits. Original resources and generated recordings remain locally excluded.
+
+## Carried second-arena presentation progression
+
+The expert presentation can now change direction within its eight-pass planning
+horizon. It forecasts copied native player/rewind/camera state against the
+verified active staggered bodies, keeping the original head/node objective.
+Fixed buffers retain the small beam and per-pilot output storage. Source paths
+contain only curves/end, so their path geometry is computed once and translated
+by each candidate's common camera displacement. A dedicated equivalence test
+matches those translated rows against full source callbacks.
+
+The actual carried frontend route keeps both first merchants, first guardian and
+exit drops, then destroys the three second-arena defenses and collects the middle
+merchant reward. It enters that merchant at 783.43 seconds with three ships,
+shield 15, one remaining credit and 2,050 cash. No lives or inventory are assigned
+by the controller. The permanent regression validates the real route from the
+intro; readonly planning and input-domain tests also pass.
+
+The practiced corridor waypoint now retains a clear first leg instead of cutting
+an occupied corner. This removes its stationary camera-1,189 loop; the bounded
+continuation reaches camera 801 before later losses and exhaustion at 1,133.23
+seconds. Second-stage final completion remains unproved. The unchanged reference
+strategy remains separately covered.
+
+The real-resource beam benchmark improved from about 3.6 ms/139 KiB allocated
+per call to about 48 microseconds with zero allocations after scratch setup on
+the tested M4 Max. The measured fixture includes an actual open-node objective
+and active formations; it does not establish rendered FPS or Pixel performance.

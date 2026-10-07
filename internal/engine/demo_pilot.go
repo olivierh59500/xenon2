@@ -19,6 +19,7 @@ type DemoPilot struct {
 	retreatGoal        int
 	practicedRoute     bool
 	retreatX, retreatY int
+	secondArenaScratch []demoSecondDefenseView
 }
 
 var demoDirections = [9]MotionInput{{}, {Left: true}, {Right: true}, {Up: true}, {Down: true}, {Left: true, Up: true}, {Right: true, Up: true}, {Left: true, Down: true}, {Right: true, Down: true}}

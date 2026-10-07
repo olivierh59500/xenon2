@@ -36,6 +36,9 @@ func (p *PresentationPilot) NormalInput(w *World) Input {
 	p.frame = w.Frame
 	base := p.planner.NormalInput(w)
 	input := base
+	if w.Level.Number == 2 && w.secondScheduler != nil && !w.secondMiddleReleased && w.ScrollY >= 2512 && w.ScrollY <= 2896 {
+		input.Motion = demoSecondArenaBeam(w, &p.planner, base.Motion)
+	}
 	retreat := p.planner.retreatGoal != 0
 	if !retreat && w.Rewind.Timer == 0 && !presentationSpecialist(w) {
 		if w.Frame >= p.decisionAt {

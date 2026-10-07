@@ -107,8 +107,10 @@ substitutes for a connected victory through ordinary controls.
 The practiced presentation controller now also completes the entire first level
 from the production intro: known left junction, both genuine merchants, final
 guardian destruction and collected exit drops. Its exported MP4 is 413.05 seconds
-and ends before playing level two. A separate bounded continuation shows that
-this newer presentation profile still fails inside the second middle arena;
+and ends before playing level two. The practiced controller now carries the
+real first-stage result through the second arena and enters its middle merchant,
+with ordinary deaths and one continue. A bounded continuation crosses the next
+corridor but still loses its remaining ships before completing stage two;
 the reference controller's two-stage proof does not establish that profile's
 campaign completion.
 
