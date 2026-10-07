@@ -63,6 +63,9 @@ func TestOriginalFixedEncounterVisualReferencesOptional(t *testing.T) {
 					if err := w.advanceActorPhase(ActorPoolScenery, Input{}); err != nil {
 						t.Fatal(err)
 					}
+					if len(w.PendingFixedShots) != 0 {
+						t.Fatalf("level%d fixed encounter%d emitted an unhandled shot: %+v", level, index, w.PendingFixedShots)
+					}
 					for _, actor := range w.Actors {
 						if actor.Active && actor.Visible {
 							checkImage(actor.Atlas, actor.Sprite)
