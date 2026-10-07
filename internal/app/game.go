@@ -579,6 +579,11 @@ func Run(bundle *Bundle, config Config) error {
 	if err = g.StartLevel(config.Level); err != nil {
 		return err
 	}
+	if driver, ok := g.Driver.(*worldDriver); ok {
+		driver.diagnostic = config.StartScreen == LevelScreen || config.StartScreen == ShopScreen
+		g.View = driver.Frame()
+		g.rememberFrameHistory()
+	}
 	g.Screen = config.StartScreen
 	if config.StartScreen == PresentationScreen {
 		g.BeginAttract()
