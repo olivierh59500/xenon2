@@ -52,7 +52,8 @@ death/checkpoint recovery and alternating player turns.
 
 Equipment keys work only when KEY FUNCTIONS is ON. The KEY HELP page lists the
 adapted desktop controls. The shortcut layout reserves F3 for settings and uses F1/F2/F4–F10 for common
-upgrades, numeric keypad 0–9 for weapons/dive, and Delete/Insert for energy.
+upgrades, numeric keypad 0–9 for weapons/dive, B/H/O/V for bomb, homing missile,
+protection and Shades, and Delete/Insert for energy.
 These aids are optional player choices; ordinary demo validation keeps them off.
 
 ## Local resources

@@ -81,9 +81,9 @@ func (g *Game) drawCheatMenu(screen *ebiten.Image) {
 	screen.Fill(color.Black)
 	if g.cheatHelp {
 		g.drawGlyphs(screen, g.graphics.presentationFont, "    CHEAT KEYS      ", 0, 4, 16)
-		lines := []string{"F1 SPEED   F2 REPAIR  F4 AUTOFIRE", "F5 NASHWAN F6 HEALTH F7 REAR", "F8 MINE    F9 SIDE   F10 SHIP", "PAD 1 BALL   PAD 2 POWER UP", "PAD 3 MINE   PAD 4 DOUBLE SHOT", "PAD 5 CANNON PAD 6 DIVE", "PAD 7 MISSILE PAD 8 LASER", "PAD 9 DRONE   PAD 0 FLAMER", "DEL ENERGY ON  INS ENERGY OFF", "ENTER OR ESC TO RETURN"}
+		lines := []string{"F1 SPEED   F2 REPAIR  F4 AUTOFIRE", "F5 NASHWAN F6 HEALTH F7 REAR", "F8 MINE    F9 SIDE   F10 SHIP", "PAD 1 BALL   PAD 2 POWER UP", "PAD 3 MINE   PAD 4 DOUBLE SHOT", "PAD 5 CANNON PAD 6 DIVE", "PAD 7 MISSILE PAD 8 LASER", "PAD 9 DRONE   PAD 0 FLAMER", "B BOMB H HOMING O GUARD V SHADES", "DEL ENERGY ON  INS ENERGY OFF", "ENTER OR ESC TO RETURN"}
 		for row, line := range lines {
-			g.drawCheatText(screen, line, 16, 38+row*15, 8)
+			g.drawCheatText(screen, line, 16, 32+row*14, 8)
 		}
 		return
 	}

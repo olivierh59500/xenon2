@@ -55,6 +55,8 @@ func sampleInput() inputFrame {
 		{ebiten.KeyF6, engine.ItemHealth2}, {ebiten.KeyF7, engine.ItemRearShot},
 		{ebiten.KeyF8, engine.ItemMineSmall}, {ebiten.KeyF9, engine.ItemSideShot},
 		{ebiten.KeyF10, engine.ItemExtraLife},
+		{ebiten.KeyB, engine.ItemBomb}, {ebiten.KeyH, engine.ItemHomingMissile},
+		{ebiten.KeyO, engine.ItemProtection}, {ebiten.KeyV, engine.ItemBitmapShades},
 		{ebiten.KeyNumpad0, engine.ItemFlamer}, {ebiten.KeyNumpad1, engine.ItemElectroBall},
 		{ebiten.KeyNumpad2, engine.ItemPowerup}, {ebiten.KeyNumpad3, engine.ItemMineLarge},
 		{ebiten.KeyNumpad4, engine.ItemDoubleShot}, {ebiten.KeyNumpad5, engine.ItemCannon},

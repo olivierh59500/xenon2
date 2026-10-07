@@ -509,7 +509,7 @@ func (g *Game) updateTitle(controls inputFrame) {
 			}
 		}
 	}
-	if controls.mousePressed && controls.mouseY >= 136 && controls.mouseY < 162 {
+	if controls.mousePressed && controls.mouseX >= 0 && controls.mouseX < 320 && controls.mouseY >= 136 && controls.mouseY < 162 {
 		g.menu = 3
 		g.activateMenu()
 	}
