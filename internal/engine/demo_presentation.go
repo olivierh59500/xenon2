@@ -54,6 +54,15 @@ func (p *PresentationPilot) NormalInput(w *World) Input {
 			input.Motion = p.tacticalMotion(w, base.Motion)
 		}
 	}
+	if w.Level.Number == 3 && w.ThirdMiddle == nil && w.Checkpoint.ScrollY > 4032 && w.Rewind.Timer == 0 {
+		x, y := 250, 120
+		if p.goal.valid(w) {
+			x, y = p.goal.x, p.goal.y
+		}
+		// Known opening formations need turns within the reaction horizon;
+		// holding one direction can collide after a path changes heading.
+		input.Motion = demoRouteMotionWithOptions(w, x, w.ScrollY+y, y, true)
+	}
 	input.Fire = p.selectiveFireForMotion(w, input.Motion)
 	if w.blockedFireUntilRelease || w.Dive.Phase != 0 {
 		input.Fire = false

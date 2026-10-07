@@ -1716,3 +1716,20 @@ Eight focused frontend tests pass, including exact threshold/reset, normal READY
 admission and keyboard/touch takeover. The controller's full five-stage mastery
 and low-loss performance remain development requirements, not claims established
 by title admission or a two-stage win.
+
+## Expert opening sequence in stage three
+
+The practiced opening now plans changing directions within the short source
+motion horizon. Its prior held-direction choice could accept a predicted body
+contact; the following corrective input was too late because World.Step checks
+that contact before player movement. The existing path 33 forecaster already
+matches all six native positions and collider prefixes, so no substitute motion
+model or relaxed collision rule is used.
+
+The permanent carried regression starts from the production intro, completes
+both prior stages and their four genuine merchants, then reaches checkpoint 4,032
+at frame 577/camera 4,031 without losing the surviving ship or spending a continue.
+Seven shield points remain. The helper is applied only until that checkpoint;
+a later bounded continuation still loses the ship before the middle guardian.
+This is a verified survival improvement for that opening, not near-lossless
+mastery of all levels.

@@ -203,6 +203,11 @@ func TestPresentationPilotCompletesFirstTwoLevelsFromDefaultIntroOptional(t *tes
 	if os.Getenv("XENON2_HUMAN_PRESENTATION_CHECK") == "" {
 		t.Skip("enable the complete carried presentation route explicitly")
 	}
+	verifyPresentationFirstTwoLevelsFromDefaultIntro(t)
+}
+
+func verifyPresentationFirstTwoLevelsFromDefaultIntro(t *testing.T) *Game {
+	t.Helper()
 	g := presentationFrontendGame(t)
 	shops := [3][2]bool{}
 	defeated := [3]bool{}
@@ -242,11 +247,37 @@ func TestPresentationPilotCompletesFirstTwoLevelsFromDefaultIntroOptional(t *tes
 				t.Fatal("carried presentation omitted genuine two-stage completion gates")
 			}
 			t.Logf("Complete carried presentation enters stage3 at%.2fs: ships%d shield%d credits%d", float64(update+1)/60, w.Equipment.Lives, w.Equipment.Shield, w.ContinueCredits)
-			return
+			return g
 		}
 		if w.GameOver && w.ContinueCredits == 0 {
 			t.Fatal("presentation exhausted ordinary recovery before stage3")
 		}
 	}
 	t.Fatal("bounded presentation did not complete both stages")
+	return nil
+}
+
+func TestExpertThirdOpeningKeepsCarriedShipsThroughFirstCheckpointOptional(t *testing.T) {
+	if os.Getenv("XENON2_HUMAN_PRESENTATION_CHECK") == "" {
+		t.Skip("enable the connected expert opening explicitly")
+	}
+	g := verifyPresentationFirstTwoLevelsFromDefaultIntro(t)
+	w := g.Driver.(*worldDriver).world
+	ships, credits := w.Equipment.Lives, w.ContinueCredits
+	for update := 0; update < 60*90; update++ {
+		advanceFrontend(t, g, inputFrame{})
+		d := g.Driver.(*worldDriver)
+		w = d.world
+		if w.Level.Number != 3 || !w.PlayerAlive || w.GameOver || w.Equipment.Lives != ships || w.ContinueCredits != credits || w.Cheats.Enabled() || d.diagnostic {
+			t.Fatal("expert opening consumed a carried ship or changed ordinary rules")
+		}
+		if w.Checkpoint.ScrollY <= 4032 {
+			if w.ScrollY > 4032 || w.Equipment.Shield <= 0 {
+				t.Fatal("expert did not actually cross the living checkpoint boundary")
+			}
+			t.Logf("Expert opening retains%d ships/credits%d at frame%d camera%d shield%d", ships, credits, w.Frame, w.ScrollY, w.Equipment.Shield)
+			return
+		}
+	}
+	t.Fatal("bounded expert route did not reach the first third-stage checkpoint")
 }
