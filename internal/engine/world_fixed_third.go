@@ -33,6 +33,8 @@ func (w *World) spawnThirdFixed(record visualassets.FixedEncounter) bool {
 			w.poolError = err
 			return true
 		}
+		// The common terrain constructor preserves the reused slot's strength.
+		actor.part.StrongHealth = actor.Binding.Residue.StrongHealth
 		w.storeActorResidue(actor)
 		w.setSecondMapPatch(state.X/16, state.WorldY/16, art.Cannon.Base)
 		w.Actors = append([]*WorldActor{actor}, w.Actors...)

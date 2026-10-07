@@ -960,3 +960,14 @@ at the default cadence. Explicit full-intro pilot checks retain all six credit
 pairs, the real menu, four merchants and both guardian/exit gates. They reach
 stage three with one ship at either gameplay setting. Direct-menu checks still
 reach it with two; neither result proves the remaining campaign.
+
+## Third compound cannon contact inheritance
+
+The common cannon constructor leaves the physical slot's strength byte intact.
+The Go factory now copies that retained value instead of replacing it with false.
+A real horizontal-sweeper contact releases a strong slot; the compound cannon
+then reclaims the same slot, publishes its collider and receives normal player
+contact. That contact now costs sixteen shield points rather than eight. A fresh
+slot still costs eight. Both cases retain the stage-one transition, 24 HP,
+500-point reward and source pool residue. The resource/native engine suite and
+race suite pass. Other common-constructor inheritance is audited separately.
