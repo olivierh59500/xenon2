@@ -142,6 +142,13 @@ cleanup; the original generic storage fails that regression. Constructor and
 live node comparisons pass alongside 1,152 native node and 16,890 defense-wave
 passes. These are source-state fixtures, not additional campaign progress.
 
+The expert opening now reaches the first third-stage checkpoint with its carried
+ship and credits intact, using changing directions within a copied source horizon.
+A separate reference continuation destroys the terrain cannon that blocks the
+later passage by ordinary shots. Neither result establishes low-loss play across
+all stages. Automatic title admission after sixty idle seconds is shared by the
+desktop and Android frontend, with immediate manual takeover.
+
 The remaining live checks are:
 
 - Play all five stages from the normal menu, including both shop boundaries,
