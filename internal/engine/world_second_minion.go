@@ -16,12 +16,15 @@ func (w *World) addSecondMinionActor(state SecondMinionState) {
 	if state.Turret {
 		tag, health, score, damage = 272, w.secondGuardianArt.MotionParameters["turret_health"], 30, "individual"
 	}
-	w.nextActorID++
-	actor := &WorldActor{ID: w.nextActorID, X: float64(state.X), Y: float64(state.Y), PreviousX: float64(state.X), PreviousY: float64(state.Y), Active: true, Visible: true, Atlas: "guardians", ActorList: "moving", Health: health, Score: score, animation: clip, animationState: state.Animation, secondMinion: &state,
+	actor := &WorldActor{X: float64(state.X), Y: float64(state.Y), PreviousX: float64(state.X), PreviousY: float64(state.Y), Active: true, Visible: true, Atlas: "guardians", ActorList: "moving", Health: health, Score: score, animation: clip, animationState: state.Animation, secondMinion: &state,
 		part: &visualassets.ActorPart{ResourceTag: tag, DamageMode: damage}, Collision: CollisionRect{Right: -1, Bottom: -1}}
 	actor.Sprite = state.Animation.Sprite(clip)
 	if state.Turret {
 		w.updateSecondActorCollision(actor)
+	}
+	if err := w.bindWorldActor(actor); err != nil {
+		w.poolError = err
+		return
 	}
 	w.Actors = append([]*WorldActor{actor}, w.Actors...)
 }
@@ -88,9 +91,12 @@ func (w *World) spawnSecondNamedExplosion(x, y int, name string) {
 	if !ok {
 		return
 	}
-	w.nextActorID++
-	actor := &WorldActor{ID: w.nextActorID, X: float64(x), Y: float64(y), PreviousX: float64(x), PreviousY: float64(y), Active: true, Visible: true, Atlas: "common", ActorList: "transient", animation: animation.Animation, animationState: NewAnimation(animation.Animation), part: &visualassets.ActorPart{DamageMode: "block-shot"}}
+	actor := &WorldActor{X: float64(x), Y: float64(y), PreviousX: float64(x), PreviousY: float64(y), Active: true, Visible: true, Atlas: "common", ActorList: "transient", animation: animation.Animation, animationState: NewAnimation(animation.Animation), part: &visualassets.ActorPart{ResourceTag: 12, DamageMode: "block-shot"}}
 	actor.Sprite = actor.animationState.Sprite(actor.animation)
+	if err := w.bindWorldActor(actor); err != nil {
+		w.poolError = err
+		return
+	}
 	w.Actors = append([]*WorldActor{actor}, w.Actors...)
 }
 func (w *World) spawnSecondRandomExplosions(count, left, top, width, height int) {

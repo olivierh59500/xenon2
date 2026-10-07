@@ -240,7 +240,13 @@ func decodeActorAnimation(level []byte, start int, addImage func(int) (string, e
 			loop := int(binary.BigEndian.Uint32(level[cursor+8:])) - levelBase
 			index, ok := offsets[loop]
 			if !ok {
-				return animation, fmt.Errorf("animation loop leaves its frame list")
+				if loop < 0 || loop+6 > len(level) {
+					return animation, fmt.Errorf("animation loop leaves its source")
+				}
+				// Some directed lists join a shared animation tail. Flatten
+				// that tail into named frames until its loop or held ending.
+				cursor = loop
+				continue
 			}
 			animation.LoopFrom = index
 			animation.Ending = "loop"

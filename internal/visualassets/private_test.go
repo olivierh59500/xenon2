@@ -148,7 +148,7 @@ func TestPrivateLevelArtworkOptional(t *testing.T) {
 	if title.Width != 208 || title.Height != 54 || title.X != 48 || title.Y != 20 {
 		t.Fatal("original title placement differs")
 	}
-	if len(commonArt.Sprites) != 257 || len(commonArt.Equipment) != 25 || len(commonArt.Animations) != 52 {
+	if len(commonArt.Sprites) != 257 || len(commonArt.Equipment) != 25 || len(commonArt.Animations) != 56 {
 		t.Fatalf("common equipment image bank differs: %d regions, %d equipment lists, %d named animations", len(commonArt.Sprites), len(commonArt.Equipment), len(commonArt.Animations))
 	}
 }

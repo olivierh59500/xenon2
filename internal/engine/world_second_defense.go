@@ -107,11 +107,13 @@ func (w *World) advanceSecondDefenseWaves() error {
 			if err != nil {
 				return err
 			}
-			w.nextActorID++
-			actor := &WorldActor{ID: w.nextActorID, Active: true, ActorList: "moving", Atlas: "guardian-parts", Health: descriptor.Health, Score: descriptor.Score, Sprite: descriptor.Sprite, secondSegment: &segment, secondPart: descriptor, path: &launch.Path,
+			actor := &WorldActor{Active: true, ActorList: "moving", Atlas: "guardian-parts", Health: descriptor.Health, Score: descriptor.Score, Sprite: descriptor.Sprite, secondSegment: &segment, secondPart: descriptor, path: &launch.Path,
 				part: &visualassets.ActorPart{ResourceTag: descriptor.ResourceTag, DamageMode: "second-defense-segment"}, Collision: CollisionRect{Right: -1, Bottom: -1}}
 			actor.X, actor.Y = float64(segment.Motion.X>>16), float64(segment.Motion.Y>>16)
 			actor.PreviousX, actor.PreviousY = actor.X, actor.Y
+			if err := w.bindWorldActor(actor); err != nil {
+				return err
+			}
 			w.Actors = append([]*WorldActor{actor}, w.Actors...)
 		}
 	}
@@ -147,10 +149,14 @@ func (w *World) damageSecondSegment(actor *WorldActor, amount uint16) {
 	actor.Active = false
 	w.Score += actor.Score
 	state := NewSecondDefenseFragment(int(actor.X), int(actor.Y), result.FragmentHeading, actor.secondPart.DeathAnimation)
-	w.nextActorID++
-	fragment := &WorldActor{ID: w.nextActorID, X: actor.X, Y: actor.Y, PreviousX: actor.X, PreviousY: actor.Y, Atlas: "guardian-parts", ActorList: "transient", Active: true, Visible: true,
+	fragment := &WorldActor{X: actor.X, Y: actor.Y, PreviousX: actor.X, PreviousY: actor.Y, Atlas: "guardian-parts", ActorList: "transient", Active: true, Visible: true,
 		animation: actor.secondPart.DeathAnimation, animationState: state.Animation, secondFragment: &state, part: &visualassets.ActorPart{ResourceTag: actor.part.ResourceTag, DamageMode: "block-shot"}, Collision: CollisionRect{Right: -1, Bottom: -1}}
 	fragment.Sprite = state.Animation.Sprite(fragment.animation)
+	w.retireWorldActor(actor.Binding)
+	if err := w.bindWorldActor(fragment); err != nil {
+		w.poolError = err
+		return
+	}
 	w.Actors = append([]*WorldActor{fragment}, w.Actors...)
 }
 func (w *World) advanceSecondFragment(actor *WorldActor) {
@@ -175,6 +181,7 @@ func (w *World) damageSecondNode(actor *WorldActor, amount uint16) {
 	}
 	actor.Active = false
 	w.secondDefenseRemaining = event.Remaining
+	w.storeActorResidue(actor)
 	w.secondScheduler.DefenseFlags = event.DefenseFlags
 	w.setSecondMapPatch(actor.secondNode.TileX, actor.secondNode.TileY, actor.secondPart.TileFrames[5])
 	w.spawnSecondExplosion(int(actor.Collision.Left)+8, int(actor.Collision.Top)+8)
@@ -193,6 +200,7 @@ func (w *World) damageSecondNode(actor *WorldActor, amount uint16) {
 	for _, candidate := range w.Actors {
 		if candidate.Active && candidate.ActorList == "moving" && !candidate.secondGuardian {
 			candidate.Active = false
+			w.storeActorResidue(candidate)
 		}
 	}
 	for i := 162; i < 185; i++ {

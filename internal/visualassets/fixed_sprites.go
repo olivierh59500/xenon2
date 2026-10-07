@@ -7,6 +7,7 @@ import (
 
 type FixedSpriteVariant struct {
 	ID               int            `json:"id"`
+	ResourceTag      int            `json:"resource_tag"`
 	OriginOffsetX    int            `json:"origin_offset_x"`
 	OriginOffsetY    int            `json:"origin_offset_y"`
 	InitialVelocityX int            `json:"initial_velocity_x,omitempty"`
@@ -130,7 +131,8 @@ func DecodeFixedSprites(levelNumber int, level []byte, palette [16][4]uint8) (*F
 			if err != nil {
 				return nil, err
 			}
-			v := FixedSpriteVariant{ID: variant, OriginOffsetX: -8, OriginOffsetY: -8, Animation: animation}
+			tags := [5][2]int{{208, 212}, {252, 256}, {208, 208}, {268, 272}, {256, 260}}
+			v := FixedSpriteVariant{ID: variant, ResourceTag: tags[levelNumber-1][variant], OriginOffsetX: -8, OriginOffsetY: -8, Animation: animation}
 			if (levelNumber == 1 || levelNumber == 5) && variant == 1 {
 				v.OriginOffsetX = 8
 			}

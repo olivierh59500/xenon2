@@ -20,8 +20,16 @@ func (w *World) spawnWaveCash(x, y int, heavy bool) {
 	if !ok {
 		return
 	}
-	w.nextActorID++
-	p := &WorldCollectible{ID: w.nextActorID, Cash: CashValue(heavy), X: float64(x), Y: float64(y), PreviousX: float64(x), PreviousY: float64(y), Active: true,
+	tag := int16(80)
+	if heavy {
+		tag = 84
+	}
+	binding, err := w.reserveWorldActor(tag, ActorPoolProjectile, false)
+	if err != nil {
+		w.poolError = err
+		return
+	}
+	p := &WorldCollectible{ID: binding.EntityID, Binding: binding, Cash: CashValue(heavy), X: float64(x), Y: float64(y), PreviousX: float64(x), PreviousY: float64(y), Active: true,
 		Motion: CashMotion{X: x, Y: y, Mode: 7, Direction: uint8(w.random.Next() & 7)}, animation: animation, animationState: NewAnimation(animation.Animation)}
 	p.Sprite = p.animationState.Sprite(animation.Animation)
 	w.Collectibles = append([]*WorldCollectible{p}, w.Collectibles...)
@@ -42,8 +50,16 @@ func (w *World) spawnExitCash(pairs int) {
 			}
 			x, _ := w.random.Below(300)
 			y, _ := w.random.Below(180)
-			w.nextActorID++
-			p := &WorldCollectible{ID: w.nextActorID, Cash: CashValue(heavy), X: float64(x + 10), Y: float64(y + 6), Active: true,
+			tag := int16(80)
+			if heavy {
+				tag = 84
+			}
+			binding, err := w.reserveWorldActor(tag, ActorPoolProjectile, heavy)
+			if err != nil {
+				w.poolError = err
+				return
+			}
+			p := &WorldCollectible{ID: binding.EntityID, Binding: binding, Cash: CashValue(heavy), X: float64(x + 10), Y: float64(y + 6), Active: true,
 				Motion: CashMotion{X: int(x) + 10, Y: int(y) + 6, Mode: 7}, animation: animation, animationState: NewAnimation(animation.Animation)}
 			p.PreviousX, p.PreviousY = p.X, p.Y
 			p.Sprite = p.animationState.Sprite(animation.Animation)
@@ -67,8 +83,12 @@ func (w *World) spawnPickup(reward, x, y int) {
 	if !ok {
 		return
 	}
-	w.nextActorID++
-	p := &WorldCollectible{ID: w.nextActorID, Reward: reward, X: float64(x), Y: float64(y), PreviousX: float64(x), PreviousY: float64(y), Active: true,
+	binding, err := w.reserveWorldActor(int16(animation.ResourceTag), ActorPoolProjectile, false)
+	if err != nil {
+		w.poolError = err
+		return
+	}
+	p := &WorldCollectible{ID: binding.EntityID, Binding: binding, Reward: reward, X: float64(x), Y: float64(y), PreviousX: float64(x), PreviousY: float64(y), Active: true,
 		Motion: CashMotion{X: x, Y: y, Mode: 7}, animation: animation, animationState: NewAnimation(animation.Animation)}
 	p.Sprite = p.animationState.Sprite(animation.Animation)
 	w.Collectibles = append([]*WorldCollectible{p}, w.Collectibles...)

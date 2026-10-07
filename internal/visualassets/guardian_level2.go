@@ -12,6 +12,7 @@ type GuardianLaunch struct {
 	GateID    int  `json:"gate_id"`
 	GateState int  `json:"gate_state"`
 	Path      Path `json:"path"`
+	PathID    int  `json:"path_id,omitempty"`
 }
 
 type GuardianTerrainCell struct {

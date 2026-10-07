@@ -24,6 +24,7 @@ func (w *World) advanceFixedSprite(actor *WorldActor) {
 	}
 	if events.MoveToTransientList {
 		actor.ActorList = "transient"
+		w.transferWorldActor(actor, ActorPoolProjectile)
 		w.nextActorID++
 		actor.Order = w.nextActorID
 		actor.Collision = CollisionRect{Right: -1, Bottom: -1}

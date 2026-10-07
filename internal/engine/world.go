@@ -8,20 +8,22 @@ import (
 
 // LevelData contains decoded graphics and semantic game data only.
 type LevelData struct {
-	Number         int
-	Terrain        *visualassets.Terrain
-	Paths          *visualassets.Paths
-	Encounters     *visualassets.Encounters
-	Actors         *visualassets.Actors
-	FixedSprites   *visualassets.FixedSprites
-	FixedTiles     *visualassets.FixedTiles
-	PlayerStencil  *visualassets.PlayerTerrainStencil
-	Rules          *visualassets.LevelRules
-	Ships          *visualassets.ShipArt
-	Common         *visualassets.SpriteAtlas
-	Guardians      *visualassets.Guardians
-	GuardianGroups []visualassets.GuardianGroup
-	GuardianParts  *visualassets.SpriteAtlas
+	InitialEquipment *Equipment
+	InitialRandom    *RandomState
+	Number           int
+	Terrain          *visualassets.Terrain
+	Paths            *visualassets.Paths
+	Encounters       *visualassets.Encounters
+	Actors           *visualassets.Actors
+	FixedSprites     *visualassets.FixedSprites
+	FixedTiles       *visualassets.FixedTiles
+	PlayerStencil    *visualassets.PlayerTerrainStencil
+	Rules            *visualassets.LevelRules
+	Ships            *visualassets.ShipArt
+	Common           *visualassets.SpriteAtlas
+	Guardians        *visualassets.Guardians
+	GuardianGroups   []visualassets.GuardianGroup
+	GuardianParts    *visualassets.SpriteAtlas
 }
 
 type Input struct {
@@ -32,6 +34,7 @@ type Input struct {
 // WorldActor separates simulation positions from interpolated display state.
 // Fixed actors retain map coordinates; moving actors retain their path state.
 type WorldActor struct {
+	Binding                    ActorPoolBinding
 	ID                         int
 	Order                      int
 	X, Y, PreviousX, PreviousY float64
@@ -63,6 +66,9 @@ type WorldActor struct {
 	fixedKind                  *visualassets.FixedSpriteKind
 	fixedState                 FixedSpriteState
 	fixedAiming                *AnimatedAimingFixedProjectile
+	fixedTileState             *FixedTileState
+	fixedTileArt               *visualassets.FixedTileKind
+	fixedTileVariant           *visualassets.FixedTileVariant
 	secondNode                 *SecondDefenseNodeState
 	secondPart                 *visualassets.GuardianComponent
 	secondSegment              *SecondDefenseSegment
@@ -76,6 +82,7 @@ type WorldSpriteAttachment struct {
 }
 
 type WorldProjectile struct {
+	Binding                    ActorPoolBinding
 	ID                         int
 	X, Y, PreviousX, PreviousY float64
 	Sprite, Atlas              string
@@ -87,6 +94,7 @@ type WorldProjectile struct {
 }
 
 type WorldSmallShot struct {
+	Binding              ActorPoolBinding
 	ID                   int
 	PreviousX, PreviousY int
 	Shot                 SmallShot
@@ -94,6 +102,7 @@ type WorldSmallShot struct {
 }
 
 type WorldCollectible struct {
+	Binding                    ActorPoolBinding
 	ID                         int
 	Order                      int
 	X, Y, PreviousX, PreviousY float64
@@ -116,6 +125,7 @@ type World struct {
 	ScrollDelta                      int
 	BaseScrollStep                   int
 	BackgroundY, PreviousBackgroundY int
+	BackgroundStars                  *BackgroundStarfield
 	VisitedScrollY                   int
 	Equipment                        Equipment
 	PlayerAlive                      bool
@@ -152,6 +162,7 @@ type World struct {
 	SecondGuardian                   *SecondGuardianState
 	PendingGuardianMinions           []SecondGuardianEvents
 	Weapons                          *WeaponRuntime
+	Pool                             *ActorPool
 	Frame                            uint64
 	MovingEnemyCount                 int
 	Money, Score                     int
@@ -164,6 +175,10 @@ type World struct {
 	paths                            map[int]*visualassets.Path
 	fixedKinds                       map[int]*visualassets.FixedSpriteKind
 	nextActorID                      int
+	poolBindings                     map[int]ActorPoolBinding
+	poolShadows                      [4]ActorPoolBinding
+	poolActors                       [ActorPoolCapacity]*WorldActor
+	poolError                        error
 	fire                             FireCadence
 	previousFire                     bool
 	movingSpriteBoxes                map[string]visualassets.CollisionBox
@@ -207,10 +222,17 @@ func NewWorld(data LevelData) (*World, error) {
 	terrain := *data.Terrain
 	terrain.Map = append([]uint16(nil), terrain.Map...)
 	data.Terrain = &terrain
+	equipment, random := NewEquipment(), NewRandomState()
+	if data.InitialEquipment != nil {
+		equipment = *data.InitialEquipment
+	}
+	if data.InitialRandom != nil {
+		random = *data.InitialRandom
+	}
 	w := &World{
 		Level: data, Player: PlayerMotionState{X: 160, Y: 176},
 		ScrollY: 4608, PreviousScrollY: 4608, RenderScrollY: 4608, VisitedScrollY: 4608,
-		MaximumScrollY: 4608, ScrollDelta: 1, BaseScrollStep: 1, Equipment: NewEquipment(), PlayerAlive: true, MaterializationFrames: 8, cursor: NewEncounterCursor(), random: NewRandomState(),
+		MaximumScrollY: 4608, ScrollDelta: 1, BaseScrollStep: 1, Equipment: equipment, PlayerAlive: true, MaterializationFrames: 8, cursor: NewEncounterCursor(), random: random,
 		kinds: make(map[int]*visualassets.WaveActor), paths: make(map[int]*visualassets.Path), fixedKinds: make(map[int]*visualassets.FixedSpriteKind),
 	}
 	w.PreviousPlayer = w.Player
@@ -225,6 +247,9 @@ func NewWorld(data LevelData) (*World, error) {
 		}
 	}
 	w.ContinueCredits = 2
+	if err := w.initializeWorldPool(); err != nil {
+		return nil, err
+	}
 	w.WaveBonuses = NewWaveBonusCache()
 	w.Checkpoint = CheckpointState{ScrollY: w.ScrollY, PlayerX: w.Player.X, WorldY: w.Player.Y, Loadout: w.Equipment.WeaponLoadout}
 	w.fire = NewFireCadence(w.Equipment)
@@ -327,6 +352,11 @@ func NewWorld(data LevelData) (*World, error) {
 	if err := w.initializeSecondArena(); err != nil {
 		return nil, err
 	}
+	for i := len(w.Actors) - 1; i >= 0; i-- {
+		if err := w.bindWorldActor(w.Actors[i]); err != nil {
+			return nil, err
+		}
+	}
 	return w, nil
 }
 
@@ -387,6 +417,7 @@ func (w *World) Step(input Input) error {
 	w.PreviousScrollY = w.ScrollY
 	w.RenderScrollY = w.ScrollY
 	w.PreviousBackgroundY = w.BackgroundY
+	w.advanceBackgroundStars()
 	if difference := w.Score - w.DisplayScore; difference > 0 {
 		switch {
 		case difference >= 2000:
@@ -463,88 +494,11 @@ func (w *World) Step(input Input) error {
 	copy(w.shipTrail[:3], w.shipTrail[1:])
 	w.shipTrail[3] = w.PreviousPlayer
 	w.secondStreamsUpdated = [2]bool{}
-	for _, actor := range w.Actors {
-		if !actor.Active || actor.ActorList != "moving" {
-			continue
-		}
-		if actor.firstSegment > 0 {
-			if actor.firstSegment == 1 {
-				if err := w.advanceFirstGuardianSegments(); err != nil {
-					return err
-				}
-			}
-			continue
-		}
-		actor.PreviousX, actor.PreviousY = actor.X, actor.Y
-		actor.Visible = true
-		if actor.secondNode != nil {
-			w.advanceSecondNode(actor)
-			continue
-		}
-		if actor.secondSegment != nil {
-			if err := w.advanceSecondSegment(actor); err != nil {
-				return err
-			}
-			continue
-		}
-		if actor.secondMinion != nil {
-			w.advanceSecondMinion(actor)
-			continue
-		}
-		if actor.firstGuardian {
-			w.advanceFirstGuardian()
-			continue
-		}
-		if actor.fixedAiming != nil {
-			w.advanceFixedAimingActor(actor)
-			continue
-		}
-		if actor.secondGuardian {
-			w.advanceSecondGuardian()
-			continue
-		}
-		if actor.fixedKind != nil {
-			w.advanceFixedSprite(actor)
-			continue
-		}
-		actor.animationState.Advance(actor.animation)
-		if actor.fixed {
-			actor.Y = float64(actor.mapY - w.ScrollY)
-		} else if actor.part.MotionMode == "follow-leader" {
-			actor.X, actor.Y = actor.leader.X, actor.leader.Y
-			actor.Active = actor.leader.Active
-		} else {
-			if err := actor.motion.Advance(actor.path, &w.Level.Paths.SineTable, func() uint16 { return uint16(w.random.Next()) }); err != nil {
-				return err
-			}
-			actor.X, actor.Y = float64(actor.motion.X>>16), float64(actor.motion.Y>>16)
-			actor.Active = actor.motion.Active
-			if !actor.Active {
-				w.WaveBonuses.Escape(actor.WaveToken)
-				if actor.part.Linked {
-					w.despawnGroup(actor)
-				}
-			}
-		}
-		if actor.part != nil && len(actor.part.EntryAnimations) != 0 && !actor.entrySelected {
-			actor.animation = actor.part.EntryAnimations[entryEdge(int(actor.X), int(actor.Y))]
-			actor.animationState = NewAnimation(actor.animation)
-			actor.entrySelected = true
-		}
-		actor.selectSprite()
-		if box, ok := w.movingSpriteBoxes[actor.Sprite]; ok {
-			actor.Collision = ActorCollisionRect(box, int(actor.X), int(actor.Y))
-		}
-		if actor.Active && !actor.fixed && actor.part.MotionMode != "follow-leader" {
-			shot, fired, err := actor.fire.Tick(w.random.Next, w.Player.X-int(actor.X), w.Player.Y-int(actor.Y))
-			if err != nil {
-				return err
-			}
-			if fired {
-				w.spawnEnemyShot(int(actor.X), int(actor.Y), shot)
-			}
-		}
+	w.syncDeadActors()
+	if err := w.advanceActorPhase(ActorPoolMoving, input); err != nil {
+		return err
 	}
+	w.releaseDeadPoolEntries(ActorPoolEquipment)
 	if input.Fire && !w.previousFire {
 		w.fire.QueueTrigger()
 	}
@@ -571,8 +525,11 @@ func (w *World) Step(input Input) error {
 					if w.SoundRequests[2] == "" {
 						w.SoundRequests[2] = "sampled-effect-09"
 					}
-					w.nextActorID++
-					w.SmallShots = append([]*WorldSmallShot{{ID: w.nextActorID, PreviousX: shot.X, PreviousY: shot.Y, Shot: shot, Active: true}}, w.SmallShots...)
+					binding, err := w.reserveWorldActor(16, ActorPoolProjectile, false)
+					if err != nil {
+						return err
+					}
+					w.SmallShots = append([]*WorldSmallShot{{ID: binding.EntityID, Binding: binding, PreviousX: shot.X, PreviousY: shot.Y, Shot: shot, Active: true}}, w.SmallShots...)
 				}
 			}
 		}
@@ -580,87 +537,97 @@ func (w *World) Step(input Input) error {
 	if w.InvulnerableFrames > 0 && w.MaterializationFrames == 0 {
 		w.InvulnerableFrames--
 	}
-	for _, actor := range w.Actors {
-		if !actor.Active || actor.ActorList != "transient" {
-			continue
-		}
-		actor.PreviousX, actor.PreviousY = actor.X, actor.Y
-		if actor.secondFragment != nil {
-			w.advanceSecondFragment(actor)
-			continue
-		}
-		if actor.animation.Ending == "remove" && actor.animationState.Frame == len(actor.animation.Frames)-1 && actor.animationState.Remaining == 1 {
-			actor.Active = false
-			continue
-		}
-		actor.animationState.Advance(actor.animation)
-		actor.selectSprite()
+	if err := w.advancePooledProjectiles(input); err != nil {
+		return err
 	}
-	// Both families belonged to the same newest-first projectile list. Merge
-	// their stable creation IDs to preserve hits and removals in that order.
-	collectiblesAtStart := w.Collectibles
-	w.weaponIDs = w.weaponIDs[:0]
-	if w.Weapons != nil {
-		w.weaponIDs = w.Weapons.ProjectileIDs(w.weaponIDs)
-	}
-	weaponContext := w.weaponContext(input, false)
-	for enemy, player, collectible, weapon := 0, 0, 0, 0; enemy < len(w.Projectiles) || player < len(w.SmallShots) || collectible < len(collectiblesAtStart) || weapon < len(w.weaponIDs); {
-		enemyID, playerID, collectibleID, weaponID := -2147483648, -2147483648, -2147483648, -2147483648
-		if enemy < len(w.Projectiles) {
-			enemyID = w.Projectiles[enemy].ID
-		}
-		if player < len(w.SmallShots) {
-			playerID = w.SmallShots[player].ID
-		}
-		if collectible < len(collectiblesAtStart) {
-			collectibleID = collectiblesAtStart[collectible].ID
-			if collectiblesAtStart[collectible].Order != 0 {
-				collectibleID = collectiblesAtStart[collectible].Order
+	// Synthetic diagnostics can supply entries without an allocated binding.
+	if w.hasUnboundProjectiles() {
+		for _, actor := range w.Actors {
+			if !actor.Active || actor.ActorList != "transient" || actor.Binding.EntityID != 0 {
+				continue
 			}
+			actor.PreviousX, actor.PreviousY = actor.X, actor.Y
+			if actor.secondFragment != nil {
+				w.advanceSecondFragment(actor)
+				w.finishActorUpdate(actor)
+				continue
+			}
+			if actor.animation.Ending == "remove" && actor.animationState.Frame == len(actor.animation.Frames)-1 && actor.animationState.Remaining == 1 {
+				actor.Active = false
+				w.finishActorUpdate(actor)
+				continue
+			}
+			actor.animationState.Advance(actor.animation)
+			actor.selectSprite()
+			w.finishActorUpdate(actor)
 		}
-		if weapon < len(w.weaponIDs) {
-			weaponID = w.weaponIDs[weapon]
-		}
-		if weaponID > max(enemyID, playerID, collectibleID) {
-			weaponContext.ShipDestroyed = !w.PlayerAlive
-			for i := range weaponContext.Targets {
-				if actor := w.weaponTargetActors[weaponContext.Targets[i].ID]; actor != nil {
-					weaponContext.Targets[i].Active = actor.Active
+		// Both families belonged to the same newest-first projectile list. Merge
+		// their stable creation IDs to preserve hits and removals in that order.
+		collectiblesAtStart := w.Collectibles
+		w.weaponIDs = w.weaponIDs[:0]
+		weaponContext := w.weaponContext(input, false)
+		for enemy, player, collectible, weapon := 0, 0, 0, 0; enemy < len(w.Projectiles) || player < len(w.SmallShots) || collectible < len(collectiblesAtStart) || weapon < len(w.weaponIDs); {
+			enemyID, playerID, collectibleID, weaponID := -2147483648, -2147483648, -2147483648, -2147483648
+			for enemy < len(w.Projectiles) && w.Projectiles[enemy].Binding.EntityID != 0 {
+				enemy++
+			}
+			for player < len(w.SmallShots) && w.SmallShots[player].Binding.EntityID != 0 {
+				player++
+			}
+			for collectible < len(collectiblesAtStart) && collectiblesAtStart[collectible].Binding.EntityID != 0 {
+				collectible++
+			}
+			if enemy >= len(w.Projectiles) && player >= len(w.SmallShots) && collectible >= len(collectiblesAtStart) && weapon >= len(w.weaponIDs) {
+				break
+			}
+			if enemy < len(w.Projectiles) {
+				enemyID = w.Projectiles[enemy].ID
+			}
+			if player < len(w.SmallShots) {
+				playerID = w.SmallShots[player].ID
+			}
+			if collectible < len(collectiblesAtStart) {
+				collectibleID = collectiblesAtStart[collectible].ID
+				if collectiblesAtStart[collectible].Order != 0 {
+					collectibleID = collectiblesAtStart[collectible].Order
 				}
 			}
-			if err := w.Weapons.AdvanceProjectile(weaponID, weaponContext); err != nil {
-				return err
+			if weapon < len(w.weaponIDs) {
+				weaponID = w.weaponIDs[weapon]
 			}
-			weapon++
-		} else if collectibleID > max(enemyID, playerID) {
-			w.advanceCollectible(collectiblesAtStart[collectible])
-			collectible++
-		} else if enemyID > playerID {
-			if err := w.advanceEnemyShot(w.Projectiles[enemy]); err != nil {
-				return err
+			if weaponID > max(enemyID, playerID, collectibleID) {
+				weaponContext.ShipDestroyed = !w.PlayerAlive
+				for i := range weaponContext.Targets {
+					if actor := w.weaponTargetActors[weaponContext.Targets[i].ID]; actor != nil {
+						weaponContext.Targets[i].Active = actor.Active
+					}
+				}
+				if err := w.Weapons.AdvanceProjectile(weaponID, weaponContext); err != nil {
+					return err
+				}
+				weapon++
+			} else if collectibleID > max(enemyID, playerID) {
+				w.advanceCollectible(collectiblesAtStart[collectible])
+				w.finishCollectibleUpdate(collectiblesAtStart[collectible])
+				collectible++
+			} else if enemyID > playerID {
+				if err := w.advanceEnemyShot(w.Projectiles[enemy]); err != nil {
+					return err
+				}
+				w.finishProjectileUpdate(w.Projectiles[enemy])
+				enemy++
+			} else {
+				w.advanceSmallShot(w.SmallShots[player])
+				w.finishSmallShotUpdate(w.SmallShots[player])
+				player++
 			}
-			enemy++
-		} else {
-			w.advanceSmallShot(w.SmallShots[player])
-			player++
 		}
 	}
 	if w.Weapons != nil {
 		w.Weapons.Compact()
 	}
-	for _, actor := range w.Actors {
-		if !actor.Active || actor.ActorList != "scenery" {
-			continue
-		}
-		actor.PreviousX, actor.PreviousY = actor.X, actor.Y
-		actor.Visible = true
-		if actor.fixedKind != nil {
-			w.advanceFixedSprite(actor)
-			continue
-		}
-		actor.animationState.Advance(actor.animation)
-		actor.Y = float64(actor.mapY - w.ScrollY)
-		actor.selectSprite()
+	if err := w.advanceActorPhase(ActorPoolScenery, input); err != nil {
+		return err
 	}
 	w.Equipment.AdvanceTimers()
 	w.Dive.Tick()
@@ -710,6 +677,9 @@ func (w *World) Step(input Input) error {
 	w.MaximumScrollY, w.VisitedScrollY = scroll.Maximum, scroll.Maximum
 	w.ScrollDeviationPasses = scroll.DeviationPasses
 	w.compactActors()
+	if w.poolError != nil {
+		return w.poolError
+	}
 	if deathFinished {
 		w.Equipment.Lives--
 		w.Equipment.Shield = 39
@@ -820,8 +790,7 @@ func (w *World) spawnWave(wave visualassets.Wave) error {
 			// Native creation consumes one shared random call per part, even
 			// when the formation's firing rate is zero.
 			fire := NewEnemyFireState(wave.FireRate, w.random.Next())
-			w.nextActorID++
-			actor := &WorldActor{ID: w.nextActorID, Atlas: "moving", ActorList: "moving", Active: true, Score: part.Score, part: part, path: path, motion: motion,
+			actor := &WorldActor{Atlas: "moving", ActorList: "moving", Active: true, Score: part.Score, part: part, path: path, motion: motion,
 				animation: part.Animation, animationState: NewAnimation(part.Animation), leader: leader, fire: fire}
 			if part.Atlas != "" {
 				actor.Atlas = part.Atlas
@@ -848,6 +817,15 @@ func (w *World) spawnWave(wave visualassets.Wave) error {
 				actor.Collision = ActorCollisionRect(box, int(actor.X), int(actor.Y))
 			} else {
 				actor.Collision = CollisionRect{Right: -1, Bottom: -1}
+			}
+			if err := w.bindWorldActor(actor); err != nil {
+				return err
+			}
+			if partIndex > 0 {
+				w.Pool.unlink(actor.Binding.Slot)
+				if err := w.Pool.AttachAfter(actor.Binding.Slot, ActorPoolMoving, actor.ID, int16(part.ResourceTag), group[len(group)-1].Binding.Slot); err != nil {
+					return err
+				}
 			}
 			group = append(group, actor)
 			spawned = append(spawned, actor)
@@ -906,6 +884,10 @@ func (w *World) destroyPlayer() {
 }
 
 func (w *World) damageActor(actor *WorldActor, amount uint16) {
+	if actor.fixedTileState != nil {
+		w.damageFixedTile(actor, amount)
+		return
+	}
 	if actor.secondNode != nil {
 		w.damageSecondNode(actor, amount)
 		return
@@ -922,8 +904,9 @@ func (w *World) damageActor(actor *WorldActor, amount uint16) {
 		return
 	}
 	if actor.part != nil && actor.part.DamageMode == "drop-equipment" {
-		w.spawnPickup(actor.CarriedReward, int(actor.X), int(actor.Y))
 		actor.Active = false
+		w.storeActorResidue(actor)
+		w.spawnPickup(actor.CarriedReward, int(actor.X), int(actor.Y))
 		w.SoundRequests[2] = "synthesized-effect-17"
 		return
 	}
@@ -936,12 +919,13 @@ func (w *World) damageActor(actor *WorldActor, amount uint16) {
 	if !result.Destroyed {
 		return
 	}
+	target.Active = false
+	w.storeActorResidue(target)
 	w.Score += target.Score
 	if w.WaveBonuses.Defeat(target.WaveToken) {
 		w.spawnWaveCash(int(target.X), int(target.Y), target.part.StrongHealth)
 	}
 	w.SoundRequests[2] = "synthesized-effect-17"
-	target.Active = false
 	if actor.part != nil && actor.part.DamageMode == "group" {
 		w.despawnGroup(target)
 	}
@@ -955,6 +939,7 @@ func (w *World) despawnGroup(actor *WorldActor) {
 	for _, member := range w.Actors {
 		if member == leader || member.leader == leader {
 			member.Active = false
+			w.storeActorResidue(member)
 		}
 	}
 }
@@ -963,8 +948,12 @@ func (w *World) spawnEnemyShot(x, y int, shot EnemyShot) {
 	if w.Level.Rules == nil {
 		return
 	}
-	w.nextActorID++
-	p := &WorldProjectile{ID: w.nextActorID, X: float64(x), Y: float64(y), PreviousX: float64(x), PreviousY: float64(y),
+	binding, err := w.reserveWorldActor(20, ActorPoolProjectile, false)
+	if err != nil {
+		w.poolError = err
+		return
+	}
+	p := &WorldProjectile{ID: binding.EntityID, Binding: binding, X: float64(x), Y: float64(y), PreviousX: float64(x), PreviousY: float64(y),
 		Sprite: w.Level.Rules.DefaultEnemyShot, Atlas: "enemy-shots", Active: true,
 		Motion: DirectionalProjectile{X: int32(x) << 16, Y: int32(y) << 16, Direction: shot.Direction, Speed: shot.Speed}}
 	w.Projectiles = append([]*WorldProjectile{p}, w.Projectiles...)
@@ -973,6 +962,9 @@ func (w *World) spawnEnemyShot(x, y int, shot EnemyShot) {
 func (w *World) spawnFixed(record visualassets.FixedEncounter) {
 	if record.EnemyKind == 0 {
 		w.captureCheckpoint(record.TriggerY, record.X, record.Y)
+		return
+	}
+	if w.spawnFixedTile(record) {
 		return
 	}
 	kind := w.fixedKinds[record.EnemyKind]
@@ -990,9 +982,8 @@ func (w *World) spawnFixed(record visualassets.FixedEncounter) {
 		if v.ID != variant {
 			continue
 		}
-		w.nextActorID++
 		part := &visualassets.ActorPart{Atlas: "fixed", StrongHealth: kind.StrongHealth, Score: kind.Score, MotionMode: "world-anchored", DamageMode: "individual"}
-		a := &WorldActor{ID: w.nextActorID, X: float64(record.X + v.OriginOffsetX), Y: float64(record.Y + v.OriginOffsetY - w.ScrollY), Atlas: "fixed", ActorList: kind.ActorList, Active: true, part: part,
+		a := &WorldActor{X: float64(record.X + v.OriginOffsetX), Y: float64(record.Y + v.OriginOffsetY - w.ScrollY), Atlas: "fixed", ActorList: kind.ActorList, Active: true, part: part,
 			mapY: record.Y + v.OriginOffsetY, fixed: true, Health: kind.Health, Score: kind.Score,
 			animation: v.Animation, animationState: NewAnimation(v.Animation)}
 		a.fixedKind = kind
@@ -1005,6 +996,10 @@ func (w *World) spawnFixed(record visualassets.FixedEncounter) {
 			}
 		} else {
 			a.Collision = CollisionRect{Right: -1, Bottom: -1}
+		}
+		if err := w.bindWorldActor(a); err != nil {
+			w.poolError = err
+			return
 		}
 		w.Actors = append([]*WorldActor{a}, w.Actors...)
 		return

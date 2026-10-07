@@ -27,7 +27,10 @@ type GuardianComponent struct {
 	Sprite               string            `json:"sprite,omitempty"`
 	Animation            ActorAnimation    `json:"animation"`
 	HeadingFrames        []string          `json:"heading_frames,omitempty"`
+	HeadingAnimations    []ActorAnimation  `json:"heading_animations,omitempty"`
 	DeathAnimation       ActorAnimation    `json:"death_animation"`
+	ActiveAnimation      ActorAnimation    `json:"active_animation"`
+	DestroyedSprite      string            `json:"destroyed_sprite,omitempty"`
 	TileFrames           []TilePatch       `json:"tile_frames,omitempty"`
 	DamageFlash          *TilePatch        `json:"damage_flash,omitempty"`
 	FlashOffsetX         int               `json:"flash_offset_x,omitempty"`
@@ -56,6 +59,8 @@ type GuardianGroup struct {
 	Launches          []GuardianLaunch      `json:"launches,omitempty"`
 	DestructibleCells []GuardianTerrainCell `json:"destructible_cells,omitempty"`
 	Gates             []GuardianGate        `json:"gates,omitempty"`
+	MotionParameters  map[string]int        `json:"motion_parameters,omitempty"`
+	Animations        []NamedActorAnimation `json:"animations,omitempty"`
 }
 
 type GuardianGate struct {
@@ -189,7 +194,12 @@ func DecodeCompoundGuardianArt(number int, level []byte, palette [16][4]uint8) (
 	}
 	if number == 3 {
 		const table = 0x558f0 - levelBase
-		group := GuardianGroup{ID: "final-guardian", TriggerFixedKind: 3}
+		group := GuardianGroup{ID: "middle-guardian", TriggerFixedKind: 3, MotionParameters: map[string]int{"head_fire_rate": int(level[0x75]), "head_shot_speed": int(binary.BigEndian.Uint16(level[0x76:])), "eye_fire_rate": int(level[0x79])}}
+		shot, err := decodeActorAnimation(level, 0x55b14-levelBase, add)
+		if err != nil {
+			return nil, SpriteAtlas{}, err
+		}
+		group.Animations = append(group.Animations, NamedActorAnimation{ID: "middle-head-shot", Ending: shot.Ending, Animation: shot})
 		const pathStart = 0x570c2 - levelBase
 		if len(level) < pathStart+90 {
 			return nil, SpriteAtlas{}, fmt.Errorf("third guardian flight path is truncated")
@@ -220,6 +230,8 @@ func DecodeCompoundGuardianArt(number int, level []byte, palette [16][4]uint8) (
 				return nil, SpriteAtlas{}, fmt.Errorf("unsupported third guardian behavior")
 			}
 			part := GuardianComponent{Index: index, Behavior: behavior, DamageBehavior: "none", ParentIndex: 0, PathBudget: int(binary.BigEndian.Uint16(level[0x46:])), ResourceTag: 84, InitialX: 149, InitialWorldY: -128, StrongHealth: true, AngularVelocityFixed: int32(binary.BigEndian.Uint32(level[start+12:])), Animation: animation}
+			part.OffsetX = int(int16(binary.BigEndian.Uint16(level[start+12:])))
+			part.OffsetY = int(int16(binary.BigEndian.Uint16(level[start+14:])))
 			if behavior == "head-flight-fire" {
 				part.ParentIndex = -1
 			}
@@ -229,6 +241,27 @@ func DecodeCompoundGuardianArt(number int, level []byte, palette [16][4]uint8) (
 			if behavior == "eye-turret" {
 				part.DamageBehavior = "eye-health-counter"
 				part.Health = int(binary.BigEndian.Uint16(level[0x6c:]))
+				part.ActiveAnimation, err = decodeActorAnimation(level, 0x55a40-levelBase, add)
+				if err != nil {
+					return nil, SpriteAtlas{}, err
+				}
+				closed := 0x5f05e
+				if index == 4 {
+					closed = 0x5f0f0
+				}
+				part.DestroyedSprite, err = add(closed)
+				if err != nil {
+					return nil, SpriteAtlas{}, err
+				}
+			}
+			if behavior == "arm-tip" {
+				for frame := range 16 {
+					name, err := add(int(binary.BigEndian.Uint32(level[0x55dac-levelBase+frame*4:])))
+					if err != nil {
+						return nil, SpriteAtlas{}, err
+					}
+					part.HeadingFrames = append(part.HeadingFrames, name)
+				}
 			}
 			group.Components = append(group.Components, part)
 			if index == 63 {
@@ -239,6 +272,11 @@ func DecodeCompoundGuardianArt(number int, level []byte, palette [16][4]uint8) (
 			return nil, SpriteAtlas{}, fmt.Errorf("unsupported third guardian component count")
 		}
 		groups = append(groups, group)
+		final, err := decodeThirdFinalGuardian(level, add)
+		if err != nil {
+			return nil, SpriteAtlas{}, err
+		}
+		groups = append(groups, final)
 	}
 	if number == 5 {
 		const table, count = 0x5633a - levelBase, 10

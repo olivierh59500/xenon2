@@ -26,12 +26,16 @@ func (w *World) spawnSpecializedFixedShot(event FixedSpriteEvents) bool {
 	art := w.Level.FixedSprites.Projectile
 	switch event.ShotMode {
 	case "turning-projectile":
-		state, err := NewTurningFixedProjectile(event, art, 0, 0)
+		binding, err := w.reserveWorldActor(int16(art.ResourceTag), ActorPoolProjectile, false)
+		if err != nil {
+			w.poolError = err
+			return true
+		}
+		state, err := NewTurningFixedProjectile(event, art, binding.Residue.XFraction, binding.Residue.YFraction)
 		if err != nil {
 			return false
 		}
-		w.nextActorID++
-		shot := &WorldProjectile{ID: w.nextActorID, X: float64(event.ShotX), Y: float64(event.ShotY),
+		shot := &WorldProjectile{ID: binding.EntityID, Binding: binding, X: float64(event.ShotX), Y: float64(event.ShotY),
 			PreviousX: float64(event.ShotX), PreviousY: float64(event.ShotY), Sprite: event.ShotSprite,
 			Atlas: "fixed", Active: true, turning: &state}
 		w.Projectiles = append([]*WorldProjectile{shot}, w.Projectiles...)
@@ -40,13 +44,16 @@ func (w *World) spawnSpecializedFixedShot(event FixedSpriteEvents) bool {
 		if err != nil {
 			return false
 		}
-		w.nextActorID++
 		part := &visualassets.ActorPart{ResourceTag: art.ResourceTag, Score: art.Score, MotionMode: event.ShotMode, DamageMode: "individual"}
-		actor := &WorldActor{ID: w.nextActorID, X: float64(state.X), Y: float64(state.Y),
+		actor := &WorldActor{X: float64(state.X), Y: float64(state.Y),
 			PreviousX: float64(state.X), PreviousY: float64(state.Y), Atlas: "fixed", ActorList: "moving",
 			Active: true, Visible: true, Health: art.Health, Score: art.Score, part: part, fixedAiming: &state,
 			Sprite: state.Sprite(art)}
 		actor.Collision = ActorCollisionRect(w.movingSpriteBoxes[actor.Sprite], state.X, state.Y)
+		if err := w.bindWorldActor(actor); err != nil {
+			w.poolError = err
+			return true
+		}
 		w.Actors = append([]*WorldActor{actor}, w.Actors...)
 	default:
 		return false

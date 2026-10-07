@@ -8,8 +8,13 @@ func (w *World) weaponContext(input Input, pulse bool) WeaponContext {
 	clear(w.weaponTargetActors)
 	for _, actor := range w.Actors {
 		if actor.ActorList == "moving" && !(actor.part.Linked && actor.leader != nil) {
+			slotIdentity := 0
+			if actor.Binding.EntityID != 0 {
+				slotIdentity = actor.Binding.Slot + 1
+			}
 			w.weaponTargetActors[actor.ID] = actor
-			w.weaponTargets = append(w.weaponTargets, WeaponTarget{ID: actor.ID, ResourceTag: actor.part.ResourceTag, Active: actor.Active, Bounds: actor.Collision})
+			w.weaponTargets = append(w.weaponTargets, WeaponTarget{ID: actor.ID, ResourceTag: actor.part.ResourceTag, Active: actor.Active, Bounds: actor.Collision,
+				SlotIdentity: slotIdentity})
 		}
 	}
 	centerX, centerY := w.Player.X, w.Player.Y
@@ -33,7 +38,9 @@ func (w *World) weaponContext(input Input, pulse bool) WeaponContext {
 		TrailX: w.shipTrail[0].X, TrailY: w.shipTrail[0].Y, Motion: input.Motion,
 		Held: input.Fire, Pulse: pulse, Diving: w.Dive.Phase != 0, Materializing: w.MaterializationFrames != 0,
 		ShipDestroyed: !w.PlayerAlive, NextRandom: w.random.Next, Targets: w.weaponTargets,
-		NextID:   func() int { w.nextActorID++; return w.nextActorID },
+		NextID:       func() int { w.nextActorID++; return w.nextActorID },
+		ReserveActor: w.reserveWorldActor, RetireActor: w.retireWorldActor,
+		StoreActorResidue: w.storeWorldResidue, ReadActorResidue: w.readWorldResidue,
 		HitPoint: w.weaponHitPoint, HitRect: w.weaponHitRect,
 		Sound: func(effect string) { w.SoundRequests[2] = effect },
 		SoundVoice: func(voice int, effect string) {

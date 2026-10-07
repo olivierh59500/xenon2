@@ -22,6 +22,8 @@ const (
 	ContinueDeclined
 	AttractComplete
 	PlayerGameFinished
+	HeaderShown
+	HeaderFinished
 )
 
 type Phase string
@@ -45,6 +47,9 @@ const (
 	InitialsOut     Phase = "initials-out"
 	MenuIn          Phase = "menu-in"
 	MenuOut         Phase = "menu-out"
+	HeaderIn        Phase = "header-in"
+	HeaderHold      Phase = "header-hold"
+	HeaderOut       Phase = "header-out"
 )
 
 type Caption struct {
@@ -61,6 +66,7 @@ type Score struct {
 // Director describes source presentation sequencing independently of graphics.
 // Control-table sentinels change state without introducing a display pass.
 type Director struct {
+	Header                                      string
 	CreditStage                                 int
 	Data                                        *visualassets.Presentation
 	Phase                                       Phase
@@ -116,6 +122,15 @@ func (d *Director) BeginStart() {
 	d.LogoScale, d.ShowScores, d.ShowCredits = 0, false, false
 	d.Captions = nil
 }
+
+func (d *Director) BeginHeader(text string) {
+	d.Header = text
+	d.Phase, d.Step = HeaderIn, 0
+	d.LogoScale, d.ShowScores, d.ShowCredits = 0, false, false
+	d.Captions = nil
+}
+
+func (d *Director) BeginHeaderExit() { d.Phase, d.Step = HeaderOut, 0 }
 
 func (d *Director) caption(text string, scale, targetY int) Caption {
 	return Caption{Text: text, Scale: scale, CenterY: 100 + ((targetY - 100) * scale >> 4), Advance: 16}
@@ -208,7 +223,7 @@ func (d *Director) Advance(input Input) Result {
 					d.Phase, d.Step = ScoresIn, 0
 				}
 			}
-		case ScoresIn, InitialsIn, ContinueIn, MenuIn:
+		case ScoresIn, InitialsIn, ContinueIn, MenuIn, HeaderIn:
 			d.LogoScale = 0
 			phase := d.Phase
 			value := d.Data.AppearSteps[d.Step]
@@ -221,6 +236,9 @@ func (d *Director) Advance(input Input) Result {
 					d.Phase = Initials
 				case ContinueIn:
 					d.Phase, d.Tick = ContinueHold, 79
+				case HeaderIn:
+					d.Phase = HeaderHold
+					return HeaderShown
 				case MenuIn:
 					d.Captions = nil
 					return ShowMenu
@@ -235,6 +253,9 @@ func (d *Director) Advance(input Input) Result {
 			}
 			if phase == MenuIn {
 				text = d.Data.MenuHeading
+			}
+			if phase == HeaderIn {
+				text = d.Header
 			}
 			d.Captions = []Caption{d.caption(text, value, target)}
 		case ScoresHold, InitialsHold:
@@ -257,7 +278,7 @@ func (d *Director) Advance(input Input) Result {
 				}
 				d.Step = 0
 			}
-		case ScoresOut, InitialsOut, ContinueOut, MenuOut:
+		case ScoresOut, InitialsOut, ContinueOut, MenuOut, HeaderOut:
 			phase := d.Phase
 			value := d.Data.DisappearSteps[d.Step]
 			if value < 0 {
@@ -268,6 +289,8 @@ func (d *Director) Advance(input Input) Result {
 						return ContinueAccepted
 					}
 					return ContinueDeclined
+				case HeaderOut:
+					return HeaderFinished
 				case MenuOut:
 					return StartGame
 				case InitialsOut:
@@ -287,6 +310,9 @@ func (d *Director) Advance(input Input) Result {
 			}
 			if phase == MenuOut {
 				text = d.Data.MenuHeading
+			}
+			if phase == HeaderOut {
+				text = d.Header
 			}
 			d.Captions = nil
 			if value > 0 {
@@ -315,6 +341,8 @@ func (d *Director) Advance(input Input) Result {
 				d.Accepted = input.Confirm
 				d.Phase, d.Step = ContinueOut, 0
 			}
+		case HeaderHold:
+			d.Captions = []Caption{d.caption(d.Header, 16, 12)}
 		case Initials:
 			d.ShowScores = true
 			d.Captions = []Caption{d.caption(d.Data.HighScoreHeading, 16, 12)}

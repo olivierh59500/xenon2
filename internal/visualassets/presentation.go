@@ -14,6 +14,7 @@ type MenuLine struct {
 
 // Presentation retains the original fixed-width captions and their display font.
 type Presentation struct {
+	LoadingHeading, EnteringShopHeading                  string
 	CreditOutSteps                                       []int
 	CreditSecondSteps                                    []int
 	TextZoom                                             SpriteAtlas `json:"text_zoom"`
@@ -60,6 +61,7 @@ func DecodePresentation(common []byte, palette [16][4]uint8) (*Presentation, err
 	}
 	p.Ready, p.GameOver = caption(0x8836), caption(0x884a)
 	p.HighScoreHeading = caption(0x8c1c)
+	p.LoadingHeading, p.EnteringShopHeading = caption(0x8c30), caption(0x8c44)
 	p.ContinueHeading = caption(0x8f2e)
 	p.ContinueCounter = caption(0x8f42)
 	readSteps := func(start int) []int {

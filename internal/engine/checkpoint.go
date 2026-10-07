@@ -73,6 +73,9 @@ func (w *World) RestartCheckpoint() {
 		w.Actors = append(w.Actors, w.secondGuardianActor)
 	}
 	w.restoreSecondArenaActors()
+	if err := w.restoreCheckpointPool(); err != nil {
+		w.poolError = err
+	}
 	w.fire = NewFireCadence(w.Equipment)
 	if w.Weapons != nil {
 		w.Weapons.ResetProjectiles()

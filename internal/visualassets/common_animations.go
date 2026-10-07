@@ -84,6 +84,13 @@ func DecodeCommonAnimations(common []byte, resolve func(int) (string, error)) ([
 		return nil, err
 	}
 	result = append(result, NamedActorAnimation{ID: "double-shot-active", Ending: "hold", Animation: ActorAnimation{Frames: []AnimationFrame{{Sprite: static}}, Static: true}})
+	for index, address := range []int{0x14ece, 0x14f52, 0x1505a, 0x14fd6} {
+		name, err := resolve(address)
+		if err != nil {
+			return nil, err
+		}
+		result = append(result, NamedActorAnimation{ID: fmt.Sprintf("player-shadow-%d", index), Ending: "hold", Animation: ActorAnimation{Frames: []AnimationFrame{{Sprite: name}}, Static: true}})
+	}
 	return result, nil
 }
 

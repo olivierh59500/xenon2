@@ -210,3 +210,24 @@ fractional motion, while fifth-level aiming shots retain their lifetime and
 octant steering. Expiration creates the original centered explosion and sound.
 Shared-capacity actor allocation is verified separately; its complete World
 integration remains in progress.
+
+## Shared actor storage and terrain cannons
+
+World now routes enemies, equipment, projectiles, collectibles and transient
+effects through the shared 159-slot allocator. The ship has separate state;
+four thrust silhouettes reserve protected player-list slots. Reusing a slot
+retains named fractional, firing and drift residue while assigning a new entity
+identity. Eviction does not run damage, score or reward callbacks.
+
+Moving, scenery and projectile traversal save the next physical slot before
+each update. Self-removal remains linked until the next visit, while an entry
+marked dead by an earlier actor is released when reached in the current pass.
+Checkpoint cleanup preserves surviving scripted actors and reconstructs the
+saved equipment without leaking slots.
+
+The terrain cannon families across all five levels match 2,240 original
+updates. Comparisons include animation phase, tile writes, firing triggers,
+random consumption, shot origin and direction, and inclusive collision bounds.
+World integration installs and changes their mutable map patches, restores
+destroyed tiles and uses the exported shot artwork. These checks cover the
+cannons; they do not establish every gate, hatch or guardian in the game.

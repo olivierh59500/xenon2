@@ -24,14 +24,24 @@ func (w *World) advanceFirstGuardian() {
 		w.FirstGuardianSegments = &segments
 		group := make([]*WorldActor, 0, 8)
 		for i := range 8 {
-			w.nextActorID++
 			part := &visualassets.ActorPart{ResourceTag: 252, DamageMode: "block-shot", MotionMode: "first-guardian-segment"}
 			if i == 7 {
 				part.ResourceTag = 256
 			}
-			segment := &WorldActor{ID: w.nextActorID, X: 0, Y: -100, PreviousY: -100, Active: true, Visible: true,
+			segment := &WorldActor{X: 0, Y: -100, PreviousY: -100, Active: true, Visible: true,
 				ActorList: "moving", Atlas: "guardians", Sprite: art.SegmentSprite, part: part, firstSegment: i + 1,
 				Collision: CollisionRect{Right: -1, Bottom: -1}}
+			if err := w.bindWorldActor(segment); err != nil {
+				w.poolError = err
+				return
+			}
+			if i > 0 {
+				w.Pool.unlink(segment.Binding.Slot)
+				if err := w.Pool.AttachAfter(segment.Binding.Slot, ActorPoolMoving, segment.ID, int16(part.ResourceTag), group[i-1].Binding.Slot); err != nil {
+					w.poolError = err
+					return
+				}
+			}
 			w.firstGuardianParts[i] = segment
 			group = append(group, segment)
 		}
@@ -92,6 +102,7 @@ func (w *World) strikeFirstGuardian(hit CollisionRect, amount uint16) {
 				segment.Active = false
 			}
 		}
+		w.syncDeadActors()
 		w.LevelFinished = true
 		w.spawnExitCash(9)
 	}

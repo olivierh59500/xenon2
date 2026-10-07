@@ -38,11 +38,16 @@ func (g *Game) updatePresentation() error {
 	for ticks := g.menuClock.Advance(); ticks > 0; ticks-- {
 		switch result := g.director.Advance(g.presentationInput); result {
 		case presentation.StartGame:
+			g.restoreGameplayStars()
+			if err := g.StartSession(max(1, g.Config.Level), g.pendingPlayers); err != nil {
+				return err
+			}
 			g.Screen = LevelScreen
 		case presentation.ShowMenu:
 			g.Screen = TitleScreen
 			g.selectMusic()
 		case presentation.ResumeGame:
+			g.restoreGameplayStars()
 			if driver, ok := g.Driver.(*worldDriver); ok {
 				g.deliverEffectActivity()
 				if err := driver.Advance(Input{Fire: true}); err != nil {
@@ -51,6 +56,7 @@ func (g *Game) updatePresentation() error {
 				if err := g.consumeDriverAudio(); err != nil {
 					return err
 				}
+				driver.world.PrimeBackgroundStars(2)
 				g.View = driver.Frame()
 				g.rememberFrameHistory()
 			}
@@ -58,6 +64,7 @@ func (g *Game) updatePresentation() error {
 			g.readyRunning = false
 			g.selectMusic()
 		case presentation.ContinueAccepted:
+			g.restoreGameplayStars()
 			if g.onContinue != nil {
 				if err := g.onContinue(); err != nil {
 					return err
@@ -68,13 +75,16 @@ func (g *Game) updatePresentation() error {
 				g.finishPlayerGame()
 			}
 		case presentation.ContinueDeclined:
+			g.restoreGameplayStars()
 			g.resetPresentationStars(presentation.GameOverMessage)
 			g.director.BeginGameOver()
 		case presentation.PlayerGameFinished:
+			g.restoreGameplayStars()
 			g.finishPlayerGame()
 		}
 		if g.continueAfterScores && g.director.Phase == presentation.LogoDelay {
 			g.continueAfterScores = false
+			g.restoreGameplayStars()
 			if g.View.ContinueCredits > 0 {
 				g.resetPresentationStars(presentation.ContinueIn)
 				g.director.BeginContinue()
@@ -257,4 +267,12 @@ func (g *Game) creditCaption(credits int) string {
 func (g *Game) creditOverlapVisible() bool {
 	captions := g.director.Captions
 	return len(captions) == 2 && captions[0].Text == captions[1].Text && captions[0].Scale == 16 && captions[1].Scale == 15 && captions[0].CenterY == 120 && captions[1].CenterY == 120
+}
+
+func (g *Game) restoreGameplayStars() {
+	if driver, ok := g.Driver.(*worldDriver); ok {
+		driver.world.SetRandomState(*g.starfield.Random)
+		driver.world.ResetBackgroundStars()
+		*g.starfield.Random = driver.world.RandomState()
+	}
 }

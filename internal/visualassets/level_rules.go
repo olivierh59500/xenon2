@@ -23,6 +23,8 @@ type LevelRules struct {
 	DefaultEnemyShot         string             `json:"default_enemy_shot"`
 	EnemyShotChoices         []string           `json:"enemy_shot_choices"`
 	EnemyShots               SpriteAtlas        `json:"enemy_shots"`
+	TileShotSprites          [2]string          `json:"tile_shot_sprites,omitempty"`
+	TileShotAnimations       [2]ActorAnimation  `json:"tile_shot_animations,omitempty"`
 }
 
 // ScrollTransition names a verified stage event and its resulting bounds. The
@@ -127,6 +129,23 @@ func DecodeLevelRules(number int, level, common []byte, palette [16][4]uint8, en
 			return nil, err
 		}
 		rules.EnemyShotChoices = append(rules.EnemyShotChoices, name)
+	}
+	if number == 3 {
+		name, err := add(0x5e69e)
+		if err != nil {
+			return nil, err
+		}
+		rules.TileShotSprites = [2]string{name, name}
+	}
+	if number == 5 {
+		for variant, root := range []int{0x57538, 0x57550} {
+			clip, err := decodeActorAnimation(level, root-levelBase, add)
+			if err != nil {
+				return nil, err
+			}
+			rules.TileShotAnimations[variant] = clip
+			rules.TileShotSprites[variant] = clip.Frames[0].Sprite
+		}
 	}
 	rules.EnemyShots = packSprites(images)
 	return rules, nil

@@ -23,6 +23,7 @@ func newWorldDriver(bundle *Bundle, level int) (*worldDriver, error) {
 	if err != nil {
 		return nil, err
 	}
+	world.ResetBackgroundStars()
 	return &worldDriver{world: world}, nil
 }
 
@@ -145,7 +146,7 @@ func (d *worldDriver) Frame() SceneFrame {
 	d.sprites = append(d.sprites, d.effects...)
 	slices.SortFunc(d.sparks, func(a, b SpriteView) int { return b.ID - a.ID })
 	d.sprites = append(d.sprites, d.sparks...)
-	frame := SceneFrame{ContinueCredits: w.ContinueCredits, DivePhase: w.RenderDivePhase, Level: w.Level.Number, CameraY: float64(w.RenderScrollY), BackgroundY: float64((192 - w.BackgroundY) % 192), Player: w.Player, PlayerAlive: w.PlayerAlive, PlayerSprite: w.PlayerSprite, Ready: w.Ready, GameOver: w.GameOver, Sprites: d.sprites, TerrainMap: w.Level.Terrain.Map, Score: w.Score, Money: w.Money, Shield: w.Equipment.Shield, Lives: w.Equipment.Lives, Diagnostic: true, FreezeInterpolation: w.ScreenClearFrames > 0, PaletteMask: w.ScreenClearPaletteMask, Shades: w.Equipment.ShadesFrames > 0}
+	frame := SceneFrame{BackgroundStars: w.BackgroundStars, ContinueCredits: w.ContinueCredits, DivePhase: w.RenderDivePhase, Level: w.Level.Number, CameraY: float64(w.RenderScrollY), BackgroundY: float64((192 - w.BackgroundY) % 192), Player: w.Player, PlayerAlive: w.PlayerAlive, PlayerSprite: w.PlayerSprite, Ready: w.Ready, GameOver: w.GameOver, Sprites: d.sprites, TerrainMap: w.Level.Terrain.Map, Score: w.Score, Money: w.Money, Shield: w.Equipment.Shield, Lives: w.Equipment.Lives, Diagnostic: true, FreezeInterpolation: w.ScreenClearFrames > 0, PaletteMask: w.ScreenClearPaletteMask, Shades: w.Equipment.ShadesFrames > 0}
 	frame.PlayerNumber, frame.PlayerCount = 1, 1
 	frame.PlayerScores[0] = w.DisplayScore
 	frame.PlayerLives[0] = w.Equipment.Lives

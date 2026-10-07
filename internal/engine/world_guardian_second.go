@@ -55,11 +55,13 @@ func (w *World) damageSecondGuardian(actor *WorldActor, amount uint16) {
 		return
 	}
 	actor.Active = false
+	w.storeActorResidue(actor)
 	w.spawnSecondCashPairs(10, true)
 	w.spawnSecondRandomExplosions(30, 80, w.SecondGuardian.BodyWorldY-w.ScrollY, 160, 112)
 	for _, candidate := range w.Actors {
 		if candidate.ActorList == "moving" {
 			candidate.Active = false
+			w.storeActorResidue(candidate)
 		}
 	}
 }

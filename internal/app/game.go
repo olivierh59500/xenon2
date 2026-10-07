@@ -96,6 +96,7 @@ type Config struct {
 }
 
 type Game struct {
+	pendingPlayers           int
 	gameOverRunning          bool
 	presentationStarPhase    presentation.Phase
 	continueAfterScores      bool
@@ -442,10 +443,7 @@ func (g *Game) activateMenu() {
 		g.selectMusic()
 		return
 	}
-	if err := g.StartSession(max(1, g.Config.Level), g.menu+1); err != nil {
-		g.err = err
-		return
-	}
+	g.pendingPlayers = g.menu + 1
 	g.director.BeginStart()
 	g.Screen = PresentationScreen
 	g.selectMusic()
