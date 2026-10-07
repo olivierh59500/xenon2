@@ -440,3 +440,25 @@ credit and admission of the other surviving incomplete player. Single-player
 restoration remains a single checkpoint operation. Gameplay Escape now restarts
 the attract sequence, while P preserves the image and continuing audio until
 the next key or fire input.
+
+## Integrated draw timing and compound motion
+
+The native backdrop is drawn before stage and actor callbacks. Materialization
+rendering reads the live terrain after actor updates, before late encounter
+constructors and scroll advancement. Two reusable map snapshots and their
+camera positions preserve those distinct presentation boundaries without
+changing the live collision map.
+
+Compound image pieces retain their own previous endpoints for 60 Hz rendering.
+The first guardian's eye and final mouth poses follow parent translation; beam
+tips follow extension endpoints, while shaft image counts remain discrete.
+Crawler nest covers follow the camera rather than the moving creature.
+Checkpoint admission snaps the first resumed endpoints. Six composition and
+restart checks pass, and all fifty-six native beam layouts remain unchanged.
+
+Bounded runs using ordinary inputs exercised menu, loading, READY, ship losses,
+initials, accepted/refused continues, alternating players and return to attract.
+Separate shop fixtures verified sale, purchase, exit and ending presentation.
+They are not full-game wins. The best navigation trial reached the first
+middle-arena exit region, but did not cross into its shop; a complete normal-input
+five-level run and actual graphical comparisons remain required.
