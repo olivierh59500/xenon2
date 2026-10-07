@@ -1783,3 +1783,20 @@ The permanent actual-intro route now keeps 31 shield at checkpoint 4,032, compar
 with 19 after lane preparation alone and 7 before it. It retains its carried ship
 and credits. A later bounded run still loses the ship in the sweeper sector;
 this is progress toward low-loss play, not a complete third-stage victory.
+
+## Copied articulated-chain forecasts
+
+A dedicated helper copies all eight source members, tail animation, activation
+phase and random stream. Callers supply each candidate's post-movement player
+heights and preceding actual camera displacements. Hidden bodies retain their
+source collision prefixes. Births, combat removal and other callbacks' random
+consumption remain outside this isolated forecast.
+
+Six original-resource World.Step fixtures compare 384 complete member states
+across both variants, activation, cooldown and retirement. Player-height tests
+verify that near activation consumes its copied draw while a distant blank chain
+keeps its collider. A returning active chain draws no RNG in the first six passes
+for all legal ship heights and mixed camera deltas; callback seven can activate
+again. The helper and original 6,400-state chain comparison pass under the race detector in
+1.672 seconds. Production movement integration still needs candidate-specific
+state and connected survival proof; a constant-player-height trial was not kept.
