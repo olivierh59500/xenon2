@@ -1650,3 +1650,12 @@ tile 27 or 3, with no local alpha/mask discrepancy. This rules out that specific
 collision interpretation as the cause; it does not prove the whole route or that
 diving is required. Earlier branch selection, available equipment and relevant
 terrain changes still need investigation. The incomplete route remains excluded.
+
+The combined engine/source race suite passes in 55.237 seconds. Production
+GPU/audio frontend checks pass in 91.217 seconds, including reference two-stage
+routes and the complete practiced first/two-stage presentations. The known
+optional third-stage no-loss assertion remains excluded explicitly and unresolved.
+Vet and the desktop build pass. The ARM64 Android rebuild, APK signature and
+16 KiB alignment pass; installation and a confirmed cold launch succeed on the
+Pixel 10a, with its process alive afterward. Device graphics were not rechecked
+while locked. The unfinished third corridor strategy stays outside production.
