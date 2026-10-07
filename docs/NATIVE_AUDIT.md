@@ -291,3 +291,12 @@ test checks that completed groups do not accumulate reserved slots.
 Direct physical-slot lookups now serve projectile updates. The local simulation
 benchmark exercises the original middle arena and weapon fire; renderer/GPU
 performance still requires live testing and is not established by this benchmark.
+
+## Original terrain contact
+
+The ship's thirty-pixel collision stencil matches 10,455 sampled source contacts
+across all five original maps, three ship rows and forty-one horizontal positions
+over seventeen camera offsets. The comparison supplies both the map row and
+fine-scroll offset, and reads the original collision condition rather than the
+loop-count register left by the routine. This verifies terrain contact, not a
+complete wall-sliding/crushing playthrough or every guardian's custom collider.
