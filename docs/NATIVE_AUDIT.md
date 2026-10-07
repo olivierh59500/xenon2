@@ -245,3 +245,15 @@ and follower helpers match 17,280 source states over all sixteen launch paths;
 an additional World comparison verifies their displayed positions and visibility
 in the integrated physical-slot list. Crossing the middle region requests the
 shop and sets the original camera bounds without finishing the level.
+
+## Second-level fixed hatches
+
+The scenery hatch opens its original twenty terrain frames before releasing
+eight one-hit creatures. The two hatch variants match 48 original updates,
+including their tile writes and spawn boundary. Creature motion matches 341
+source passes across all eight initial headings, preserving the finite timer,
+periodic inverted aim, direction-specific animation and screen clipping.
+
+World creates the creatures after the moving phase, so they first advance on
+the following pass. Each uses the shared actor allocator, its original launch
+offset and random delay, source artwork, collision and destruction effect.

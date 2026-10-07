@@ -69,6 +69,8 @@ type WorldActor struct {
 	fixedTileState             *FixedTileState
 	fixedTileArt               *visualassets.FixedTileKind
 	fixedTileVariant           *visualassets.FixedTileVariant
+	fixedHatch                 *FixedHatchState
+	hatchCreature              *HatchCreatureState
 	firstMiddleAnchor          *FirstMiddleAnchor
 	firstMiddleFollower        *FirstMiddleFollower
 	firstMiddleFragment        *FirstMiddleFragment
@@ -944,6 +946,10 @@ func (w *World) damageActor(actor *WorldActor, amount uint16) {
 	}
 	target.Active = false
 	w.storeActorResidue(target)
+	if target.hatchCreature != nil {
+		region := w.fixedProjectileRegion(target.Sprite)
+		w.spawnSecondExplosion(int(target.X)-region.AnchorX+region.Width/2, int(target.Y)-region.AnchorY+(region.Height-1)/2)
+	}
 	w.Score += target.Score
 	if w.WaveBonuses.Defeat(target.WaveToken) {
 		w.spawnWaveCash(int(target.X), int(target.Y), target.part.StrongHealth)
@@ -988,6 +994,9 @@ func (w *World) spawnFixed(record visualassets.FixedEncounter) {
 		return
 	}
 	if w.spawnFixedTile(record) {
+		return
+	}
+	if w.spawnFixedHatch(record) {
 		return
 	}
 	kind := w.fixedKinds[record.EnemyKind]

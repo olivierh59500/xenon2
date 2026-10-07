@@ -10,7 +10,7 @@ establish that the corresponding encounter is playable.
 | Level | Integrated families | Remaining work |
 | --- | --- | --- |
 | 1 | Three terrain cannon types, bouncing attackers, five-stream middle arena, final body and articulated chain | Complete damage/removal effects and checkpoint/playthrough comparisons |
-| 2 | Terrain cannon, bouncing attackers, middle nodes and articulated defense waves, final body and transforming minions | Fixed hatches and their eight creatures, two additional fixed sprite families |
+| 2 | Terrain cannon, bouncing attackers, fixed hatches and their eight creatures, middle nodes and articulated defense waves, final body and transforming minions | Two additional fixed sprite families |
 | 3 | Terrain cannon, sweeping attacker and turning projectile | Middle flying guardian and final worm integration; three additional fixed families |
 | 4 | Terrain cannon and extending beam | Middle and final compound guardians; ground encounter family |
 | 5 | Terrain cannon and vertical attacker with aiming projectile | Middle and final compound guardians; six additional fixed families |

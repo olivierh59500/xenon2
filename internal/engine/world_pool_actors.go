@@ -50,6 +50,10 @@ func (w *World) advanceActorPhase(list ActorPoolList, input Input) error {
 }
 
 func (w *World) advanceMovingActor(actor *WorldActor) error {
+	if actor.hatchCreature != nil {
+		w.advanceHatchCreature(actor)
+		return nil
+	}
 	if actor.firstMiddleSentinel {
 		return nil
 	}
@@ -147,6 +151,10 @@ func (w *World) advanceMovingActor(actor *WorldActor) error {
 }
 
 func (w *World) advanceSceneryActor(actor *WorldActor) error {
+	if actor.fixedHatch != nil {
+		w.advanceFixedHatch(actor)
+		return nil
+	}
 	actor.PreviousX, actor.PreviousY = actor.X, actor.Y
 	actor.Visible = true
 	if actor.fixedKind != nil {

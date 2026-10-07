@@ -41,9 +41,10 @@ type FixedSpriteKind struct {
 }
 
 type FixedSprites struct {
-	Kinds      []FixedSpriteKind       `json:"kinds"`
-	Atlas      SpriteAtlas             `json:"atlas"`
-	Projectile *FixedProjectileArtwork `json:"projectile,omitempty"`
+	Kinds          []FixedSpriteKind       `json:"kinds"`
+	Atlas          SpriteAtlas             `json:"atlas"`
+	Projectile     *FixedProjectileArtwork `json:"projectile,omitempty"`
+	HatchCreatures *HatchCreatureArtwork   `json:"hatch_creatures,omitempty"`
 }
 
 // DecodeFixedSprites exports the checked ordinary sprite animations used by
@@ -224,6 +225,12 @@ func DecodeFixedSprites(levelNumber int, level []byte, palette [16][4]uint8) (*F
 		result.Kinds = append(result.Kinds, kind)
 	}
 	var err error
+	if levelNumber == 2 {
+		result.HatchCreatures, err = decodeHatchCreatureArtwork(level, add)
+		if err != nil {
+			return nil, err
+		}
+	}
 	result.Projectile, err = decodeFixedProjectileArtwork(levelNumber, level, add)
 	if err != nil {
 		return nil, err

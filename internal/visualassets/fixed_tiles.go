@@ -39,6 +39,7 @@ type FixedTileKind struct {
 	ShotDirections      [2]uint8           `json:"shot_directions,omitempty"`
 	ShotOffsetX         [2]int             `json:"shot_offset_x,omitempty"`
 	ShotOffsetY         [2]int             `json:"shot_offset_y,omitempty"`
+	TriggerScreenY      int                `json:"trigger_screen_y,omitempty"`
 }
 
 type FixedTiles struct {
@@ -155,12 +156,15 @@ func decodeSecondLevelFixedTiles(data []byte) (*FixedTiles, []uint16, error) {
 	}
 	result.Kinds = append(result.Kinds, cannon)
 	hatch := FixedTileKind{Kind: 2, Mode: "screen-triggered-hatch", FrameDuration: 1}
+	hatch.Behavior = "second-hatch"
+	hatch.TriggerScreenY = int(int16(binary.BigEndian.Uint16(data[0x62:])))
 	for variant := range 2 {
 		table, initial := 0x5583c-levelBase, 0x558b8-levelBase
 		if variant == 1 {
 			table, initial = 0x557e8-levelBase, 0x55890-levelBase
 		}
 		v := FixedTileVariant{ID: variant, OriginOffsetX: -8, OriginOffsetY: -8, Initial: read(initial, 2, 2)}
+		v.ResourceTag = 244 - variant*4
 		for frame := range 21 {
 			start, err := offset(data, table+frame*4, 8)
 			if err != nil {
