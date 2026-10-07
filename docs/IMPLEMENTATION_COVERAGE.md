@@ -117,6 +117,14 @@ phase, direction and untouched fields written or retained by the native callback
 Actual sold-cannon/expired-column slot reuse and fresh/strong middle contact cases
 verify the effects on first firing and later weapon admission.
 
+Third chains now retain their physical marker/body fields across natural expiry
+and slot reuse. Actual diagonal-bullet lifecycles establish the retained fractions
+and the next projectile's trajectory, while all 6,400 original chain states still
+match. The second-defense presentation model also forecasts current staggered
+members in source callback order: 1,152 positions, images and collision prefixes
+match actual world steps. It does not forecast new scheduler births or combat
+deaths; using it in an arena policy still requires a connected victory proof.
+
 The remaining live checks are:
 
 - Play all five stages from the normal menu, including both shop boundaries,
