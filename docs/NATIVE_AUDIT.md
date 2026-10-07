@@ -821,3 +821,15 @@ third middle after 1,021 commands with both eyes destroyed, two lives/full
 shield and two continues; final worm after 1,848 commands with three lives, 35
 shield and two continues. Every defeat/drop/exit gate remains required. The
 counts were updated only after these current ordinary-input outcomes passed.
+
+## Hidden fifth-stage seeker admission
+
+New side and mouth seekers retain the original off-screen collision sentinel
+until their first actor callback. Previously their zero-value rectangle could
+intercept a shot or Shades near the origin while the sprite was still hidden.
+The first callback replaces the sentinel with the recovered sprite prefix;
+visible movement, health, rewards and physical pool tags remain unchanged.
+
+Both factories are covered before and after admission, including the ordinary
+World.Step player-contact ordering. The full original-resource engine suite,
+race suite, vet and desktop build pass.

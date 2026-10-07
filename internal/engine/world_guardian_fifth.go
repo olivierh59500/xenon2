@@ -269,7 +269,7 @@ func (w *World) spawnFifthMouth(creature FifthMouthCreature) {
 	w.addFifthSeeking(state, true)
 }
 func (w *World) addFifthSeeking(state FifthSeekingState, mouth bool) {
-	actor := &WorldActor{X: float64(state.X), Y: float64(state.Y), PreviousX: float64(state.X), PreviousY: float64(state.Y), Active: true, Visible: false, ActorList: "moving", Atlas: "guardian-parts", fifthSeeking: &state, fifthMouth: mouth, Sprite: state.Sprite, Health: w.fifthMiddleArt.MotionParameters["side_health"], Score: 100, part: &visualassets.ActorPart{ResourceTag: 228, DamageMode: "individual"}}
+	actor := &WorldActor{X: float64(state.X), Y: float64(state.Y), PreviousX: float64(state.X), PreviousY: float64(state.Y), Active: true, Visible: false, ActorList: "moving", Atlas: "guardian-parts", fifthSeeking: &state, fifthMouth: mouth, Sprite: state.Sprite, Health: w.fifthMiddleArt.MotionParameters["side_health"], Score: 100, Collision: CollisionRect{Left: 1000, Right: 1000}, part: &visualassets.ActorPart{ResourceTag: 228, DamageMode: "individual"}}
 	if mouth {
 		actor.part.ResourceTag = 236
 		actor.Health = w.fifthFinalArt.MotionParameters["mouth_creature_health"]
