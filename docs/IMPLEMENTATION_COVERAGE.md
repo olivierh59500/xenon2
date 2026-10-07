@@ -56,10 +56,10 @@ The build draws at 60 updates per second and uses a separate gameplay clock.
 Integrated visual comparisons and a complete five-level run remain required.
 The current build is in development and is not yet a complete conversion.
 
-The remaining integration work includes source checkpoint restoration across
-alternating turns, the second guardian's crowded-scene direction, retained state
-for hatch/pod actors, and a final check of death-image attachment centers. These
-are shared-state boundaries rather than unidentified encounter families.
+Checkpoint restoration across alternating turns, the second guardian's
+crowded-scene direction, retained hatch/pod state, and death-image attachment
+centers now have explicit implementations and source comparisons. Accepted
+continue admission is being checked as the last shared player-flow boundary.
 
 Resource checks exercise every fixed record over 96 callback passes and every
 moving wave over 64 passes, verifying animation images, emitted shots, body

@@ -412,3 +412,25 @@ Three hundred and six image selections cover the diving and Nashwan meters.
 Their countdown images appear at the source anchors, alongside the aura's
 separate meter. One hundred and eighty consecutive source ship/terrain passes
 also compare evolving position history, wall contact and rewind behavior.
+
+## Final shared-state boundaries
+
+Forty-eight incoming checkpoint states compare ship position, camera, wallet,
+shield, firing advance and temporary timers. Alternating-turn tests keep the
+outgoing game suspended until it is admitted again, retain guardian slots and
+damage, and apply camera adjustments once. Death resets shield and firing
+advance separately from checkpoint admission.
+
+Fourteen second-level constructors verify emitter and offspring slot fields.
+The small scenery pod uses tag 252; the hatch constructor reads launch positions
+and initial images forward while assigning descending headings. Their stored
+state preserves counters, directions and fractions instead of replacing them
+with the invisible emitter's screen coordinates. Wave animation modes also
+retain their path and firing state. Sixty-six image-center cases cover thirteen
+banking positions and nine death images at three ship positions.
+
+The second final guardian's crowded-scene direction inherits a named updater
+decision. Comparisons cover eighty path-to-guardian chains, 1,200 bouncing
+callbacks, 5,120 pod-creature callbacks, 341 hatch-creature callbacks, 14,400
+final-minion returns and 416 player-shadow cases. The runtime carries semantic
+direction outcomes rather than original register state.
