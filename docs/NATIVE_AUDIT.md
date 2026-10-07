@@ -482,3 +482,15 @@ voice-ownership flags to gameplay.
 A legal-input replay now reaches the first middle shop and final arena and
 reduces the final guardian's health from thirty to two before losing the last
 ship. No full-level or five-level victory is inferred from that result.
+
+Materialization now uses pixel-unit shader triangles directly on the sprite and
+the terrain mask. It avoids a playfield scratch clear, sprite copy and full-size
+shader rectangle for each masked actor. Exact GPU checks preserve source mask
+pixels and sprite clipping at all four playfield edges.
+
+An actual realtime dense-scene probe uses nine visible materializing actors from
+the second-level defense streams. A static scene isolates rendering cost. The
+direct path reduced observed allocation per draw from about 167 KB and 6,081
+objects to 85 KB and 3,005 objects on the tested Mac. Backend allocations remain
+substantial. Both probes sustained approximately sixty update calls per second;
+display-rate changes during the runs prevent claiming an FPS improvement.
