@@ -145,6 +145,13 @@ rendered FPS result. The device reports no active thermal cap, but idle frequenc
 readings do not establish its clocks during simulation. The profile identifies
 the continuation policy and its terrain queries as major remaining costs.
 
+The boss proposal can memoize exact stencil queries in a 256-row window using
+20 KiB of known/solid bits. Every source-map change and window move invalidates
+the corresponding memo. Queries outside the window use the unchanged row test.
+This is private planning storage; gameplay collision still reads the current
+terrain directly. Original-map mutation tests and the unchanged complete-intro
+victory cover reuse and invalidation.
+
 The six-pass exact guard also protects the post-merchant third corridor. Cannon
 preparation derives firing lanes from each live source instance, selects the
 nearest passed row and tries another reachable target when a neighboring gun is

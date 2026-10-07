@@ -23,6 +23,7 @@ func (p *PresentationPilot) forecastThirdMiddleInput(w *World, fallback Input) I
 				policy.navigation = &demoNavigation{}
 			}
 			policy.navigation.refresh(forecast.State())
+			policy.navigation.cacheTouchWindow(w.ScrollY)
 			// This is only the continuation proposal's terrain cache. Every
 			// candidate still executes exact mutable-map contact in World.Step.
 			policy.middleTerrainFrozen = true

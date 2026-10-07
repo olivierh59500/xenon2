@@ -26,6 +26,7 @@ type demoNavigation struct {
 	pointTargetX         int
 	pointClosed          map[demoNavPoint]bool
 	practiced            bool
+	touchCache           *demoNavTouchCache
 }
 
 // demoScrollMaximum includes the source stage prelude that runs before player
@@ -46,6 +47,23 @@ func demoScrollMaximum(w *World, camera, maximum int) int {
 }
 
 func (n *demoNavigation) touching(x, y int) bool {
+	if cache := n.touchCache; cache != nil && x >= 0 && x < 320 && y >= cache.top && y < cache.top+256 {
+		row, word, bit := y-cache.top, x/32, uint32(1)<<uint(x%32)
+		if cache.known[row][word]&bit != 0 {
+			return cache.solid[row][word]&bit != 0
+		}
+		touching := n.touchingUncached(x, y)
+		cache.known[row][word] |= bit
+		cache.solid[row][word] &^= bit
+		if touching {
+			cache.solid[row][word] |= bit
+		}
+		return touching
+	}
+	return n.touchingUncached(x, y)
+}
+
+func (n *demoNavigation) touchingUncached(x, y int) bool {
 	x += n.originX
 	y += n.originY
 	if x < 0 || x >= 320 {
@@ -110,6 +128,9 @@ func (n *demoNavigation) refresh(w *World) bool {
 			word := &n.rows[row*16+y][column/2]
 			*word = *word&^mask | uint32(pixels)<<shift
 		}
+	}
+	if changed && n.touchCache != nil {
+		clear(n.touchCache.known[:])
 	}
 	return changed
 }
