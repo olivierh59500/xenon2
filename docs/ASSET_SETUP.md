@@ -17,6 +17,18 @@ are rejected explicitly; their code and data offsets must be verified first.
 ./scripts/prepare-assets.sh -adf "/path/to/Xenon 2.adf"
 ```
 
+For a separate reproducibility check, set `XENON2_RUNTIME_OUTPUT` to an excluded
+directory and supply separate packed and decoded destinations:
+
+```sh
+XENON2_RUNTIME_OUTPUT=.local/rebuild/runtime ./scripts/prepare-assets.sh \
+  -adf "/path/to/Xenon 2.adf" \
+  -output .local/rebuild/original -analysis .local/rebuild/imported
+```
+
+This rebuild leaves the embedded runtime resource directory untouched. Use
+`go run ./cmd/xenon2 -data .local/rebuild/runtime` to load the separate export.
+
 To check a disk without writing files:
 
 ```sh

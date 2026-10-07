@@ -6,6 +6,7 @@ cd "$project_root"
 ./tools/exclude-local-assets.sh
 import_only=0
 analysis_directory=.local/imported
+runtime_directory=${XENON2_RUNTIME_OUTPUT:-assets/runtime}
 expect_analysis=0
 for argument in "$@"; do
     if [ "$expect_analysis" -eq 1 ]; then
@@ -21,9 +22,9 @@ for argument in "$@"; do
 done
 GOWORK=off go run ./cmd/import-assets "$@"
 if [ "$import_only" -eq 0 ]; then
-    GOWORK=off go run ./cmd/export-assets -analysis "$analysis_directory"
-    GOWORK=off go run ./cmd/export-audio -analysis "$analysis_directory" -output assets/runtime/audio
-    GOWORK=off go run ./cmd/export-shop -analysis "$analysis_directory" -output assets/runtime
-    GOWORK=off go run ./cmd/export-presentation -analysis "$analysis_directory" -output assets/runtime
-    GOWORK=off go run ./cmd/export-shop-audio -analysis "$analysis_directory" -output assets/runtime/shop-audio
+    GOWORK=off go run ./cmd/export-assets -analysis "$analysis_directory" -output "$runtime_directory"
+    GOWORK=off go run ./cmd/export-audio -analysis "$analysis_directory" -output "$runtime_directory/audio"
+    GOWORK=off go run ./cmd/export-shop -analysis "$analysis_directory" -output "$runtime_directory"
+    GOWORK=off go run ./cmd/export-presentation -analysis "$analysis_directory" -output "$runtime_directory"
+    GOWORK=off go run ./cmd/export-shop-audio -analysis "$analysis_directory" -output "$runtime_directory/shop-audio"
 fi
