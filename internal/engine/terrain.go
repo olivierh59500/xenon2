@@ -55,14 +55,47 @@ func (c *TerrainCoverage) Solid(x, mapY int) bool {
 
 // Touches tests the source stencil against map coverage without allocating.
 func (c *TerrainCoverage) Touches(shipX, shipY, scrollY int, mask visualassets.PlayerTerrainStencil) bool {
+	width := min(mask.Width, 32)
+	if width <= 0 {
+		return false
+	}
+	left := shipX + mask.OriginOffsetX
+	column, alignment := left>>4, left&15
+	columns := (alignment + width + 15) >> 4
+	widthMask := ^uint32(0) << uint(32-width)
+	top := scrollY + shipY + mask.OriginOffsetY
+	// The stencil spans at most three tile columns. Load their complete row
+	// words once per map row, then test the aligned stencil with three ANDs.
+	// The cache lives only for this call, so map patches are immediately visible.
+	var tiles [3][16]uint16
+	cachedRow := -1
 	for y, row := range mask.Rows {
+		row &= widthMask
 		if row == 0 {
 			continue
 		}
-		for x := range mask.Width {
-			if row&(uint32(1)<<uint(31-x)) != 0 && c.Solid(shipX+mask.OriginOffsetX+x, scrollY+shipY+mask.OriginOffsetY+y) {
-				return true
+		mapY := top + y
+		if mapY < 0 || mapY >= c.Rows*16 {
+			continue
+		}
+		mapRow := mapY >> 4
+		if mapRow != cachedRow {
+			tiles = [3][16]uint16{}
+			for index := 0; index < columns; index++ {
+				x := column + index
+				if x >= 0 && x < c.Columns {
+					id := c.Map[mapRow*c.Columns+x]
+					if id != 0 {
+						tiles[index] = c.coverage[id]
+					}
+				}
 			}
+			cachedRow = mapRow
+		}
+		bits := uint64(row) << uint(16-alignment)
+		y := mapY & 15
+		if uint16(bits>>32)&tiles[0][y]|uint16(bits>>16)&tiles[1][y]|uint16(bits)&tiles[2][y] != 0 {
+			return true
 		}
 	}
 	return false

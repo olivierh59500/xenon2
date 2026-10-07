@@ -124,6 +124,19 @@ versions differ: neither number establishes a mobile frame budget for the final
 policy. CPU and allocation reduction remain necessary before calling the full
 boss controller ready for smooth Android playback.
 
+The next optimization tests terrain by aligned tile-row words rather than
+individual pixels. It reads the current map on each call, so destruction and
+direct tile writes remain visible immediately. Independent comparisons cover
+305,600 alignment/edge cases and 22,440 original-map positions, plus native
+collision and rewind traces. Weapon contexts reuse callbacks only when their
+equipment pointer belongs to the current world; input and phase fields are
+rebuilt. Forecast and copied-runtime contexts rebind to their new world. Tests
+verify current RNG, sound routing, changed phase flags and source isolation.
+Together these changes reduce the measured warm M4 Max boss decision to about
+3.05 ms, 63.8 KiB and 792 allocations. The full-intro boss victory is unchanged
+at frame 2448 with all 19 admission shield points intact. Pixel measurements
+remain separate from host measurements and from rendered frame pacing.
+
 The connected post-merchant third-stage route remains under validation.
 Third-stage completion, levels four and five, ending and near-lossless campaign
 play are not established by this boss result. A diagnostic time limit must be

@@ -19,13 +19,35 @@ func (w *World) weaponContext(input Input, pulse bool) WeaponContext {
 		}
 	}
 	centerX, centerY := w.currentShipCenter()
+	callbacks := WeaponContext{}
+	if w.Weapons != nil && w.Weapons.context.Equipment == &w.Equipment {
+		callbacks = w.Weapons.context
+	} else {
+		callbacks = w.newWeaponCallbacks()
+	}
 	return WeaponContext{
 		Equipment: &w.Equipment, ShipX: w.Player.X, ShipY: w.Player.Y,
 		ShipCenterX: centerX, ShipCenterY: centerY, MaterializationFrames: w.MaterializationFrames,
 		PreviousShipX: w.PreviousPlayer.X, PreviousShipY: w.PreviousPlayer.Y,
 		TrailX: w.shipTrail[0].X, TrailY: w.shipTrail[0].Y, Motion: input.Motion,
 		Held: input.Fire, Pulse: pulse, Diving: w.Dive.Phase != 0, Materializing: w.MaterializationFrames != 0,
-		ShipDestroyed: !w.PlayerAlive, NextRandom: w.random.Next, Targets: w.weaponTargets,
+		ShipDestroyed: !w.PlayerAlive, NextRandom: callbacks.NextRandom, Targets: w.weaponTargets,
+		NextID: callbacks.NextID, ReserveActor: callbacks.ReserveActor, RetireActor: callbacks.RetireActor,
+		ReleaseActor: callbacks.ReleaseActor, MoveActor: callbacks.MoveActor,
+		ReleaseEquipmentActors: callbacks.ReleaseEquipmentActors, MoveEquipmentActors: callbacks.MoveEquipmentActors,
+		StoreActorResidue: callbacks.StoreActorResidue, ReadActorResidue: callbacks.ReadActorResidue,
+		ReadWeaponOwnerResidue: callbacks.ReadWeaponOwnerResidue,
+		HitPoint:               callbacks.HitPoint, HitRect: callbacks.HitRect, HitLaser: callbacks.HitLaser,
+		Sound: callbacks.Sound, SoundVoice: callbacks.SoundVoice, SoundVoiceIfEmpty: callbacks.SoundVoiceIfEmpty,
+		ImmediateSoundVoice: callbacks.ImmediateSoundVoice, EffectActive: callbacks.EffectActive, StopEffects: callbacks.StopEffects,
+	}
+}
+
+// Callbacks retain this world's address, while every context rebuilds its input
+// and phase values. A forecast's distinct Equipment address forces rebinding.
+func (w *World) newWeaponCallbacks() WeaponContext {
+	return WeaponContext{
+		NextRandom:   w.random.Next,
 		NextID:       func() int { w.nextActorID++; return w.nextActorID },
 		ReserveActor: w.reserveWorldActor, RetireActor: w.retireWorldActor,
 		ReleaseActor: w.releaseWorldActor, MoveActor: w.moveWorldActor,
