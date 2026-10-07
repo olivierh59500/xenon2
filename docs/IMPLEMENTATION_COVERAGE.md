@@ -52,8 +52,9 @@ Private source comparisons run only when the local decoded disk resources and
 trace directories are supplied. Those resources and traces remain excluded
 from Git. Ordinary tests verify the independent logic without an emulator.
 
-The build draws at 60 updates per second and uses a separate gameplay clock.
-Integrated visual comparisons and a complete five-level run remain required.
+The build updates at 60 Hz and uses a separate gameplay clock. Ebitengine may
+draw at the monitor refresh rate; this does not accelerate gameplay.
+Integrated Amiga comparisons and a complete five-level run remain required.
 The current build is in development and is not yet a complete conversion.
 
 Checkpoint restoration across alternating turns, the second guardian's
@@ -65,6 +66,19 @@ Resource checks exercise every fixed record over 96 callback passes and every
 moving wave over 64 passes, verifying animation images, emitted shots, body
 patches and overlays against the exported atlases. They do not replace an actual
 renderer comparison or a complete game played through its normal controls.
+
+Actual Ebitengine GPU tests render six guardian/beam scenes. Pixel comparisons
+cover aura alpha, terrain materialization, body tile placement and damage flash,
+moving/effect layer order, all five palette strobes and Shades, and the 48-point
+background starfield. A shader source-size panic and double source-origin
+adjustment were found through those tests and corrected. Desktop menu, attract,
+shop and five level captures have been inspected.
+
+A real fifteen-second desktop run measured approximately 60 updates per second
+and 120 draw calls per second on its 120 Hz display after warm-up. That run does
+not establish dense-combat performance or a complete playthrough. A legal-input
+replay reaches the first middle shop and the first final arena; it does not yet
+defeat the guardian.
 
 The remaining live checks are:
 

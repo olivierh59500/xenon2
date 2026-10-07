@@ -10,7 +10,9 @@ if [ "$(uname -s)" = Darwin ] && /usr/sbin/ioreg -n Root -d1 | grep -q '"IOConso
 fi
 capture_directory=.local/captures/desktop-check
 mkdir -p "$capture_directory" .local/bin
-XENON2_RUNTIME_TEST_DIR="$project_root/assets/runtime" GOWORK=off go test ./internal/app
+XENON2_RUNTIME_TEST_DIR="$project_root/assets/runtime" \
+XENON2_RENDER_CAPTURE_DIR="$project_root/.local/captures/integrated-render" \
+GOWORK=off go test ./internal/app
 GOWORK=off go build -o .local/bin/xenon2 ./cmd/xenon2
 for view in menu attract shop; do
     .local/bin/xenon2 -view "$view" -mute -frames 360 -screenshot "$capture_directory/$view.png"
