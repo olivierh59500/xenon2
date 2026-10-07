@@ -152,12 +152,34 @@ This is private planning storage; gameplay collision still reads the current
 terrain directly. Original-map mutation tests and the unchanged complete-intro
 victory cover reuse and invalidation.
 
+## Independent worker execution
+
+Nine private forecast/policy instances evaluate the nine movements concurrently.
+The shared evaluator retains all 36 callbacks, source PAL scheduling, candidate
+order and score ties. The caller waits for every worker before reading results.
+One-processor execution uses the serial path. A branch requiring stateful
+post-defeat navigation triggers a serial re-evaluation in the original order;
+its latency is not covered by the fast admission measurement.
+
+Sixty-four consecutive source decisions match both serial commands and the
+complete final-candidate snapshot, with no live-state changes under the race
+detector. Tests also cover stateful continuation and one-processor fallback.
+The full-intro boss victory remains frame 2448 with all 19 admission shield
+points intact. A matched warm Pixel prototype comparison measures 19.76 ms with
+three workers and 12.97 ms with nine, versus about 67 ms for the sequential
+comparison. These are source-scene CPU samples; rendering, other fight phases
+and serial fallback can still exceed a 60 Hz frame budget.
+
 The six-pass exact guard also protects the post-merchant third corridor. Cannon
 preparation derives firing lanes from each live source instance, selects the
 nearest passed row and tries another reachable target when a neighboring gun is
-behind solid terrain. The full-intro route now reaches checkpoint 1696 with the
-same ship and credits and at least 27 shield after the ordinary merchant repair.
-Later cannon combat remains under validation. Third-stage completion, levels
+behind solid terrain. Before the cannon-aim correction, the full-intro route
+reached checkpoint 1696 with the same ship and credits and 27 shield after the
+ordinary merchant repair. Source-anchored aiming now destroys the central cannon,
+but the changed combat/RNG route reaches that checkpoint with only 15 shield.
+The existing 27-point reserve regression remains unsatisfied; its assertion has
+not been weakened. Later cannon combat and discrete narrow-corner motion remain
+under validation. Third-stage completion, levels
 four and five, ending and near-lossless campaign play are not established by
 these results. A diagnostic time limit must be reported separately from a genuine
 lack of camera progress.
