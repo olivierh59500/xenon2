@@ -11,16 +11,31 @@ type demoNavNode struct {
 // demoNavigation caches terrain occupancy and a short world-coordinate route.
 // It only plans ordinary input and never writes collision or gameplay state.
 type demoNavigation struct {
-	world            *World
-	tiles            []uint16
-	rows             [4800][11]uint32
-	stencilRows      []uint32
-	originX, originY int
-	queue, nodes     []demoNavNode
-	visited          map[demoNavPoint]float64
-	path             []demoNavPoint
-	goal             int
-	frame            uint64
+	world                *World
+	tiles                []uint16
+	rows                 [4800][11]uint32
+	stencilRows          []uint32
+	originX, originY     int
+	queue, nodes         []demoNavNode
+	visited              map[demoNavPoint]float64
+	path                 []demoNavPoint
+	goal                 int
+	frame                uint64
+	retreat              bool
+	targetX, pathTargetX int
+	practiced            bool
+}
+
+// demoScrollMaximum includes the source stage prelude that runs before player
+// movement. Its copy retains arena admission and shop-boundary ordering without
+// changing gates, launch seeds, the world or the shared random stream.
+func demoScrollMaximum(w *World, camera, maximum int) int {
+	if w != nil && w.Level.Number == 1 && w.FirstMiddle != nil {
+		state := *w.FirstMiddle
+		event := state.Advance(camera, maximum, camera+w.Player.Y, [16]int{})
+		return event.Maximum
+	}
+	return maximum
 }
 
 func (n *demoNavigation) touching(x, y int) bool {
@@ -44,6 +59,19 @@ func (n *demoNavigation) touching(x, y int) bool {
 		}
 	}
 	return false
+}
+
+func (n *demoNavigation) clearSegment(x, y int, to demoNavPoint) bool {
+	steps := max(absDemo(to.x-x), absDemo(to.y-y))
+	if steps == 0 {
+		return !n.touching(x, y)
+	}
+	for step := 1; step <= steps; step++ {
+		if n.touching(x+(to.x-x)*step/steps, y+(to.y-y)*step/steps) {
+			return false
+		}
+	}
+	return true
 }
 func (n *demoNavigation) refresh(w *World) bool {
 	changed := false
@@ -116,10 +144,21 @@ func (n *demoNavigation) pop() demoNavNode {
 	return value
 }
 func (n *demoNavigation) search(x, y, goal int) bool {
+	n.pathTargetX = n.targetX
 	if goal >= y {
 		goal = y - 48
 	}
 	low, high := max(0, goal-48), min(4799, y+192)
+	if w := n.world; w != nil && n.practiced {
+		maximum := demoScrollMaximum(w, w.ScrollY, w.MaximumScrollY)
+		// The first arena reopens its reverse limit every pass. Its rear exit
+		// can lie farther away than one screen even when the displayed limit
+		// has just contracted to the ordinary sixteen-pixel reverse buffer.
+		if w.Level.Number == 1 && w.FirstMiddle != nil && w.ScrollY >= 2624 && w.ScrollY <= 3344 && maximum >= 3344 {
+			high = min(4799, y+384)
+		}
+		high = min(high, maximum+176)
+	}
 	n.queue = n.queue[:0]
 	n.nodes = n.nodes[:0]
 	n.path = n.path[:0]
@@ -137,7 +176,7 @@ func (n *demoNavigation) search(x, y, goal int) bool {
 		}
 		index := len(n.nodes)
 		n.nodes = append(n.nodes, current)
-		if current.y <= goal {
+		if current.y <= goal && (n.targetX == 0 || absDemo(current.x-n.targetX) <= 6) {
 			for at := index; at >= 0; at = n.nodes[at].parent {
 				node := n.nodes[at]
 				n.path = append(n.path, demoNavPoint{node.x, node.y})
@@ -173,12 +212,21 @@ func (n *demoNavigation) search(x, y, goal int) bool {
 	return false
 }
 func (n *demoNavigation) waypoint(w *World, goal int) (int, int, bool) {
+	n.retreat = false
 	if w.Coverage == nil || w.Level.PlayerStencil == nil || w.Coverage.Columns != 20 || w.Coverage.Rows != 300 || len(w.Coverage.Map) != 6000 {
 		return 0, 0, false
 	}
 	changed := n.refresh(w)
 	x, y := w.Player.X, w.Player.Y+w.ScrollY
-	if changed || len(n.path) == 0 || goal != n.goal && absDemo(goal-n.goal) > 48 || w.Frame-n.frame >= 24 {
+	unreachable := false
+	rear := demoScrollMaximum(w, w.ScrollY, w.MaximumScrollY) + 176
+	for _, point := range n.path {
+		if n.practiced && point.y > rear {
+			unreachable = true
+			break
+		}
+	}
+	if changed || unreachable || n.targetX != n.pathTargetX || len(n.path) == 0 || goal != n.goal && absDemo(goal-n.goal) > 48 || w.Frame-n.frame >= 24 {
 		n.goal, n.frame = goal, w.Frame
 		if !n.search(x, y, goal) {
 			return 0, 0, false
@@ -195,6 +243,19 @@ func (n *demoNavigation) waypoint(w *World, goal int) (int, int, bool) {
 		n.frame = 0
 		return 0, 0, false
 	}
-	point := n.path[min(len(n.path)-1, nearest+8)]
-	return point.x, point.y, true
+	if !n.practiced {
+		point := n.path[min(len(n.path)-1, nearest+8)]
+		return point.x, point.y, true
+	}
+	// A clear distant endpoint can lie beyond a blocked corner. Keep the
+	// first leg until the complete ship stencil can traverse the shortcut.
+	for index := min(len(n.path)-1, nearest+8); index >= nearest; index-- {
+		point := n.path[index]
+		if n.clearSegment(x, y, point) {
+			n.retreat = point.y > y
+			return point.x, point.y, true
+		}
+	}
+	n.frame = 0
+	return 0, 0, false
 }

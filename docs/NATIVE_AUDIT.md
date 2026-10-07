@@ -1295,3 +1295,34 @@ error, so its existing general policy remains separately validated.
 The original-resource 18-pass forecast benchmark measures 495–507 ns/op with
 zero allocations on the tested M4 Max, Go 1.27.1 and one CPU thread. This excludes
 rendering and does not establish mobile frame rate.
+
+## Practiced presentation routes and shop income
+
+The presentation controller now selects the known left junction before entering
+the first arena's closing right branch. Route searches retain the complete ship
+stencil, avoid shortcuts through occupied corners, and include the source stage
+prelude's repeated 3,344 reverse bound. A recorded trapped pose at camera 3,006
+has a real rear route through world Y3,422; ordinary controls reverse to it,
+cross left and resume forward. Recovery retains its destination until rejoining
+the route, then releases its temporary retreat priority.
+
+The final approach also keeps navigation active below camera 640: source
+guardian admission begins only at 448. Planning toward the original lower arena
+avoids the unplanned right pocket before that boundary. The independent
+reference controller keeps its validated policy; practiced navigation belongs
+to the presentation controller and does not alter game rules or source clocks.
+
+Presentation aiming now forecasts supported enemy paths and the next gun
+position after player motion. A real original-path target receives its predicted
+six-pass basic-gun hit through World.Step. Cash interception copies the reward's
+source movement, and unvisited formations can guide preparatory positioning
+without creating actors or firing at an empty field. Empty/immune targets still
+release the trigger; known destructible second-stage cells remain valid targets.
+
+A direct original-resource route enters the first merchant after 1,948 ordinary
+commands with all three ships, full shield, score 10,530 and 650 cash. Production
+frontend initialization enters it after 165.65 seconds with three ships/full
+shield, score 9,880 and 600 cash. The completed first-level frontend route passes
+both merchants, destroys the final guardian, exhausts its exit drops and enters
+level two after 413.07 seconds. It retains two ships; this is a complete first
+stage with ordinary damage, not a lossless run or a five-stage campaign proof.

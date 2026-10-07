@@ -17,9 +17,10 @@ type PresentationPilot struct {
 }
 
 type presentationGoal struct {
-	x, y  int
-	actor *WorldActor
-	bonus *WorldCollectible
+	x, y    int
+	actor   *WorldActor
+	bonus   *WorldCollectible
+	arrival int
 }
 
 func (p *PresentationPilot) NormalInput(w *World) Input {
@@ -30,12 +31,13 @@ func (p *PresentationPilot) NormalInput(w *World) Input {
 		return Input{Fire: true}
 	}
 	if p.world != w || w.Frame < p.frame {
-		*p = PresentationPilot{world: w, frame: w.Frame, decisionAt: w.Frame + 3}
+		*p = PresentationPilot{world: w, frame: w.Frame, decisionAt: w.Frame + 3, planner: DemoPilot{practicedRoute: true}}
 	}
 	p.frame = w.Frame
 	base := p.planner.NormalInput(w)
 	input := base
-	if !presentationSpecialist(w) {
+	retreat := p.planner.retreatGoal != 0
+	if !retreat && w.Rewind.Timer == 0 && !presentationSpecialist(w) {
 		if w.Frame >= p.decisionAt {
 			goal := presentationChooseGoal(w)
 			if goal.actor != p.goal.actor || goal.bonus != p.goal.bonus {
@@ -49,7 +51,7 @@ func (p *PresentationPilot) NormalInput(w *World) Input {
 			input.Motion = p.tacticalMotion(w, base.Motion)
 		}
 	}
-	input.Fire = p.selectiveFire(w)
+	input.Fire = p.selectiveFireForMotion(w, input.Motion)
 	if w.blockedFireUntilRelease || w.Dive.Phase != 0 {
 		input.Fire = false
 	}
@@ -62,10 +64,13 @@ func presentationSpecialist(w *World) bool {
 	return w.Level.Number == 2 && (w.secondScheduler != nil && w.ScrollY >= 2512 && w.ScrollY <= 2896 || w.secondMiddleReleased && w.ScrollY <= 1280) ||
 		w.Level.Number == 3 && (w.ThirdMiddle != nil && !w.ThirdMiddle.Defeated || w.ThirdFinal != nil && !w.ThirdFinal.Defeated && w.ScrollY <= 208) ||
 		w.Level.Number == 4 && w.ScrollY <= 176 ||
-		w.Level.Number == 1 && w.FirstGuardian != nil && w.FirstGuardian.Active && !w.FirstGuardian.Defeated
+		w.Level.Number == 1 && (w.FirstMiddle != nil && !w.FirstMiddle.Crossed && w.ScrollY < 3456 || w.FirstGuardian != nil && w.FirstGuardian.Active && !w.FirstGuardian.Defeated)
 }
 
 func (g presentationGoal) valid(w *World) bool {
+	if g.arrival != 0 {
+		return w.ScrollY > g.arrival && w.ScrollY-g.arrival <= 48 && presentationClearPoint(w, g.x, g.y)
+	}
 	if g.bonus != nil {
 		return g.bonus.Active && g.bonus.Y >= 12 && g.bonus.Y <= 172 && g.bonus.Y >= float64(w.Player.Y-65)
 	}
@@ -84,7 +89,14 @@ func presentationChooseGoal(w *World) presentationGoal {
 			continue
 		}
 		flight := max(1, min(12, (w.Player.Y-(bounds.Top+bounds.Bottom)/2-6)/9))
-		x := (bounds.Left+bounds.Right)/2 + int(math.Round(actor.X-actor.PreviousX))*flight
+		if predicted, supported := demoActorPrediction(w, actor, flight, w.ScrollY-flight*w.BaseScrollStep); supported && predicted.Active && predicted.Visible && !predicted.Bounds.Empty() {
+			bounds = predicted.Bounds
+		} else {
+			dx, dy := int(math.Round(actor.X-actor.PreviousX))*flight, int(math.Round(actor.Y-actor.PreviousY))*flight
+			bounds.Left, bounds.Right = bounds.Left+dx, bounds.Right+dx
+			bounds.Top, bounds.Bottom = bounds.Top+dy, bounds.Bottom+dy
+		}
+		x := (bounds.Left + bounds.Right) / 2
 		y := max(88, min(152, bounds.Bottom+72))
 		x = max(24, min(296, x))
 		if !presentationClearPoint(w, x, y) {
@@ -105,7 +117,7 @@ func presentationChooseGoal(w *World) presentationGoal {
 		if !bonus.Active || bonus.Y < 16 || bonus.Y > 164 || bonus.Y < float64(w.Player.Y-65) {
 			continue
 		}
-		x, y := int(bonus.X), int(bonus.Y)
+		x, y := presentationBonusIntercept(w, bonus)
 		if !presentationReachableBonus(w, x, y) {
 			continue
 		}
@@ -114,7 +126,67 @@ func presentationChooseGoal(w *World) presentationGoal {
 			goal, best = presentationGoal{x: x, y: y, bonus: bonus}, score
 		}
 	}
+	if goal.actor == nil && goal.bonus == nil {
+		return presentationPrepareWave(w)
+	}
 	return goal
+}
+
+// An experienced player can prepare for an unvisited encounter using the
+// known formation data. This never creates an enemy or fires at an empty field.
+func presentationPrepareWave(w *World) presentationGoal {
+	goal := presentationGoal{}
+	if w.Level.Encounters == nil || w.Level.Paths == nil {
+		return goal
+	}
+	for _, wave := range w.Level.Encounters.Moving {
+		if wave.TriggerY >= w.ScrollY || wave.TriggerY >= w.cursor.MovingHighWater || w.ScrollY-wave.TriggerY > 48 || wave.TriggerY <= goal.arrival {
+			continue
+		}
+		kind, path := w.kinds[wave.EnemyKind], w.paths[wave.PathID]
+		if kind == nil || len(kind.Parts) == 0 || path == nil {
+			continue
+		}
+		part := kind.Parts[0]
+		if part.MotionMode != "path" && part.MotionMode != "path-heading-frames" && part.MotionMode != "path-entry-edge-frames" || part.DamageMode == "block-shot" {
+			continue
+		}
+		config, err := FormationMotion(wave, 0, 0, part)
+		if err != nil {
+			continue
+		}
+		if kind.MotionBudgetOverride > 0 {
+			config.Budget = kind.MotionBudgetOverride
+		}
+		motion, err := NewPathMotion(path, config)
+		if err != nil {
+			continue
+		}
+		random := w.RandomState()
+		for range 12 {
+			if err := motion.Advance(path, &w.Level.Paths.SineTable, func() uint16 { return uint16(random.Next()) }); err != nil {
+				motion.Active = false
+				break
+			}
+		}
+		x, y := max(24, min(296, int(motion.X>>16))), max(88, min(152, int(motion.Y>>16)+72))
+		if motion.Active && presentationClearPoint(w, x, y) && presentationReachableBonus(w, x, y) {
+			goal = presentationGoal{x: x, y: y, arrival: wave.TriggerY}
+		}
+	}
+	return goal
+}
+
+func presentationBonusIntercept(w *World, bonus *WorldCollectible) (int, int) {
+	motion := bonus.Motion
+	motion.X, motion.Y = int(bonus.X), int(bonus.Y)
+	passes := max(1, min(18, max(absDemo(motion.X-w.Player.X)/max(3, 3+w.Equipment.SpeedTier*3), absDemo(motion.Y-w.Player.Y)/max(3, 3+w.Equipment.SpeedTier))))
+	for range passes {
+		if !motion.Advance() {
+			return -1, -1
+		}
+	}
+	return motion.X, motion.Y
 }
 
 func presentationClearPoint(w *World, x, y int) bool {
@@ -176,6 +248,7 @@ func presentationMotionScore(w *World, motion MotionInput, x, y int) (risk, dist
 	scroll := ScrollState{Y: w.ScrollY, Minimum: w.MinimumScrollY, Maximum: w.MaximumScrollY, DeviationPasses: w.ScrollDeviationPasses}
 	const horizon = 6
 	for future := 1; future <= horizon; future++ {
+		actorCamera := scroll.Y
 		player.Advance(motion, MotionContext{ScrollY: scroll.Y, VisitedScrollY: scroll.Maximum, BaseScrollStep: w.BaseScrollStep})
 		if w.Coverage != nil && w.Level.PlayerStencil != nil && w.Coverage.Touches(player.X, player.Y, scroll.Y, *w.Level.PlayerStencil) {
 			return 10000000, 0
@@ -190,7 +263,14 @@ func presentationMotionScore(w *World, motion MotionInput, x, y int) (risk, dist
 			}
 			ox, oy := int(math.Round(actor.X-actor.PreviousX))*future, int(math.Round(actor.Y-actor.PreviousY))*future
 			r := actor.Collision
-			if (CollisionRect{Left: player.X - 14, Top: player.Y - 16, Right: player.X + 14, Bottom: player.Y + 16}).Intersects(CollisionRect{Left: r.Left + ox, Top: r.Top + oy, Right: r.Right + ox, Bottom: r.Bottom + oy}) {
+			r.Left, r.Right, r.Top, r.Bottom = r.Left+ox, r.Right+ox, r.Top+oy, r.Bottom+oy
+			if predicted, supported := demoActorPrediction(w, actor, future, actorCamera); supported {
+				if !predicted.Active {
+					continue
+				}
+				r = predicted.Bounds
+			}
+			if (CollisionRect{Left: player.X - 14, Top: player.Y - 16, Right: player.X + 14, Bottom: player.Y + 16}).Intersects(r) {
 				risk += 150000 / float64(future)
 			}
 		}
@@ -234,7 +314,11 @@ func presentationTargetBounds(w *World, actor *WorldActor) (CollisionRect, bool)
 }
 
 func (p *PresentationPilot) selectiveFire(w *World) bool {
-	if !presentationShotOpportunity(w) {
+	return p.selectiveFireForMotion(w, MotionInput{})
+}
+
+func (p *PresentationPilot) selectiveFireForMotion(w *World, motion MotionInput) bool {
+	if !presentationShotOpportunityForMotion(w, motion) {
 		p.burstUntil = 0
 		return false
 	}
@@ -257,22 +341,41 @@ func (p *PresentationPilot) selectiveFire(w *World) bool {
 // Ordinary forward bullets are point hits: forecast the actual nine-pixel ray
 // instead of firing at every visible sprite or at arbitrary solid terrain.
 func presentationShotOpportunity(w *World) bool {
+	return presentationShotOpportunityForMotion(w, MotionInput{})
+}
+
+func presentationShotOpportunityForMotion(w *World, motion MotionInput) bool {
+	forecast := newDemoMotionForecast(w)
+	// Terrain contact can start a rewind without suppressing this pass's
+	// weapon phase. Its resulting gun position still determines the shot ray.
+	forecast.advance(w, motion)
+	ship := forecast.player
 	for _, actor := range w.Actors {
 		bounds, ok := presentationTargetBounds(w, actor)
-		if !ok || bounds.Bottom < 0 || bounds.Top >= w.Player.Y-6 {
+		if !ok || bounds.Bottom < 0 || bounds.Top >= ship.Y-6 {
 			continue
 		}
 		for future := 1; future <= 18; future++ {
-			ox, oy := int(math.Round(actor.X-actor.PreviousX))*future, int(math.Round(actor.Y-actor.PreviousY))*future
-			y := w.Player.Y - 6 - 9*future
+			predicted := bounds
+			if view, supported := demoActorPrediction(w, actor, future, w.ScrollY-(future-1)*w.BaseScrollStep); supported {
+				if !view.Active || !view.Visible {
+					continue
+				}
+				predicted = view.Bounds
+			} else {
+				ox, oy := int(math.Round(actor.X-actor.PreviousX))*future, int(math.Round(actor.Y-actor.PreviousY))*future
+				predicted.Left, predicted.Right = predicted.Left+ox, predicted.Right+ox
+				predicted.Top, predicted.Bottom = predicted.Top+oy, predicted.Bottom+oy
+			}
+			y := ship.Y - 6 - 9*future
 			if y < 0 {
 				break
 			}
-			if y < bounds.Top+oy || y > bounds.Bottom+oy {
+			if y < predicted.Top || y > predicted.Bottom {
 				continue
 			}
-			x := w.Player.X
-			if x >= bounds.Left+ox && x <= bounds.Right+ox || w.Equipment.Primary.Item == ItemDoubleShot && (x-5 >= bounds.Left+ox && x-5 <= bounds.Right+ox || x+6 >= bounds.Left+ox && x+6 <= bounds.Right+ox) {
+			x := ship.X
+			if x >= predicted.Left && x <= predicted.Right || w.Equipment.Primary.Item == ItemDoubleShot && (x-5 >= predicted.Left && x-5 <= predicted.Right || x+6 >= predicted.Left && x+6 <= predicted.Right) {
 				return true
 			}
 		}
@@ -281,11 +384,11 @@ func presentationShotOpportunity(w *World) bool {
 	// other ordinary terrain tile awards damage or justifies holding fire.
 	if w.Level.Number == 2 && w.secondTerrainCells != nil {
 		for future := 1; future <= 18; future++ {
-			y := w.Player.Y - 6 - 9*future
+			y := ship.Y - 6 - 9*future
 			if y < 0 {
 				break
 			}
-			if w.secondTerrainCells.FindBullet(CollisionRect{Left: w.Player.X, Right: w.Player.X, Top: y, Bottom: y}, w.ScrollY-future*w.BaseScrollStep) >= 0 {
+			if w.secondTerrainCells.FindBullet(CollisionRect{Left: ship.X, Right: ship.X, Top: y, Bottom: y}, w.ScrollY-(future-1)*w.BaseScrollStep) >= 0 {
 				return true
 			}
 		}

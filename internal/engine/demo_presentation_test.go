@@ -109,7 +109,7 @@ func TestPresentationPilotBonusApproachRejectsBlockedRoute(t *testing.T) {
 	w := testWorld(t)
 	w.Player.X, w.Player.Y = 160, 120
 	demoPilotCoverage(w, [2]int{192, w.ScrollY + 120})
-	w.Collectibles = []*WorldCollectible{{ID: 1, Active: true, X: 224, Y: 120}, {ID: 2, Active: true, X: 112, Y: 120}}
+	w.Collectibles = []*WorldCollectible{{ID: 1, Active: true, X: 224, Y: 120}, {ID: 2, Active: true, X: 112, Y: 120, Motion: CashMotion{Mode: 7}}}
 	goal := presentationChooseGoal(w)
 	if goal.bonus != w.Collectibles[1] {
 		t.Fatal("reachable bonus did not take priority over a route crossing solid terrain")
@@ -120,6 +120,7 @@ func TestPresentationPilotOnlyFiresAtActualDestructibleTerrain(t *testing.T) {
 	w := testWorld(t)
 	w.Player.X, w.Player.Y = 200, 176
 	w.Level.Number, w.ScrollY = 2, 240
+	w.MinimumScrollY = 0
 	demoPilotCoverage(w, [2]int{200, 400})
 	if presentationShotOpportunity(w) {
 		t.Fatal("ordinary solid terrain was mistaken for a bullet target")
@@ -157,6 +158,7 @@ func TestPresentationPilotOriginalOpeningTrajectoryOptional(t *testing.T) {
 	fired, empty, distance, losses, pauses, moving, passes := 0, 0, 0, 0, 0, 0, 0
 	minX, maxX, minY, maxY := 320, 0, 192, 0
 	previousFire := false
+	leftJunction := false
 	for pass := 0; pass < 2000; pass++ {
 		w := s.ActiveWorld()
 		if w.GameOver || w.ShopReady || w.LevelFinished {
@@ -166,7 +168,8 @@ func TestPresentationPilotOriginalOpeningTrajectoryOptional(t *testing.T) {
 			w.AdvancePALTick()
 		}
 		input := p.NormalInput(w)
-		opportunity := presentationShotOpportunity(w)
+		leftJunction = leftJunction || w.ScrollY >= 3160 && w.ScrollY <= 3344 && w.Player.X < 140
+		opportunity := presentationShotOpportunityForMotion(w, input.Motion)
 		if !w.Ready {
 			if input.Fire {
 				fired++
@@ -212,6 +215,9 @@ func TestPresentationPilotOriginalOpeningTrajectoryOptional(t *testing.T) {
 		positions[[2]int{w.Player.X, w.Player.Y}] = true
 		minX, maxX, minY, maxY = min(minX, w.Player.X), max(maxX, w.Player.X), min(minY, w.Player.Y), max(maxY, w.Player.Y)
 		passes++
+	}
+	if passes == 2000 && (!leftJunction || losses != 0 || s.ActiveWorld().Equipment.Lives != 3 || s.ActiveWorld().Equipment.Shield != 39 || s.ActiveWorld().Money < 600 || s.ActiveWorld().Score < 10000 || s.ActiveWorld().ScrollY > 2650) {
+		t.Fatal("practiced opening did not retain the left route, live ships, full shield and earned shop funds")
 	}
 	w := s.ActiveWorld()
 	t.Logf("Opening: passes=%d positions=%d distance=%d moving=%d spanX=%d..%d spanY=%d..%d fire=%d empty=%d pauses=%d losses=%d lives=%d shield=%d scroll=%d score=%d money=%d shop=%t gameOver=%t", passes, len(positions), distance, moving, minX, maxX, minY, maxY, fired, empty, pauses, losses, w.Equipment.Lives, w.Equipment.Shield, w.ScrollY, w.Score, w.Money, w.ShopReady, w.GameOver)

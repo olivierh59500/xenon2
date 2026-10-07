@@ -14,8 +14,11 @@ type DemoPilotConfig struct {
 // second-level opening policy and conservative short-horizon obstacle avoidance.
 // It is a development controller, not a guarantee of completing every stage.
 type DemoPilot struct {
-	Config     DemoPilotConfig
-	navigation *demoNavigation
+	Config             DemoPilotConfig
+	navigation         *demoNavigation
+	retreatGoal        int
+	practicedRoute     bool
+	retreatX, retreatY int
 }
 
 var demoDirections = [9]MotionInput{{}, {Left: true}, {Right: true}, {Up: true}, {Down: true}, {Left: true, Up: true}, {Right: true, Up: true}, {Left: true, Down: true}, {Right: true, Down: true}}
@@ -25,7 +28,11 @@ func (p *DemoPilot) NormalInput(w *World) Input {
 		return Input{}
 	}
 	if w.Ready {
+		p.retreatGoal = 0
 		return Input{Fire: true}
+	}
+	if p.navigation != nil && p.navigation.world != w {
+		p.retreatGoal = 0
 	}
 	if input, handled := p.FourthFinalInput(w); handled {
 		return input
@@ -80,23 +87,66 @@ func (p *DemoPilot) NormalInput(w *World) Input {
 		x, y = (weak.Left+weak.Right)/2+9, 166
 	}
 	routeX, routeY, route := 0, 0, false
-	if !opening && w.Coverage != nil && w.Level.PlayerStencil != nil && w.ScrollY > 640 {
+	retreat := false
+	firstApproach := p.practicedRoute && w.Level.Number == 1 && (w.FirstGuardian == nil || !w.FirstGuardian.Active)
+	if !opening && w.Coverage != nil && w.Level.PlayerStencil != nil && (w.ScrollY > 640 || firstApproach) {
 		goal := w.ScrollY + w.Player.Y - 128
+		if firstApproach && w.FirstMiddle != nil && w.FirstMiddle.Crossed && w.ScrollY <= 1024 && p.retreatGoal == 0 {
+			goal = 384
+		}
+		if p.retreatGoal != 0 {
+			if w.ScrollY+w.Player.Y <= p.retreatGoal+6 || w.ScrollY+w.Player.Y <= p.retreatY+6 && absDemo(w.Player.X-p.retreatX) >= 48 {
+				p.retreatGoal = 0
+			} else {
+				goal = p.retreatGoal
+			}
+		}
 		if w.Level.Number == 1 && w.FirstMiddle != nil && !w.FirstMiddle.Crossed && w.ScrollY < 3456 {
-			if w.ScrollY < 2750 {
+			// A practiced player knows the arena exit before choosing a branch.
+			// A nearby row alone can accept a pocket that closes farther ahead.
+			if p.retreatGoal == 0 && (p.practicedRoute || w.ScrollY < 2750) {
 				goal = 2685
 			}
 			y = max(25, min(80, 2685-w.ScrollY))
-			if p.Config == (DemoPilotConfig{}) {
+			if p.Config == (DemoPilotConfig{}) && (!p.practicedRoute || w.ScrollY >= 2750) {
 				y = c.TargetY
 			}
 		}
 		if p.navigation == nil {
 			p.navigation = &demoNavigation{}
 		}
+		p.navigation.practiced = p.practicedRoute
+		p.navigation.targetX = 0
+		if p.practicedRoute && w.Level.Number == 1 && w.FirstMiddle != nil && !w.FirstMiddle.Crossed && w.ScrollY < 3456 && w.ScrollY > 3160 && w.Player.X > 140 && p.retreatGoal == 0 {
+			// Prepare the known left junction before the right pocket closes.
+			// Its position comes from the original full-stencil terrain route.
+			goal, p.navigation.targetX = 3422, 80
+		}
 		routeX, routeY, route = p.navigation.waypoint(w, goal)
+		if p.practicedRoute && !route && p.retreatGoal == 0 && w.Level.Number == 1 && w.FirstMiddle != nil && !w.FirstMiddle.Crossed {
+			// A ship already in the wrong pocket may need a local rear escape
+			// before the bounded search can reach the full arena destination.
+			goal = w.ScrollY + w.Player.Y - 128
+			routeX, routeY, route = p.navigation.waypoint(w, goal)
+		}
+		retreat = route && p.navigation.retreat
+		if retreat && p.retreatGoal == 0 {
+			rear := w.ScrollY + w.Player.Y
+			for _, point := range p.navigation.path {
+				rear = max(rear, point.y)
+			}
+			// Keep the forward destination while returning to the junction;
+			// moving the goal backward can accept the same closed pocket again.
+			if rear > w.ScrollY+w.Player.Y+32 {
+				p.retreatGoal, p.retreatX, p.retreatY = goal, w.Player.X, w.ScrollY+w.Player.Y
+			}
+		}
+		retreat = route && p.retreatGoal != 0
+		if retreat {
+			y = 176
+		}
 	}
-	if !opening && !c.DisableBonuses {
+	if !opening && !retreat && !c.DisableBonuses {
 		best := math.Inf(1)
 		for _, item := range w.Collectibles {
 			if !item.Active || item.Y < 0 || item.Y > 168 || item.Y < float64(w.Player.Y-50) {
@@ -113,35 +163,52 @@ func (p *DemoPilot) NormalInput(w *World) Input {
 			}
 		}
 	}
-	x, y = max(20, min(300, x)), max(25, min(170, y))
+	maximumY := 170
+	if p.practicedRoute {
+		maximumY = 176
+	}
+	x, y = max(20, min(300, x)), max(25, min(maximumY, y))
 	best, bestScore, bestThreat := 0, math.Inf(1), false
 	for action, motion := range demoDirections {
 		// Holding down at the bottom requests reverse scrolling. Short-horizon
 		// risk scoring must not turn that escape into a stationary campaign.
-		if motion.Down && w.Player.Y >= 168 && w.Rewind.Timer == 0 {
+		if motion.Down && w.Player.Y >= 168 && w.Rewind.Timer == 0 && !retreat {
 			continue
 		}
 		player := w.Player
 		scroll := ScrollState{Y: w.ScrollY, Minimum: w.MinimumScrollY, Maximum: w.MaximumScrollY, DeviationPasses: w.ScrollDeviationPasses}
 		score := 0.0
 		immediateThreat := false
+		forecast := newDemoMotionForecast(w)
 		for future := 1; future <= c.Lookahead; future++ {
-			player.Advance(motion, MotionContext{ScrollY: scroll.Y, VisitedScrollY: scroll.Maximum, BaseScrollStep: w.BaseScrollStep})
-			if w.Coverage != nil && w.Level.PlayerStencil != nil && w.Coverage.Touches(player.X, player.Y, scroll.Y, *w.Level.PlayerStencil) {
-				score += 10000000
-				break
-			}
-			scroll.Advance(player.ScrollStep, w.BaseScrollStep, motion.Down)
-			// Scrolling happens after the ship update, so a clear movement endpoint
-			// can still touch terrain at the next pass's camera position.
-			if w.Coverage != nil && w.Level.PlayerStencil != nil && w.Coverage.Touches(player.X, player.Y, scroll.Y, *w.Level.PlayerStencil) {
-				score += 10000000
-				break
+			if retreat || p.practicedRoute && w.Rewind.Timer != 0 {
+				if !forecast.advance(w, motion) {
+					score += 10000000
+					break
+				}
+				player, scroll = forecast.player, forecast.scroll
+			} else {
+				player.Advance(motion, MotionContext{ScrollY: scroll.Y, VisitedScrollY: scroll.Maximum, BaseScrollStep: w.BaseScrollStep})
+				if w.Coverage != nil && w.Level.PlayerStencil != nil && w.Coverage.Touches(player.X, player.Y, scroll.Y, *w.Level.PlayerStencil) {
+					score += 10000000
+					break
+				}
+				scroll.Advance(player.ScrollStep, w.BaseScrollStep, motion.Down)
+				// Scrolling happens after the ship update, so a clear movement endpoint
+				// can still touch terrain at the next pass's camera position.
+				if w.Coverage != nil && w.Level.PlayerStencil != nil && w.Coverage.Touches(player.X, player.Y, scroll.Y, *w.Level.PlayerStencil) {
+					score += 10000000
+					break
+				}
 			}
 			dx, dy := float64(player.X-x), float64(player.Y-y)
 			if route {
 				rx, ry := float64(player.X-routeX), float64(player.Y+scroll.Y-routeY)
-				score += (rx*rx*.006 + ry*ry*.002 + dy*dy*.008) / float64(c.Lookahead)
+				weight := .002
+				if retreat {
+					weight = .06
+				}
+				score += (rx*rx*.006 + ry*ry*weight + dy*dy*.008) / float64(c.Lookahead)
 			} else {
 				score += (dx*dx*.003 + dy*dy*.005) / float64(c.Lookahead)
 			}
@@ -175,6 +242,9 @@ func (p *DemoPilot) NormalInput(w *World) Input {
 	input := Input{Motion: demoDirections[best], Fire: (w.Frame+1)%uint64(c.FireReleasePeriod) != 0}
 	if w.blockedFireUntilRelease {
 		input.Fire = false
+	}
+	if retreat {
+		input.Motion = demoRouteMotion(w, routeX, routeY)
 	}
 	if !c.DisableDive && bestThreat && w.Dive.Phase == 0 && w.Equipment.DiveCharges > 0 && w.MaterializationFrames == 0 && w.InvulnerableFrames == 0 {
 		// Avoid requesting a dive whose unchanged ship location would resurface
