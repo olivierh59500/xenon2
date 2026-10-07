@@ -753,3 +753,21 @@ ships, two legal continues, no pending middle coins and no final-level flags.
 The exact final-worm fixture still completes its separate arena. Neither
 fixture proves the ordinary stage-three route from the previous merchant;
 the full five-level campaign remains under validation.
+
+## Fourth satellite contact collider
+
+The original fourth middle satellites carry guardian tag 84. Ordinary ship
+contact already skips their damage callback after applying shield damage.
+Shades invokes the callback with its entire 128-pixel attacking rectangle;
+the satellite's armored top/bottom border checks therefore remain active.
+The contact route previously substituted the enemy center point and could
+incorrectly destroy the satellite, decrement an outer target and award 300.
+It now forwards the actual attacking rectangle. Projectile contacts retain
+their existing true rectangle and still admit interior hits.
+
+Forty-eight original player/callback cases compare shield, death, satellite
+health, outer-target count, score, actor retention, explosion and sound. The
+single named explosion does not consume randomness, and both admitted and
+rejected routes preserve the native RNG state. The lethal-player early return
+remains unchanged. Synthetic fixtures use the actual source tag rather than
+a normal-enemy tag that would exercise a different branch.

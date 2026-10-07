@@ -577,7 +577,7 @@ func (w *World) Step(input Input) error {
 				if w.Equipment.ShadesFrames != 0 && actor.firstGuardian {
 					w.strikeFirstGuardian(contactRect, 127)
 				} else if w.Equipment.ShadesFrames != 0 || actor.part.ResourceTag != 80 && actor.part.ResourceTag != 84 {
-					w.damageActor(actor, 127)
+					w.damageActorAt(actor, 127, contactRect)
 				}
 				break
 			}
