@@ -462,3 +462,23 @@ Separate shop fixtures verified sale, purchase, exit and ending presentation.
 They are not full-game wins. The best navigation trial reached the first
 middle-arena exit region, but did not cross into its shop; a complete normal-input
 five-level run and actual graphical comparisons remain required.
+
+## Actual desktop graphics verification
+
+The Ebitengine test loop renders the production Game.Draw and reads GPU pixels.
+Six real-resource fixtures display guardian bodies, eyes, chains, articulated
+parts and the extending beam. Exact pixel checks cover aura transparency,
+live-terrain materialization, masked body tiles and damage flashes, moving/effect
+painter order, all five palette strobes and Shades, and the 48 background stars.
+These tests found and fixed a shader source-size panic and a duplicated source
+origin adjustment in multi-image sampling. The resulting desktop captures have
+been inspected; they are composition fixtures rather than completed games.
+
+The production frontend is also exercised from sampled controls through menu,
+loading, READY, gameplay movement, pause and return to attract. Audio integration
+checks verify immediate versus next-interrupt effect dispatch and delivery of
+voice-ownership flags to gameplay.
+
+A legal-input replay now reaches the first middle shop and final arena and
+reduces the final guardian's health from thirty to two before losing the last
+ship. No full-level or five-level victory is inferred from that result.
