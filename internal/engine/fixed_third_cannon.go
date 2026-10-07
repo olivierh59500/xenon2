@@ -21,6 +21,20 @@ type ThirdCannonEvents struct {
 func NewThirdCannon(record visualassets.FixedEncounter, art visualassets.ThirdCompoundCannonArt) ThirdCannonState {
 	return ThirdCannonState{X: record.X - 8, WorldY: record.Y - 8, Health: uint16(art.Health[0])}
 }
+
+// CollisionAt projects the active source weak point from its fixed world anchor.
+// Drawing history is unrelated to this terrain controller's collision geometry.
+func (s *ThirdCannonState) CollisionAt(scrollY int) CollisionRect {
+	if s.Removed {
+		return CollisionRect{Right: -1, Bottom: -1}
+	}
+	top, height := s.WorldY-scrollY+64, 27
+	if s.Stage == 1 {
+		top, height = s.WorldY-scrollY+4, 24
+	}
+	return CollisionRect{Left: s.X + 16, Top: top, Right: s.X + 47, Bottom: top + height - 1}
+}
+
 func (s *ThirdCannonState) Advance(scrollY, maximum int, art visualassets.ThirdCompoundCannonArt, random *RandomState) ThirdCannonEvents {
 	event := ThirdCannonEvents{Collision: CollisionRect{Right: -1, Bottom: -1}, SecondStage: s.Stage == 1}
 	if s.Removed {
@@ -30,13 +44,7 @@ func (s *ThirdCannonState) Advance(scrollY, maximum int, art visualassets.ThirdC
 		s.Removed = true
 		return event
 	}
-	top := s.WorldY - scrollY + 64
-	height := 27
-	if s.Stage == 1 {
-		top = s.WorldY - scrollY + 4
-		height = 24
-	}
-	event.Collision = CollisionRect{Left: s.X + 16, Top: top, Right: s.X + 47, Bottom: top + height - 1}
+	event.Collision = s.CollisionAt(scrollY)
 	if s.Stage == 0 {
 		if s.Phase == 0 && (random == nil || int(uint8(random.Next())) >= art.FirstThreshold) {
 			return event

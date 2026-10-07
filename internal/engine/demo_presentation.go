@@ -82,7 +82,8 @@ func (p *PresentationPilot) NormalInput(w *World) Input {
 // Source-specific arena movement retains the already verified controller.
 // Trigger decisions still require a live shot opportunity in those arenas.
 func presentationSpecialist(w *World) bool {
-	return w.Level.Number == 2 && (w.secondScheduler != nil && w.ScrollY >= 2512 && w.ScrollY <= 2896 || w.secondMiddleReleased && w.ScrollY <= 1280) ||
+	return fifthBarrierTarget(w) != nil ||
+		w.Level.Number == 2 && (w.secondScheduler != nil && w.ScrollY >= 2512 && w.ScrollY <= 2896 || w.secondMiddleReleased && w.ScrollY <= 1280) ||
 		w.Level.Number == 3 && (w.ThirdMiddle != nil || w.ThirdFinal != nil && !w.ThirdFinal.Defeated && w.ScrollY <= 208) ||
 		w.Level.Number == 4 && w.ScrollY <= 176 ||
 		w.Level.Number == 1 && (w.FirstMiddle != nil && !w.FirstMiddle.Crossed && w.ScrollY < 3456 || w.FirstGuardian != nil && w.FirstGuardian.Active && !w.FirstGuardian.Defeated)
@@ -391,7 +392,10 @@ func presentationShotOpportunityForMotion(w *World, motion MotionInput) bool {
 		}
 		for future := 1; future <= 18; future++ {
 			predicted := bounds
-			if actor.secondNode != nil {
+			if actor.thirdCannon != nil {
+				camera := w.ScrollY - (future-1)*w.BaseScrollStep
+				predicted = actor.thirdCannon.CollisionAt(camera)
+			} else if actor.secondNode != nil {
 				camera := w.ScrollY - (future-1)*w.BaseScrollStep
 				predicted = CollisionRect{Left: actor.secondNode.TileX * 16, Right: actor.secondNode.TileX*16 + 15, Top: actor.secondNode.TileY*16 - camera, Bottom: actor.secondNode.TileY*16 - camera + 15}
 			} else if view, supported := demoActorPrediction(w, actor, future, w.ScrollY-(future-1)*w.BaseScrollStep); supported {
