@@ -127,7 +127,9 @@ func (w *World) advanceFifthGuardian(final bool) {
 		if final && index == 21 && w.FifthFinal.OuterRemaining > 0 {
 			actor.Collision = CollisionRect{Right: -1, Bottom: -1}
 		}
-		actor.Flash = state.Destroyed == false && (final && w.FifthFinal.Flash || !final && w.FifthMiddle.Flash)
+		// Damage can select a renderer before this actor update (player contact)
+		// or afterward (projectiles). Preserve only the current pass's request.
+		actor.Flash = actor.Flash && actor.fifthFlashPass == w.Frame
 		actor.Extras = actor.Extras[:0]
 		if index == 0 {
 			if !final && len(actor.fifthPart.TileFrames) > state.Clock {
@@ -135,7 +137,11 @@ func (w *World) advanceFifthGuardian(final bool) {
 			}
 			if final {
 				actor.Patch = nil
-				w.setFifthMouthOverlays(actor, state)
+				if actor.Flash {
+					actor.Patch = &actor.fifthPart.TileFrames[0]
+				} else {
+					w.setFifthMouthOverlays(actor, state)
+				}
 			}
 		}
 		w.storeActorResidue(actor)
@@ -211,6 +217,7 @@ func (w *World) prepareFifthArena(group *visualassets.GuardianGroup) {
 
 func (w *World) damageFifthGuardian(actor *WorldActor, amount uint16) {
 	var event FifthGuardianEvents
+	wasDestroyed := w.fifthPartState(actor).Destroyed
 	if actor.fifthFinal {
 		event = w.FifthFinal.DamagePart(w.fifthFinalArt, actor.fifthIndex-1, amount)
 	} else {
@@ -218,8 +225,32 @@ func (w *World) damageFifthGuardian(actor *WorldActor, amount uint16) {
 	}
 	state := w.fifthPartState(actor)
 	actor.Health = state.Health
-	actor.Flash = !state.Destroyed
 	actor.Active = state.Active
+	index := actor.fifthIndex - 1
+	if actor.fifthFinal && index == 21 || !actor.fifthFinal && index == 5 {
+		body := w.fifthMiddleActors[0]
+		if actor.fifthFinal {
+			body = w.fifthFinalActors[0]
+			body.Health = w.FifthFinal.Parts[0].Health
+			// The source core callback changes its health image immediately,
+			// while its already-published collision rectangle remains intact.
+			actor.Sprite = state.Sprite
+		}
+		if state.Active {
+			// Core damage selects the owner's tile renderer, including the final
+			// body normally drawn only as scenery. Mouth overlays resume later.
+			body.Flash, body.fifthFlashPass = true, w.Frame
+			if actor.fifthFinal {
+				body.Patch = &body.fifthPart.TileFrames[0]
+				body.Extras = body.Extras[:0]
+			}
+		}
+		w.storeActorResidue(body)
+	} else if !wasDestroyed && (actor.fifthFinal && index >= 3 && index < 21 || !actor.fifthFinal && index >= 1 && index <= 4) {
+		// Mount callbacks select the individual flash renderer even when the
+		// hit leaves a retained wreck. Harmless bodies, corners and bands do not.
+		actor.Flash, actor.fifthFlashPass = state.Active, w.Frame
+	}
 	if state.Destroyed && state.Active {
 		// Mount wrecks keep their actor and current image, but stop intercepting
 		// later shots immediately, before the next moving-actor callback.

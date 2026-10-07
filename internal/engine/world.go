@@ -38,6 +38,7 @@ type WorldActor struct {
 	DrawLength                 int
 	DrawUp                     bool
 	fifthIndex                 int
+	fifthFlashPass             uint64
 	fifthFinal, fifthMouth     bool
 	fifthPart                  *visualassets.GuardianComponent
 	fifthSeeking               *FifthSeekingState

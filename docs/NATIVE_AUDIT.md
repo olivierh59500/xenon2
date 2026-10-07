@@ -1083,3 +1083,21 @@ now preserves that callback. The resource-backed regression observes in-place
 conversion, six subsequent explosion passes, retirement and physical release;
 it fails before the fix and passes afterward. The separately spawned child
 still retains its own health, path looping and wave-bonus escape behavior.
+
+## Fifth guardian damage drawing callbacks
+
+The middle/final core callbacks at 0x5652a and 0x562b2 select the owning body's
+tile flash renderer. Core hits now publish that owner flash for the current
+pass. The final body normally lives in terrain; its hit callback exposes the
+tile patch and suppresses mouth overlays until normal drawing resumes. Its
+health-dependent core image also changes immediately without rewriting the
+already-published collision rectangle.
+
+The pass stamp retains flashes selected by player contact before the moving
+update as well as later projectile hits. Harmless corners, bands and closed
+cores do not gain an unrelated flash. Lethal retained mounts still flash their
+wreck for the hit pass. Eleven original-resource cases cover point/cannon hits,
+player contact, no-op callbacks, retained wrecks and screen-clear traversal.
+They pass with the full resource/native engine and race suite. These checks
+do not establish every middle-body artwork choice during firing-clock changes;
+the existing masked tile GPU test separately covers palette and coverage.
