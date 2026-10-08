@@ -84,3 +84,49 @@ The native touch adapter also releases all contacts on cancellation, suspension
 and focus loss, covering a retained-touch issue in the pinned Ebitengine 2.9
 bridge. A regression check exercises three fingers and duplicate lifecycle
 callbacks using the existing JDK.
+
+## Frontend logic tests on a locked device
+
+The Android ARM64 test executable can run the actual frontend and gameplay
+logic without starting an Android view. It works while the host or phone is
+locked. Select the authorized device explicitly; the runner never chooses a
+different connected device:
+
+```sh
+ANDROID_SERIAL='your-authorized-device-serial' ./scripts/check-android-logic.sh
+```
+
+The default runs `TestTitleIdleStartsExpertDemoAtSixtySeconds`, including its
+ordinary menu and READY admission. To select other frontend tests, supply a Go
+test regular expression. This example also checks the connected expert route
+through the first two stages from the complete intro:
+
+```sh
+ANDROID_SERIAL='your-authorized-device-serial' ./scripts/check-android-logic.sh \
+  --run '^(TestTitleIdleStartsExpertDemoAtSixtySeconds|TestPresentationPilotCompletesFirstTwoLevelsFromDefaultIntroOptional)$'
+```
+
+The longer connected third-stage checkpoint regression is
+`TestExpertThirdPostMerchantRouteReachesCannonCheckpointsWithoutShipLossOptional`.
+The script enables the optional presentation/progression checks when selected;
+each run has an eight-minute wall-clock test timeout. Regexes are base64 encoded
+on the host and decoded into Go's `test.run` flag, so their pipes and other
+syntax never enter the remote shell command.
+
+Use `--build-only` to compile without any device access. The runner uses the
+existing Go toolchain and NDK ARM64/API23 C and C++ compilers, produces a PIE
+test executable, and disables module/toolchain downloads. `ANDROID_HOME`,
+`ANDROID_SDK_ROOT`, `ANDROID_NDK_HOME` and `ADB` can select existing tools.
+The normal runtime exports supply 169 JSON, PNG and PCM resource files, copied
+through a temporary local staging directory into the selected device's
+`/data/local/tmp/xenon2-frontend-logic/runtime`. `XENON2_RUNTIME_TEST_DIR` can
+select a different existing export directory. Test binaries and captured
+output stay under `.local/android-frontend-logic`; `test.log` and `status.txt`
+preserve the run's output and exit status, including Android GoLog output.
+
+The `android && xenon2_logic_only` test build calls `m.Run` directly. Dedicated
+graphics fixtures skip, and optional pixel captures in frontend boundary tests
+do nothing so their remaining logic assertions still execute. Normal desktop
+tests retain their Ebitengine graphics loop. This runner does not verify Draw,
+ReadPixels, device rendering, audio playback or manual touch interaction, and
+passing a bounded route test does not establish completion of all five stages.

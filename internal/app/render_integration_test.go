@@ -13,28 +13,11 @@ import (
 	"xenon2/internal/visualassets"
 )
 
-// ReadPixels needs a running graphics context. Execute the test suite from
-// Update, matching Ebitengine's own internal testing run-loop pattern.
-type renderTestLoop struct {
-	tests    *testing.M
-	exitCode int
-}
-
-func (g *renderTestLoop) Update() error            { g.exitCode = g.tests.Run(); return ebiten.Termination }
-func (*renderTestLoop) Draw(*ebiten.Image)         {}
-func (*renderTestLoop) Layout(int, int) (int, int) { return ScreenWidth, ScreenHeight }
-
-func TestMain(m *testing.M) {
-	loop := &renderTestLoop{tests: m, exitCode: 1}
-	if err := ebiten.RunGame(loop); err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		os.Exit(1)
-	}
-	os.Exit(loop.exitCode)
-}
-
 func renderIntegrationGame(t *testing.T) (*Game, *Bundle) {
 	t.Helper()
+	if logicOnlyTests {
+		t.Skip("graphics fixture requires the normal graphics test runner")
+	}
 	root := os.Getenv("XENON2_RUNTIME_TEST_DIR")
 	if root == "" {
 		t.Skip("local exported resources not supplied")
@@ -54,6 +37,11 @@ func renderIntegrationGame(t *testing.T) (*Game, *Bundle) {
 
 func renderIntegrationPixels(t *testing.T, g *Game, name string) *image.NRGBA {
 	t.Helper()
+	if logicOnlyTests {
+		// Frontend boundary tests use this helper for optional captures and
+		// continue with logic assertions. Their assertions must still run.
+		return nil
+	}
 	screen := ebiten.NewImage(ScreenWidth, ScreenHeight)
 	defer screen.Dispose()
 	g.Draw(screen)
