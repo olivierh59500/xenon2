@@ -6,6 +6,7 @@ set -eu
 usage() {
     echo "Usage: $0 [--build-only] [--run TEST_REGEXP]" >&2
     echo "Device execution requires ANDROID_SERIAL; the default selects the real title-idle admission test." >&2
+    echo "XENON2_TEST_WATCHDOG_MS optionally selects a runner deadline from 1 to 470000 milliseconds (default 470000)." >&2
 }
 
 build_only=false
@@ -25,6 +26,15 @@ while [ "$#" -gt 0 ]; do
         *) usage; exit 2 ;;
     esac
 done
+
+watchdog_ms=${XENON2_TEST_WATCHDOG_MS:-470000}
+case "$watchdog_ms" in
+    ''|*[!0-9]*) echo "XENON2_TEST_WATCHDOG_MS must be an integer from 1 to 470000." >&2; exit 2 ;;
+esac
+if [ "${#watchdog_ms}" -gt 6 ] || [ "$watchdog_ms" -lt 1 ] || [ "$watchdog_ms" -gt 470000 ]; then
+    echo "XENON2_TEST_WATCHDOG_MS must be an integer from 1 to 470000." >&2
+    exit 2
+fi
 
 project_root=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 android_sdk=${ANDROID_HOME:-${ANDROID_SDK_ROOT:-}}
@@ -116,21 +126,32 @@ rm -f "$test_log" "$test_status"
 "$adb_path" -s "$ANDROID_SERIAL" push "$test_binary" "$remote_root/app-logic.test" >/dev/null
 "$adb_path" -s "$ANDROID_SERIAL" push "$stage_root/runtime" "$remote_root/" >/dev/null
 "$adb_path" -s "$ANDROID_SERIAL" shell "chmod 700 '$remote_root/app-logic.test'"
-echo "Running selected logic tests on $ANDROID_SERIAL with an eight-minute test timeout..."
+echo "Running selected logic tests on $ANDROID_SERIAL with a ${watchdog_ms}ms runner watchdog and an eight-minute Go timeout..."
 remote_exit=0
 "$adb_path" -s "$ANDROID_SERIAL" shell \
-    "exec env XENON2_RUNTIME_TEST_DIR='$remote_root/runtime' XENON2_TEST_OUTPUT='$remote_root/test.log' XENON2_TEST_STATUS='$remote_root/status.txt' XENON2_TEST_PATTERN_BASE64='$test_pattern_base64' XENON2_HUMAN_PRESENTATION_CHECK=1 XENON2_DEMO_PROGRESS_CHECK=1 '$remote_root/app-logic.test' -test.v -test.timeout=8m" \
+    "exec env XENON2_RUNTIME_TEST_DIR='$remote_root/runtime' XENON2_TEST_OUTPUT='$remote_root/test.log' XENON2_TEST_STATUS='$remote_root/status.txt' XENON2_TEST_PATTERN_BASE64='$test_pattern_base64' XENON2_TEST_WATCHDOG_MS='$watchdog_ms' XENON2_HUMAN_PRESENTATION_CHECK=1 XENON2_DEMO_PROGRESS_CHECK=1 '$remote_root/app-logic.test' -test.v -test.timeout=8m" \
     || remote_exit=$?
-"$adb_path" -s "$ANDROID_SERIAL" pull "$remote_root/test.log" "$test_log" >/dev/null || remote_exit=1
-"$adb_path" -s "$ANDROID_SERIAL" pull "$remote_root/status.txt" "$test_status" >/dev/null || remote_exit=1
+"$adb_path" -s "$ANDROID_SERIAL" pull "$remote_root/test.log" "$test_log" >/dev/null || { if [ "$remote_exit" -eq 0 ]; then remote_exit=1; fi; }
+"$adb_path" -s "$ANDROID_SERIAL" pull "$remote_root/status.txt" "$test_status" >/dev/null || { if [ "$remote_exit" -eq 0 ]; then remote_exit=1; fi; }
 if [ -f "$test_log" ]; then
     cat "$test_log"
 fi
 echo "Local logic-test output: $test_log"
-if [ "$remote_exit" -ne 0 ]; then
+if [ ! -f "$test_status" ]; then
+    echo "Android logic tests produced no completion status (remote exit $remote_exit). The runner did not complete; inspect $test_log for a timeout or process termination." >&2
+    if [ "$remote_exit" -eq 0 ]; then remote_exit=1; fi
     exit "$remote_exit"
 fi
-if [ ! -f "$test_status" ] || [ "$(cat "$test_status")" != exit=0 ]; then
+reported_status=$(cat "$test_status")
+if [ "$reported_status" = exit=124 ]; then
+    echo "Android logic test runner timed out; this is not a gameplay assertion failure. Goroutine stacks are in $test_log." >&2
+    exit 124
+fi
+if [ "$remote_exit" -ne 0 ]; then
+    echo "Android logic test runner exited with status $remote_exit (completion status: $reported_status)." >&2
+    exit "$remote_exit"
+fi
+if [ "$reported_status" != exit=0 ]; then
     echo "The Android test runner did not report successful completion." >&2
     exit 1
 fi
