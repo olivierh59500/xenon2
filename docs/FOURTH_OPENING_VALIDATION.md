@@ -158,3 +158,10 @@ weapon projectile then reduces its health from 12 to 10. The same fixed command
 macro loses the ship to live streams despite remaining clear of terrain. Route
 feasibility is therefore separate from combat safety; the next policy retains
 the geometric objective while leaving immediate avoidance active.
+
+The excluded geometric-objective comparison crosses to the left upper passage
+in the connected run, but loses its first ship at frame 2145. Three earlier
+stream-body contacts leave fifteen shield; two top-passage contacts consume it.
+This is worse than the phase-correct controller's bounded survival result, so
+the crossing policy is not promoted. The terrain route remains a valid source
+proof; anticipating live stream contacts along it remains required.
