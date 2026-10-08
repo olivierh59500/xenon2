@@ -276,6 +276,7 @@ func (f *WorldForecast) Load(source *World) error {
 		storage.weapons = *source.Weapons
 		storage.weapons.projectiles = forecastActorSliceReuse(&storage.weaponProjectiles, source.Weapons.projectiles)
 		storage.weapons.context = world.weaponContext(Input{}, false)
+		storage.weapons.context.ObservePointImpact = nil
 		storage.weapons.newID = storage.weapons.context.NextID
 		world.Weapons = &storage.weapons
 	}
@@ -333,4 +334,19 @@ func (f *WorldForecast) Advance(input Input) (ForecastResult, error) {
 		}
 	}
 	return f.result(), nil
+}
+
+// AdvanceObserved applies one isolated pass and reports point queries before
+// their damage callbacks. The observer may inspect State but must not modify it.
+// It is cleared on return and never becomes part of a loaded forecast.
+func (f *WorldForecast) AdvanceObserved(input Input, observer func(WeaponPointImpact)) (ForecastResult, error) {
+	if f.world == nil {
+		return ForecastResult{}, fmt.Errorf("forecast has not been loaded")
+	}
+	if f.world.Weapons == nil {
+		return f.result(), fmt.Errorf("point observation requires a weapon runtime")
+	}
+	f.world.Weapons.context.ObservePointImpact = observer
+	defer func() { f.world.Weapons.context.ObservePointImpact = nil }()
+	return f.Advance(input)
 }

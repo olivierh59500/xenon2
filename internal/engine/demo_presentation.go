@@ -9,6 +9,7 @@ type PresentationPilot struct {
 	// PALRefreshes matches the host's gameplay cadence; zero uses three ticks.
 	PALRefreshes            int
 	forecast                WorldForecast
+	guardianAimForecast     WorldForecast
 	middleForecastPolicy    DemoPilot
 	middleWorkers           *thirdMiddleForecastWorkers
 	planner                 DemoPilot
@@ -357,7 +358,7 @@ func (p *PresentationPilot) selectiveFire(w *World) bool {
 }
 
 func (p *PresentationPilot) selectiveFireForMotion(w *World, motion MotionInput) bool {
-	if !presentationShotOpportunityForMotion(w, motion) {
+	if !presentationShotOpportunityWithForecast(w, motion, &p.guardianAimForecast, p.PALRefreshes) {
 		p.burstUntil = 0
 		return false
 	}
@@ -384,6 +385,17 @@ func presentationShotOpportunity(w *World) bool {
 }
 
 func presentationShotOpportunityForMotion(w *World, motion MotionInput) bool {
+	if !presentationGuardianAimSupported(w) {
+		return presentationShotOpportunityWithForecast(w, motion, nil, 3)
+	}
+	var guardianForecast WorldForecast
+	return presentationShotOpportunityWithForecast(w, motion, &guardianForecast, 3)
+}
+
+func presentationShotOpportunityWithForecast(w *World, motion MotionInput, guardianForecast *WorldForecast, palRefreshes int) bool {
+	if opportunity, supported := presentationGuardianShotOpportunity(w, motion, guardianForecast, palRefreshes); supported {
+		return opportunity
+	}
 	forecast := newDemoMotionForecast(w)
 	// Terrain contact can start a rewind without suppressing this pass's
 	// weapon phase. Its resulting gun position still determines the shot ray.

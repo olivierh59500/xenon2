@@ -189,6 +189,24 @@ callbacks to open the gates and compare roles with copied damage callbacks.
 These role tests do not establish complete fourth/fifth boss victories or correct
 firing lanes through intervening armor bands.
 
+Guardian primary-fire selection now observes the actual first new volley inside
+an isolated forecast, immediately before each ordinary point-hit callback. It
+retains the original firing cadence, projectile ID, equipment slot and source
+moving-list order. An armor hit remains a consumed shot even when an older
+projectile subsequently destroys a satellite and unlocks a core in the same
+pass. Looking only at the final snapshot would falsely credit that core hit.
+
+The observer is absent from normal gameplay, cleared after the predicted pass
+and dropped when loading another forecast. Observed/plain simulations match in
+all five original arena scenes. Clear strips, blocked bands, actual double-shot
+offsets, rear/side ownership and older-shot interference have native-callback
+regressions. The runtime pilot reuses its private aim forecast. This helper
+checks forward/double primary volleys in active fourth/fifth guardian scenes;
+other scenes and weapon kinds retain their existing aiming path. Eighteen
+future passes apply the selected movement first, then coast while holding fire.
+These are explicit counterfactual controls, not a claim that every future pilot
+turn or complete boss strategy is already optimal.
+
 The six-pass exact guard also protects the post-merchant third corridor. Cannon
 preparation derives firing lanes from each live source instance, selects the
 nearest passed row and tries another reachable target when a neighboring gun is

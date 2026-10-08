@@ -22,6 +22,7 @@ type WeaponContext struct {
 	AvailableActorSlots                               int
 	Targets                                           []WeaponTarget
 	HitPoint                                          func(int, int, uint16) bool
+	ObservePointImpact                                func(WeaponPointImpact)
 	HitRect                                           func(CollisionRect, uint16, bool) bool
 	HitLaser                                          func(CollisionRect, uint16) bool
 	Sound                                             func(string)
@@ -39,6 +40,16 @@ type WeaponContext struct {
 	StoreActorResidue                                 func(ActorPoolBinding)
 	ReadActorResidue                                  func(int) (ActorResidue, bool)
 	ReadWeaponOwnerResidue                            func(int) (ActorResidue, bool)
+}
+
+// WeaponPointImpact identifies a point query immediately before its native hit
+// callback. OwnerSlot is the equipment slot index, with the primary in slot zero.
+// Observers must inspect state without changing it.
+type WeaponPointImpact struct {
+	ProjectileID, OwnerSlot int
+	Kind                    string
+	X, Y                    int
+	Damage                  uint16
 }
 
 // WeaponRenderItem is a named attachment or projectile at a display anchor.
@@ -568,6 +579,7 @@ func (r *WeaponRuntime) AdvanceEquipment(c WeaponContext) error {
 			for _, shot := range shots {
 				if p := r.add("small-shot", "", shot.X, shot.Y, slot.Tier); p != nil {
 					p.Small = shot
+					p.Owner = index
 					p.Render.Sprite = shot.SpriteName
 					r.storeProjectile(c, p, false)
 				}
@@ -896,8 +908,14 @@ func (r *WeaponRuntime) advanceProjectiles(c WeaponContext, onlyID int) error {
 			// Appending effects can grow storage; reacquire the current projectile.
 			p = &r.projectiles[i]
 		}
-		if queryPoint && c.HitPoint != nil && c.HitPoint(int(p.Render.X), int(p.Render.Y), damage) {
-			p.Render.Active = false
+		if queryPoint && c.HitPoint != nil {
+			if c.ObservePointImpact != nil {
+				c.ObservePointImpact(WeaponPointImpact{ProjectileID: p.Render.ID, OwnerSlot: p.Owner,
+					Kind: p.Render.Kind, X: int(p.Render.X), Y: int(p.Render.Y), Damage: damage})
+			}
+			if c.HitPoint(int(p.Render.X), int(p.Render.Y), damage) {
+				p.Render.Active = false
+			}
 		}
 		if queryRect && (c.HitRect != nil || p.Render.Kind == "laser" && c.HitLaser != nil) && !area.Empty() {
 			if p.Render.Kind == "laser" && c.HitLaser != nil {
