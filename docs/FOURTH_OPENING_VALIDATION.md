@@ -220,3 +220,22 @@ the older camera 3863 stall, not a fourth-stage victory or graphical frame rate.
 The earlier weak carried profile and its failed route experiments remain
 distinct. Third-final reserve quality and both remaining stages still require
 connected validation before the early policy becomes the default.
+
+## Fourth middle baseline
+
+The natural continuation reaches the same full-shield middle admission and
+then destroys the tail through ordinary shots. It damages satellite18 from20
+to12health, retains its ship and both continues, but stalls with four satellites
+remaining. At frame3540/camera2176 the ship is(232,81), shield23, while the
+satellites are at screen heights215/279, below the viewport. The current
+upward-only target choice stops firing rather than reversing to expose them.
+The diagnostic ends after60simulated seconds without further HP progress.
+Its309.92s total includes the genuine earlier campaign; this is not a boss win.
+
+The same run identifies the late third-stage energy loss independently. At
+frame8883/camera550, a tag228/path55 strong body intersects the original player
+prefix during terrain rewind, causing one16-point hit(23→7). A separate final
+projectile causes4points at frame9486. Copied single-step callbacks reproduce
+both outcomes exactly. Earlier anticipation and safe boss positioning remain
+required; changing original damage or weakening reserve tests would hide these
+controller errors.
