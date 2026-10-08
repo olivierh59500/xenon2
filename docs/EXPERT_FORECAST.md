@@ -484,3 +484,19 @@ rewind state with World.Step for active, disabled and absent cores. Active
 cases fail before the correction and pass afterward; other scopes stay
 unchanged. Full engine/source and focused race checks pass. This corrects
 prediction, separately from the still-unverified fourth-middle rear strategy.
+
+## Prepare the late reinforced formation
+
+The third-stage controller now prepares a clear position before the original
+camera 576 seven-part strong formation on path55. Eligibility requires the last
+640 cannon's real destroyed patch, its passed encounter cursor, and a clear
+source stencil. It stops after that formation clears. Movement is proposed
+before the single firing decision and still passes through the exact guard.
+
+The original-resource comparison admits all seven parts and retains 35 shield,
+versus 19 without preparation; both branches survive 32 more passes with rewind
+zero. A genuine complete-intro Pixel comparison also avoids the observed
+16-point contact and reaches the final guardian with 23 shield instead of 7.
+It completes level three with the same ship and two continues, then repairs
+to 39 for level four. The final fight still loses energy, so the unchanged-shield
+quality check and the full five-stage expert target remain unmet.

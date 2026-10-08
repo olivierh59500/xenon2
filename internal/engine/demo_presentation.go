@@ -72,6 +72,11 @@ func (p *PresentationPilot) NormalInput(w *World) Input {
 		// holding one direction can collide after a path changes heading.
 		input.Motion = demoRouteMotionWithClearance(w, x, w.ScrollY+y, y, 4)
 	}
+	if !p.planner.Config.DisableBossAlignment {
+		if motion, prepare := thirdPath55Preparation(w); prepare {
+			input.Motion = motion
+		}
+	}
 	input.Fire = p.selectiveFireForMotion(w, input.Motion)
 	if w.blockedFireUntilRelease || w.Dive.Phase != 0 {
 		input.Fire = false
