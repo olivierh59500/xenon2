@@ -59,6 +59,14 @@ has installed the view and context.
 
 ## Verification
 
+The 8 October build from runtime `cbb3860` passes the complete-intro locked-device
+logic check through all four fourth-middle satellites in 38.26 seconds. It
+retains 27 shield, one ship and two continue credits at frame 3983; the core
+still has 175 health. The ARM64 debug APK passes signature and 16 KiB alignment
+checks and is installed on the Pixel 10a. Cold launch takes 1,475 ms and its
+process remains active. This installation check does not verify device graphics
+or smoothness, and the remaining boss/campaign controller is unfinished.
+
 ```sh
 GOWORK=off go test ./internal/controls
 GOWORK=off go vet ./internal/controls ./mobile
