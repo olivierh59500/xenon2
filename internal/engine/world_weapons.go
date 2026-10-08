@@ -23,6 +23,7 @@ type WeaponContext struct {
 	Targets                                           []WeaponTarget
 	HitPoint                                          func(int, int, uint16) bool
 	ObservePointImpact                                func(WeaponPointImpact)
+	ObserveRectImpact                                 func(WeaponRectImpact)
 	HitRect                                           func(CollisionRect, uint16, bool) bool
 	HitLaser                                          func(CollisionRect, uint16) bool
 	Sound                                             func(string)
@@ -89,20 +90,22 @@ type runtimeMount struct {
 }
 
 type runtimeWeaponProjectile struct {
-	Binding       ActorPoolBinding
-	Render        WeaponRenderItem
-	Animation     AnimationState
-	AnimationData visualassets.NamedActorAnimation
-	Small         SmallShot
-	Cannon        CannonBallMotion
-	Laser         LaserBeamState
-	Flame         FlameShot
-	Spark         SparkShot
-	Mine          MineState
-	Bomb          BombState
-	Homing        HomingMissileState
-	Owner         int
-	SparkSlot     int
+	Binding             ActorPoolBinding
+	Render              WeaponRenderItem
+	Animation           AnimationState
+	AnimationData       visualassets.NamedActorAnimation
+	Small               SmallShot
+	Cannon              CannonBallMotion
+	Laser               LaserBeamState
+	Flame               FlameShot
+	Spark               SparkShot
+	Mine                MineState
+	Bomb                BombState
+	Homing              HomingMissileState
+	Owner               int
+	EquipmentOwner      int
+	EquipmentOwnerKnown bool
+	SparkSlot           int
 }
 
 // WeaponRuntime owns the original equipment-order state and its projectiles.
@@ -603,6 +606,7 @@ func (r *WeaponRuntime) AdvanceEquipment(c WeaponContext) error {
 			}
 			if fired {
 				if p := r.add("cannon-ball", "cannon-ball", m.X, m.Y-11, 0); p != nil {
+					p.EquipmentOwner, p.EquipmentOwnerKnown = index, true
 					p.Cannon = CannonBallMotion{X: m.X, Y: m.Y - 11}
 					r.storeProjectile(c, p, false)
 				}
@@ -628,6 +632,7 @@ func (r *WeaponRuntime) AdvanceEquipment(c WeaponContext) error {
 			if m.Laser.Tick(c.Pulse, c.Materializing) {
 				weaponSound(c, 1, "synthesized-effect-06")
 				if p := r.add("laser", "", m.X, m.Y, slot.Tier); p != nil {
+					p.EquipmentOwner, p.EquipmentOwnerKnown = index, true
 					p.Laser = NewLaserBeamState(slot.Tier)
 					p.Owner = index
 					p.Binding.Residue.OwnerSlot = m.Binding.Slot
@@ -918,6 +923,16 @@ func (r *WeaponRuntime) advanceProjectiles(c WeaponContext, onlyID int) error {
 			}
 		}
 		if queryRect && (c.HitRect != nil || p.Render.Kind == "laser" && c.HitLaser != nil) && !area.Empty() {
+			if c.ObserveRectImpact != nil {
+				owner := -1
+				if p.EquipmentOwnerKnown {
+					owner = p.EquipmentOwner
+				}
+				c.ObserveRectImpact(WeaponRectImpact{ProjectileID: p.Render.ID, OwnerSlot: owner,
+					Kind: p.Render.Kind, Area: area, Damage: damage,
+					AllTargets: p.Render.Kind == "laser" || p.Render.Kind == "mine" || p.Render.Kind == "bomb",
+					Laser:      p.Render.Kind == "laser" && c.HitLaser != nil})
+			}
 			if p.Render.Kind == "laser" && c.HitLaser != nil {
 				if c.HitLaser(area, damage) {
 					p.Render.Active = false

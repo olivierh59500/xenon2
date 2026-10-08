@@ -39,6 +39,7 @@ func (w *World) weaponContext(input Input, pulse bool) WeaponContext {
 		ReadWeaponOwnerResidue: callbacks.ReadWeaponOwnerResidue,
 		HitPoint:               callbacks.HitPoint, HitRect: callbacks.HitRect, HitLaser: callbacks.HitLaser,
 		ObservePointImpact: callbacks.ObservePointImpact,
+		ObserveRectImpact:  callbacks.ObserveRectImpact,
 		Sound:              callbacks.Sound, SoundVoice: callbacks.SoundVoice, SoundVoiceIfEmpty: callbacks.SoundVoiceIfEmpty,
 		ImmediateSoundVoice: callbacks.ImmediateSoundVoice, EffectActive: callbacks.EffectActive, StopEffects: callbacks.StopEffects,
 	}

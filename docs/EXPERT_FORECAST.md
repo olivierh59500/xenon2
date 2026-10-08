@@ -337,3 +337,25 @@ with two ordinary speed upgrades compares held controls with replanned tactical
 movement: held controls lose six shield; the tactical path retains all 39.
 Prediction leaves the live pool, controller and random stream unchanged. These
 isolated tests do not establish a fifth-stage boss victory.
+
+## Mounted weapon rectangle queries
+
+`WorldForecast.AdvanceWeaponObserved` can report both point and rectangle queries
+immediately before their native hit callbacks. The existing point-only method
+retains its behavior. Logical cannon/laser equipment ownership is separate from
+physical owner fields, which still control their original update and slot state.
+Other rectangle families report unknown logical ownership until supported.
+
+The optional observer is absent from live gameplay, cleared after each observed
+pass and discarded on forecast reload, including cross-forecast copies. The
+read-only usefulness predicate follows moving-list order, shared groups, native
+guardian damage eligibility and laser absorption. A satellite border or an armor
+band does not become a valid target merely because a wider rectangle also covers
+a vulnerable region behind it.
+
+Isolated original-resource fifth-middle fixtures initialize a hypothetical left
+cannon or laser. Their offset shots reduce core health from 200 to 198 and 197
+respectively while the basic frontal ray misses. Observed and unobserved source
+steps produce identical state, and the live source world remains unchanged.
+These are weapon-capability proofs, not the captured campaign equipment or a
+connected boss victory. The live pilot has not yet adopted rectangle aiming.

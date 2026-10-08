@@ -285,6 +285,7 @@ func (f *WorldForecast) Load(source *World) error {
 		world.Weapons = &storage.weapons
 		storage.weapons.context = world.weaponContext(Input{}, false)
 		storage.weapons.context.ObservePointImpact = nil
+		storage.weapons.context.ObserveRectImpact = nil
 		storage.weapons.newID = storage.weapons.context.NextID
 	}
 	f.world = world
@@ -354,6 +355,9 @@ func (f *WorldForecast) AdvanceObserved(input Input, observer func(WeaponPointIm
 		return f.result(), fmt.Errorf("point observation requires a weapon runtime")
 	}
 	f.world.Weapons.context.ObservePointImpact = observer
-	defer func() { f.world.Weapons.context.ObservePointImpact = nil }()
+	f.world.Weapons.context.ObserveRectImpact = nil
+	defer func() {
+		f.world.Weapons.context.ObservePointImpact, f.world.Weapons.context.ObserveRectImpact = nil, nil
+	}()
 	return f.Advance(input)
 }
