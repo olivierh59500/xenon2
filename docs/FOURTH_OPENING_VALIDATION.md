@@ -357,3 +357,23 @@ damage an upper one. A terrain-rewind exit then exposes the ship to another
 16-point companion contact. The experiment remains alive but cannot finish the
 fight. These results guide the next avoidance correction and are not enabled in
 the installed build or reported as a complete guardian victory.
+
+## Affordable side-shot preparation
+
+A read-only full-intro Pixel replay rechecks all unchanged first-three-stage
+reserves and measures the real merchants. The third final merchant opens with
+2,800 cash and 23 shield. Its native 500-cost repair restores 39 shield, leaving
+2,300 cash; Side Shot costs 1,000 and is in stock. The existing controller leaves
+without spending that balance. The strict route passes in 293.34 seconds. A
+different purchase still needs validation through the actual merchant interface.
+
+An isolated clone of the genuinely reached, tail-defeated middle-guardian state
+tests that equipment's purpose. Installing Side Shot through the native item
+initializer removes Rear Shot. From an explicitly arranged, stencil-clear left
+flank, ordinary controls and actual owner-6 bullets destroy all four satellites
+in 288 source passes. The 72 useful new side-bullet hits preserve one ship and
+both continues; three ordinary projectile hits reduce shield from 23 to 11.
+All satellite HP reaches zero, with no terrain contact or rewind. Focused race
+checks pass in 8.145 seconds. The core remains at its original 175 HP, and no
+boss reward or merchant is claimed. This establishes a usable weapon strategy,
+not an earned purchase, navigation route or complete boss victory.
