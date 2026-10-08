@@ -58,6 +58,12 @@ terrain coverage, cash and carrier rewards, checkpoint recovery, alternating
 players and the shared 159-slot allocator have source comparisons. Terrain and
 sprite transparency use their distinct original coverage formats.
 
+Pending terrain rewind now continues across dive admission, including history
+restoration and crushing; diving suppresses new contacts only. The world and
+movement forecast agree with 648 original ship/scroll boundaries on the first
+three maps. A normal-input regression requests a dive on the wall-contact pass
+and verifies the saved position is restored on the following pass.
+
 Invulnerability uses its original animated aura in the projectile list. Its
 counter freezes during ship materialization and successive pickups extend the
 existing aura. The source meters for invulnerability, diving and Nashwan use the

@@ -43,7 +43,7 @@ func (s *demoMotionForecast) advanceWithTouchCache(w *World, input MotionInput, 
 	s.player.SpeedTier = w.Equipment.SpeedTier
 	s.player.ScrollStep = w.BaseScrollStep
 	touching := func() bool {
-		if w.Dive.Phase != 0 || w.Coverage == nil || w.Level.PlayerStencil == nil {
+		if w.Coverage == nil || w.Level.PlayerStencil == nil {
 			return false
 		}
 		if cache != nil {
@@ -51,22 +51,20 @@ func (s *demoMotionForecast) advanceWithTouchCache(w *World, input MotionInput, 
 		}
 		return w.Coverage.Touches(s.player.X, s.player.Y, s.scroll.Y, *w.Level.PlayerStencil)
 	}
-	handled, crushed := false, false
-	if w.Dive.Phase == 0 {
-		// Advance only consults contact while Timer < 0.
-		contact := false
-		if s.rewind.Timer < 0 {
-			contact = touching()
-		}
-		handled, crushed = s.rewind.Advance(&s.player, s.scroll.Y, w.BaseScrollStep, contact)
+	// Pending terrain history also runs underwater; only new contact is
+	// suppressed by diving. Advance consults contact while Timer < 0.
+	contact := false
+	if s.rewind.Timer < 0 {
+		contact = touching()
 	}
+	handled, crushed := s.rewind.Advance(&s.player, s.scroll.Y, w.BaseScrollStep, contact)
 	if crushed {
 		return false
 	}
 	if !handled {
 		s.player.Advance(input, MotionContext{ScrollY: s.scroll.Y, VisitedScrollY: s.scroll.Maximum, BaseScrollStep: w.BaseScrollStep})
 		s.rewind.Record(s.scroll.Y, s.player.X, s.player.Y)
-		if touching() {
+		if w.Dive.Phase == 0 && touching() {
 			s.rewind.Timer, s.player.Inertia = 1, 0
 			s.scroll.Maximum = max(s.scroll.Maximum, s.scroll.Y+16)
 			return false
@@ -76,7 +74,7 @@ func (s *demoMotionForecast) advanceWithTouchCache(w *World, input MotionInput, 
 		s.scroll.Maximum = max(s.scroll.Maximum, 2480)
 	}
 	s.scroll.Advance(s.player.ScrollStep, w.BaseScrollStep, input.Down)
-	return !touching()
+	return w.Dive.Phase != 0 || !touching()
 }
 
 // demoRouteMotion can turn within the horizon instead of requiring one held

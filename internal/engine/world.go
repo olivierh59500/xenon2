@@ -597,13 +597,12 @@ func (w *World) Step(input Input) error {
 	}
 	if !playerContactStopped && w.PlayerAlive {
 		touching := false
-		if w.Coverage != nil && w.Dive.Phase == 0 {
+		// Diving suppresses new contacts, but an already pending rewind still
+		// follows its history and terrain/crush test in the source callback.
+		if w.Rewind.Timer < 0 && w.Coverage != nil {
 			touching = w.Coverage.Touches(w.Player.X, w.Player.Y, w.ScrollY, *w.Level.PlayerStencil)
 		}
-		handled, crushed := false, false
-		if w.Dive.Phase == 0 {
-			handled, crushed = w.Rewind.Advance(&w.Player, w.ScrollY, w.BaseScrollStep, touching)
-		}
+		handled, crushed := w.Rewind.Advance(&w.Player, w.ScrollY, w.BaseScrollStep, touching)
 		if crushed {
 			w.destroyPlayer()
 		}

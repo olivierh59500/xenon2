@@ -467,6 +467,10 @@ with 35 shield; this is not yet proof of completing that route or the campaign.
 Terrain rewind reads its contact argument only while its timer is negative.
 The motion forecast now skips the initial stencil query when that argument
 cannot be used, retaining the later movement and camera contact checks.
+Diving suppresses new contacts but does not suspend a pending rewind. The
+forecast therefore retains its history restoration, negative-timer contact
+query and crushing result underwater, matching the live world and original
+ship callback. The live world also omits the unused initial contact query.
 A 360-case comparison covers clear and covered poses on all five original maps,
 timers −17/−1/0/1 and all nine controls. Complete forecast values, including every
 history entry, match the earlier implementation. Three native search scenes

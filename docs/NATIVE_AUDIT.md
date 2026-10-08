@@ -306,6 +306,25 @@ selection, timer decrement, upper/lower screen clamps, adjusted reverse scroll
 and terminal crushing condition. The integrated terrain-contact sequence still
 requires a full original playthrough comparison.
 
+### Diving with a pending terrain rewind
+
+The original ship callback at `0x5fbe` processes pending history even while the
+ship is diving. The dive check at `0x6074` suppresses a new terrain contact,
+after ordinary motion; it does not cancel a rewind already started. The Go
+world and its movement forecast now preserve that distinction. A dive requested
+on the same pass as a wall contact restores the saved position on the next pass,
+and a still-covered negative rewind retains the original crushing boundary.
+
+A new local trace executes the recovered ship and end-of-pass scroll routines
+for 648 boundaries across levels one through three. It compares clear/covered
+poses, dive phases zero/one/four, six rewind timers, both movement directions,
+upper/lower history clamps, camera bounds, inertia and all seventeen history
+entries. This includes 360 underwater entries with pending rewind and 36
+underwater crushes. The previous Go behavior fails on each map; the corrected
+world matches every case. Ordinary tests also exercise contact and dive through
+actual `World.Step` input, clear recovery, a new underwater contact and terminal
+crushing. These are isolated callback comparisons, not an Amiga playthrough.
+
 ## Remaining third-level encounters and fourth-level guardians
 
 All third-level fixed selectors now have semantic Go controllers. The extending
