@@ -24,6 +24,10 @@ their live damage colliders independently of their terrain drawing and flashes.
 The subsequent middle-guardian approach reaches checkpoint 2368 with the same
 23 shield, carried ship and two continues. The guardian is admitted normally;
 its fight and the later fifth-stage route remain unfinished.
+The current route also defeats that middle guardian at frame 3087, drains its
+ten real reward coins and enters the actual merchant at frame 3195. The native
+500-cost fifth-level full repair restores 39 shield with the same ship and both
+continue credits. The second half and final guardian remain unfinished.
 
 ## Fixed encounters and scripted arenas
 

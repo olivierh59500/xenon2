@@ -67,7 +67,7 @@ func TestFifthPracticeReplaysOriginalCallbacksAndDoesNotConsumeRepeatedInputsOpt
 			t.Fatalf("native route diverged at%d", index)
 		}
 	}
-	if w.Frame != 2241 || w.Checkpoint.ScrollY != 2368 || w.Equipment.Shield != 23 || minimum != 23 {
+	if w.Frame != 3195 || w.Checkpoint.ScrollY != 2368 || w.Equipment.Shield != 7 || minimum != 7 || !w.FifthMiddle.Defeated || !w.ShopReady || w.PendingExitDrops != 0 || w.Money != 500 {
 		t.Fatal("source route omitted its real checkpoint or native health pickup")
 	}
 	if _, ok := p.fifthPracticedOpeningInput(w); ok || p.fifthPractice != nil {

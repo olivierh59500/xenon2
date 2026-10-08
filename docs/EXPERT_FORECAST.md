@@ -737,3 +737,24 @@ and passes with a real Laser damage callback while the primary misses. Read-only
 and existing rectangle-observer checks pass, as does the full-intro fifth
 guardian approach. This corrects firing recognition without claiming a fifth
 guardian victory.
+
+## Earned fifth middle victory and merchant return
+
+The native reverse allowance gives the middle fight a longer firing window
+near camera 2336. A bounded search of ordinary directions and held fire defeats
+the actual core at frame 3087, camera 2314, with seven shield remaining. The core
+reaches its original unsigned lethal value 65532 through real weapon callbacks;
+no health, position, collision or camera is assigned by the controller.
+
+The integrated full-intro frontend independently reproduces the fight with the
+carried ship and both continues. All ten emitted coins drain before the real
+middle merchant at frame 3195, camera 2206, with 500 cash and score 215930.
+The original fifth-level prices halve the large repair to 500; the normal shop
+quote and confirmation restore 39 shield and leave zero cash. The same-stage
+loader preserves the defeated middle guardian and returns to level five.
+
+The recorded route includes the ordinary reward drain and allows only its last
+forecast step to enter that merchant boundary. Live shop updates remain outside
+the route. Direct original-resource replay checks all 3,194 commands; the
+complete frontend victory/repair regression passes in 13.17 seconds. The second
+half, final guardian and full campaign comparison remain unfinished.

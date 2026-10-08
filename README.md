@@ -69,7 +69,10 @@ crosses all three barriers and the guided-missile corridor with the same ship
 and both continues. It reaches checkpoint 3424 with 39 shield after a genuine
 health pickup; its minimum is 23. Every proposed command is checked through an
 isolated copy of the Go simulation, and different entry states use the reactive
-controller. The remaining fifth-stage route and guardians are unfinished.
+controller. The route now also defeats the middle guardian, drains its ten
+real reward coins and buys a normal full repair at the fifth-level shop. The
+same ship and both continues survive. The second half and final guardian
+remain unfinished.
 The earned fifth-stage controller and near-lossless campaign remain unfinished.
 Beating the remaining guardians and validating the whole campaign remain active
 work.

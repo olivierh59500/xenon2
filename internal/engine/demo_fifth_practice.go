@@ -75,7 +75,7 @@ func fifthPracticeWindow(w *World, pal int) bool {
 	return w != nil && w.Level.Number == 5 && w.Frame >= 1 && w.Frame <= uint64(len(fifthOpeningControls)) &&
 		w.PlayerAlive && !w.GameOver && !w.Ready && !w.Cheats.Enabled() && w.Dive.Phase == 0 &&
 		w.ScreenClearFrames == 0 && !w.stepContinuation.active && !w.ShopReady && !w.ExitReady &&
-		!w.LevelFinished && w.PendingExitDrops == 0 && (w.FifthMiddle == nil || !w.FifthMiddle.Defeated) && w.FifthFinal == nil &&
+		!w.LevelFinished && w.FifthFinal == nil &&
 		w.Level.Ships != nil && w.Level.PlayerStencil != nil && w.Coverage != nil && w.Weapons != nil && thirdMiddlePALRefreshes(pal) == 3
 }
 
@@ -109,7 +109,8 @@ func (p *PresentationPilot) fifthPracticedOpeningInput(w *World) (Input, bool) {
 		q.forecast.AdvancePALTick()
 	}
 	result, err := q.forecast.Advance(input)
-	if err != nil || result.Boundary != ForecastRunning || !result.Alive || result.Lives != w.Equipment.Lives || fifthPracticeMarker(q.forecast.State()) != fifthOpeningMarkers[index+1] {
+	boundary := result.Boundary == ForecastRunning || index+1 == len(fifthOpeningControls) && result.Boundary == ForecastShop
+	if err != nil || !boundary || !result.Alive || result.Lives != w.Equipment.Lives || fifthPracticeMarker(q.forecast.State()) != fifthOpeningMarkers[index+1] {
 		p.fifthPractice = nil
 		return Input{}, false
 	}

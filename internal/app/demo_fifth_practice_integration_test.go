@@ -77,6 +77,11 @@ func TestPresentationPilotReachesFifthMiddleGuardianFromDefaultIntroOptional(t *
 	if os.Getenv("XENON2_HUMAN_PRESENTATION_CHECK") == "" {
 		t.Skip("enable the complete fifth guardian approach explicitly")
 	}
+	verifyPresentationFifthMiddleAdmission(t)
+}
+
+func verifyPresentationFifthMiddleAdmission(t *testing.T) *Game {
+	t.Helper()
 	g := verifyPresentationFifthTerrainCheckpoint(t)
 	minimum := 23
 	for update := 0; update < 60*75; update++ {
@@ -92,8 +97,53 @@ func TestPresentationPilotReachesFifthMiddleGuardianFromDefaultIntroOptional(t *
 				t.Fatalf("genuine middle admission differs: F%d C%d HP%d min%d cash%d score%d RNG%+v", w.Frame, w.ScrollY, w.Equipment.Shield, minimum, w.Money, w.Score, w.RandomState())
 			}
 			t.Logf("Complete intro reaches genuine fifth middle at frame%d checkpoint2368, shield23, same ship and two continues", w.Frame)
-			return
+			return g
 		}
 	}
 	t.Fatal("bounded fifth approach never admitted the original middle guardian")
+	return nil
+}
+
+func TestPresentationPilotDefeatsFifthMiddleAndRepairsThroughRealMerchantOptional(t *testing.T) {
+	if os.Getenv("XENON2_HUMAN_PRESENTATION_CHECK") == "" {
+		t.Skip("enable the complete earned fifth middle victory explicitly")
+	}
+	verifyPresentationFifthMiddleMerchantReturn(t)
+}
+
+func verifyPresentationFifthMiddleMerchantReturn(t *testing.T) *Game {
+	t.Helper()
+	g := verifyPresentationFifthMiddleAdmission(t)
+	defeated, merchant := false, false
+	minimum := 23
+	for update := 0; update < 60*300; update++ {
+		advanceFrontend(t, g, inputFrame{})
+		d := g.Driver.(*worldDriver)
+		w := d.world
+		if !g.DemoActive() || d.diagnostic || w.Cheats.Enabled() || !w.PlayerAlive || w.GameOver || w.Equipment.Lives != 1 || w.ContinueCredits != 2 || w.Level.Number != 5 {
+			t.Fatalf("fifth middle victory changed earned reserves: F%d HP%d", w.Frame, w.Equipment.Shield)
+		}
+		minimum = min(minimum, w.Equipment.Shield)
+		if w.FifthMiddle != nil && w.FifthMiddle.Defeated && !defeated {
+			if w.Frame != 3087 || w.ScrollY != 2314 || w.Equipment.Shield != 7 || w.PendingExitDrops != 10 || w.Score != 215930 || w.LevelFinished {
+				t.Fatal("core victory omitted native damage, ten coins or same-stage status")
+			}
+			defeated = true
+		}
+		if g.Screen == ShopScreen && !merchant {
+			if !defeated || g.shopFinal || w.Frame != 3195 || w.ScrollY != 2206 || w.Equipment.Shield != 7 || w.Money != 500 || w.PendingExitDrops != 0 || !w.ShopReady || w.ExitReady || w.LevelFinished {
+				t.Fatal("real middle merchant omitted native reward drain")
+			}
+			merchant = true
+		}
+		if merchant && g.Screen == LevelScreen && !w.Ready && !g.backdropOnly && (g.fade == nil || g.fade.Done) {
+			if w.Equipment.Shield != 39 || w.Money != 0 || minimum != 7 || !w.FifthMiddle.Defeated || w.LevelFinished {
+				t.Fatalf("native fifth repair/same-stage return differs: HP%d min%d cash%d", w.Equipment.Shield, minimum, w.Money)
+			}
+			t.Logf("Complete intro defeats fifth middle at3087, drains ten coins at3195, buys native500cost full repair and returns to fifth stage with same ship and two continues")
+			return g
+		}
+	}
+	t.Fatal("bounded earned fifth middle did not return from its genuine merchant")
+	return nil
 }
