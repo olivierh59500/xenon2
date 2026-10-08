@@ -124,3 +124,12 @@ The arena beam currently scores stream formations and projectiles, but omits
 the nodes themselves. The observed loadout already includes a cannon alongside
 the basic tier-one forward and rear guns. This diagnosis does not change the
 retained controller or establish an arena victory.
+
+An excluded node-risk correction removes all four repeated node contacts in the
+same connected ledger. Full shield is retained until frame 3270, and the first
+loss moves from frame 2451 to 5372. The remaining five eight-point hits come from
+stream heads at nearly the same published position, about 526 passes apart.
+The beam compares their updated future rectangles with a post-movement ship,
+while native contact uses the cached actor and pre-movement ship prefix. This
+later phase mismatch remains under correction; no middle-merchant victory is
+claimed by the improved diagnostic.
