@@ -390,3 +390,17 @@ retain identical nodes, queue, visited states, command sequences and results,
 including an exhausted9000-node search. Focused resource tests and race checks
 pass. Single M4 Max samples reduce the rear-corner benchmark54.37→35.43µs
 and the lane2.306→1.959ms; these are not Pixel frame-rate measurements.
+
+The same-binary Pixel10a comparison confirms complete search parity on all three
+poses. Single100ms samples measure rear-corner1.211→0.907ms, lane57.50→45.48ms,
+and exhausted9000-node search403.80→320.81ms. The costly search still exceeds a
+frame budget; this modest exact optimization does not make the whole controller
+ready for smooth mobile playback. No drawing was performed.
+
+The combined early-stage candidate also now checks its final guarded gun pose
+before retaining a level-one Fire command. It vetoes an unusable shot without
+advancing the burst state machine twice. The full original-resource engine suite
+passes, and its genuine first-two-stage result remains unchanged on Pixel.
+A strict third-stage run ends near the eight-minute limit without a completion
+status or test verdict, so downstream campaign validation remains incomplete.
+The candidate remains excluded from the default controller.
