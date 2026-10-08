@@ -235,3 +235,56 @@ on-screen arena and in-flight bullet packet isolate this boundary from firing
 cadence and navigation; they do not establish an earned campaign victory.
 Focused original/race checks pass in 2.341 seconds; the complete original-resource
 engine suite, including all retained native traces, passes in 17.977 seconds.
+
+## Blocking screen-clear collection
+
+An integrated original-resource test exposed a screen-clear ordering defect:
+after collecting reward 18, an older enemy shot still advanced and damaged the
+player in the same projectile traversal. The source callback instead blocks
+for 31 PAL ticks, then marks enemy shots dead before returning to that traversal.
+
+The Go world now retains its original input and physical saved-next cursor while
+the palette strobe runs. At tick 31, it performs the native sweep and resumes
+the remaining callbacks of the same frame. Friendly shots advance once; player,
+moving actors, equipment and frame initialization are not repeated. Synthetic
+unbound diagnostic lists retain their own cursors, and forecasts clone both
+forms of pending continuation without sharing live state.
+
+The demo director also waits for that frame to finish before sampling its next
+controls. Manual takeover remains immediate. Source tests cover all five levels,
+consecutive pickups, original-input retention, timer/sound ordering and clone
+isolation. The original failing collection case now retains 39 shield, with the
+enemy shot stationary during the flash and retired at its end. The complete
+engine suite passes in 19.815 seconds; focused source/race checks pass in 2.674
+seconds. The frontend/GPU suite passes in 106.885 seconds. Its focused sampling
+test fails with the old director and passes with the correction, including
+manual takeover and per-PAL palette publication. A first-level recording replay
+still completes with three ships and
+39 shield in 381.55 seconds and collects no screen-clear bonus, so the existing
+381.53-second video does not require regeneration for this fix.
+
+The real third-stage screen-clear collection at frame 3391 preserves 35 shield
+through both later checkpoints and final-guardian admission. Its corrected
+callback order changes the subsequent shared random state and approach. An
+exact third-stage frontend replay initially exposed four shield lost at frame
+9271: the guard previewed a retained mixed-direction route as six passes holding
+one direction after the final guardian launched. It now previews the existing
+route's actual commands in that encounter, as it already does in the preceding
+corridor. No route goal, lookahead length, firing rule or reserve is changed.
+The same replay reaches the genuine final merchant at frame 9793 with all 35
+shield, one ship and two continue credits. Its launch pose and RNG match the
+failing replay exactly. A fresh Pixel frontend replay also passes every unchanged
+first-three-stage assertion and reaches level four with 39 shield, one ship and
+two continue credits. The corrected callback history produces a new fourth-stage
+READY random state, 1818979822/680038254. The existing fourth-opening strategy
+then fails at frame 805 in the forest. The earlier tail-destruction proof remains
+a valid original-resource capability test with its recorded entry state, but no
+longer proves the currently connected route. Fourth-stage pilot adaptation is
+still in progress; no campaign-wide success or new Pixel installation is claimed.
+
+The current complete original-resource engine suite passes in 21.970 seconds.
+The frontend controls checks pass in 16.163 seconds, including automatic
+title admission, keyboard/touch takeover, blocking-frame control sampling and the
+one-PAL resume boundary. The sixth-command forecast now honors retained native
+routes in the third final encounter; unowned and foreign-owner routes retain
+their existing behavior.

@@ -21,7 +21,7 @@ func (p *PresentationPilot) forecastOpeningGuard(w *World, planned Input) Input 
 	}
 	var sequence [6]MotionInput
 	useSequence := false
-	if corridor || fourthOpening {
+	if corridor || final || fourthOpening {
 		sequence, useSequence = p.planner.nativeMotion.guardSequence(w, planned.Motion)
 	}
 	// Keep the practiced action unless the real callback lookahead predicts damage.

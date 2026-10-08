@@ -42,18 +42,20 @@ development; its complete five-level route is not yet validated.
 The controller completes the first three stages from the full default intro,
 visits their real merchants and enters level four with one ship and both
 continues. Level one loses no ships; level two loses two. The third stage keeps
-its admission ship, crosses both cannon checkpoints with at least 27 shield,
-reaches its final guardian with 23 shield and defeats it without losing shield.
+its admission ship, crosses both cannon checkpoints with 35 shield,
+reaches its final guardian with 35 shield and defeats it without losing shield.
 Normal rewards and repair restore 39 shield before level four.
 
 In level four the retained native corner commands clear the known forest forks.
 The controller rejects forecasts that already end in an unavoidable published
 enemy contact, and its exact guard now continues during the middle guardian.
-The connected Pixel route reaches that fight with 23 shield and destroys the
-tail without losing shield, retaining the same ship and both continues. The
-forest still falls to 3 shield before a genuine health pickup; this is not a
-near-lossless route. Beating the remaining guardians and validating the whole
-campaign remain active work.
+An earlier recorded-entry Pixel route reached that fight with 23 shield and
+destroyed the tail without losing shield. Correcting the original screen-clear
+callback order changes the random state carried into level four; the current
+connected route fails in the forest and is being adapted. The earlier tail
+result remains a recorded-state capability test, not current campaign proof.
+Beating the remaining guardians and validating the whole campaign remain active
+work.
 Cached routes, bonus collection, dive requests and merchant purchases use
 ordinary game rules. This is not yet a near-lossless five-level demonstration.
 

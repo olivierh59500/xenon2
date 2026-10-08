@@ -267,6 +267,17 @@ required command with Up. Final commands are checked against their before-state,
 and previewing never consumes the plan. Invalid plans retain ordinary protection;
 the nine alternative held directions and opening policy are unchanged.
 
+This retained-sequence preview also applies after the third final guardian
+launches. A corrected Supernova collection produces a different actual approach:
+at camera 206 the preparer still owns its ten-command route, but the old final
+guard interpreted its next command as a six-pass hold. At camera 205 that false
+preview replaced Down-Right with Up and led to damage. Using the owned sequence
+keeps the original six-pass horizon and ordinary controls. An exact frontend
+replay defeats the final guardian with all 35 admission shield; the connected
+Pixel route also passes its unchanged third-stage reserve assertions. The
+corrected shared random state requires a new fourth-opening strategy, so these
+results do not establish completion of the remaining campaign.
+
 The actual source tile-gun fixture distinguishes a harmful held direction from
 the safe retained corner. Its old guard fails the new regression. On the locked
 Pixel, the complete default-intro route reaches both cannon checkpoints with
