@@ -154,7 +154,10 @@ preserve serial decisions, and native command sequences now clear the narrow
 later routes. The actual Pixel frontend reaches checkpoints 1696 and 1152 with
 27 shield, then the final third guardian with 19 shield, without another ship
 loss. Its logical runner works on the locked device; this does not verify drawing.
-Final victory and low-loss play across all stages remain open. Automatic title admission after sixty idle seconds is shared by the
+The clean complete-intro regression now also defeats the final third guardian
+without shield loss, collects its exit rewards, visits the real final merchant
+and enters stage four with the same ship and repaired shield. Stages four/five
+and low-loss play across the whole campaign remain open. Automatic title admission after sixty idle seconds is shared by the
 desktop and Android frontend, with immediate manual takeover.
 
 The remaining live checks are:

@@ -75,15 +75,17 @@ The complete-first-level option includes the intro, both merchants, final guardi
 and exit drops, then stops before playing level two. Its real frontend regression
 completes that route in about 6 minutes 53 seconds with two ships remaining.
 Ordinary damage and purchases still apply. The broader five-level presentation
-controller now also completes stages one and two from the full intro, visiting
-all four merchants and entering stage three with one ship after ordinary
+controller completes the first three stages from the full intro, visiting
+their real merchants and entering stage three with one ship after ordinary
 recovery. Its third opening reaches the first two checkpoints without losing
 the carried ship, preserving 39 and 31 shield points respectively. It also defeats
 both eyes of the third middle guardian and collects the real merchant drops
 without another ship loss or any shield loss during the fight. The carried route
 also crosses the later cannon checkpoints with 27 shield and reaches the real
-final guardian with 19 shield, retaining its ship and credits. Connected victory
-through stages three to five and near-lossless expert play remain unverified.
+final guardian with 19 shield, retaining its ship and credits. It defeats that
+guardian without losing shield, collects every exit reward and enters stage
+four with the same ship and a repaired shield. Stages four/five and near-lossless
+play across the entire campaign remain unverified.
 The longer boss forecast still needs mobile performance work. See the [expert forecast design](docs/EXPERT_FORECAST.md)
 for the remaining full-world planning work.
 Generated MP4, PNG poster and chapter JSON files stay

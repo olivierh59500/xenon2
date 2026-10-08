@@ -306,3 +306,13 @@ a second-path incoming-head case avoids three pre-movement contacts and retains
 its source-earned 27 shield. Prediction leaves live state unchanged and the
 scope is limited to a launched, undefeated final guardian at camera 208 or below.
 These bounded regressions do not establish a connected final victory.
+
+The clean permanent complete-intro three-stage frontend regression now passes
+on the locked Pixel in 71.68 seconds, without a diagnostic source overlay. It
+validates both third-stage merchants, the 27-point cannon reserves, all final
+rewards and unchanged shield throughout the final fight, then enters stage four
+with the same one ship, zero credits and repaired 39 shield. The diagnostic
+fight uses paths 61/65/63/66 and reduces shared health from 80 to zero at frame
+10253, retaining all 19 admission shield points. The real final merchant is
+admitted at frame 10313 with no pending drops. Earlier first/two-stage recovery
+still applies; this does not establish near-lossless play across all stages.

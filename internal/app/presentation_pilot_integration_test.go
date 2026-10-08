@@ -418,3 +418,75 @@ func TestExpertThirdFinalAdmissionFromCompleteIntroWithoutShipLossOptional(t *te
 	}
 	t.Fatal("bounded carried route did not reach the genuine final worm launch")
 }
+
+func TestPresentationPilotCompletesFirstThreeLevelsFromDefaultIntroOptional(t *testing.T) {
+	if os.Getenv("XENON2_HUMAN_PRESENTATION_CHECK") == "" {
+		t.Skip("enable the three-stage carried presentation explicitly")
+	}
+	verifyPresentationFirstThreeLevelsFromDefaultIntro(t)
+}
+
+func verifyPresentationFirstThreeLevelsFromDefaultIntro(t *testing.T) *Game {
+	t.Helper()
+	g := verifyPresentationFirstTwoLevelsFromDefaultIntro(t)
+	w := g.Driver.(*worldDriver).world
+	ships, credits := w.Equipment.Lives, w.ContinueCredits
+	middle, final, firstGate, secondGate := false, false, false, false
+	admissionShield := -1
+	for update := 0; update < 60*1000; update++ {
+		advanceFrontend(t, g, inputFrame{})
+		d := g.Driver.(*worldDriver)
+		w = d.world
+		if !g.DemoActive() || w.Cheats.Enabled() || d.diagnostic || w.GameOver || !w.PlayerAlive || w.Equipment.Lives != ships || w.ContinueCredits != credits {
+			t.Fatal("third-stage completion consumed its carried ship or changed ordinary rules")
+		}
+		if w.Level.Number == 4 {
+			if !middle || !final || !firstGate || !secondGate || admissionShield < 19 || w.Equipment.Shield != 39 {
+				t.Fatal("fourth admission omitted the third guardians, merchants, rewards or repair")
+			}
+			t.Logf("Complete carried presentation enters stage4: ships%d shield%d credits%d", ships, w.Equipment.Shield, credits)
+			return g
+		}
+		if w.Level.Number != 3 {
+			t.Fatal("third-stage completion entered an unexpected level")
+		}
+		if g.Screen == ShopScreen {
+			if !g.shopFinal {
+				if w.ThirdMiddle == nil || !w.ThirdMiddle.Defeated || w.PendingExitDrops != 0 || w.LevelFinished {
+					t.Fatal("middle merchant bypassed its ordinary source guardian or drops")
+				}
+				middle = true
+			} else {
+				if !middle || admissionShield < 19 || w.ThirdFinal == nil || !w.ThirdFinal.Defeated || w.ThirdFinal.Health != 0 || !w.LevelFinished || !w.ExitReady || w.PendingExitDrops != 0 || w.Equipment.Shield < admissionShield {
+					t.Fatal("final merchant bypassed the genuine unchanged-shield worm victory")
+				}
+				final = true
+			}
+		}
+		if w.Checkpoint.ScrollY <= 1696 && !firstGate {
+			if !middle || w.Equipment.Shield < 27 {
+				t.Fatal("three-stage route lost the first cannon reserve")
+			}
+			firstGate = true
+		}
+		if w.Checkpoint.ScrollY <= 1152 && !secondGate {
+			if !firstGate || w.Equipment.Shield < 27 {
+				t.Fatal("three-stage route lost the second cannon reserve")
+			}
+			secondGate = true
+		}
+		if w.ThirdFinal != nil && w.ThirdFinal.LaunchCount > 0 {
+			if admissionShield < 0 {
+				admissionShield = w.Equipment.Shield
+				if !secondGate || admissionShield < 19 {
+					t.Fatal("final launch omitted the prepared source route")
+				}
+			}
+			if w.Equipment.Shield < admissionShield {
+				t.Fatal("final worm fight lost its carried shield reserve")
+			}
+		}
+	}
+	t.Fatal("bounded carried presentation did not complete the third final merchant and enter stage4")
+	return nil
+}
