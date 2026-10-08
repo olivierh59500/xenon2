@@ -369,31 +369,31 @@ camera time, and validates every command with the complete motion and terrain
 forecast. It preserves the existing search budget, route ordering and geometric
 tolerance; it does not enable a different A* heuristic.
 
-The captured third-corridor pose (255,16), camera1836, reaches the exact firing
-target (256,1832) in20 ordinary passes. Full source steps reproduce every retained
+The captured third-corridor pose (255,16), camera 1836, reaches the exact firing
+target (256,1832) in 20 ordinary passes. Full source steps reproduce every retained
 state without terrain contact or rewind. Blocked and unsupported poses retain
 the existing planner, and guardian worker caches remain independently owned.
 Original-resource movement tests pass under the race detector, and the full
 engine suite passes with this solver alone. A connected experimental route
-destroys the previously blocking1696 cannon and advances to subsequent guns
-with35 shield; this is not yet proof of completing that route or the campaign.
+destroys the previously blocking 1696 cannon and advances to subsequent guns
+with 35 shield; this is not yet proof of completing that route or the campaign.
 
 ## Avoiding an unused terrain query
 
 Terrain rewind reads its contact argument only while its timer is negative.
 The motion forecast now skips the initial stencil query when that argument
 cannot be used, retaining the later movement and camera contact checks.
-A360-case comparison covers clear and covered poses on all five original maps,
-timers−17/−1/0/1 and all nine controls. Complete forecast values, including every
+A 360-case comparison covers clear and covered poses on all five original maps,
+timers −17/−1/0/1 and all nine controls. Complete forecast values, including every
 history entry, match the earlier implementation. Three native search scenes
 retain identical nodes, queue, visited states, command sequences and results,
-including an exhausted9000-node search. Focused resource tests and race checks
-pass. Single M4 Max samples reduce the rear-corner benchmark54.37→35.43µs
-and the lane2.306→1.959ms; these are not Pixel frame-rate measurements.
+including an exhausted 9000-node search. Focused resource tests and race checks
+pass. Single M4 Max samples reduce the rear-corner benchmark 54.37→35.43 µs
+and the lane 2.306→1.959 ms; these are not Pixel frame-rate measurements.
 
-The same-binary Pixel10a comparison confirms complete search parity on all three
-poses. Single100ms samples measure rear-corner1.211→0.907ms, lane57.50→45.48ms,
-and exhausted9000-node search403.80→320.81ms. The costly search still exceeds a
+The same-binary Pixel 10a comparison confirms complete search parity on all three
+poses. Single 100 ms samples measure rear-corner 1.211→0.907 ms, lane 57.50→45.48 ms,
+and exhausted 9000-node search 403.80→320.81 ms. The costly search still exceeds a
 frame budget; this modest exact optimization does not make the whole controller
 ready for smooth mobile playback. No drawing was performed.
 
@@ -408,7 +408,7 @@ The candidate remains excluded from the default controller.
 ## Compact clear-route search states
 
 Clear supported third/fourth-stage searches retain only the full player and
-camera values in their search nodes, reducing a node from728 to136bytes.
+camera values in their search nodes, reducing a node from 728 to 136 bytes.
 The original full forecast still advances each successor. Accepted nodes always
 retain rewind timer zero, so their histories are never read by that search.
 Selected commands are replayed from the actual complete start state; every
@@ -417,13 +417,13 @@ full retained histories. Unsupported, covered or rewind starts use the unchanged
 full search, as does any replay mismatch.
 
 Independent reconstruction compares every node and history, heap order, visited
-state, expansion count, commands and retained states. Original5/7-command routes,
-20-command terminal alignment, fourth-fork legs, exhausted9000-node search and
+state, expansion count, commands and retained states. Original 5/7-command routes,
+20-command terminal alignment, fourth-fork legs, exhausted 9000-node search and
 rewind fallbacks pass. Worker buffers remain independently owned. The full
 engine/native-resource suite and focused race checks pass.
 
-The same-binary Pixel comparison retains exact parity. Single100ms samples reduce
-the lane44.70→38.21ms and exhausted9000-node search321.55→259.97ms. This improves
+The same-binary Pixel comparison retains exact parity. Single 100 ms samples reduce
+the lane 44.70→38.21 ms and exhausted 9000-node search 321.55→259.97 ms. This improves
 search cost and memory pressure while retaining the policy; it still does not
 establish smooth rendering or a complete connected expert campaign.
 
@@ -433,12 +433,12 @@ A lightweight Pixel frontend diagnostic now carries the improved early-stage
 policy through the genuine third final merchant into level four. Both first
 stages still consume two ships total and preserve both continues. The third
 stage keeps its admission ship and both credits, reaches the cannon checkpoints
-with35shield, defeats the native guardians and collects their exit rewards.
-Its final approach is weaker than the retained controller: only7shield remains
-at final admission, and the fight loses4more before repair. It therefore does
-not satisfy the existing19-shield/unchanged-final-shield regression.
+with 35 shield, defeats the native guardians and collects their exit rewards.
+Its final approach is weaker than the retained controller: only 7 shield remains
+at final admission, and the fight loses 4 more before repair. It therefore does
+not satisfy the existing 19-shield/unchanged-final-shield regression.
 
-The bounded run takes81.19s without drawing. Repeated unsuccessful native
+The bounded run takes 81.19 s without drawing. Repeated unsuccessful native
 searches remain costly. Completing this diagnostic does not establish the
 strict controller criteria or either of the last two stages, so the improved
 early policy remains excluded pending further correction.
@@ -446,9 +446,9 @@ early policy remains excluded pending further correction.
 ## Preserve admitted commands near firing positions
 
 The third-corridor firing hold previously appended Down after the native planner
-had admitted a command. A clear original right1328 cannon scene demonstrates
-the error: at ship(255,176), camera1306, the planned Up becomes Up+Down, leaving
-the ship at176 instead of171 and invalidating both the guard preview and next
+had admitted a command. A clear original right 1328 cannon scene demonstrates
+the error: at ship (255,176), camera 1306, the planned Up becomes Up+Down, leaving
+the ship at 176 instead of 171 and invalidating both the guard preview and next
 retained command. The corridor now returns an admitted command unchanged; the
 Down hold remains available only for uncommitted fallback movement.
 
@@ -469,6 +469,6 @@ Tests compare every node, queue, visited state, command and retained history
 with the uncached implementation. They cover all five maps and nine controls,
 an actual tile patch between reused searches, out-of-window queries and
 independent guardian worker ownership. Full engine/source and race checks pass.
-A same-binary Pixel sample retains exact parity and reduces the1257-node lane
-33.89→17.27ms and exhausted9000-node search265.38→122.12ms. These are single
-100ms samples; the costly case still exceeds a60Hz frame budget.
+A same-binary Pixel sample retains exact parity and reduces the 1257-node lane
+33.89→17.27 ms and exhausted 9000-node search 265.38→122.12 ms. These are single
+100 ms samples; the costly case still exceeds a 60 Hz frame budget.

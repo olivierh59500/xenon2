@@ -109,9 +109,9 @@ ANDROID_SERIAL='your-authorized-device-serial' ./scripts/check-android-logic.sh 
 The longer connected third-stage checkpoint regression is
 `TestExpertThirdPostMerchantRouteReachesCannonCheckpointsWithoutShipLossOptional`.
 The script enables the optional presentation/progression checks when selected;
-each run has an eight-minute Go timeout. An independent7m50s watchdog writes
+each run has an eight-minute Go timeout. An independent 7m50s watchdog writes
 all goroutine stacks, syncs the output and returns `exit=124` before that limit.
-`XENON2_TEST_WATCHDOG_MS` can select1–470000milliseconds for a shorter diagnostic.
+`XENON2_TEST_WATCHDOG_MS` can select 1–470000 milliseconds for a shorter diagnostic.
 A runner timeout or missing completion status is not a gameplay assertion failure.
 Regexes are base64 encoded
 on the host and decoded into Go's `test.run` flag, so their pipes and other
