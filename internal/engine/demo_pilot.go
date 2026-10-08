@@ -14,14 +14,17 @@ type DemoPilotConfig struct {
 // second-level opening policy and conservative short-horizon obstacle avoidance.
 // It is a development controller, not a guarantee of completing every stage.
 type DemoPilot struct {
-	Config              DemoPilotConfig
-	navigation          *demoNavigation
-	retreatGoal         int
-	practicedRoute      bool
-	retreatX, retreatY  int
-	secondArenaScratch  []demoSecondDefenseView
-	middleTerrainFrozen bool
-	nativeMotion        nativeMotionPlanner
+	Config                               DemoPilotConfig
+	navigation                           *demoNavigation
+	fourthRearNavigation                 *demoNavigation
+	fourthRearCommitted                  bool
+	fourthRearTargetX, fourthRearTargetY int
+	retreatGoal                          int
+	practicedRoute                       bool
+	retreatX, retreatY                   int
+	secondArenaScratch                   []demoSecondDefenseView
+	middleTerrainFrozen                  bool
+	nativeMotion                         nativeMotionPlanner
 }
 
 var demoDirections = [9]MotionInput{{}, {Left: true}, {Right: true}, {Up: true}, {Down: true}, {Left: true, Up: true}, {Right: true, Up: true}, {Left: true, Down: true}, {Right: true, Down: true}}
@@ -56,6 +59,9 @@ func (p *DemoPilot) NormalInput(w *World) Input {
 		return input
 	}
 	if input, handled := p.SecondFinalInput(w); handled {
+		return input
+	}
+	if input, handled := p.FourthRearLegInput(w); handled {
 		return input
 	}
 	if input, handled := p.FourthCorridorInput(w); handled {

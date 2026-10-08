@@ -229,7 +229,7 @@ func nativeMotionMatches(w *World, state demoMotionForecast) bool {
 
 func nativeMotionSupported(w *World) bool {
 	thirdCorridor := w != nil && w.Level.Number == 3 && w.ThirdMiddle != nil && w.ThirdMiddle.Defeated
-	return (thirdCorridor || fourthCorridorActive(w)) && w.PlayerAlive && !w.Ready && !w.GameOver && w.Rewind.Timer == 0 && w.Coverage != nil && w.Level.PlayerStencil != nil
+	return (thirdCorridor || fourthCorridorActive(w) || fourthRearLegWindow(w)) && w.PlayerAlive && !w.Ready && !w.GameOver && w.Rewind.Timer == 0 && w.Coverage != nil && w.Level.PlayerStencil != nil
 }
 
 // guardSequence describes the command already returned to this pass's caller

@@ -256,3 +256,23 @@ admission must not be attributed to this candidate. The next correction is a
 source-derived rear corner, with commands verified against real terrain before
 retesting that changed carried route. Neither fourth victory nor complete
 five-stage expert playback is established.
+
+## Retained source commands through the next rear corner
+
+A narrow post-fork helper now executes a clear rearward leg from the actual
+ordinary terrain route. It copies route metadata into independently refreshed
+scratch navigation, keeps the existing endpoint as commitment identity and
+leaves the generic cache untouched. Accepted native commands retain their
+six-pass exact guard preview and are not replaced by tactical aiming.
+The window excludes the falling-actor admission and later reverse-bound change.
+
+At the captured frame 716 pose (23,156), camera 3896, the original Left command
+starts terrain rewind. Eight source commands instead reach (47,166), camera 3890,
+with exact full motion/history parity, zero rewind and unchanged 15 shield.
+Scope, cache ownership, full engine/native and race checks pass.
+
+The genuine changed-RNG campaign clears its earlier camera 3866 stall and reaches
+the fourth middle guardian at frame 1997/camera 2480 with the same ship and both
+continues. It has only 7 shield and loses the ship shortly afterward. This is real
+route progress, not a fourth-stage or boss victory; preserving more energy and
+the guardian strategy remain required.

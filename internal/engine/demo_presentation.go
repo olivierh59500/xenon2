@@ -46,7 +46,7 @@ func (p *PresentationPilot) NormalInput(w *World) Input {
 		input.Motion = demoSecondArenaBeam(w, &p.planner, base.Motion)
 	}
 	retreat := p.planner.retreatGoal != 0
-	if !retreat && w.Rewind.Timer == 0 && !presentationSpecialist(w) {
+	if !retreat && w.Rewind.Timer == 0 && !presentationSpecialist(w) && !p.planner.fourthRearLegOwnsMotion(w, base.Motion) {
 		if w.Frame >= p.decisionAt {
 			goal := presentationChooseGoal(w)
 			if goal.actor != p.goal.actor || goal.bonus != p.goal.bonus {
