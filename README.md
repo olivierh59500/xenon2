@@ -48,7 +48,8 @@ Normal rewards and repair restore 39 shield before level four.
 
 In level four the retained native corner commands clear the known forest forks
 and reach the middle guardian. The latest carried route reaches that fight with
-only seven shield and then loses its ship. Improving that approach, beating the
+15 shield and destroys its tail, but later stops damaging its satellites.
+Improving that approach, beating the
 remaining guardians and validating the whole campaign remain active work.
 Cached routes, bonus collection, dive requests and merchant purchases use
 ordinary game rules. This is not yet a near-lossless five-level demonstration.

@@ -291,3 +291,20 @@ still uses its existing center-height tie ranking, which does not establish
 progress toward the rear firing position. Both branch strategies remain
 excluded; a goal-aware choice among equally safe source outcomes is the next
 bounded correction. No damage, health, collision or firing clock is changed.
+
+## Connected effect of completing the fork command sequence
+
+The corrected finish ordering preserves the genuine first-three-stage route
+and improves fourth-middle admission from 7 to 15 shield, with the same ship and
+both continues. The old path16 contact and both later projectile debits vanish.
+One new path18 strong-body contact at frame 706/camera 3910 still costs 16 points;
+the two earlier 4-point projectiles at frames 505/549 remain. Exact copied steps
+match each actual debit, and all nine held directions already lose shield on
+the first pass at those impact states.
+
+The real middle admission occurs at frame 1977/camera 2480 with 15 shield. The
+controller destroys the tail, retains its ship, then reaches a 60-simulated-second
+damage stall at frame 3480/camera 2176 with 7 shield and all four satellites alive.
+The connected diagnostic takes 315.94 s without drawing. This is a verified
+survival/progression improvement, not a guardian victory. Earlier anticipation
+of the path18 formation and a safe firing route remain required.
