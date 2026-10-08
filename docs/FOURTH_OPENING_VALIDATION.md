@@ -202,3 +202,21 @@ same ship, both credits and 35 shield. The first cannon row is cleared; the
 1696 row is admitted. No callback exceeds about 196 ms in that window and no
 watchdog fires. This narrows the incomplete long-run investigation to later
 checkpoints and the final route rather than the initial middle/corridor entry.
+
+## Improved early-route continuation
+
+The corrected experimental early policy now reaches the original fourth middle
+guardian from the default intro with its genuinely carried forward tier-one
+gun, cannon, rear gun, speed2 and autofire3/8. It retains one ship and both
+continues. After normal third-final rewards and repair, the fourth opening
+keeps all39shield points through the left fork and subsequent rearward turn.
+The first clear rearward event is frame728/camera3882; the real middle boundary
+is frame1947/camera2480, with39shield and all twenty source guardian parts.
+No level selection, inventory substitution or terrain/guardian mutation is used.
+
+This bounded Pixel logic check ends at guardian admission and takes261.68s
+including the complete earlier campaign. It establishes progression beyond
+the older camera3863 stall, not a fourth-stage victory or graphical frame rate.
+The earlier weak carried profile and its failed route experiments remain
+distinct. Third-final reserve quality and both remaining stages still require
+connected validation before the early policy becomes the default.
