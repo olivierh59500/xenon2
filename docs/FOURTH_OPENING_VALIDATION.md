@@ -239,3 +239,20 @@ projectile causes4points at frame9486. Copied single-step callbacks reproduce
 both outcomes exactly. Earlier anticipation and safe boss positioning remain
 required; changing original damage or weakening reserve tests would hide these
 controller errors.
+
+## Strict third-stage preparation result
+
+A source-terrain final-entry candidate now passes the unchanged connected
+first-three-stage regression on Pixel: both cannon reserves meet27, final
+admission meets19, the worm fight loses no shield, both genuine third merchants
+and all exit rewards complete, and stage four receives the same ship, both
+continues and repaired39shield. The actual final admission is23. The strict
+check takes275.33s without drawing. This is stronger evidence than the earlier
+lightweight progression diagnostic.
+
+The changed fight also changes subsequent RNG. Its fourth continuation stalls
+at camera3866 with15shield, so the earlier no-entry route's full-shield middle
+admission must not be attributed to this candidate. The next correction is a
+source-derived rear corner, with commands verified against real terrain before
+retesting that changed carried route. Neither fourth victory nor complete
+five-stage expert playback is established.
