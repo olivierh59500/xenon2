@@ -7,14 +7,19 @@ import "testing"
 func fourthOpeningSourceFixture(t testing.TB, camera, x, y, inertia int) *World {
 	t.Helper()
 	equipment := NewEquipment()
-	for _, item := range []Item{ItemDoubleShot, ItemDoubleShot, ItemRearShot, ItemSpeedup, ItemSpeedup, ItemAutofire, ItemAutofire} {
+	for _, item := range []Item{ItemPowerup, ItemRearShot, ItemSpeedup, ItemSpeedup, ItemAutofire, ItemAutofire} {
 		equipment.ApplyItem(item)
 	}
+	equipment.Lives = 1
 	data := playableOriginalWorldData(t, 4)
 	data.InitialEquipment = &equipment
 	w, err := NewWorld(data)
 	if err != nil {
 		t.Fatal(err)
+	}
+	w.ContinueCredits = 0
+	if w.Equipment.Primary.Item != ItemForwardShot || w.Equipment.Primary.Tier != 1 || w.Equipment.Rear.Item != ItemRearShot || w.Equipment.Rear.Tier != 0 || w.Equipment.SpeedTier != 2 || w.Equipment.FireAdvance != 3 || w.Equipment.FirePeriod != 8 {
+		t.Fatal("isolated scene differs from the captured fourth-entry equipment profile")
 	}
 	w.ScrollY, w.MaximumScrollY, w.VisitedScrollY = camera, camera+16, camera+16
 	w.Player.X, w.Player.Y, w.Player.Inertia, w.Player.SpeedTier = x, y, inertia, 2

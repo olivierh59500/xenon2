@@ -2,7 +2,7 @@
 
 The carried presentation completes the first three levels, including the real
 third final merchant, before entering level four. It enters with one ship, no
-continue credits, 39 shield, double shot tier 1, rear shot tier 0, speed 2 and
+continue credits, 39 shield, basic forward shot tier 1, rear shot tier 0, speed 2 and
 native autofire advance 3 / period 8. No cheats or diagnostic level selection are
 used in this route.
 
@@ -16,6 +16,10 @@ ranking, fire/dive inputs and third-level scopes remain unchanged.
 The unit scenes retain the carried equipment shape and original terrain, ship,
 projectile and actor resources. They isolate individual decisions rather than
 reconstructing the complete campaign random stream.
+
+The captured primary identifier is 1 (basic forward shot), not 14 (double shot).
+The isolated fixtures explicitly check this distinction and retain one ship with
+no continue credits; they do not recreate earlier physical slot ownership.
 
 - Two diagonal projectiles retain the fixed-point coordinates observed at the
   original carried run's frame 137/138 impact passes. Their source advances and actual
