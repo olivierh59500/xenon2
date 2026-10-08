@@ -175,3 +175,14 @@ shop caption and ending dot, and that READY uses the correct player's director
 on its first draw. A bounded native A500 capture also establishes that the
 credit sequence's elapsed cadence differs from the maximum source clock; full
 gameplay timing and soundtrack comparisons remain open.
+
+An arranged fifth-final integration fixture now retains the native defense/core
+health and uses source-factory in-flight point bullets through actual World.Step
+callbacks. It destroys all eighteen defenses and the core, drains all twenty
+real exit coins, reaches the engine merchant boundary, buys Nashwan with emitted
+cash and starts the next difficulty loop. It checks the single victory credit,
+wallet reset, released guardian slots, independent new pools, regular-loadout
+restoration, retained temporary timer and doubled first-wave health. The fixture
+does not assign completion/drop counters or call direct damage to win.
+Its arranged inventory/projectiles are explicit; it is not earned fifth-stage
+play or a frontend/graphics victory. Focused native and race checks pass.
