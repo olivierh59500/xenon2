@@ -26,6 +26,8 @@ type DemoPilot struct {
 	secondArenaScratch                   []demoSecondDefenseView
 	middleTerrainFrozen                  bool
 	nativeMotion                         nativeMotionPlanner
+	fifthRisk                            *demoFifthNativeRisk
+	palRefreshes                         int
 }
 
 var demoDirections = [9]MotionInput{{}, {Left: true}, {Right: true}, {Up: true}, {Down: true}, {Left: true, Up: true}, {Right: true, Up: true}, {Left: true, Down: true}, {Right: true, Down: true}}
@@ -188,6 +190,7 @@ func (p *DemoPilot) NormalInput(w *World) Input {
 	}
 	x, y = max(20, min(300, x)), max(25, min(maximumY, y))
 	best, bestScore, bestThreat := 0, math.Inf(1), false
+	p.prepareFifthNativeRisk(w)
 	for action, motion := range demoDirections {
 		// Holding down at the bottom requests reverse scrolling. Short-horizon
 		// risk scoring must not turn that escape into a stationary campaign.
@@ -198,8 +201,13 @@ func (p *DemoPilot) NormalInput(w *World) Input {
 		scroll := ScrollState{Y: w.ScrollY, Minimum: w.MinimumScrollY, Maximum: w.MaximumScrollY, DeviationPasses: w.ScrollDeviationPasses}
 		score := 0.0
 		immediateThreat := false
+		damage, nativeRisk := p.fifthRisk.losses(w, motion, c.Lookahead, p.palRefreshes)
 		forecast := newDemoMotionForecast(w)
 		for future := 1; future <= c.Lookahead; future++ {
+			if nativeRisk && damage[future-1] != 0 {
+				score += float64(damage[future-1]) * 100000 / float64(future)
+				immediateThreat = immediateThreat || future <= 2
+			}
 			previousPlayer := player
 			if retreat || p.practicedRoute && w.Rewind.Timer != 0 {
 				if !forecast.advance(w, motion) {
@@ -233,7 +241,7 @@ func (p *DemoPilot) NormalInput(w *World) Input {
 				score += (dx*dx*.003 + dy*dy*.005) / float64(c.Lookahead)
 			}
 			for _, actor := range w.Actors {
-				if !demoActorHazard(actor) {
+				if !demoActorHazard(actor) || nativeRisk && actor.fixedAiming != nil {
 					continue
 				}
 				ox, oy := int(math.Round(actor.X-actor.PreviousX))*future, int(math.Round(actor.Y-actor.PreviousY))*future

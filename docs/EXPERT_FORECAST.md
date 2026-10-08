@@ -602,3 +602,31 @@ through all three commands and unchanged 39 shield. Existing corridor, corner
 and guard regressions pass under the race detector. This fixes control/preview
 consistency; its effect on the five observed approach impacts still needs the
 genuine connected comparison.
+
+## Guided fifth-stage missile risk
+
+The fifth-stage destructible missiles turn one octant toward the ship every
+eighth pass. Both the ordinary pilot and its tactical movement scorer now use
+an isolated complete-world forecast while such missiles are active. This
+replaces their straight-line displacement estimate with native animation,
+contact ordering, turning and expiry. Prediction retains existing player shots
+but does not assume new firing. PAL cadence follows the presentation host;
+standalone pilots use the ordinary three-tick cadence.
+
+The original-resource regression places a rightward missile immediately before
+its next turn. Straight-line scoring predicts no contact; native callbacks
+inflict eight shield damage. Both corrected movement selectors choose a legal
+direction that avoids this hit. All nine directions match independent direct
+world steps at two and three PAL ticks, including lifetime expiry, ownership
+across world reloads and a lethal boundary. The live world remains unchanged.
+The full engine suite and default-intro four-stage regression pass. A desktop
+benchmark evaluates all nine six-pass candidates in approximately 116
+microseconds; it measures active prediction, not a cached answer.
+The same original-resource tests pass on the USB-connected Pixel 10a. Its
+ARM64 benchmark takes approximately 2.14 milliseconds for all nine candidates
+and executes without opening an Android view.
+
+This is a prediction correction, not fifth-stage completion. The excluded
+barrier/recovery prototype reaches camera 3686 before losing its ship at frame
+1115, compared with frame 1086 without the correction. Its navigation policies
+remain excluded; the complete five-stage expert route is still unfinished.

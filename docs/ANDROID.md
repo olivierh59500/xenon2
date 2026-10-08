@@ -56,6 +56,10 @@ The ordinary demonstration pilot remains reachable from the title menu.
 Any new touch takes manual control. The Android host starts in the original
 presentation sequence and opens audio during its first Update, after Android
 has installed the view and context.
+Sixty seconds without input in that passive logo, credits and scores loop also
+start the expert demo. The interval spans its phase changes; touching a control
+restarts the interval or immediately takes over an active demo. Interactive
+messages, READY, shops, fades and pause do not count toward that deadline.
 
 ## Verification
 

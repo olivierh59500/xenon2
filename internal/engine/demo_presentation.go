@@ -57,6 +57,7 @@ func (p *PresentationPilot) NormalInput(w *World) Input {
 	if input, retained := p.continueFourthOpeningBranch(w); retained {
 		return input
 	}
+	p.planner.palRefreshes = p.PALRefreshes
 	base := p.planner.NormalInput(w)
 	input := base
 	if w.Level.Number == 2 && w.secondScheduler != nil && !w.secondMiddleReleased && w.ScrollY >= 2512 && w.ScrollY <= 2896 {
@@ -275,7 +276,7 @@ func (p *PresentationPilot) tacticalMotion(w *World, fallback MotionInput) Motio
 		if motion.Down && w.Player.Y >= 168 && w.Rewind.Timer == 0 {
 			continue
 		}
-		risk, distance := presentationMotionScore(w, motion, p.goal.x, p.goal.y)
+		risk, distance := presentationMotionScoreWithRisk(w, motion, p.goal.x, p.goal.y, p.planner.fifthRisk, p.PALRefreshes)
 		if risk >= 100000 {
 			continue
 		}
@@ -288,7 +289,7 @@ func (p *PresentationPilot) tacticalMotion(w *World, fallback MotionInput) Motio
 		}
 	}
 	if w.Frame < p.motionUntil {
-		risk, distance := presentationMotionScore(w, p.motion, p.goal.x, p.goal.y)
+		risk, distance := presentationMotionScoreWithRisk(w, p.motion, p.goal.x, p.goal.y, p.planner.fifthRisk, p.PALRefreshes)
 		if risk == 0 && distance <= score+6 {
 			return p.motion
 		}
@@ -298,10 +299,18 @@ func (p *PresentationPilot) tacticalMotion(w *World, fallback MotionInput) Motio
 }
 
 func presentationMotionScore(w *World, motion MotionInput, x, y int) (risk, distance float64) {
+	return presentationMotionScoreWithRisk(w, motion, x, y, nil, 0)
+}
+
+func presentationMotionScoreWithRisk(w *World, motion MotionInput, x, y int, native *demoFifthNativeRisk, pal int) (risk, distance float64) {
 	player := w.Player
 	scroll := ScrollState{Y: w.ScrollY, Minimum: w.MinimumScrollY, Maximum: w.MaximumScrollY, DeviationPasses: w.ScrollDeviationPasses}
 	const horizon = 6
+	damage, nativeRisk := native.losses(w, motion, horizon, pal)
 	for future := 1; future <= horizon; future++ {
+		if nativeRisk && damage[future-1] != 0 {
+			risk += float64(damage[future-1]) * 100000 / float64(future)
+		}
 		actorCamera := scroll.Y
 		previousPlayer := player
 		player.Advance(motion, MotionContext{ScrollY: scroll.Y, VisitedScrollY: scroll.Maximum, BaseScrollStep: w.BaseScrollStep})
@@ -313,7 +322,7 @@ func presentationMotionScore(w *World, motion MotionInput, x, y int) (risk, dist
 			return 10000000, 0
 		}
 		for _, actor := range w.Actors {
-			if !demoActorHazard(actor) {
+			if !demoActorHazard(actor) || nativeRisk && actor.fixedAiming != nil {
 				continue
 			}
 			ox, oy := int(math.Round(actor.X-actor.PreviousX))*future, int(math.Round(actor.Y-actor.PreviousY))*future
