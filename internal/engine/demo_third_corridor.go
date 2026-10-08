@@ -16,7 +16,9 @@ func (p *DemoPilot) ThirdCorridorInput(w *World) (Input, bool) {
 	var candidates [9]*WorldActor
 	count := 0
 	for _, actor := range w.Actors {
-		if !actor.Active || actor.thirdCannon == nil || w.ScrollY >= actor.thirdCannon.WorldY+200 || w.ScrollY <= actor.thirdCannon.WorldY-496 {
+		// The original encounter already owns admission. A required rearward
+		// turn may take a living cannon above its initial camera window.
+		if !actor.Active || actor.thirdCannon == nil || w.ScrollY <= actor.thirdCannon.WorldY-496 {
 			continue
 		}
 		if count == len(candidates) {
@@ -38,15 +40,24 @@ func (p *DemoPilot) ThirdCorridorInput(w *World) (Input, bool) {
 	for _, actor := range candidates[:count] {
 		firingY := actor.thirdCannon.WorldY + 136
 		firingX := actor.thirdCannon.X + 32
+		if motion, continued := p.nativeMotion.continueRoute(w, firingX, firingY); continued {
+			return Input{Motion: motion, Fire: (w.Frame+1)%2 != 0 && !w.blockedFireUntilRelease}, true
+		}
 		x, y, found := n.pointWaypoint(w, firingX, firingY)
 		if !found {
 			continue
 		}
 		comfort := 136
+		if y > w.Player.Y+w.ScrollY {
+			comfort = 176
+		}
 		if absDemo(w.Player.X-firingX) < 16 && w.Player.Y+w.ScrollY < firingY+32 {
 			comfort = 176
 		}
 		motion := demoRouteMotionWithOptions(w, x, y, comfort, true)
+		if committed, found := p.nativeMotion.command(w, x, y, firingX, firingY); found {
+			motion = committed
+		}
 		if absDemo(w.Player.X-firingX) < 9 && w.Player.Y+w.ScrollY < firingY+36 && w.Player.Y >= 176 {
 			motion.Down = true
 		}

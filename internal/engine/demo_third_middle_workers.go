@@ -74,8 +74,10 @@ type thirdMiddleForecastWorkers struct {
 
 func (worker *thirdMiddleForecastWorker) evaluate(w *World, motion MotionInput, fallback Input, pal int, sourcePolicy DemoPilot) {
 	navigation, scratch := worker.policy.navigation, worker.policy.secondArenaScratch
+	nativeMotion := worker.policy.nativeMotion
 	worker.policy = sourcePolicy
 	worker.policy.navigation = navigation
+	worker.policy.nativeMotion = nativeMotion
 	worker.policy.secondArenaScratch = append(scratch[:0], sourcePolicy.secondArenaScratch...)
 	worker.err = worker.forecast.Load(w)
 	if worker.err != nil {

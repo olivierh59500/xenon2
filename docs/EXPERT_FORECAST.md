@@ -214,9 +214,40 @@ behind solid terrain. Before the cannon-aim correction, the full-intro route
 reached checkpoint 1696 with the same ship and credits and 27 shield after the
 ordinary merchant repair. Source-anchored aiming now destroys the central cannon,
 but the changed combat/RNG route reaches that checkpoint with only 15 shield.
-The existing 27-point reserve regression remains unsatisfied; its assertion has
-not been weakened. Later cannon combat and discrete narrow-corner motion remain
-under validation. Third-stage completion, levels
+The original 27-point reserve assertion was retained while correcting this
+regression. Native-motion route execution now restores it and extends the
+connected route through checkpoint 1152, as described below. Later cannon combat
+remains under validation. Third-stage completion, levels
 four and five, ending and near-lossless campaign play are not established by
 these results. A diagnostic time limit must be reported separately from a genuine
 lack of camera progress.
+
+## Committed native route commands
+
+A clear geometric path does not guarantee that a fast ship can follow its
+corners with one continuously replanned direction. An observed eight-command
+cycle matched the real motion and rewind state exactly but made no progress.
+The short native search uses the same movement, inertia, camera and collision
+routines to retain a complete command sequence to an intermediate waypoint.
+It invalidates a commitment when actual motion or future coverage differs;
+checking another cannon candidate does not erase a still-valid sequence.
+
+The source encounter owns cannon admission. A redundant upper camera cutoff
+previously dropped a living target during its required rearward U-turn. Removing
+that cutoff retains the legal route without enlarging a numeric window.
+
+The search has a 9,000-expansion/32-pass limit and reusable storage. Its optimistic
+time bound includes pre-check vertical overshoot and every doubled reverse pass
+after the thirty-fifth deviation. Tests cover 37,800 source movement bounds,
+actual five-command corner and seven-command exact three-pixel alignment,
+remaining-segment clearance and commitment invalidation. Exact alignment avoids
+accepting a zero-command arrival that cannot enter the next narrow passage.
+
+The real complete-intro frontend test passes on the locked Pixel using an
+excluded logic-only runner: both original cannon checkpoints are reached with
+the same ship and credits and 27 shield. Checkpoint 1152 is reached at frame
+6473/camera 1151; the entire simulated intro/carried route takes 46.63 seconds.
+This runner performs no drawing and does not establish visual frame pacing.
+The longer excluded diagnostic reaches camera 616, but a later route obstruction
+remains and the final third guardian/merchant have not been reached. This is a
+connected milestone, not campaign completion.

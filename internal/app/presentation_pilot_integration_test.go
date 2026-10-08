@@ -343,14 +343,14 @@ func TestExpertThirdMiddleVictoryFromCompleteIntroWithoutShipLossOptional(t *tes
 	t.Fatal("bounded carried expert fight did not defeat both eyes and collect the merchant drops")
 }
 
-func TestExpertThirdPostMerchantRouteReachesCannonCheckpointWithoutShipLossOptional(t *testing.T) {
+func TestExpertThirdPostMerchantRouteReachesCannonCheckpointsWithoutShipLossOptional(t *testing.T) {
 	if os.Getenv("XENON2_HUMAN_PRESENTATION_CHECK") == "" {
 		t.Skip("enable the connected expert post-merchant route explicitly")
 	}
 	g := verifyPresentationFirstTwoLevelsFromDefaultIntro(t)
 	w := g.Driver.(*worldDriver).world
 	ships, credits := w.Equipment.Lives, w.ContinueCredits
-	merchant, repaired := false, false
+	merchant, repaired, firstCheckpoint := false, false, false
 	for update := 0; update < 60*500; update++ {
 		advanceFrontend(t, g, inputFrame{})
 		d := g.Driver.(*worldDriver)
@@ -364,9 +364,15 @@ func TestExpertThirdPostMerchantRouteReachesCannonCheckpointWithoutShipLossOptio
 		if merchant && g.Screen == LevelScreen && w.Equipment.Shield == 39 {
 			repaired = true
 		}
-		if w.Checkpoint.ScrollY <= 1696 {
+		if w.Checkpoint.ScrollY <= 1696 && !firstCheckpoint {
 			if !merchant || !repaired || w.ThirdMiddle == nil || !w.ThirdMiddle.Defeated || w.PendingExitDrops != 0 || w.Equipment.Shield < 27 {
 				t.Fatal("cannon checkpoint omitted the real merchant repair or shield reserve")
+			}
+			firstCheckpoint = true
+		}
+		if w.Checkpoint.ScrollY <= 1152 {
+			if !firstCheckpoint || w.Equipment.Shield < 27 {
+				t.Fatal("native corner route lost its earlier gate or shield reserve")
 			}
 			t.Logf("Carried cannon checkpoint at frame%d camera%d: ships%d shield%d credits%d", w.Frame, w.ScrollY, ships, w.Equipment.Shield, credits)
 			return
