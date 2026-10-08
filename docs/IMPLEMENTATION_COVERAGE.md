@@ -151,8 +151,8 @@ with immediate manual takeover.
 
 The fourth opening now uses the exact six-pass safety guard and a practiced
 native command sequence through the left forest fork. Its connected comparison
-clears the previous camera4018 stall, then exposes a rearward terrain turn at
-camera3863 with the same ship and11 shield. See the
+clears the previous camera 4018 stall, then exposes a rearward terrain turn at
+camera 3863 with the same ship and 11 shield. See the
 [fourth opening validation](FOURTH_OPENING_VALIDATION.md). Fifth laser columns
 are included in movement scoring with their native growth and pre-movement ship
 prefix; isolated source tests establish avoidance, not a complete fifth boss.

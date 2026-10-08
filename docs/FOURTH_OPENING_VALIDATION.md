@@ -64,11 +64,33 @@ camera, retains rewind zero and clears the complete ship stencil. A later pose
 inside the closed right pocket remains unreachable; no exit is invented.
 
 The connected Pixel run again passes the strict first-three-level helper and
-clears the previous camera4018 stall. It reaches camera3863, then stops making
-forward progress for90 seconds with the same ship and11 shield. Its geometric
+clears the previous camera 4018 stall. It reaches camera 3863, then stops making
+forward progress for 90 seconds with the same ship and 11 shield. Its geometric
 route begins with a rearward turn, but generic controls remain Down and cycle
-through terrain rewind. The full diagnostic takes70.32 seconds without drawing.
+through terrain rewind. The full diagnostic takes 70.32 seconds without drawing.
 
 The opening safety and left-fork improvements are verified. Executing subsequent
 terrain turns, the middle guardian and the remainder of levels four and five
 remain open. The logical runner does not establish visual frame pacing.
+
+## Unpromoted controller comparisons
+
+The local terrain executor also correctly reproduces eight- and fifteen-command
+rear-corner scenes and the original stage-prelude maximum at 3568. Applying it
+throughout the fourth opening nevertheless worsens combat: it moves the ship
+toward the top and loses the carried ship at frame 551, camera 4057. Local motion
+parity alone does not establish a useful complete gameplay policy.
+
+A second comparison admits native commands only for freshly verified rearward
+legs, with a separate navigation cache so declined probes leave ordinary combat
+unchanged. It progresses farther but loses the ship at frame 724, camera 3892.
+Both comparisons pass the strict first-three-stage helper before failing in
+stage four. Neither improves the retained left-fork controller, which reaches
+camera 3863 alive with 11 shield. Both candidate implementations, their source
+proofs and full diagnostic logs remain excluded; the runtime retains the verified
+opening guard and left-fork controller.
+
+A separate practiced second-corridor experiment models the original rewind and
+pre-movement projectile prefix more precisely, but exhausts ordinary recovery
+before stage three. It is also excluded. The current first-three-stage controller
+and its assertions remain unchanged.
