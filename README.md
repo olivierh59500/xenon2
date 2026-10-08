@@ -39,19 +39,19 @@ an active demo; that same action is passed to the game. Fades, pause, the cheat
 menu and merchants do not count as title idle time. The controller remains in
 development; its complete five-level route is not yet validated.
 
-The retained controller completes the first three stages from the full default
-intro, visits their real merchants and enters level four with one ship and no
-continues. Its third-stage route keeps that ship, crosses both cannon checkpoints
-with at least 27 shield, defeats the final guardian without losing shield and
-repairs to 39 before the next stage. In level four it clears the known left fork,
-but later terrain routing and the last two stages remain unverified.
+The controller completes the first three stages from the full default intro,
+visits their real merchants and enters level four with one ship and both
+continues. Level one loses no ships; level two loses two. The third stage keeps
+its admission ship, crosses both cannon checkpoints with at least 27 shield,
+reaches its final guardian with 23 shield and defeats it without losing shield.
+Normal rewards and repair restore 39 shield before level four.
 
-An experimental earlier-stage policy completes level one without losing a ship
-and reduces first-two-stage losses from eight to two, preserving both continues.
-Its different carried inventory is still under downstream validation; it is not
-the default controller yet. Cached terrain routes, bonus collection, dive requests
-and merchant purchases use ordinary game rules. Neither controller is currently
-a validated near-lossless five-level demonstration.
+In level four the retained native corner commands clear the known forest forks
+and reach the middle guardian. The latest carried route reaches that fight with
+only seven shield and then loses its ship. Improving that approach, beating the
+remaining guardians and validating the whole campaign remain active work.
+Cached routes, bonus collection, dive requests and merchant purchases use
+ordinary game rules. This is not yet a near-lossless five-level demonstration.
 
 ## MP4 recording
 
@@ -75,20 +75,11 @@ Upcoming formations can also guide preparatory movement, without firing early.
 The complete-first-level option includes the intro, both merchants, final guardian
 and exit drops, then stops before playing level two. Its real frontend regression
 completes that route in about 6 minutes 53 seconds with two ships remaining.
-Ordinary damage and purchases still apply. The broader five-level presentation
-controller completes the first three stages from the full intro, visiting
-their real merchants and entering stage four with one ship after ordinary
-recovery. Its third opening reaches the first two checkpoints without losing
-the carried ship, preserving 39 and 31 shield points respectively. It also defeats
-both eyes of the third middle guardian and collects the real merchant drops
-without another ship loss or any shield loss during the fight. The carried route
-also crosses the later cannon checkpoints with 27 shield and reaches the real
-final guardian with 19 shield, retaining its ship and credits. It defeats that
-guardian without losing shield, collects every exit reward and enters stage
-four with the same ship and a repaired shield. Stages four/five and near-lossless
-play across the entire campaign remain unverified.
-The longer boss forecast still needs mobile performance work. See the [expert forecast design](docs/EXPERT_FORECAST.md)
-for the remaining full-world planning work.
+Ordinary damage and purchases still apply. The current controller's first-three-stage
+validation uses the real intro, merchants, native guardian damage and exit drops;
+its third-final fight retains all 23 admission shield points. The broader expert
+route still needs the fourth/fifth strategies and mobile frame-pacing work. See
+[expert forecast design](docs/EXPERT_FORECAST.md) for the verified boundaries.
 Generated MP4, PNG poster and chapter JSON files stay
 under locally excluded `recordings/`. The export command requires Go 1.26 or
 newer and FFmpeg. A different positive `-duration` records a longer excerpt.

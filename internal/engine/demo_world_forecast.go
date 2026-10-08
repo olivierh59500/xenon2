@@ -9,7 +9,8 @@ func (p *PresentationPilot) forecastOpeningGuard(w *World, planned Input) Input 
 	final := w.ThirdFinal != nil && !w.ThirdFinal.Defeated && w.ThirdFinal.LaunchCount > 0 && w.ScrollY <= 208
 	third := w.Level.Number == 3 && (opening || corridor || final)
 	fourthOpening := w.Level.Number == 4 && w.FourthMiddle == nil && w.ScrollY > 176
-	if !third && !fourthOpening || w.Ready || !w.PlayerAlive {
+	early := w.Level.Number == 1
+	if !early && !third && !fourthOpening || w.Ready || !w.PlayerAlive {
 		return planned
 	}
 	forecast := &p.forecast

@@ -14,6 +14,7 @@ type DemoPilotConfig struct {
 // second-level opening policy and conservative short-horizon obstacle avoidance.
 // It is a development controller, not a guarantee of completing every stage.
 type DemoPilot struct {
+	secondCrossingNavigation             *demoNavigation
 	Config                               DemoPilotConfig
 	navigation                           *demoNavigation
 	fourthRearNavigation                 *demoNavigation

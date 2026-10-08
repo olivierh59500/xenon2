@@ -84,7 +84,12 @@ func (p *PresentationPilot) NormalInput(w *World) Input {
 	if w.blockedFireUntilRelease || w.Dive.Phase != 0 {
 		input.Fire = false
 	}
+	fireMotion := input.Motion
 	input = p.forecastOpeningGuard(w, input)
+	if w.Level.Number == 1 && input.Fire && input.Motion != fireMotion {
+		// Recheck the final gun position without advancing burst state twice.
+		input.Fire = presentationShotOpportunityWithForecast(w, input.Motion, &p.guardianAimForecast, p.PALRefreshes)
+	}
 	input = p.forecastThirdMiddleInput(w, input)
 	return input
 }

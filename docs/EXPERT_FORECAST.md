@@ -535,3 +535,22 @@ baseline. The genuine connected comparison removes both observed 4-point hits,
 and the unchanged strict first-three-level regression passes with 23 final-entry
 shield, zero final damage and both continues retained. Fourth-route regression
 caused by the subsequent changed RNG remains under correction.
+
+## Default early-stage controller
+
+The previously excluded early-stage guard and second-arena changes are now
+integrated with the validated third-stage preparation. The arena proposal uses
+actual published pre-movement contact rectangles, includes hidden defense nodes,
+retains a legal upper passage to the opposite node and charges one moving
+contact per pass, matching the source's first-contact callback. Projectile risk
+remains separate. Native collisions, gates, health, firing cadence and random
+state are unchanged. A guarded level-one movement rechecks its final gun pose
+without running the firing-burst state machine twice.
+
+The connected strict regression verifies the real first-three-stage campaign
+with the original reserve requirements. Level one is completed without ship
+loss; total first-two-stage losses fall from eight to two. The same admission
+ship and both continues survive stage three, including the unchanged-shield
+final fight. The subsequent narrow fourth-corner continuation reaches its
+middle guardian with seven shield and then loses the ship. This improves the
+default controller while leaving the full expert campaign incomplete.

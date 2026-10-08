@@ -5,9 +5,16 @@ import "math"
 // searchPoint retains a complete route to a firing position, including legal
 // rearward legs. Node and queue bounds cap planner work.
 func (n *demoNavigation) searchPoint(x, y, tx, goal int) bool {
+	return n.searchPointMinimum(x, y, tx, goal, -1)
+}
+
+func (n *demoNavigation) searchPointMinimum(x, y, tx, goal, minimum int) bool {
 	n.pathTargetX = 0
 
 	low, high := max(0, min(goal, y)-48), min(4799, max(y, goal)+640)
+	if minimum >= 0 {
+		low = minimum
+	}
 	if w := n.world; w != nil && n.practiced {
 		maximum := demoScrollMaximum(w, w.ScrollY, w.MaximumScrollY)
 		high = min(high, maximum+176)
@@ -78,6 +85,10 @@ func (n *demoNavigation) searchPoint(x, y, tx, goal int) bool {
 	return false
 }
 func (n *demoNavigation) pointWaypoint(w *World, tx, ty int) (int, int, bool) {
+	return n.pointWaypointMinimum(w, tx, ty, -1)
+}
+
+func (n *demoNavigation) pointWaypointMinimum(w *World, tx, ty, minimum int) (int, int, bool) {
 	if w == nil || w.Coverage == nil || w.Level.PlayerStencil == nil || w.Coverage.Columns != 20 || w.Coverage.Rows != 300 || len(w.Coverage.Map) != 6000 {
 		return 0, 0, false
 	}
@@ -97,7 +108,7 @@ func (n *demoNavigation) pointWaypoint(w *World, tx, ty int) (int, int, bool) {
 	}
 	if invalid {
 		n.goal, n.pointTargetX, n.frame = ty, tx, w.Frame
-		if !n.searchPoint(x, y, tx, ty) {
+		if !n.searchPointMinimum(x, y, tx, ty, minimum) {
 			return 0, 0, false
 		}
 	}
