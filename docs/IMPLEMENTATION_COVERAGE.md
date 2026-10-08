@@ -149,8 +149,12 @@ later passage by ordinary shots. The connected expert now also defeats both eyes
 of the third middle guardian, collects its real drops and reaches the middle
 merchant with its carried ship and all 19 admission shield points intact. The
 36-pass boss forecast covers the arm's extension and recovery, but its mobile
-cost remains too high for a smooth-frame claim. These results do not establish
-low-loss play across all stages. Automatic title admission after sixty idle seconds is shared by the
+cost does not establish a smooth-frame guarantee. Private concurrent branches
+preserve serial decisions, and native command sequences now clear the narrow
+later routes. The actual Pixel frontend reaches checkpoints 1696 and 1152 with
+27 shield, then the final third guardian with 19 shield, without another ship
+loss. Its logical runner works on the locked device; this does not verify drawing.
+Final victory and low-loss play across all stages remain open. Automatic title admission after sixty idle seconds is shared by the
 desktop and Android frontend, with immediate manual takeover.
 
 The remaining live checks are:

@@ -80,7 +80,9 @@ all four merchants and entering stage three with one ship after ordinary
 recovery. Its third opening reaches the first two checkpoints without losing
 the carried ship, preserving 39 and 31 shield points respectively. It also defeats
 both eyes of the third middle guardian and collects the real merchant drops
-without another ship loss or any shield loss during the fight. Connected victory
+without another ship loss or any shield loss during the fight. The carried route
+also crosses the later cannon checkpoints with 27 shield and reaches the real
+final guardian with 19 shield, retaining its ship and credits. Connected victory
 through stages three to five and near-lossless expert play remain unverified.
 The longer boss forecast still needs mobile performance work. See the [expert forecast design](docs/EXPERT_FORECAST.md)
 for the remaining full-world planning work.
