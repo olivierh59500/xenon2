@@ -358,6 +358,9 @@ func (p *PresentationPilot) selectiveFire(w *World) bool {
 }
 
 func (p *PresentationPilot) selectiveFireForMotion(w *World, motion MotionInput) bool {
+	if w.Frame < p.restUntil && p.burstUntil == 0 {
+		return false
+	}
 	if !presentationShotOpportunityWithForecast(w, motion, &p.guardianAimForecast, p.PALRefreshes) {
 		p.burstUntil = 0
 		return false
