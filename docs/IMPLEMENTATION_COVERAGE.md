@@ -194,3 +194,14 @@ last component. Sampled requests such as 0x84 remain distinct from -1. No event
 mismatch was found. The historical trace column named `lasers` has ambiguous
 factory-hook semantics and does not establish growing-column emission coverage;
 this new comparison explicitly excludes that field.
+
+An original-resource fourth-middle boundary fixture now crosses the real fixed
+selector and verifies projectile callbacks through all five defenses and the
+175-health core. A consumed shot cannot damage the locked core. The actual
+lethal callback clears the original terrain corridor, releases guardian slots
+and creates ten ordinary coins. Their collection/expiry opens only the
+same-stage merchant; ResumeShop preserves the living World, and ordinary
+scrolling continues in stage four. No completion/drop/health fields are assigned
+to win. Inventory, edge position and in-flight factory bullets are explicit
+arrangements, so this validates integration rather than an earned boss victory.
+Focused native/race checks and the complete engine/source suite pass.
