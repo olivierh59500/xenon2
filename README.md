@@ -73,13 +73,19 @@ health pickup; its minimum is 23. Every proposed command is checked through an
 isolated copy of the Go simulation, and different entry states use the reactive
 controller. The route now also defeats the middle guardian, drains its ten
 real reward coins and buys a normal full repair at the fifth-level shop. The
-same ship and both continues survive. The second half and final guardian
-remain unfinished.
-The earned fifth-stage controller and near-lossless campaign remain unfinished.
+same ship and both continues survive. The second half now also reaches the
+final guardian with 35 shield and all eighteen defenses intact. That final
+fight and the near-lossless campaign remain unfinished.
 Beating the remaining guardians and validating the whole campaign remain active
 work.
 Cached routes, bonus collection, dive requests and merchant purchases use
 ordinary game rules. This is not yet a near-lossless five-level demonstration.
+
+Idle-start gameplay is tested separately from the reference intro route. The
+current idle path consumes its continues in level two but completes level three
+with its remaining ship, passes the genuine final merchant and enters level four.
+The fourth opening for this different loadout and random state is still being
+improved.
 
 ## MP4 recording
 

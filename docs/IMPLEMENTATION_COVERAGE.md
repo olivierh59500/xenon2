@@ -5,33 +5,25 @@ This inventory distinguishes integrated game behavior from extracted artwork
 and isolated controller comparisons. A resource export does not by itself
 establish that the corresponding encounter is playable.
 
-The current complete-intro Go frontend completes levels one through four,
-including their real merchants, guardians and exit rewards. The third level
-retains its carried ship and shield through the final fight. The fourth keeps
-that ship and both continues, then enters level five after normal repair.
-The fifth-stage expert route and whole-level Amiga visual/playthrough
-comparisons remain unfinished.
+The reference complete-intro frontend completes levels one through four through
+ordinary controls, real merchants, guardian deaths and exit rewards. It loses
+two ships in level two, then retains its last ship and both continues through
+levels three and four. The fifth-level route crosses the barriers, guided
+missiles and later terrain defenses, defeats the middle guardian, drains its
+ten reward coins and buys the original 500-cost full repair. It crosses the
+second half and admits the final guardian at frame 5402 with 35 shield; all
+eighteen defenses and the 20-point core remain intact. The final fight and
+complete-game Amiga visual/playthrough comparisons remain unfinished.
 
-The carried fifth opening now reaches its genuine checkpoint at camera 3424
-after the original barriers and guided-missile corridor. Its Laser is financed
-through the real fourth final merchant. Full-intro validation retains the same
-ship and both continue credits; shield falls to 23 and returns to 39 through
-the original health pickup. The later terrain/turret route and both fifth
-guardians remain incomplete for the expert controller.
-The route also crosses the following terrain defenses and reaches checkpoint
-2880 with 23 shield, the same ship and both continues. The pilot recognizes
-their live damage colliders independently of their terrain drawing and flashes.
-The subsequent middle-guardian approach reaches checkpoint 2368 with the same
-23 shield, carried ship and two continues. The guardian is admitted normally;
-its fight and the later fifth-stage route remain unfinished.
-The current route also defeats that middle guardian at frame 3087, drains its
-ten real reward coins and enters the actual merchant at frame 3195. The native
-500-cost fifth-level full repair restores 39 shield with the same ship and both
-continue credits. The second half and final guardian remain unfinished.
-The post-merchant controller now also crosses the second-half checkpoints and
-last two barriers, reaching the actual final guardian with 35 shield and all
-eighteen defenses intact. The final fight, ending and full-game comparison
-remain unfinished.
+The actual sixty-second idle admission is a separate entry path. Its second
+level consumes both continues, so its third-level equipment differs from the
+reference profile. After the cannon-pocket recovery correction, this path
+also completes the entire third level, defeats its final guardian with the
+same remaining ship and 23 shield, drains rewards and buys a normal repair.
+It enters level four with 39 shield, one ship and no continues. Its fourth
+opening is not yet validated: the installed controller still loses that ship
+in this different entry profile. A passing reference route does not establish
+that every menu timing, loadout or random state completes the campaign.
 
 ## Fixed encounters and scripted arenas
 
