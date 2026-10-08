@@ -63,9 +63,17 @@ messages, READY, shops, fades and pause do not count toward that deadline.
 
 ## Verification
 
-The later 8 October build from runtime `584b90c` is installed on the Pixel 10a.
-Its complete default-intro logic replay finishes all four stages, visits their
-real merchants and enters stage five with 39 shield, one ship and two continue
+The narrow-barrier update from runtime `c6559a3` is installed on the Pixel 10a.
+Its three original-resource barrier regressions pass on the device, including
+the impulse/release alignment that fails with the former code. The APK passes
+signature and 16 KiB alignment checks; its installed bytes match the verified
+build. It was installed without opening a view or interrupting another app.
+The complete engine suite passes in 28.320 seconds and the unchanged desktop
+four-stage regression in 14.45 seconds.
+
+The preceding 8 October build from runtime `584b90c` completed the default-intro
+Pixel logic replay through all four stages, visited their
+real merchants and entered stage five with 39 shield, one ship and two continue
 credits in 206.87 seconds. The ARM64 debug APK passes signature and 16 KiB
 alignment checks. Installation does not establish visual smoothness, and the
 earned fifth-stage route remains unfinished.

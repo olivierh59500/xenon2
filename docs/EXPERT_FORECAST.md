@@ -643,5 +643,18 @@ releases it on the next pass, without changing the ship's inertia rules.
 The original second-barrier factory regression fails with the former alignment
 and passes with the correction. Actual ordinary steps retain 39 shield and
 zero terrain rewind. Existing first-barrier destruction and terrain-patch
-regressions also pass. This establishes alignment capability separately from
-the unfinished complete fifth-stage route.
+regressions also pass, including all three on the Pixel 10a. The complete
+engine suite passes in 28.320 seconds, the focused source/race check in 2.279
+seconds and the unchanged four-stage desktop regression in 14.45 seconds.
+This establishes alignment capability separately from the unfinished complete
+fifth-stage route.
+
+Further fifth-stage strategy comparisons retain the actual carried world,
+equipment and random stream. Recognizing an offset Cannon shot works against
+an isolated original post, but enabling it throughout the opening regresses
+the connected route. Restricting it to the launcher corridor still does not
+complete that passage. Retaining short avoidance maneuvers and adopting a
+terrain-only native route also fail in connected combat. These strategies
+remain excluded. A bounded offline search of ordinary controls has not yet
+produced an independently replayed route through the launcher corridor;
+search exhaustion does not establish that the source passage is unreachable.
