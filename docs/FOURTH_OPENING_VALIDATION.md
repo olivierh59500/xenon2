@@ -133,3 +133,11 @@ The beam compares their updated future rectangles with a post-movement ship,
 while native contact uses the cached actor and pre-movement ship prefix. This
 later phase mismatch remains under correction; no middle-merchant victory is
 claimed by the improved diagnostic.
+
+The subsequent excluded stream-prefix correction retains all three ships and
+both credits through frame 8601, with seven shield, but reaches no merchant
+before the bounded check ends. Four earlier body/head contacts still occur;
+the later periodic fatal sequence is absent. The ship remains at camera 2528
+without completing the defense nodes. Survival has improved in this comparison,
+but arena progress and effective targeting remain unresolved, so the connected
+controller is still not replaced by this experiment.
