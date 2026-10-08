@@ -377,3 +377,14 @@ All satellite HP reaches zero, with no terrain contact or rewind. Focused race
 checks pass in 8.145 seconds. The core remains at its original 175 HP, and no
 boss reward or merchant is claimed. This establishes a usable weapon strategy,
 not an earned purchase, navigation route or complete boss victory.
+
+The subsequent full-intro Pixel check performs that purchase through the real
+merchant and preserves all three-stage reserve assertions. It also changes the
+shared random state before level four. With the unchanged opening controller,
+the actual purchased loadout loses its ship at frame 588/camera 4038, before
+the middle guardian. A new short source replay matches the real frames,
+random state, all five debits and the loss exactly. This negative campaign
+result takes precedence over an earlier full-shield entry experiment that used
+the previous READY seed. The purchase is therefore not enabled in production.
+The side-shot combat fixtures remain weapon/controller capability evidence;
+the real opening route must be corrected and rechecked before integration.
