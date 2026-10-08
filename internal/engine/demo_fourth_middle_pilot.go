@@ -36,6 +36,7 @@ func (p *PresentationPilot) fourthMiddleSpecialistInput(w *World) (Input, bool) 
 		p.fourthMiddleUpper = nil
 		p.fourthMiddleRight = nil
 		p.fourthMiddleLeft = nil
+		p.fourthMiddleCore = nil
 		return Input{}, false
 	}
 	m := w.FourthMiddle
@@ -57,5 +58,12 @@ func (p *PresentationPilot) fourthMiddleSpecialistInput(w *World) (Input, bool) 
 		}
 		return p.fourthMiddleLeft.Input(w), true
 	}
+	if m.OuterTargets == 0 && w.fourthMiddleActors[4] != nil && w.fourthMiddleActors[5] != nil && w.fourthMiddleActors[4].Active && w.fourthMiddleActors[5].Active {
+		if p.fourthMiddleCore == nil {
+			p.fourthMiddleCore = &fourthMiddleCorePilot{}
+		}
+		return p.fourthMiddleCore.Input(w), true
+	}
+	p.fourthMiddleCore = nil
 	return Input{}, false
 }

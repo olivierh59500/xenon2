@@ -9,6 +9,7 @@ type PresentationPilot struct {
 	fourthMiddleUpper *fourthMiddleUpperPilot
 	fourthMiddleRight *fourthMiddleRightPilot
 	fourthMiddleLeft  *fourthMiddleLeftPilot
+	fourthMiddleCore  *fourthMiddleCorePilot
 	fourthBranch      *fourthOpeningBranchPlan
 	// PALRefreshes matches the host's gameplay cadence; zero uses three ticks.
 	PALRefreshes            int
