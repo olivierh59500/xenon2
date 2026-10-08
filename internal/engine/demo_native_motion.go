@@ -16,16 +16,17 @@ type nativeMotionNode struct {
 // inertia and scroll rules. Its committed commands prevent a moving horizon
 // from postponing the same braking manoeuvre indefinitely.
 type nativeMotionPlanner struct {
-	world            *World
-	targetX, targetY int
-	commands         []MotionInput
-	states           []demoMotionForecast
-	at               int
-	tiles            []uint16
-	nodes            []nativeMotionNode
-	queue            []int
-	visited          map[nativeMotionKey]int
-	expanded         int
+	world              *World
+	targetX, targetY   int
+	commands           []MotionInput
+	states             []demoMotionForecast
+	at                 int
+	tiles              []uint16
+	nodes              []nativeMotionNode
+	queue              []int
+	visited            map[nativeMotionKey]int
+	expanded           int
+	terminalHorizontal nativeHorizontalBound
 }
 
 func nativeMotionStateKey(state demoMotionForecast) nativeMotionKey {

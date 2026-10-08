@@ -359,3 +359,21 @@ respectively while the basic frontal ray misses. Observed and unobserved source
 steps produce identical state, and the live source world remains unchanged.
 These are weapon-capability proofs, not the captured campaign equipment or a
 connected boss victory. The live pilot has not yet adopted rectangle aiming.
+
+## Exact final firing-lane alignment
+
+A narrow terminal solver handles a residual horizontal offset of at most six
+pixels at the original upper ship bound. It uses the source horizontal transition
+graph to construct release/braking commands, pads only the required forward
+camera time, and validates every command with the complete motion and terrain
+forecast. It preserves the existing search budget, route ordering and geometric
+tolerance; it does not enable a different A* heuristic.
+
+The captured third-corridor pose (255,16), camera1836, reaches the exact firing
+target (256,1832) in20 ordinary passes. Full source steps reproduce every retained
+state without terrain contact or rewind. Blocked and unsupported poses retain
+the existing planner, and guardian worker caches remain independently owned.
+Original-resource movement tests pass under the race detector, and the full
+engine suite passes with this solver alone. A connected experimental route
+destroys the previously blocking1696 cannon and advances to subsequent guns
+with35 shield; this is not yet proof of completing that route or the campaign.

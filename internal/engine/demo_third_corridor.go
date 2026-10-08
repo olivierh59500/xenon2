@@ -47,6 +47,11 @@ func (p *DemoPilot) ThirdCorridorInput(w *World) (Input, bool) {
 		if !found {
 			continue
 		}
+		if absDemo(x-firingX) <= 6 && absDemo(y-firingY) <= 6 {
+			if motion, found := p.nativeMotion.commandClearTerminal(w, n, firingX, firingY); found {
+				return Input{Motion: motion, Fire: (w.Frame+1)%2 != 0 && !w.blockedFireUntilRelease}, true
+			}
+		}
 		comfort := 136
 		if y > w.Player.Y+w.ScrollY {
 			comfort = 176
