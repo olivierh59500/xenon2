@@ -24,6 +24,11 @@ func (s *demoMotionForecast) advance(w *World, input MotionInput) bool {
 }
 
 func (s *demoMotionForecast) advanceWithTouchCache(w *World, input MotionInput, cache *nativeMotionTouchCache) bool {
+	if w.Level.Number == 5 && w.FifthFinal != nil && w.fifthFinalArt != nil && w.fifthFinalActors[0] != nil && w.fifthFinalActors[0].Active {
+		// The final controller renews its source arena bound before scrolling,
+		// independently of the sixteen-pixel buffer retained by the last pass.
+		s.scroll.Maximum = w.fifthFinalArt.MotionParameters["maximum_scroll"]
+	}
 	if w.Level.Number == 3 && s.scroll.Y > 208 && (w.ThirdMiddle == nil || w.ThirdMiddle.Defeated) {
 		s.scroll.Maximum = demoScrollMaximum(w, s.scroll.Y, s.scroll.Maximum)
 	}

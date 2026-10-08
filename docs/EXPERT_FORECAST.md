@@ -773,3 +773,15 @@ scroll to 415. Admission retains 35 shield, the same ship and two continues,
 with 200 cash, score 241730 and random state 4235635824/2611229262. All eighteen
 defenses and the twenty-point core start intact. The route markers include
 final-guardian state. The final fight and complete ending remain unverified.
+
+## Final arena motion forecast
+
+The active final body controller renews its original reverse bound on every
+callback. The motion forecast now copies that bound before applying scrolling,
+instead of retaining only the last pass's sixteen-pixel buffer. Original-resource
+regressions compare six successive Down steps with the real Go world, including
+an active and a retired body. The old forecast fails the active case; the
+corrected forecast leaves the live world unchanged and matches its player,
+camera, rewind and scroll limit. The full engine suite passes in 29.721 seconds
+and focused source/race checks in 18.053 seconds. This corrects prediction;
+it does not establish a successful final fight.
