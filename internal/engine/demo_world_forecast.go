@@ -1,7 +1,7 @@
 package engine
 
 // forecastOpeningGuard evaluates the first level, third routes/final encounter
-// and fourth opening/middle encounter through isolated World.Step callbacks.
+// and fourth opening/middle/later section through isolated World.Step callbacks.
 // It retains the planned action unless its existing lookahead is unsafe.
 func (p *PresentationPilot) forecastOpeningGuard(w *World, planned Input) (answer Input) {
 	defer func() {
@@ -15,8 +15,9 @@ func (p *PresentationPilot) forecastOpeningGuard(w *World, planned Input) (answe
 	third := w.Level.Number == 3 && (opening || corridor || final)
 	fourthOpening := w.Level.Number == 4 && w.FourthMiddle == nil && w.ScrollY > 176
 	fourthMiddle := w.Level.Number == 4 && w.FourthMiddle != nil && !w.FourthMiddle.Defeated
+	fourthLater := w.Level.Number == 4 && w.FourthMiddle != nil && w.FourthMiddle.Defeated && w.ScrollY > 176
 	early := w.Level.Number == 1
-	if !early && !third && !fourthOpening && !fourthMiddle || w.Ready || !w.PlayerAlive {
+	if !early && !third && !fourthOpening && !fourthMiddle && !fourthLater || w.Ready || !w.PlayerAlive {
 		return planned
 	}
 	forecast := &p.forecast

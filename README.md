@@ -60,8 +60,9 @@ The current carried Pixel route also destroys both upper satellites through Rear
 shots, the lower-right satellite through Cannon shots and the lower-left satellite
 through primary shots. All 27 shield, the same ship and both continues remain at
 the exposed core. It then defeats the core and reaches the real middle merchant
-with the same 27 shield. The second half of level four and the remaining campaign
-controller are unfinished.
+with the same 27 shield. After ordinary repair and rewards, the current desktop
+route also reaches the fourth final guardian with 31 shield. That final fight
+and the remaining campaign controller are unfinished.
 Beating the remaining guardians and validating the whole campaign remain active
 work.
 Cached routes, bonus collection, dive requests and merchant purchases use

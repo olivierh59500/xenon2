@@ -413,6 +413,21 @@ engine tests pass in 28.255 seconds and focused core race checks in 19.243 secon
 The second half of level four, final guardian and earned fifth-stage route remain
 unfinished.
 
+The existing six-pass guard now also covers ordinary play after the fourth
+middle merchant, stopping before the final arena. The former route died at frame
+5014 because an original kind-5, tag-272 right-extending beam hit the stationary
+ship for six shield on every callback. Its scene regression retains the native
+factory, animation phase, rectangle and saved player bank: held input loses six,
+while guarded input preserves all 39. The old guard fails this regression; focused
+race checks pass in 2.558 seconds.
+
+The complete-intro desktop frontend now reaches the genuine fourth final guardian
+at frame 6560, camera 143, with 31 shield, the same ship and both continue credits.
+Its real middle merchant repairs shield for 500; ordinary rewards raise the wallet
+to 3,550 before final admission. The connected check passes in 14.794 seconds.
+The final guardian is not yet defeated. A separate final-arena guard experiment
+survives longer with 15 shield but does not win; it remains excluded.
+
 ## Automatic startup demonstration
 
 The Android startup configuration opens the original logo/credit/score loop;
@@ -426,3 +441,7 @@ A full startup regression reaches ordinary level-one expert play without cheats
 or diagnostic admission, then verifies same-action manual takeover. The new
 startup, interactive-phase and reset checks all pass on the Pixel. This fixes
 admission to the existing controller; it does not claim a complete expert campaign.
+The complete frontend/GPU suite passes in 151.826 seconds after the startup fix
+and core integration. The corrected APK is installed. The timeout is verified by
+the native Android frontend tests; an interrupted real-screen observation is not
+counted as additional visual confirmation.
