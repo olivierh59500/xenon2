@@ -139,7 +139,9 @@ The 8 October locked-Pixel check passes all title-idle and takeover cases:
 automatic expert admission after sixty idle seconds, idle reset for keyboard,
 pointer and held touch activity, suspended-screen exclusions, and applying the
 same keyboard or touch action when manual control takes over. The installed
-debug build uses verified runtime commit `8e10b88`; signature, 16 KiB alignment,
-installation, cold launch and fatal-log checks also pass. Later documentation
-and equipment-fixture corrections do not change that runtime. Neither check
-establishes rendered performance or a complete five-stage expert route.
+debug build now uses runtime commit `6d85918`, including the validated early-stage
+controller, third-final preparation and fourth rear corner. Its 20.39 MB APK passes
+signature and 16 KiB alignment checks, installs on the authorized Pixel 10a and
+cold-launches in 1010 ms; its process remains alive without a matching startup
+crash. This is a startup/logic check, not visual verification, dense-combat frame
+pacing or a complete five-stage expert route.
