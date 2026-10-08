@@ -141,3 +141,11 @@ the later periodic fatal sequence is absent. The ship remains at camera 2528
 without completing the defense nodes. Survival has improved in this comparison,
 but arena progress and effective targeting remain unresolved, so the connected
 controller is still not replaced by this experiment.
+
+The bounded progress ledger then confirms that the right node is genuinely
+destroyed at frame 2085. The next selected node is the left one, which remains
+closed while the ship stays at x192. Its native opening condition requires
+player x below 160 and an interrupted defense stream. With no valid frontal
+target at the retained position, the pilot stops firing. The next correction
+must reach the opposite half safely before lining up the node; changing its
+native gate or firing at a closed collider would not solve the control error.
