@@ -1,7 +1,7 @@
 package engine
 
 // The source callback replay, not this compact key, establishes future safety.
-type fourthOpeningBranchKey struct {
+type retainedGuardKey struct {
 	frame                                                     uint64
 	player                                                    PlayerMotionState
 	camera, minimum, maximum, deviation, delta, base          int
@@ -13,10 +13,10 @@ type fourthOpeningBranchKey struct {
 	tiles                                                     uint64
 }
 
-type fourthOpeningBranchPlan struct {
+type retainedGuardPlan struct {
 	forecast       WorldForecast
 	world          *World
-	before         [7]fourthOpeningBranchKey
+	before         [7]retainedGuardKey
 	input          [6]Input
 	at, count, pal int
 }
@@ -25,13 +25,13 @@ func fourthBranchWindow(w *World) bool {
 	return w != nil && w.Level.Number == 4 && w.FourthMiddle == nil && w.ScrollY > 176 && w.PlayerAlive && !w.GameOver && !w.Ready && w.ScreenClearFrames == 0 && !w.ShopReady && !w.ExitReady && !w.LevelFinished && w.PendingExitDrops == 0 && !w.stepContinuation.active && w.Coverage != nil && w.Level.PlayerStencil != nil
 }
 
-func fourthBranchKey(w *World) fourthOpeningBranchKey {
+func retainedGuardStateKey(w *World) retainedGuardKey {
 	hash := uint64(14695981039346656037)
 	for _, tile := range w.Coverage.Map {
 		hash ^= uint64(tile)
 		hash *= 1099511628211
 	}
-	return fourthOpeningBranchKey{w.Frame, w.Player, w.ScrollY, w.MinimumScrollY, w.MaximumScrollY, w.ScrollDeviationPasses, w.ScrollDelta, w.BaseScrollStep, w.Rewind, w.Equipment, w.RandomState(), w.Dive.Phase, w.Dive.Remaining, w.MaterializationFrames, w.InvulnerableFrames, w.ContinueCredits, w.cursor.MovingHighWater, w.cursor.FixedHighWater, w.nextActorID, hash}
+	return retainedGuardKey{w.Frame, w.Player, w.ScrollY, w.MinimumScrollY, w.MaximumScrollY, w.ScrollDeviationPasses, w.ScrollDelta, w.BaseScrollStep, w.Rewind, w.Equipment, w.RandomState(), w.Dive.Phase, w.Dive.Remaining, w.MaterializationFrames, w.InvulnerableFrames, w.ContinueCredits, w.cursor.MovingHighWater, w.cursor.FixedHighWater, w.nextActorID, hash}
 }
 
 func fourthBranchSafe(w *World, result ForecastResult, previous int) bool {
@@ -45,7 +45,7 @@ func (p *PresentationPilot) captureFourthOpeningBranch(w *World, input Input) {
 		return
 	}
 	if p.fourthBranch == nil {
-		p.fourthBranch = &fourthOpeningBranchPlan{}
+		p.fourthBranch = &retainedGuardPlan{}
 	}
 	plan := p.fourthBranch
 	plan.count = 0
@@ -53,8 +53,8 @@ func (p *PresentationPilot) captureFourthOpeningBranch(w *World, input Input) {
 		return
 	}
 	pal := thirdMiddlePALRefreshes(p.PALRefreshes)
-	var keys [7]fourthOpeningBranchKey
-	keys[0] = fourthBranchKey(w)
+	var keys [7]retainedGuardKey
+	keys[0] = retainedGuardStateKey(w)
 	for pass := 0; pass < 6; pass++ {
 		previous := plan.forecast.State().Equipment.Shield
 		for range pal {
@@ -64,7 +64,7 @@ func (p *PresentationPilot) captureFourthOpeningBranch(w *World, input Input) {
 		if err != nil || !fourthBranchSafe(plan.forecast.State(), result, previous) {
 			return
 		}
-		keys[pass+1] = fourthBranchKey(plan.forecast.State())
+		keys[pass+1] = retainedGuardStateKey(plan.forecast.State())
 	}
 	if fourthOpeningTerminalContactUnsafe(plan.forecast.State()) {
 		return
@@ -86,7 +86,7 @@ func (p *PresentationPilot) continueFourthOpeningBranch(w *World) (Input, bool) 
 		plan.count = 0
 		return Input{}, false
 	}
-	key, index := fourthBranchKey(w), plan.at
+	key, index := retainedGuardStateKey(w), plan.at
 	repeated := index > 0 && key == plan.before[index-1]
 	if repeated {
 		index--
@@ -106,7 +106,7 @@ func (p *PresentationPilot) continueFourthOpeningBranch(w *World) (Input, bool) 
 		}
 		result, err := plan.forecast.Advance(plan.input[pass])
 		state := plan.forecast.State()
-		if err != nil || !fourthBranchSafe(state, result, previous) || fourthBranchKey(state) != plan.before[pass+1] {
+		if err != nil || !fourthBranchSafe(state, result, previous) || retainedGuardStateKey(state) != plan.before[pass+1] {
 			plan.count = 0
 			return Input{}, false
 		}

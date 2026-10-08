@@ -45,7 +45,7 @@ func TestFourthBranchRetainsOriginalInputsAndSameFrameIsIdempotentOptional(t *te
 		if err := w.Step(got); err != nil {
 			t.Fatal(err)
 		}
-		if w.Equipment.Shield != 39 || w.Rewind.Timer != 0 || fourthBranchKey(w) != p.fourthBranch.before[pass+1] {
+		if w.Equipment.Shield != 39 || w.Rewind.Timer != 0 || retainedGuardStateKey(w) != p.fourthBranch.before[pass+1] {
 			t.Fatal("retained command lost its exact safe source successor")
 		}
 	}
@@ -56,12 +56,12 @@ func TestFourthBranchRetainsOriginalInputsAndSameFrameIsIdempotentOptional(t *te
 
 func TestFourthBranchReforecastRejectsChangedExistingProjectileOptional(t *testing.T) {
 	w, p, input := fourthBranchSourcePlan(t)
-	key := fourthBranchKey(w)
+	key := retainedGuardStateKey(w)
 	shot := w.Projectiles[0]
 	shot.Motion.X, shot.Motion.Y = int32(w.Player.X)<<16, int32(w.Player.Y-7)<<16
 	shot.Motion.Direction, shot.Motion.Speed = 4, 6
 	shot.X, shot.Y = float64(w.Player.X), float64(w.Player.Y-7)
-	if fourthBranchKey(w) != key {
+	if retainedGuardStateKey(w) != key {
 		t.Fatal("entity-only mutation unexpectedly changed the compact key")
 	}
 	var actual WorldForecast

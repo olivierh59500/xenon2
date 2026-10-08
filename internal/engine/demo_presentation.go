@@ -6,13 +6,15 @@ import "math"
 // committed tactical goals and held firing bursts. The game still owns every
 // movement, hit, reward, terrain change and random value.
 type PresentationPilot struct {
-	fifthPractice     *fifthOpeningPractice
-	fourthFinalNative *fourthFinalNativePilot
-	fourthMiddleUpper *fourthMiddleUpperPilot
-	fourthMiddleRight *fourthMiddleRightPilot
-	fourthMiddleLeft  *fourthMiddleLeftPilot
-	fourthMiddleCore  *fourthMiddleCorePilot
-	fourthBranch      *fourthOpeningBranchPlan
+	thirdCorridorBranch *retainedGuardPlan
+	thirdCorridorWatch  thirdCorridorProgress
+	fifthPractice       *fifthOpeningPractice
+	fourthFinalNative   *fourthFinalNativePilot
+	fourthMiddleUpper   *fourthMiddleUpperPilot
+	fourthMiddleRight   *fourthMiddleRightPilot
+	fourthMiddleLeft    *fourthMiddleLeftPilot
+	fourthMiddleCore    *fourthMiddleCorePilot
+	fourthBranch        *retainedGuardPlan
 	// PALRefreshes matches the host's gameplay cadence; zero uses three ticks.
 	PALRefreshes            int
 	forecast                WorldForecast
@@ -49,6 +51,9 @@ func (p *PresentationPilot) NormalInput(w *World) Input {
 		*p = PresentationPilot{PALRefreshes: p.PALRefreshes, world: w, frame: w.Frame, decisionAt: w.Frame + 3, planner: DemoPilot{practicedRoute: true}}
 	}
 	p.frame = w.Frame
+	if input, retained := p.continueThirdCorridorBranch(w); retained {
+		return input
+	}
 	if input, handled := p.fifthPracticedOpeningInput(w); handled {
 		return input
 	}

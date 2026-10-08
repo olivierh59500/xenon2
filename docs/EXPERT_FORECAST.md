@@ -243,6 +243,34 @@ lack of camera progress.
 
 ## Committed native route commands
 
+### Recovery from a blocked cannon approach
+
+An unattended Pixel run remained in the third-stage corridor around camera
+1612 with score 32,490. Replaying the actual sixty-second idle admission
+reproduced the loop. This entry differs from explicitly starting DEMO MODE:
+the intervening second-stage continues also change the carried loadout.
+
+The terrain planner found a rearward path, but a bounded motion search could
+fail to retain its commands. The six-pass safety guard then repeatedly replaced
+the retreat with an entire held dodge. A brief sideways dodge followed by the
+remaining retreat commands is safe in the reproduced source state; holding that
+same dodge for all six passes is not equivalent.
+
+Recovery now watches progress along the complete path to a living cannon. After
+120 logic passes without path or score progress, it compares nine initial
+moves followed by the planned continuation, retains a safe improving sequence
+and replays all remaining callbacks before every live command. A ship already
+in the firing lane is excluded, so normal waits for a vulnerable gun phase do
+not activate recovery. The retained keys and storage are shared with the fourth
+opening guard; owner, cadence, lifecycle and changed-projectile checks remain.
+
+The complete idle-start regression now passes camera 1399 at frame 6096, with
+27 shield, the same remaining ship and no continue consumed in stage three.
+Its original input path stalled beyond twenty-five simulated minutes. The
+separate reference route still reaches the fifth final guardian at frame 5402
+with 35 shield and both continues. These two entry paths are tested separately;
+the idle-start run is not a near-lossless campaign or final-guardian victory.
+
 A clear geometric path does not guarantee that a fast ship can follow its
 corners with one continuously replanned direction. An observed eight-command
 cycle matched the real motion and rewind state exactly but made no progress.

@@ -20,6 +20,7 @@ func (p *PresentationPilot) forecastOpeningGuard(w *World, planned Input) (answe
 	if !early && !third && !fourthOpening && !fourthMiddle && !fourthLater || w.Ready || !w.PlayerAlive {
 		return planned
 	}
+	recoverCorridor := corridor && p.thirdCorridorRecoveryNeeded(w)
 	forecast := &p.forecast
 	pal := p.PALRefreshes
 	if pal <= 0 {
@@ -54,6 +55,11 @@ func (p *PresentationPilot) forecastOpeningGuard(w *World, planned Input) (answe
 		}
 		if r.Boundary != ForecastRunning || pass == 5 {
 			return planned
+		}
+	}
+	if recoverCorridor {
+		if input, ok := p.chooseThirdCorridorBranch(w, planned, sequence, useSequence); ok {
+			return input
 		}
 	}
 	best := planned
