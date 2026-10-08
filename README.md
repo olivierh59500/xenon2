@@ -39,18 +39,19 @@ an active demo; that same action is passed to the game. Fades, pause, the cheat
 menu and merchants do not count as title idle time. The controller remains in
 development; its complete five-level route is not yet validated.
 
-Full-game autonomous playback is still in development. The reference validation controller
-completes levels one and two from the normal menu, including guardian destruction
-and both merchants on each stage, and starts level three. The full-intro startup
-also traverses all six credit pairs and wins both stages, carrying two ships into
-stage three; the direct-menu regression carries three after native fractional
-bullet coordinates were corrected. The separate third-stage no-loss check still
-detects a lost ship; connected third-stage victory remains unverified.
-Cached terrain routes, ordinary bonus
-collection, dive requests and shop purchases retain normal game rules. A
-separate second-stage opening reaches its first checkpoint with all three ships.
-The remaining stages and full campaign still need validated pilot strategies;
-this is not yet a completed five-level demonstration.
+The retained controller completes the first three stages from the full default
+intro, visits their real merchants and enters level four with one ship and no
+continues. Its third-stage route keeps that ship, crosses both cannon checkpoints
+with at least 27 shield, defeats the final guardian without losing shield and
+repairs to 39 before the next stage. In level four it clears the known left fork,
+but later terrain routing and the last two stages remain unverified.
+
+An experimental earlier-stage policy completes level one without losing a ship
+and reduces first-two-stage losses from eight to two, preserving both continues.
+Its different carried inventory is still under downstream validation; it is not
+the default controller yet. Cached terrain routes, bonus collection, dive requests
+and merchant purchases use ordinary game rules. Neither controller is currently
+a validated near-lossless five-level demonstration.
 
 ## MP4 recording
 
@@ -76,7 +77,7 @@ and exit drops, then stops before playing level two. Its real frontend regressio
 completes that route in about 6 minutes 53 seconds with two ships remaining.
 Ordinary damage and purchases still apply. The broader five-level presentation
 controller completes the first three stages from the full intro, visiting
-their real merchants and entering stage three with one ship after ordinary
+their real merchants and entering stage four with one ship after ordinary
 recovery. Its third opening reaches the first two checkpoints without losing
 the carried ship, preserving 39 and 31 shield points respectively. It also defeats
 both eyes of the third middle guardian and collects the real merchant drops
