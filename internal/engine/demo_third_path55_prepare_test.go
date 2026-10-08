@@ -126,3 +126,41 @@ func TestOriginalPath55PreparationSingleCandidate(t *testing.T) {
 		t.Fatalf("single preparation candidate did not preserve more shield: current%d prepared%d", health[0], health[1])
 	}
 }
+
+func TestThirdPath55PreparationRequiresOriginalDestroyedPatchAndPendingWave(t *testing.T) {
+	if _, ok := thirdPath55Preparation(nil); ok {
+		t.Fatal("nil world started preparation")
+	}
+	w := path55PreparationScene(t)
+	before := forecastIsolationDigest(w)
+	if _, ok := thirdPath55Preparation(w); !ok {
+		t.Fatal("original pending formation did not admit preparation")
+	}
+	if forecastIsolationDigest(w) != before {
+		t.Fatal("preparation changed source state")
+	}
+	for _, name := range []string{"before-cannon", "missing-patch", "expired-wave"} {
+		t.Run(name, func(t *testing.T) {
+			var forecast WorldForecast
+			if err := forecast.Load(w); err != nil {
+				t.Fatal(err)
+			}
+			v := forecast.State()
+			switch name {
+			case "before-cannon":
+				v.cursor.FixedHighWater = 737
+			case "missing-patch":
+				v.Coverage.Map[40*20+8] ^= 1
+			case "expired-wave":
+				v.cursor.MovingHighWater = 576
+			}
+			before := forecastIsolationDigest(v)
+			if _, ok := thirdPath55Preparation(v); ok {
+				t.Fatal("ineligible source state started preparation")
+			}
+			if forecastIsolationDigest(v) != before {
+				t.Fatal("scope rejection changed source state")
+			}
+		})
+	}
+}
