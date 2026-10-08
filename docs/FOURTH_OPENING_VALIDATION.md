@@ -186,3 +186,12 @@ without a status file after prolonged execution, and the log stops at stage-thre
 admission. No fatal log explains that termination. This is an incomplete check,
 not a campaign pass or an asserted gameplay failure. The candidate remains
 excluded until the new carried third-stage state is diagnosed and validated.
+
+Bounded downstream diagnostics confirm normal third-middle execution with the
+newly retained cannon: the first decision returns in about 28 ms, the first 120
+passes reduce the eyes to 10/6, and the real middle merchant is reached at frame
+2050 with both eyes destroyed, all rewards collected, the same ship, both credits
+and 31 shield. Eight predicted-defeat serial fallbacks return normally. These
+results rule out a first-middle-decision or defeat-transition hang; the later
+post-merchant corridor still needs a bounded state check before campaign
+validation can be claimed.
