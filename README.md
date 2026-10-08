@@ -14,6 +14,34 @@ HUD, loading and ending presentation are connected. All fixed encounter families
 are implemented. Shared-state and artwork audits and full-game validation remain
 in progress; this build is not yet the complete playable game.
 
+**Original resources are prepared from your own Amiga game disks.** The original
+ADF, recovered programs and exported game assets are not included in the
+repository. [Prepare the resources](docs/ASSET_SETUP.md) with the supplied Go
+import/export tools before playing.
+
+## Presentation and screenshots
+
+[![Expert demonstration in the first stage](docs/images/gameplay.png)](https://www.malakhsoftware.com/games.html#xenon2)
+
+[Watch the five-minute presentation with sound and English captions](https://www.malakhsoftware.com/games.html#xenon2)
+on Malakh Software. It includes the original intro, menu, first-stage expert
+play and the first merchant visit. The caption band sits below the complete
+game image. [English subtitle transcript](docs/media/xenon2-presentation.en.srt).
+
+| Original merchant | Later first-stage scenery |
+| --- | --- |
+| [![Equipment previews, the merchant and an autofire quote](docs/images/merchant.png)](docs/images/merchant.png) | [![The ship crossing the later terrain with enemies and projectiles](docs/images/later-stage.png)](docs/images/later-stage.png) |
+
+Create the MP4 and WebM presentation locally after preparing the game assets:
+
+```sh
+./scripts/record-presentation.sh
+```
+
+The capture, caption panels, editable English SRT and movies remain under the
+locally excluded `recordings/` directory. The preparation tool and caption text
+are included under `tools/presentation/`; no extra font installation is needed.
+
 ## Three-level demonstration
 
 ```sh
@@ -121,6 +149,11 @@ These aids are optional player choices; ordinary demo validation keeps them off.
 Supply a compatible original Amiga ADF in a local directory. Original disks,
 compressed containers, recovered programs and generated assets are not included
 in Git. Extraction tools rebuild the local resources reproducibly.
+
+The [Planet Emu Amiga ADF catalogue](https://www.planetemu.net/roms/commodore-amiga-games-adf?page=X)
+helps identify **Xenon 2 - Megablast**. The currently verified single-disk
+revision is labeled `[cr BS1][h Black Monks][t +36 Black Monks]`; the asset guide
+lists its checksum and the complete preparation commands.
 
 ```sh
 ./scripts/prepare-assets.sh -adf "/path/to/Xenon 2.adf"

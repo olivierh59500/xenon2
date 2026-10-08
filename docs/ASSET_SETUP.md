@@ -4,6 +4,10 @@ Original disk images and extracted artwork are not distributed in this repositor
 The import and export tools rebuild them locally from a compatible Xenon 2:
 Megablast Amiga ADF. The game does not execute the disk's program.
 
+**Original resources are prepared from your own Amiga game disks.** All import,
+decompression, graphics/data, menu, shop and audio exporters are included as Go
+sources, coordinated by `scripts/prepare-assets.sh`.
+
 ## Supported disk revision
 
 The initial exporter supports the single-disk AmigaDOS revision identified as
@@ -12,6 +16,11 @@ The initial exporter supports the single-disk AmigaDOS revision identified as
 Individual resources are verified separately, so a disk with identical game
 payloads and different filesystem metadata can also be accepted. Other releases
 are rejected explicitly; their code and data offsets must be verified first.
+
+The [Planet Emu Amiga ADF catalogue, letter X](https://www.planetemu.net/roms/commodore-amiga-games-adf?page=X)
+lists **Xenon 2 - Megablast** and the single-disk revision with those labels.
+The two-disk entries are separate releases; the current importer verifies the
+documented single-disk payloads rather than accepting an arbitrary Xenon 2 ADF.
 
 ```sh
 ./scripts/prepare-assets.sh -adf "/path/to/Xenon 2.adf"

@@ -1,0 +1,95 @@
+1
+00:00:00,000 --> 00:00:09,000
+Xenon 2: Megablast - Go / Ebitengine remake
+An expert-play presentation with the game's own music and effects.
+
+2
+00:00:09,000 --> 00:00:20,000
+The original intro and credits
+Original Amiga graphics, with independent game logic and audio replay in Go.
+
+3
+00:00:20,000 --> 00:00:33,000
+A familiar Amiga presentation
+The menus, scrolling backgrounds and soundtrack keep their own timing.
+
+4
+00:00:33,000 --> 00:00:41,467
+From the intro to the original menu
+A normal single-player session is about to begin.
+
+5
+00:00:41,467 --> 00:00:46,633
+The demonstration selects one-player mode
+Cheats are disabled; loading and READY follow the normal game flow.
+
+6
+00:00:46,633 --> 00:01:02,000
+The expert player takes control
+Movement, shots, collisions and rewards follow the normal game rules.
+
+7
+00:01:02,000 --> 00:01:20,000
+Tracking the next enemy formation
+The pilot changes lanes to line up its firing bursts.
+
+8
+00:01:20,000 --> 00:01:38,000
+Play it yourself: arrow keys, Space or Control to fire
+During a normal demo, a key or touch returns control to you.
+
+9
+00:01:38,000 --> 00:01:56,000
+Collecting cash for the merchant
+The pilot moves toward reachable bonuses left by defeated enemies.
+
+10
+00:01:56,000 --> 00:02:18,000
+Working through the first stage
+Positioning matters as much as firepower in the narrow passages.
+
+11
+00:02:18,000 --> 00:02:35,000
+Keeping clear of the scenery
+Reverse scrolling is available when a passage is blocked.
+
+12
+00:02:35,000 --> 00:02:44,233
+The first section leads to the merchant
+The ship keeps its remaining shield and earned cash.
+
+13
+00:02:44,233 --> 00:02:55,683
+The original merchant: equipment, sales and repairs
+Purchases use cash earned during the game.
+
+14
+00:02:55,683 --> 00:03:17,000
+Back in the level after the merchant
+The same ship continues through the second section.
+
+15
+00:03:17,000 --> 00:03:40,000
+Different formations need different firing positions
+The pilot anticipates enemy paths before opening fire.
+
+16
+00:03:40,000 --> 00:04:06,000
+The original terrain and enemy-wave layouts
+Display runs at 60 frames per second with separate gameplay timing.
+
+17
+00:04:06,000 --> 00:04:33,000
+Also available on Android
+The same Go game has a virtual joystick and separate fire and dive controls.
+
+18
+00:04:33,000 --> 00:04:50,000
+A remake in development, with a three-level expert tour
+Original resources are prepared from your own Amiga game disks.
+
+19
+00:04:50,000 --> 00:05:00,000
+Xenon 2 Go | Malakh Software
+Source and setup: github.com/olivierh59500/xenon2
+
