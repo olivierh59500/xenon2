@@ -343,6 +343,13 @@ normal menu/READY/gameplay/pause/attract, ordinary middle-shop purchase/reload,
 and the fifth merchant/ending/next-stage boundary in 2.219 seconds. These are
 resource-reproducibility and flow checks, not an earned five-level victory.
 
+The complete package suite also passes against that freshly generated tree,
+including the engine in 23.520 seconds and frontend/GPU tests in 122.821 seconds.
+With local native audio references enabled, the main/menu comparisons cover
+18,000 and 6,000 original music ticks on four voices; the shop comparison covers
+8,100 ticks across all 27 effects. The effect-voice trace also passes. These
+source-state comparisons do not replace an integrated audible Amiga comparison.
+
 ## Fourth-middle weapon positioning
 
 Separate ordinary-control prototypes continue from the earlier recorded tail
