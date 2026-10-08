@@ -21,7 +21,7 @@ func BenchmarkNativeMotionOriginalRoutes(b *testing.B) {
 				}
 			}
 			b.ReportMetric(float64(planner.expanded), "expanded/op")
-			b.ReportMetric(float64(len(planner.nodes)), "states/op")
+			b.ReportMetric(float64(planner.nodeCount()), "states/op")
 		})
 	}
 }

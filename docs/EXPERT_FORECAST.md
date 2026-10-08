@@ -404,3 +404,25 @@ passes, and its genuine first-two-stage result remains unchanged on Pixel.
 A strict third-stage run ends near the eight-minute limit without a completion
 status or test verdict, so downstream campaign validation remains incomplete.
 The candidate remains excluded from the default controller.
+
+## Compact clear-route search states
+
+Clear supported third/fourth-stage searches retain only the full player and
+camera values in their search nodes, reducing a node from728 to136bytes.
+The original full forecast still advances each successor. Accepted nodes always
+retain rewind timer zero, so their histories are never read by that search.
+Selected commands are replayed from the actual complete start state; every
+replayed player/camera value must match its parent chain before publishing the
+full retained histories. Unsupported, covered or rewind starts use the unchanged
+full search, as does any replay mismatch.
+
+Independent reconstruction compares every node and history, heap order, visited
+state, expansion count, commands and retained states. Original5/7-command routes,
+20-command terminal alignment, fourth-fork legs, exhausted9000-node search and
+rewind fallbacks pass. Worker buffers remain independently owned. The full
+engine/native-resource suite and focused race checks pass.
+
+The same-binary Pixel comparison retains exact parity. Single100ms samples reduce
+the lane44.70→38.21ms and exhausted9000-node search321.55→259.97ms. This improves
+search cost and memory pressure while retaining the policy; it still does not
+establish smooth rendering or a complete connected expert campaign.

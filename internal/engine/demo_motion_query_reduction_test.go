@@ -75,13 +75,13 @@ func TestNativeMotionQueryReductionPreservesExactSearchOptional(t *testing.T) {
 			before := forecastDigest(w)
 			var got, want nativeMotionPlanner
 			accepted, expected := got.search(w, fixture.targetX, fixture.targetY), want.searchBeforeQueryReduction(w, fixture.targetX, fixture.targetY)
-			if accepted != expected || got.expanded != want.expanded || !reflect.DeepEqual(got.nodes, want.nodes) || !reflect.DeepEqual(got.queue, want.queue) || !reflect.DeepEqual(got.visited, want.visited) || !reflect.DeepEqual(got.commands, want.commands) || !reflect.DeepEqual(got.states, want.states) {
-				t.Fatalf("search changed: accepted%v/%v expanded%d/%d nodes%d/%d commands%d/%d", accepted, expected, got.expanded, want.expanded, len(got.nodes), len(want.nodes), len(got.commands), len(want.commands))
+			if accepted != expected || got.expanded != want.expanded || !reflect.DeepEqual(compactMaterializedNodes(t, w, &got), want.nodes) || !reflect.DeepEqual(got.queue, want.queue) || !reflect.DeepEqual(got.visited, want.visited) || !reflect.DeepEqual(got.commands, want.commands) || !reflect.DeepEqual(got.states, want.states) {
+				t.Fatalf("search changed: accepted%v/%v expanded%d/%d nodes%d/%d commands%d/%d", accepted, expected, got.expanded, want.expanded, got.nodeCount(), len(want.nodes), len(got.commands), len(want.commands))
 			}
 			if forecastDigest(w) != before {
 				t.Fatal("search changed live source state")
 			}
-			t.Logf("accepted%v expanded%d nodes%d commands%d", accepted, got.expanded, len(got.nodes), len(got.commands))
+			t.Logf("accepted%v expanded%d nodes%d commands%d", accepted, got.expanded, got.nodeCount(), len(got.commands))
 		})
 	}
 }
