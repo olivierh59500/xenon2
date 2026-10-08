@@ -63,6 +63,21 @@ messages, READY, shops, fades and pause do not count toward that deadline.
 
 ## Verification
 
+The current build from runtime `66568a0` is installed on the Pixel 10a. Its
+complete default-intro logic regression reaches the fifth final guardian in
+40.14 seconds, after the genuine middle victory, ten-coin drain and native
+500-cost repair. It retains the carried ship, both continues and 35 shield;
+all eighteen final defenses and the twenty-point core start intact. The final
+fight remains unfinished. The Pixel also passes the original-resource two-route
+replay and foreign-state rejection checks. Signature, 16 KiB alignment and
+installed-byte verification pass. The APK was installed without launching it;
+these checks do not establish new device graphics or audio verification.
+
+The complete desktop package suite passes, including the frontend/GPU package
+in 153.881 seconds. One separate desktop test failed during Ebitengine monitor
+initialization; the complete suite later finished successfully. The Pixel logic
+checks run without a graphical view and are independent of that desktop setup.
+
 The narrow-barrier update from runtime `c6559a3` is installed on the Pixel 10a.
 Its three original-resource barrier regressions pass on the device, including
 the impulse/release alignment that fails with the former code. The APK passes
