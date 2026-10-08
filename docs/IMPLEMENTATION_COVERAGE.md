@@ -205,3 +205,13 @@ scrolling continues in stage four. No completion/drop/health fields are assigned
 to win. Inventory, edge position and in-flight factory bullets are explicit
 arrangements, so this validates integration rather than an earned boss victory.
 Focused native/race checks and the complete engine/source suite pass.
+
+A fourth-final boundary fixture now retains both 50-health eyes and the locked
+100-health core. Native-factory point bullets verify the absent locked collider,
+close each eye through its real callback while retaining its artwork/actor, and
+defeat the exposed core. Twenty real coins drain through normal lifetimes before
+the final merchant admits stage five. Gear, shield, lives, credits and RNG carry
+forward without an early fifth-victory credit or difficulty increase. The clear
+initial pose and in-flight bullets are explicit arrangements; no guardian health
+or completion/drop field is assigned. This proves connected engine boundaries,
+not an earned fourth-stage win. Native/race and full source suites pass.
