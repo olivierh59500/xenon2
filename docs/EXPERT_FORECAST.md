@@ -554,3 +554,18 @@ ship and both continues survive stage three, including the unchanged-shield
 final fight. The subsequent narrow fourth-corner continuation reaches its
 middle guardian with seven shield and then loses the ship. This improves the
 default controller while leaving the full expert campaign incomplete.
+
+## Complete a retained fork maneuver before releasing it
+
+The fourth forest helper previously checked its coarse finish condition before
+consulting an already admitted native route. A source-map regression crosses
+that condition after the first of three commands, while two matching commands
+remain. The old helper abandons them; the guard still has their preview.
+The helper now consumes a valid retained route before deciding whether to
+release the completed fork. Eligibility and the finish condition are unchanged.
+
+The regression fails before and passes after, with exact source motion/history
+through all three commands and unchanged 39 shield. Existing corridor, corner
+and guard regressions pass under the race detector. This fixes control/preview
+consistency; its effect on the five observed approach impacts still needs the
+genuine connected comparison.

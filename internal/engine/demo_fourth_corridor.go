@@ -21,11 +21,11 @@ func (p *DemoPilot) FourthCorridorInput(w *World) (Input, bool) {
 	if !p.practicedRoute || !fourthCorridorActive(w) || w.Ready || !w.PlayerAlive || w.GameOver || w.Rewind.Timer != 0 || w.Coverage == nil || w.Level.PlayerStencil == nil {
 		return Input{}, false
 	}
-	if w.Player.X <= 140 && w.Player.Y+w.ScrollY <= fourthForkTargetY {
-		return Input{}, false
-	}
 	if motion, ok := p.nativeMotion.continueRoute(w, fourthForkTargetX, fourthForkTargetY); ok {
 		return Input{Motion: motion}, true
+	}
+	if w.Player.X <= 140 && w.Player.Y+w.ScrollY <= fourthForkTargetY {
+		return Input{}, false
 	}
 	if p.navigation == nil {
 		p.navigation = &demoNavigation{}
