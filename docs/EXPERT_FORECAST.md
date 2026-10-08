@@ -456,3 +456,19 @@ The regression fails before and passes after, including the actual World.Step
 position, guard preview and second-command retention. Existing fallback hold,
 full resource/source suite and race checks pass. This corrects execution of an
 approved maneuver; it does not claim improved complete-campaign survival.
+
+## Search-local exact terrain memo
+
+Each compact search now memoizes the original ship-stencil query by its exact
+horizontal/world-vertical position in a bounded private window. The map and
+stencil cannot change during that synchronous search. The memo resets before
+every search, and positions outside its window use the original query.
+Successful-route replay and the full fallback remain uncached.
+
+Tests compare every node, queue, visited state, command and retained history
+with the uncached implementation. They cover all five maps and nine controls,
+an actual tile patch between reused searches, out-of-window queries and
+independent guardian worker ownership. Full engine/source and race checks pass.
+A same-binary Pixel sample retains exact parity and reduces the1257-node lane
+33.89→17.27ms and exhausted9000-node search265.38→122.12ms. These are single
+100ms samples; the costly case still exceeds a60Hz frame budget.

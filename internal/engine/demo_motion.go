@@ -20,6 +20,10 @@ func newDemoMotionForecast(w *World) demoMotionForecast {
 }
 
 func (s *demoMotionForecast) advance(w *World, input MotionInput) bool {
+	return s.advanceWithTouchCache(w, input, nil)
+}
+
+func (s *demoMotionForecast) advanceWithTouchCache(w *World, input MotionInput, cache *nativeMotionTouchCache) bool {
 	if w.Level.Number == 3 && s.scroll.Y > 208 && (w.ThirdMiddle == nil || w.ThirdMiddle.Defeated) {
 		s.scroll.Maximum = demoScrollMaximum(w, s.scroll.Y, s.scroll.Maximum)
 	}
@@ -34,7 +38,13 @@ func (s *demoMotionForecast) advance(w *World, input MotionInput) bool {
 	s.player.SpeedTier = w.Equipment.SpeedTier
 	s.player.ScrollStep = w.BaseScrollStep
 	touching := func() bool {
-		return w.Dive.Phase == 0 && w.Coverage != nil && w.Level.PlayerStencil != nil && w.Coverage.Touches(s.player.X, s.player.Y, s.scroll.Y, *w.Level.PlayerStencil)
+		if w.Dive.Phase != 0 || w.Coverage == nil || w.Level.PlayerStencil == nil {
+			return false
+		}
+		if cache != nil {
+			return cache.touches(w, s.player.X, s.player.Y, s.scroll.Y)
+		}
+		return w.Coverage.Touches(s.player.X, s.player.Y, s.scroll.Y, *w.Level.PlayerStencil)
 	}
 	handled, crushed := false, false
 	if w.Dive.Phase == 0 {

@@ -39,6 +39,7 @@ type nativeMotionPlanner struct {
 	visited            map[nativeMotionKey]int
 	expanded           int
 	terminalHorizontal nativeHorizontalBound
+	touchCache         *nativeMotionTouchCache
 }
 
 func nativeMotionStateKey(state demoMotionForecast) nativeMotionKey {
@@ -301,6 +302,10 @@ func (p *nativeMotionPlanner) search(w *World, x, worldY int) bool {
 	if !nativeMotionSupported(w) || w.Dive.Phase != 0 || w.Coverage.Touches(w.Player.X, w.Player.Y, w.ScrollY, *w.Level.PlayerStencil) {
 		return p.searchFull(w, x, worldY)
 	}
+	if p.touchCache == nil {
+		p.touchCache = new(nativeMotionTouchCache)
+	}
+	p.touchCache.reset(w.Player.Y + w.ScrollY - 224)
 	p.nodes, p.queue = p.nodes[:0], p.queue[:0]
 	p.commands, p.states, p.expanded = p.commands[:0], p.states[:0], 0
 	if p.visited == nil {
@@ -358,7 +363,7 @@ func (p *nativeMotionPlanner) search(w *World, x, worldY int) bool {
 		for action, input := range demoDirections {
 			next.player, next.scroll = current.state.player, current.state.scroll
 			next.rewind.Timer = 0
-			if !next.advance(w, input) || next.rewind.Timer != 0 {
+			if !next.advanceWithTouchCache(w, input, p.touchCache) || next.rewind.Timer != 0 {
 				continue
 			}
 			depth, key := current.depth+1, nativeMotionStateKey(next)
@@ -379,4 +384,35 @@ func (p *nativeMotionPlanner) nodeCount() int {
 		return len(p.compactNodes)
 	}
 	return len(p.nodes)
+}
+
+// The original terrain map and stencil are immutable during one synchronous
+// search. Positions outside this bounded memo still use the source query.
+type nativeMotionTouchCache struct {
+	top          int
+	known, solid [320][10]uint32
+}
+
+func (c *nativeMotionTouchCache) reset(top int) {
+	c.top = top
+	clear(c.known[:])
+}
+
+func (c *nativeMotionTouchCache) touches(w *World, x, y, camera int) bool {
+	row := y + camera - c.top
+	if x < 0 || x >= 320 || row < 0 || row >= len(c.known) {
+		return w.Coverage.Touches(x, y, camera, *w.Level.PlayerStencil)
+	}
+	column, bit := x>>5, uint32(1)<<uint(x&31)
+	if c.known[row][column]&bit != 0 {
+		return c.solid[row][column]&bit != 0
+	}
+	solid := w.Coverage.Touches(x, y, camera, *w.Level.PlayerStencil)
+	c.known[row][column] |= bit
+	if solid {
+		c.solid[row][column] |= bit
+	} else {
+		c.solid[row][column] &^= bit
+	}
+	return solid
 }
