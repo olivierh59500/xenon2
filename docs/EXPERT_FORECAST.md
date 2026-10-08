@@ -274,3 +274,19 @@ Pixel, the complete default-intro route reaches both cannon checkpoints with
 The same carried ship and zero credits are preserved; no cheat or diagnostic
 state is used. That full logical run takes 68.76 seconds and stops on launch.
 Final victory, remaining stages and rendered frame pacing remain open.
+
+## Exact horizontal bound under evaluation
+
+The relaxed horizontal machine derives every transition from Player.Advance,
+including signed drift, held movement and the two screen clamps. Reverse BFS
+caches the exact travel time to each requested horizontal coordinate, with any
+final inertia. All 3,302,559 state/target distance equations pass; the three-pixel
+speed-two alignment requires seven commands, while the same displacement into
+the right clamp requires one.
+
+Using this bound in the route search reduces the Pixel alignment fixture from
+52.68 ms/1,257 expansions to 4.01 ms/119 expansions. It also changes an equally
+short chosen route, costing four additional shield points in the connected
+checkpoint test. The integration therefore remains disabled; the helper is
+available for further evaluation and the validated route is retained. Neither
+sample is a general frame-pacing guarantee.
