@@ -24,6 +24,9 @@ func fifthFinalPointScene(t testing.TB, bodyY int) *World {
 		w.ScrollY--
 		w.advanceFifthGuardian(true)
 	}
+	// This admitted arena already crossed earlier encounter records. The
+	// isolated pose must not rebirth the preceding level during prediction.
+	w.cursor = RestartEncounterCursor(w.ScrollY)
 	return w
 }
 
@@ -31,9 +34,6 @@ func BenchmarkGuardianPrimaryFirstImpact(b *testing.B) {
 	for _, clear := range []bool{false, true} {
 		b.Run(fmt.Sprintf("clear%v", clear), func(b *testing.B) {
 			w := fifthFinalPointScene(b, 0)
-			// This admitted arena already crossed earlier encounter records.
-			// A pose-only setup must not rebirth the whole preceding level.
-			w.cursor = RestartEncounterCursor(w.ScrollY)
 			w.Ready, w.MaterializationFrames = false, 0
 			mount := w.fifthFinalActors[3]
 			w.Player.X, w.Player.Y = (mount.Collision.Left+mount.Collision.Right)/2, 176
