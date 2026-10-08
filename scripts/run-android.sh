@@ -109,12 +109,12 @@ if [ -z "${ANDROID_SERIAL:-}" ]; then
     ANDROID_SERIAL=$("$adb_path" devices | awk 'NR > 1 && $2 == "device" { print $1; exit }')
     export ANDROID_SERIAL
 fi
-if [ "$("$adb_path" get-state)" != device ]; then
+if [ "$("$adb_path" -s "$ANDROID_SERIAL" get-state)" != device ]; then
     echo "The selected Android device is not authorized or connected." >&2
     exit 1
 fi
 
 echo "Installing Xenon 2 Go..."
-"$adb_path" install -r "$apk_path"
+"$adb_path" -s "$ANDROID_SERIAL" install -r "$apk_path"
 echo "Launching Xenon 2 Go..."
-"$adb_path" shell am start -S -W -n com.olivierh.xenon2/.MainActivity
+"$adb_path" -s "$ANDROID_SERIAL" shell am start -S -W -n com.olivierh.xenon2/.MainActivity
