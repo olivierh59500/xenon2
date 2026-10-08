@@ -186,3 +186,11 @@ restoration, retained temporary timer and doubled first-wave health. The fixture
 does not assign completion/drop counters or call direct damage to win.
 Its arranged inventory/projectiles are explicit; it is not earned fifth-stage
 play or a frontend/graphics victory. Focused native and race checks pass.
+
+Fifth guardian event traces now independently check 2,700 complete frames,
+1,007 ordinary mount shots and 1,513 final queued sound requests. Per-component
+shot counters are summed, while signed sound queues are compared after the
+last component. Sampled requests such as 0x84 remain distinct from -1. No event
+mismatch was found. The historical trace column named `lasers` has ambiguous
+factory-hook semantics and does not establish growing-column emission coverage;
+this new comparison explicitly excludes that field.
