@@ -57,6 +57,17 @@ func fifthPracticeMarker(w *World) uint64 {
 	loadout(e.WeaponLoadout)
 	loadout(e.SavedLoadout)
 	loadout(w.Checkpoint.Loadout)
+	if w.FifthMiddle == nil {
+		word(0)
+	} else {
+		word(1)
+		flag(w.FifthMiddle.Defeated)
+		for _, part := range w.FifthMiddle.Parts {
+			integers(part.X, part.Y, part.Clock, part.MoveRemaining, part.Health, int(part.Heading), int(part.FireAccumulator), int(part.SecondaryAccumulator))
+			flag(part.Active)
+			flag(part.Destroyed)
+		}
+	}
 	return h
 }
 
@@ -64,7 +75,7 @@ func fifthPracticeWindow(w *World, pal int) bool {
 	return w != nil && w.Level.Number == 5 && w.Frame >= 1 && w.Frame <= uint64(len(fifthOpeningControls)) &&
 		w.PlayerAlive && !w.GameOver && !w.Ready && !w.Cheats.Enabled() && w.Dive.Phase == 0 &&
 		w.ScreenClearFrames == 0 && !w.stepContinuation.active && !w.ShopReady && !w.ExitReady &&
-		!w.LevelFinished && w.PendingExitDrops == 0 && w.FifthMiddle == nil && w.FifthFinal == nil &&
+		!w.LevelFinished && w.PendingExitDrops == 0 && (w.FifthMiddle == nil || !w.FifthMiddle.Defeated) && w.FifthFinal == nil &&
 		w.Level.Ships != nil && w.Level.PlayerStencil != nil && w.Coverage != nil && w.Weapons != nil && thirdMiddlePALRefreshes(pal) == 3
 }
 

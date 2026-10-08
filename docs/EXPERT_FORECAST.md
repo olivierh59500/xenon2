@@ -708,3 +708,17 @@ both continues survive. Independent source replay verifies all 544 additional
 commands, and the next-step guard checks every one in the live controller.
 The first launcher checkpoint remains unchanged. The subsequent approach and
 both fifth guardians remain unfinished.
+
+## Admitted fifth middle guardian
+
+The route additionally reaches the original middle guardian and checkpoint
+2368 at frame 2241, camera 2367, with all 23 admission shield intact, 200 cash,
+score 206630 and random state 168595658/2245750478. Full-intro independent
+replay verifies the 512 additional controls, with the same ship and both
+continues. The route retains its per-step Go forecast through guardian birth;
+its markers include the guardian's health, position and controller state, so
+a modified defense cancels the rehearsed admission.
+
+This is an arrival, not a guardian victory. The bounded fight experiment can
+damage the real core from 200 to 146 but loses the ship; it remains excluded.
+Both fifth guardians and the remaining campaign validation are unfinished.

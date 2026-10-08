@@ -46,6 +46,11 @@ func TestPresentationPilotCrossesFifthTerrainDefensesFromDefaultIntroOptional(t 
 	if os.Getenv("XENON2_HUMAN_PRESENTATION_CHECK") == "" {
 		t.Skip("enable the carried fifth terrain-defense route explicitly")
 	}
+	verifyPresentationFifthTerrainCheckpoint(t)
+}
+
+func verifyPresentationFifthTerrainCheckpoint(t *testing.T) *Game {
+	t.Helper()
 	g := verifyPresentationFifthLauncherCheckpoint(t)
 	minimum := 39
 	for update := 0; update < 60*75; update++ {
@@ -61,8 +66,34 @@ func TestPresentationPilotCrossesFifthTerrainDefensesFromDefaultIntroOptional(t 
 				t.Fatalf("native terrain checkpoint differs: F%d C%d HP%d min%d cash%d score%d RNG%+v", w.Frame, w.ScrollY, w.Equipment.Shield, minimum, w.Money, w.Score, w.RandomState())
 			}
 			t.Logf("Complete intro reaches genuine fifth checkpoint2880 at frame%d with23shield, same ship and two continues", w.Frame)
-			return
+			return g
 		}
 	}
 	t.Fatal("bounded fifth terrain route did not reach its original checkpoint")
+	return nil
+}
+
+func TestPresentationPilotReachesFifthMiddleGuardianFromDefaultIntroOptional(t *testing.T) {
+	if os.Getenv("XENON2_HUMAN_PRESENTATION_CHECK") == "" {
+		t.Skip("enable the complete fifth guardian approach explicitly")
+	}
+	g := verifyPresentationFifthTerrainCheckpoint(t)
+	minimum := 23
+	for update := 0; update < 60*75; update++ {
+		advanceFrontend(t, g, inputFrame{})
+		d := g.Driver.(*worldDriver)
+		w := d.world
+		if !g.DemoActive() || d.diagnostic || w.Cheats.Enabled() || !w.PlayerAlive || w.GameOver || w.Equipment.Lives != 1 || w.ContinueCredits != 2 || w.Level.Number != 5 || w.Rewind.Timer != 0 {
+			t.Fatalf("middle approach changed its carried reserve: F%d C%d HP%d", w.Frame, w.ScrollY, w.Equipment.Shield)
+		}
+		minimum = min(minimum, w.Equipment.Shield)
+		if w.Checkpoint.ScrollY == 2368 {
+			if w.FifthMiddle == nil || w.FifthMiddle.Defeated || w.Frame != 2241 || w.ScrollY != 2367 || w.Equipment.Shield != 23 || minimum != 23 || w.Money != 200 || w.Score != 206630 || w.RandomState() != (engine.RandomState{A: 168595658, B: 2245750478}) {
+				t.Fatalf("genuine middle admission differs: F%d C%d HP%d min%d cash%d score%d RNG%+v", w.Frame, w.ScrollY, w.Equipment.Shield, minimum, w.Money, w.Score, w.RandomState())
+			}
+			t.Logf("Complete intro reaches genuine fifth middle at frame%d checkpoint2368, shield23, same ship and two continues", w.Frame)
+			return
+		}
+	}
+	t.Fatal("bounded fifth approach never admitted the original middle guardian")
 }

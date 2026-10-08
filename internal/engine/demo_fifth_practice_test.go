@@ -67,7 +67,7 @@ func TestFifthPracticeReplaysOriginalCallbacksAndDoesNotConsumeRepeatedInputsOpt
 			t.Fatalf("native route diverged at%d", index)
 		}
 	}
-	if w.Frame != 1729 || w.Checkpoint.ScrollY != 2880 || w.Equipment.Shield != 23 || minimum != 23 {
+	if w.Frame != 2241 || w.Checkpoint.ScrollY != 2368 || w.Equipment.Shield != 23 || minimum != 23 {
 		t.Fatal("source route omitted its real checkpoint or native health pickup")
 	}
 	if _, ok := p.fifthPracticedOpeningInput(w); ok || p.fifthPractice != nil {
@@ -202,5 +202,34 @@ func BenchmarkFifthPracticeActiveMissileSceneOriginal(b *testing.B) {
 		if _, ok := p.fifthPracticedOpeningInput(w); !ok {
 			b.Fatal("native next-step rehearsal validation failed")
 		}
+	}
+}
+
+func TestFifthPracticeRejectsChangedGuardianDuringAdmissionOptional(t *testing.T) {
+	w := fifthPracticeSourceFixture(t)
+	p := PresentationPilot{PALRefreshes: 3}
+	for w.FifthMiddle == nil {
+		in, ok := p.fifthPracticedOpeningInput(w)
+		if !ok {
+			t.Fatal("original route rejected before guardian birth")
+		}
+		for range 3 {
+			w.AdvancePALTick()
+		}
+		if err := w.Step(in); err != nil {
+			t.Fatal(err)
+		}
+	}
+	key := fifthPracticeMarker(w)
+	w.FifthMiddle.Parts[5].Health--
+	if fifthPracticeMarker(w) == key {
+		t.Fatal("guardian health is absent from admission marker")
+	}
+	before := forecastIsolationDigest(w)
+	if _, ok := p.fifthPracticedOpeningInput(w); ok || p.fifthPractice != nil {
+		t.Fatal("changed guardian retained the rehearsed admission")
+	}
+	if forecastIsolationDigest(w) != before {
+		t.Fatal("guardian rejection altered live state")
 	}
 }

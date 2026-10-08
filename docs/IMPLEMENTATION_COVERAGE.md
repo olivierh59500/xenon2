@@ -21,6 +21,9 @@ guardians remain incomplete for the expert controller.
 The route also crosses the following terrain defenses and reaches checkpoint
 2880 with 23 shield, the same ship and both continues. The pilot recognizes
 their live damage colliders independently of their terrain drawing and flashes.
+The subsequent middle-guardian approach reaches checkpoint 2368 with the same
+23 shield, carried ship and two continues. The guardian is admitted normally;
+its fight and the later fifth-stage route remain unfinished.
 
 ## Fixed encounters and scripted arenas
 
