@@ -1,10 +1,10 @@
 package engine
 
 // presentationGuardianShotOpportunity follows the first new primary volley
-// reaching a point query under the current held-fire cadence. The selected
-// motion applies this pass; subsequent passes coast while holding fire.
-// Every point query is inspected
-// before its native callback, including harmless armor and older-shot effects.
+// and, in fifth-stage arenas, the first Side Shot volley under the current
+// held-fire cadence. The selected motion applies this pass; subsequent passes
+// coast while holding fire. Every point query is inspected before its native
+// callback, including harmless armor and older-shot effects.
 // Worlds without the original weapon runtime retain the general aiming path.
 func presentationGuardianShotOpportunity(w *World, motion MotionInput, forecast *WorldForecast, palRefreshes int) (opportunity, supported bool) {
 	if !presentationGuardianAimSupported(w) {
@@ -16,9 +16,19 @@ func presentationGuardianShotOpportunity(w *World, motion MotionInput, forecast 
 	if palRefreshes <= 0 {
 		palRefreshes = 3
 	}
-	var ids [2]int
-	count := 0
-	var volleyFrame uint64
+	var ids [2][2]int
+	var counts [2]int
+	var volleyFrames [2]uint64
+	side := w.Level.Number == 5 && w.Equipment.Side.Item == ItemSideShot
+	horizon := 18
+	if side {
+		// A horizontal point can cross the full 312-pixel bullet area before
+		// retiring. Include the wait for the first pulse if fire is already held.
+		horizon = (312+8)/9 + 1
+		if w.previousFire && !w.fire.Pending && w.fire.Advance > 0 {
+			horizon += max(0, (w.fire.Remaining+w.fire.Advance-1)/w.fire.Advance)
+		}
+	}
 	useful := false
 	var mounted [4]int
 	observeRectangle := func(event WeaponRectImpact) {
@@ -34,26 +44,33 @@ func presentationGuardianShotOpportunity(w *World, motion MotionInput, forecast 
 		}
 	}
 	observe := func(event WeaponPointImpact) {
-		if event.Kind != "small-shot" || event.OwnerSlot != 0 || event.ProjectileID <= w.nextActorID {
+		if event.Kind != "small-shot" || event.ProjectileID <= w.nextActorID {
 			return
 		}
+		volley := 0
+		if event.OwnerSlot != 0 {
+			if !side || event.OwnerSlot != 6 {
+				return
+			}
+			volley = 1
+		}
 		state := forecast.State()
-		if volleyFrame == 0 {
-			volleyFrame = state.Frame
+		if volleyFrames[volley] == 0 {
+			volleyFrames[volley] = state.Frame
 		}
 		tracked := false
-		for _, id := range ids[:count] {
+		for _, id := range ids[volley][:counts[volley]] {
 			tracked = tracked || id == event.ProjectileID
 		}
-		if !tracked && state.Frame == volleyFrame && count < len(ids) {
-			ids[count], count, tracked = event.ProjectileID, count+1, true
+		if !tracked && state.Frame == volleyFrames[volley] && counts[volley] < len(ids[volley]) {
+			ids[volley][counts[volley]], counts[volley], tracked = event.ProjectileID, counts[volley]+1, true
 		}
 		if tracked {
 			_, target := presentationFirstPointImpact(state, event.X, event.Y)
 			useful = useful || target
 		}
 	}
-	for future := 0; future < 18; future++ {
+	for future := 0; future < horizon; future++ {
 		for tick := 0; tick < palRefreshes; tick++ {
 			forecast.AdvancePALTick()
 		}
@@ -74,15 +91,15 @@ func presentationGuardianShotOpportunity(w *World, motion MotionInput, forecast 
 		if err != nil || result.Boundary != ForecastRunning {
 			return false, true
 		}
-		if count != 0 {
+		if counts[0] != 0 {
 			active := false
 			for _, projectile := range forecast.State().Weapons.projectiles {
-				for _, id := range ids[:count] {
+				for _, id := range ids[0][:counts[0]] {
 					active = active || projectile.Render.ID == id && projectile.Render.Active
 				}
 			}
-			// A fifth-stage mounted beam can still be travelling after the
-			// primary volley retires. Its own callback decides useful damage.
+			// A fifth-stage mounted beam or side volley can still be travelling
+			// after the primary retires. Its own callback decides useful damage.
 			if !active && w.Level.Number != 5 {
 				return false, true
 			}

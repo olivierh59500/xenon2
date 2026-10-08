@@ -202,10 +202,29 @@ all five original arena scenes. Clear strips, blocked bands, actual double-shot
 offsets, rear/side ownership and older-shot interference have native-callback
 regressions. The runtime pilot reuses its private aim forecast. This helper
 checks forward/double primary volleys in active fourth/fifth guardian scenes;
-other scenes and weapon kinds retain their existing aiming path. Eighteen
-future passes apply the selected movement first, then coast while holding fire.
+other scenes and weapon kinds retain their existing aiming path. The fifth-stage
+observer also tracks the first new Side Shot volley independently of the primary.
+The former primary-only check missed genuine horizontal hits when the forward
+ray missed. Its horizon includes travel across the 312-pixel bullet area at nine
+pixels per pass, plus any wait for an already-held trigger's first pulse. Later
+side volleys cannot justify firing the first one. Original-art fixtures execute
+the real damage callbacks for a nearby defense and the opposite flank; the
+latter impact occurs after the previous eighteen-pass horizon. A separate case
+rejects a missed first volley even though a later volley damages a defense.
+
+Without Side Shot, the original eighteen-pass horizon remains. Every forecast
+applies the selected movement first, then coasts while holding fire.
 These are explicit counterfactual controls, not a claim that every future pilot
 turn or complete boss strategy is already optimal.
+
+The Side Shot regressions pass on the Pixel 10a. Reused-forecast benchmarks on
+that device measure 1.36 ms for the nearby hit, 2.33 ms for the opposite flank
+and 5.19 ms for the rejected later-volley case (73–166 allocations per query).
+These are CPU logic measurements, not Android frame-rate or full-fight results.
+The complete original-resource engine suite and focused race checks pass. The
+ordinary complete-intro frontend replay still reaches the final fifth guardian
+at frame 5402 with 35 shield, the same ship and both continues; the final fight
+is not yet completed by the controller.
 
 The six-pass exact guard also protects the post-merchant third corridor. Cannon
 preparation derives firing lanes from each live source instance, selects the
