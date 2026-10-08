@@ -212,6 +212,7 @@ type World struct {
 	StopEffectsRequested             bool
 	PendingFixedShots                []FixedSpriteEvents
 	UnimplementedFixedEncounters     []visualassets.FixedEncounter
+	stepContinuation                 worldStepContinuation
 	ScreenClearFrames                int
 	ScreenClearPaletteMask           uint16
 	PendingExitDrops                 int
@@ -507,15 +508,21 @@ func (w *World) AcceptContinue() bool {
 // and actor lists. Timers, encounters and scroll follow. Stage births move in
 // the current pass; encounter-table births wait for the next pass.
 func (w *World) Step(input Input) error {
+	if w.poolError != nil {
+		return w.poolError
+	}
+	if w.ScreenClearFrames != 0 || w.GameOver {
+		return nil
+	}
+	if w.stepContinuation.active {
+		return w.finishStep()
+	}
 	w.shipLossCompleted = false
 	clear(w.SoundRequests[:])
 	clear(w.ImmediateSoundRequests[:])
 	w.StopEffectsRequested = false
 	w.PendingFixedShots = w.PendingFixedShots[:0]
 	w.PendingGuardianMinions = w.PendingGuardianMinions[:0]
-	if w.ScreenClearFrames != 0 || w.GameOver {
-		return nil
-	}
 	if w.Ready {
 		if input.Fire {
 			w.Ready = false
@@ -667,157 +674,8 @@ func (w *World) Step(input Input) error {
 			}
 		}
 	}
-	if err := w.advancePooledProjectiles(input); err != nil {
-		return err
-	}
-	// Synthetic diagnostics can supply entries without an allocated binding.
-	if w.hasUnboundProjectiles() {
-		for _, actor := range w.Actors {
-			if !actor.Active || actor.ActorList != "transient" || actor.Binding.EntityID != 0 {
-				continue
-			}
-			actor.PreviousX, actor.PreviousY = actor.X, actor.Y
-			if actor.secondFragment != nil {
-				w.advanceSecondFragment(actor)
-				w.finishActorUpdate(actor)
-				continue
-			}
-			if actor.animation.Ending == "remove" && actor.animationState.Frame == len(actor.animation.Frames)-1 && actor.animationState.Remaining == 1 {
-				actor.Active = false
-				w.finishActorUpdate(actor)
-				continue
-			}
-			actor.animationState.Advance(actor.animation)
-			actor.selectSprite()
-			w.finishActorUpdate(actor)
-		}
-		// Both families belonged to the same newest-first projectile list. Merge
-		// their stable creation IDs to preserve hits and removals in that order.
-		collectiblesAtStart := w.Collectibles
-		w.weaponIDs = w.weaponIDs[:0]
-		weaponContext := w.weaponContext(input, false)
-		for enemy, player, collectible, weapon := 0, 0, 0, 0; enemy < len(w.Projectiles) || player < len(w.SmallShots) || collectible < len(collectiblesAtStart) || weapon < len(w.weaponIDs); {
-			enemyID, playerID, collectibleID, weaponID := -2147483648, -2147483648, -2147483648, -2147483648
-			for enemy < len(w.Projectiles) && w.Projectiles[enemy].Binding.EntityID != 0 {
-				enemy++
-			}
-			for player < len(w.SmallShots) && w.SmallShots[player].Binding.EntityID != 0 {
-				player++
-			}
-			for collectible < len(collectiblesAtStart) && collectiblesAtStart[collectible].Binding.EntityID != 0 {
-				collectible++
-			}
-			if enemy >= len(w.Projectiles) && player >= len(w.SmallShots) && collectible >= len(collectiblesAtStart) && weapon >= len(w.weaponIDs) {
-				break
-			}
-			if enemy < len(w.Projectiles) {
-				enemyID = w.Projectiles[enemy].ID
-			}
-			if player < len(w.SmallShots) {
-				playerID = w.SmallShots[player].ID
-			}
-			if collectible < len(collectiblesAtStart) {
-				collectibleID = collectiblesAtStart[collectible].ID
-				if collectiblesAtStart[collectible].Order != 0 {
-					collectibleID = collectiblesAtStart[collectible].Order
-				}
-			}
-			if weapon < len(w.weaponIDs) {
-				weaponID = w.weaponIDs[weapon]
-			}
-			if weaponID > max(enemyID, playerID, collectibleID) {
-				weaponContext.ShipDestroyed = !w.PlayerAlive
-				for i := range weaponContext.Targets {
-					if actor := w.weaponTargetActors[weaponContext.Targets[i].ID]; actor != nil {
-						weaponContext.Targets[i].Active = actor.Active
-					}
-				}
-				if err := w.Weapons.AdvanceProjectile(weaponID, weaponContext); err != nil {
-					return err
-				}
-				weapon++
-			} else if collectibleID > max(enemyID, playerID) {
-				w.advanceCollectible(collectiblesAtStart[collectible])
-				w.finishCollectibleUpdate(collectiblesAtStart[collectible])
-				collectible++
-			} else if enemyID > playerID {
-				if err := w.advanceEnemyShot(w.Projectiles[enemy]); err != nil {
-					return err
-				}
-				w.finishProjectileUpdate(w.Projectiles[enemy])
-				enemy++
-			} else {
-				w.advanceSmallShot(w.SmallShots[player])
-				w.finishSmallShotUpdate(w.SmallShots[player])
-				player++
-			}
-		}
-	}
-	if w.Weapons != nil {
-		w.Weapons.Compact()
-	}
-	if err := w.advanceActorPhase(ActorPoolScenery, input); err != nil {
-		return err
-	}
-	w.captureActorRenderTerrain()
-	w.advanceTimedEquipment()
-	if w.Dive.Phase != 0 || !w.PlayerAlive {
-		if w.MaterializationFrames < 16 {
-			w.MaterializationFrames++
-		}
-	} else if w.MaterializationFrames > 0 {
-		w.MaterializationFrames--
-	}
-	if err := w.fire.Tick(input.Fire); err != nil {
-		return err
-	}
-	if w.Weapons != nil {
-		if err := w.Weapons.AdvanceSparks(w.weaponContext(input, false)); err != nil {
-			return err
-		}
-		w.Weapons.Compact()
-	}
-	var spawnErr error
-	w.cursor.Activate(w.ScrollY, w.Level.Encounters,
-		func(wave visualassets.Wave) {
-			if spawnErr == nil {
-				spawnErr = w.spawnWave(wave)
-			}
-		}, w.spawnFixed)
-	if spawnErr != nil {
-		return spawnErr
-	}
-	if input.Dive && w.PlayerAlive {
-		if w.Dive.Request(&w.Equipment.DiveCharges) {
-			w.SoundRequests[2] = "synthesized-effect-16"
-		}
-	}
-	scroll := ScrollState{Y: w.ScrollY, Minimum: w.MinimumScrollY, Maximum: w.MaximumScrollY, DeviationPasses: w.ScrollDeviationPasses}
-	scroll.Advance(w.Player.ScrollStep, w.BaseScrollStep, input.Motion.Down)
-	w.ScrollDelta, w.ScrollY = scroll.ActualStep, scroll.Y
-	w.MaximumScrollY, w.VisitedScrollY = scroll.Maximum, scroll.Maximum
-	w.ScrollDeviationPasses = scroll.DeviationPasses
-	w.compactActors()
-	if w.poolError != nil {
-		return w.poolError
-	}
-	if deathFinished {
-		w.shipLossCompleted = true
-		if !w.Cheats.InfiniteLives {
-			w.Equipment.Lives--
-		}
-		w.Equipment.Shield = 39
-		w.Equipment.FireAdvance = 1
-		if w.Equipment.Lives == 0 {
-			w.GameOver = true
-		} else {
-			if !w.deferCheckpointRestart {
-				w.RestartCheckpoint()
-			}
-			w.Ready = true
-		}
-	}
-	return nil
+	w.stepContinuation = worldStepContinuation{active: true, input: input, deathFinished: deathFinished, projectileNext: w.Pool.First(ActorPoolProjectile)}
+	return w.finishStep()
 }
 
 func (w *World) advanceEnemyShot(projectile *WorldProjectile) error {

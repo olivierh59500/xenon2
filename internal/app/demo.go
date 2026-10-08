@@ -121,6 +121,12 @@ func (g *Game) demoControls(manual inputFrame) inputFrame {
 			return inputFrame{}
 		}
 		w := driver.world
+		if w.ScreenClearFrames != 0 {
+			// The interrupted source pass resumes with the same frame number.
+			// Sample its completed state after the palette wait finishes.
+			d.controls.divePressed = false
+			return d.controls
+		}
 		if d.logicFrame != w.Frame || d.level != w.Level.Number {
 			var input engine.Input
 			if g.Config.HumanDemo {

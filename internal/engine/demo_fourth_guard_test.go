@@ -120,13 +120,15 @@ func TestFourthOpeningPublishedContactPrecedesInputOptional(t *testing.T) {
 				t.Fatalf("input escaped pre-movement contact atframe%d motion%+v result%+v err%v", w.Frame, motion, result, e)
 			}
 		}
-		for _, mode := range []string{"dive", "shades", "invulnerable", "pending-cash", "infinite-energy"} {
+		for _, mode := range []string{"dive", "shades", "invulnerable", "pending-cash", "infinite-energy", "screen-clear"} {
 			var suppressed WorldForecast
 			if err = suppressed.Load(w); err != nil {
 				t.Fatal(err)
 			}
 			q := suppressed.State()
 			switch mode {
+			case "screen-clear":
+				q.ScreenClearFrames = 31
 			case "dive":
 				q.Dive.Phase = 1
 			case "shades":

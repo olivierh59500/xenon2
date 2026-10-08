@@ -64,6 +64,11 @@ type forecastWorldStorage struct {
 	projectiles                           []*WorldProjectile
 	smallShots                            []*WorldSmallShot
 	collectibles                          []*WorldCollectible
+	stepUnbound                           worldUnboundContinuation
+	stepActors                            []*WorldActor
+	stepProjectiles                       []*WorldProjectile
+	stepSmallShots                        []*WorldSmallShot
+	stepCollectibles                      []*WorldCollectible
 }
 
 type forecastPatchStorage struct {
@@ -262,6 +267,27 @@ func (f *WorldForecast) Load(source *World) error {
 	world.Collectibles = forecastActorSliceReuse(&storage.collectibles, source.Collectibles)
 	for index, item := range source.Collectibles {
 		world.Collectibles[index] = c.cloneCollectible(item)
+	}
+	world.stepContinuation.unbound = nil
+	if pending := source.stepContinuation.unbound; pending != nil {
+		storage.stepUnbound = *pending
+		storage.stepUnbound.actors = forecastActorSliceReuse(&storage.stepActors, pending.actors)
+		for index, actor := range pending.actors {
+			storage.stepUnbound.actors[index] = c.cloneActor(actor)
+		}
+		storage.stepUnbound.projectiles = forecastActorSliceReuse(&storage.stepProjectiles, pending.projectiles)
+		for index, shot := range pending.projectiles {
+			storage.stepUnbound.projectiles[index] = c.cloneProjectile(shot)
+		}
+		storage.stepUnbound.smallShots = forecastActorSliceReuse(&storage.stepSmallShots, pending.smallShots)
+		for index, shot := range pending.smallShots {
+			storage.stepUnbound.smallShots[index] = c.cloneSmallShot(shot)
+		}
+		storage.stepUnbound.collectibles = forecastActorSliceReuse(&storage.stepCollectibles, pending.collectibles)
+		for index, item := range pending.collectibles {
+			storage.stepUnbound.collectibles[index] = c.cloneCollectible(item)
+		}
+		world.stepContinuation.unbound = &storage.stepUnbound
 	}
 	for index := range ActorPoolCapacity {
 		world.poolActors[index] = c.cloneActor(source.poolActors[index])

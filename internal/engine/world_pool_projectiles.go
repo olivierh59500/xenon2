@@ -5,7 +5,11 @@ package engine
 // is released when reached, while self-removal waits for its next visit.
 func (w *World) advancePooledProjectiles(input Input) error {
 	context := w.weaponContext(input, false)
-	for index := w.Pool.First(ActorPoolProjectile); index != NoActorSlot; {
+	first := w.Pool.First(ActorPoolProjectile)
+	if w.stepContinuation.active {
+		first = w.stepContinuation.projectileNext
+	}
+	for index := first; index != NoActorSlot; {
 		next := w.Pool.Next(index)
 		slot := w.Pool.Slot(index)
 		if slot.ResourceTag == 4 {
@@ -16,6 +20,12 @@ func (w *World) advancePooledProjectiles(input Input) error {
 			w.clearPoolReferences(index)
 		} else if err := w.advancePoolProjectileEntity(slot.EntityID, context); err != nil {
 			return err
+		}
+		if w.stepContinuation.active {
+			w.stepContinuation.projectileNext = next
+		}
+		if w.ScreenClearFrames != 0 {
+			return nil
 		}
 		index = next
 	}

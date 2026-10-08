@@ -167,4 +167,9 @@ func (w *World) AdvancePALTick() {
 	}
 	w.ScreenClearPaletteMask = 0
 	w.finishSupernova()
+	if w.stepContinuation.active {
+		if err := w.finishStep(); err != nil {
+			w.poolError = err
+		}
+	}
 }

@@ -334,9 +334,13 @@ func (g *Game) advanceWithInput(controls inputFrame) error {
 				}
 			}
 		}
+		demoPassResumed := false
 		for ticks := g.palClock.Advance(); ticks > 0; ticks-- {
 			if source, ok := g.Driver.(interface{ AdvancePALTick() }); ok {
+				driver, worldDriven := g.Driver.(*worldDriver)
+				wasClearing := worldDriven && driver.world.ScreenClearFrames != 0
 				source.AdvancePALTick()
+				demoPassResumed = demoPassResumed || wasClearing && driver.world.ScreenClearFrames == 0
 				if err := g.consumeDriverAudio(); err != nil {
 					return err
 				}
@@ -353,6 +357,13 @@ func (g *Game) advanceWithInput(controls inputFrame) error {
 		}
 		if g.Screen != LevelScreen {
 			break
+		}
+		if demoPassResumed && g.Config.Demo {
+			clock := g.clock
+			if clock.Advance() > 0 {
+				// A one-PAL cadence can run the next pass on the resume update.
+				controls = g.demoControls(inputFrame{})
+			}
 		}
 		if g.View.Diagnostic && !g.Config.Cheats.KeyFunctions && controls.referenceShop {
 			if err := g.EnterShop(false); err != nil {
