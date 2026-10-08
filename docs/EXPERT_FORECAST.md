@@ -500,3 +500,18 @@ zero. A genuine complete-intro Pixel comparison also avoids the observed
 It completes level three with the same ship and two continues, then repairs
 to 39 for level four. The final fight still loses energy, so the unchanged-shield
 quality check and the full five-stage expert target remain unmet.
+
+## Current source-event and damage evidence
+
+The improved route's remaining third-final damage is now localized to two
+ordinary projectiles at frames 9243 and 9244. Their copied source steps match
+the live game exactly. Every held six-pass direction already loses shield on
+its first pass at those states: the player reaches the arena's left edge in a
+terrain rewind, and its pre-movement collision prefix cannot escape either hit.
+A source-terrain route toward the native final checkpoint is under evaluation
+to prepare that entry earlier. No collision or damage rule is changed.
+
+The fourth-middle rearward terminal probe exposes a satellite, but its normal
+tactical handoff finds no useful firing position. Center placements fall within
+the original wall; nearby cannon-offset probes are not established safe. Those
+strategies remain excluded pending an actual carried-state comparison.
