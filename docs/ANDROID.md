@@ -59,6 +59,13 @@ has installed the view and context.
 
 ## Verification
 
+The later 8 October build from runtime `584b90c` is installed on the Pixel 10a.
+Its complete default-intro logic replay finishes all four stages, visits their
+real merchants and enters stage five with 39 shield, one ship and two continue
+credits in 206.87 seconds. The ARM64 debug APK passes signature and 16 KiB
+alignment checks. Installation does not establish visual smoothness, and the
+earned fifth-stage route remains unfinished.
+
 The 8 October build from runtime `cbb3860` passes the complete-intro locked-device
 logic check through all four fourth-middle satellites in 38.26 seconds. It
 retains 27 shield, one ship and two continue credits at frame 3983; the core
