@@ -3,9 +3,55 @@ package app
 import (
 	"testing"
 
+	"xenon2/internal/controls"
 	"xenon2/internal/engine"
 	"xenon2/internal/presentation"
 )
+
+func TestTitleIdleStartsAfterTouchOpensStartupMenu(t *testing.T) {
+	bundle := frontendGame(t).Bundle
+	g, err := NewConfiguredGame(bundle, Config{Level: 1, StartScreen: PresentationScreen, Mute: true})
+	if err != nil {
+		t.Fatal(err)
+	}
+	var pad controls.Pad
+	pad.Place(controls.NewLayout(1344))
+	button := pad.Layout.Buttons[controls.Enter].Bounds
+	contact := controls.Touch{ID: 7, X: button.X + button.Width/2, Y: button.Y + button.Height/2, Pressed: true}
+	advanceFrontend(t, g, mergeTouchInput(inputFrame{}, pad.Update([]controls.Touch{contact})))
+	contact.Pressed = false
+	for range 12 {
+		advanceFrontend(t, g, mergeTouchInput(inputFrame{}, pad.Update([]controls.Touch{contact})))
+		if g.titleIdleUpdates != 0 || g.DemoActive() {
+			t.Fatal("held menu contact counted as inactivity")
+		}
+	}
+	for update := 0; update < 180 && g.Screen != TitleScreen; update++ {
+		advanceFrontend(t, g, mergeTouchInput(inputFrame{}, pad.Update(nil)))
+	}
+	if g.Screen != TitleScreen || g.DemoActive() {
+		t.Fatal("released touch did not open the ordinary startup menu")
+	}
+	remaining := titleDemoIdleUpdates - g.titleIdleUpdates
+	for range remaining - 1 {
+		advanceFrontend(t, g, mergeTouchInput(inputFrame{}, pad.Update(nil)))
+	}
+	if g.DemoActive() || g.titleIdleUpdates != titleDemoIdleUpdates-1 {
+		t.Fatal("released menu contact did not retain a full idle interval")
+	}
+	advanceFrontend(t, g, mergeTouchInput(inputFrame{}, pad.Update(nil)))
+	if !g.DemoActive() || !g.Config.HumanDemo {
+		t.Fatal("menu inactivity did not activate the expert controller")
+	}
+	awaitFrontendBoundary(t, g, 1800, "touch-opened menu idle demo READY admission", func() bool {
+		d, ok := g.Driver.(*worldDriver)
+		return ok && d.session != nil && g.Screen == LevelScreen && !g.View.Ready && !g.backdropOnly && d.world.Frame > 20 && (g.fade == nil || g.fade.Done)
+	})
+	d := g.Driver.(*worldDriver)
+	if !g.DemoActive() || d.diagnostic || d.session.PlayerCount != 1 || d.world.Level.Number != 1 || d.world.Cheats.Enabled() {
+		t.Fatal("idle demo after a released menu touch bypassed ordinary gameplay")
+	}
+}
 
 func TestTitleIdleStartsFromStartupAttractAfterSixtySeconds(t *testing.T) {
 	bundle := frontendGame(t).Bundle

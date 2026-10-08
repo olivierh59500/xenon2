@@ -39,6 +39,8 @@ controls and touch restart the idle interval and immediately return control of
 an active demo; that same action is passed to the game. Fades, pause, the cheat
 menu, interactive game messages and merchants do not count as idle time. The controller remains in
 development; its complete five-level route is not yet validated.
+The normal loading and READY transitions follow the idle deadline before the
+ship starts moving.
 
 The controller completes the first three stages from the full default intro,
 visits their real merchants and enters level four with one ship and both

@@ -191,3 +191,26 @@ with 23 shield, the same ship and both continues in 175.55 seconds. The forest
 minimum is still 3 shield before a genuine health pickup. This is a startup/logic
 check, not visual verification, dense-combat frame
 pacing or a complete five-stage expert route.
+
+### Visible-device idle verification
+
+The 8 October evening check also exercises the actual Android view on the
+connected, unlocked Pixel 10a. A temporary, locally excluded diagnostic build
+records the sampled input, current presentation phase and update counter.
+Starting from the default intro, the expert controller activates after 3,600
+updates at 60.17 elapsed seconds. By the 65.17-second sample, the normal loading
+and READY sequence has finished and level-one gameplay is visible. Successive
+screenshots confirm that the ship and level continue moving.
+
+A second visible check opens the title menu through the Android ENTER control,
+releases that contact and leaves the menu untouched. The input sample returns
+to neutral, the inactivity counter advances, and automatic gameplay starts
+again. The reported failure is not reproduced with this build. Diagnostic
+logging is absent from the normal APK.
+
+`TestTitleIdleStartsAfterTouchOpensStartupMenu` retains this menu-opening path as
+a regression: it uses the shared touch pad, checks that a held contact prevents
+idle admission, releases it, then verifies the full idle interval and ordinary
+single-player READY admission without cheats. It passes on desktop and in the
+Pixel logic runner (2.36 seconds). This complements the visible check; the logic
+runner itself does not render Android frames.
