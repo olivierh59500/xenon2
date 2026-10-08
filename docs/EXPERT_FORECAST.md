@@ -426,3 +426,19 @@ The same-binary Pixel comparison retains exact parity. Single100ms samples reduc
 the lane44.70→38.21ms and exhausted9000-node search321.55→259.97ms. This improves
 search cost and memory pressure while retaining the policy; it still does not
 establish smooth rendering or a complete connected expert campaign.
+
+## Improved early-route carried outcome
+
+A lightweight Pixel frontend diagnostic now carries the improved early-stage
+policy through the genuine third final merchant into level four. Both first
+stages still consume two ships total and preserve both continues. The third
+stage keeps its admission ship and both credits, reaches the cannon checkpoints
+with35shield, defeats the native guardians and collects their exit rewards.
+Its final approach is weaker than the retained controller: only7shield remains
+at final admission, and the fight loses4more before repair. It therefore does
+not satisfy the existing19-shield/unchanged-final-shield regression.
+
+The bounded run takes81.19s without drawing. Repeated unsuccessful native
+searches remain costly. Completing this diagnostic does not establish the
+strict controller criteria or either of the last two stages, so the improved
+early policy remains excluded pending further correction.
