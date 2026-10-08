@@ -426,6 +426,54 @@ func TestPresentationPilotCompletesFirstThreeLevelsFromDefaultIntroOptional(t *t
 	verifyPresentationFirstThreeLevelsFromDefaultIntro(t)
 }
 
+func TestPresentationPilotCompletesFirstFourLevelsFromDefaultIntroOptional(t *testing.T) {
+	if os.Getenv("XENON2_HUMAN_PRESENTATION_CHECK") == "" {
+		t.Skip("enable the complete carried fourth-stage route explicitly")
+	}
+	g := verifyPresentationFirstThreeLevelsFromDefaultIntro(t)
+	middleMerchant, finalMerchant, finalAdmission := false, false, false
+	for update := 0; update < 60*900; update++ {
+		advanceFrontend(t, g, inputFrame{})
+		d := g.Driver.(*worldDriver)
+		w := d.world
+		if !g.DemoActive() || w.Cheats.Enabled() || d.diagnostic || w.GameOver || !w.PlayerAlive || w.Equipment.Lives != 1 || w.ContinueCredits != 2 {
+			t.Fatal("fourth-stage completion lost the carried ship or changed ordinary rules")
+		}
+		if w.Level.Number == 5 {
+			if !middleMerchant || !finalMerchant || !finalAdmission || w.Equipment.Shield != 39 || w.Money != 0 {
+				t.Fatal("fifth admission omitted fourth guardians, merchants or normal repair")
+			}
+			t.Logf("Complete carried presentation enters stage5: ships%d shield%d credits%d", w.Equipment.Lives, w.Equipment.Shield, w.ContinueCredits)
+			return
+		}
+		if w.Level.Number != 4 {
+			t.Fatal("fourth-stage completion entered an unexpected level")
+		}
+		if w.FourthFinal != nil && !finalAdmission {
+			if !middleMerchant || w.Equipment.Shield != 31 {
+				t.Fatal("final admission omitted the ordinary post-merchant route")
+			}
+			finalAdmission = true
+		}
+		if g.Screen != ShopScreen {
+			continue
+		}
+		if !g.shopFinal && !middleMerchant {
+			if w.FourthMiddle == nil || !w.FourthMiddle.Defeated || w.FourthMiddle.OuterTargets != 0 || int16(w.FourthMiddle.Parts[4].Health) > 0 || w.PendingExitDrops != 0 || w.Equipment.Shield != 27 || w.LevelFinished {
+				t.Fatal("middle merchant omitted native damage, coins or its carried reserve")
+			}
+			middleMerchant = true
+		}
+		if g.shopFinal && !finalMerchant {
+			if !middleMerchant || !finalAdmission || w.FourthFinal == nil || !w.FourthFinal.Defeated || w.FourthFinal.EyesRemaining != 0 || w.PendingExitDrops != 0 || w.Equipment.Shield != 27 || !w.LevelFinished || !w.ExitReady {
+				t.Fatal("final merchant omitted native eye/core victory, coins or reserve")
+			}
+			finalMerchant = true
+		}
+	}
+	t.Fatal("bounded carried presentation did not complete the fourth final merchant")
+}
+
 func verifyPresentationFirstThreeLevelsFromDefaultIntro(t *testing.T) *Game {
 	t.Helper()
 	g := verifyPresentationFirstTwoLevelsFromDefaultIntro(t)

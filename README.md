@@ -61,8 +61,9 @@ shots, the lower-right satellite through Cannon shots and the lower-left satelli
 through primary shots. All 27 shield, the same ship and both continues remain at
 the exposed core. It then defeats the core and reaches the real middle merchant
 with the same 27 shield. After ordinary repair and rewards, the current desktop
-route also reaches the fourth final guardian with 31 shield. That final fight
-and the remaining campaign controller are unfinished.
+route also reaches the fourth final guardian with 31 shield, defeats it with
+27 shield and enters level five after its final merchant and normal repair.
+The earned fifth-stage controller and near-lossless campaign remain unfinished.
 Beating the remaining guardians and validating the whole campaign remain active
 work.
 Cached routes, bonus collection, dive requests and merchant purchases use

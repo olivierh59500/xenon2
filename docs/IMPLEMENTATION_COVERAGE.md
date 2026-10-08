@@ -428,6 +428,31 @@ to 3,550 before final admission. The connected check passes in 14.794 seconds.
 The final guardian is not yet defeated. A separate final-arena guard experiment
 survives longer with 15 shield but does not win; it remains excluded.
 
+A newer final-arena controller evaluates all candidate commands through complete
+native World.Step callbacks instead of predicting moving rectangles separately.
+It compares surviving shield first, then real remaining eye/core health and
+alignment. The original eye locks, closed-eye colliders, armored arms, projectile
+lifetimes and weapon callbacks remain intact. The ordinary fight defeats the
+final guardian at frame 7366 with 27 shield, down from 31 on admission, without
+consuming its carried ship or continue credits.
+
+Twenty real coins drain before the final merchant at frame 7424 with 5,050 cash.
+Normal repair and purchases then admit level five with 39 shield, Forward 1,
+Cannon 0 and Rear 1, one ship and two continue credits. This recorded-current-fourth
+frontend check passes in 2.376 seconds. The production controller also passes
+the full default-intro route, including the unchanged first-three-stage assertions,
+in 15.005 seconds on desktop and 206.87 seconds in the Pixel logic runner. The
+permanent complete-four-stage frontend regression passes in 15.116 seconds.
+The original-resource engine suite passes in 27.661 seconds, the full frontend/GPU
+suite in 171.027 seconds and focused final/source race checks in 2.186 seconds.
+The game reaches level five through ordinary merchants and repairs; the earned
+fifth-stage route is unfinished.
+
+The first fifth-stage replay loses its carried ship at frame 526 to ordinary
+projectiles. Additional isolated guard and barrier-alignment comparisons improve
+survival but stall before the middle guardian or introduce earlier losses. They
+remain excluded; no complete five-stage or near-lossless campaign is claimed.
+
 ## Automatic startup demonstration
 
 The Android startup configuration opens the original logo/credit/score loop;
