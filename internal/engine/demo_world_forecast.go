@@ -14,6 +14,11 @@ func (p *PresentationPilot) forecastOpeningGuard(w *World, planned Input) Input 
 	if pal <= 0 {
 		pal = 3
 	}
+	var sequence [6]MotionInput
+	useSequence := false
+	if corridor {
+		sequence, useSequence = p.planner.nativeMotion.guardSequence(w, planned.Motion)
+	}
 	// Keep the practiced action unless the real callback lookahead predicts damage.
 	if err := forecast.Load(w); err != nil {
 		return planned
@@ -22,7 +27,11 @@ func (p *PresentationPilot) forecastOpeningGuard(w *World, planned Input) Input 
 		for range pal {
 			forecast.AdvancePALTick()
 		}
-		r, err := forecast.Advance(planned)
+		input := planned
+		if useSequence {
+			input.Motion = sequence[pass]
+		}
+		r, err := forecast.Advance(input)
 		if err != nil {
 			return planned
 		}

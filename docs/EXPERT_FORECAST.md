@@ -248,6 +248,29 @@ excluded logic-only runner: both original cannon checkpoints are reached with
 the same ship and credits and 27 shield. Checkpoint 1152 is reached at frame
 6473/camera 1151; the entire simulated intro/carried route takes 46.63 seconds.
 This runner performs no drawing and does not establish visual frame pacing.
-The longer excluded diagnostic reaches camera 616, but a later route obstruction
-remains and the final third guardian/merchant have not been reached. This is a
-connected milestone, not campaign completion.
+Subsequent edge and sequence validation advances the same carried route to the
+real final guardian launch, as described below. Its defeat and final merchant
+remain unverified; this is a connected milestone, not campaign completion.
+
+## Geometric edges and safety previews
+
+Point search and cached routes now validate the complete ship stencil along
+each edge. The original masked gap at 251/world805 to 254/world808 has clear
+endpoints but a covered interior pixel; accepting its nodes alone returned an
+unusable waypoint indefinitely. Tests cover that original edge and a changed
+tile invalidating a previously clear segment without covering either endpoint.
+
+The safety guard previews the retained native command sequence for its planned
+branch, then idles after completion. Repeating the first direction for all six
+passes could predict a collision that the actual turn avoids and replace the
+required command with Up. Final commands are checked against their before-state,
+and previewing never consumes the plan. Invalid plans retain ordinary protection;
+the nine alternative held directions and opening policy are unchanged.
+
+The actual source tile-gun fixture distinguishes a harmful held direction from
+the safe retained corner. Its old guard fails the new regression. On the locked
+Pixel, the complete default-intro route reaches both cannon checkpoints with
+27 shield and admits the first final worm at frame 9633/camera 207 with 19 shield.
+The same carried ship and zero credits are preserved; no cheat or diagnostic
+state is used. That full logical run takes 68.76 seconds and stops on launch.
+Final victory, remaining stages and rendered frame pacing remain open.

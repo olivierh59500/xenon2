@@ -172,6 +172,20 @@ func nativeMotionSupported(w *World) bool {
 	return w != nil && w.Level.Number == 3 && w.ThirdMiddle != nil && w.ThirdMiddle.Defeated && w.PlayerAlive && !w.Ready && !w.GameOver && w.Rewind.Timer == 0 && w.Coverage != nil && w.Level.PlayerStencil != nil
 }
 
+// guardSequence describes the command already returned to this pass's caller
+// and its retained successors. The caller has not advanced the world yet, so
+// even the final command must match its before-state rather than its endpoint.
+// Reading this preview never consumes or invalidates the retained route.
+func (p *nativeMotionPlanner) guardSequence(w *World, first MotionInput) ([6]MotionInput, bool) {
+	var sequence [6]MotionInput
+	index := p.at - 1
+	if p.world != w || w == nil || index < 0 || index >= len(p.commands) || index >= len(p.states) || p.commands[index] != first || !nativeMotionMatches(w, p.states[index]) {
+		return sequence, false
+	}
+	copy(sequence[:], p.commands[index:])
+	return sequence, true
+}
+
 // continueRoute must be called before asking the geometric planner for another
 // waypoint. An intermediate braking pose can temporarily lack a straight
 // geometric shortcut even while the committed source-motion sequence is valid.

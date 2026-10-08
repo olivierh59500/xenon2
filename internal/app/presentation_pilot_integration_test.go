@@ -380,3 +380,41 @@ func TestExpertThirdPostMerchantRouteReachesCannonCheckpointsWithoutShipLossOpti
 	}
 	t.Fatal("bounded expert route did not reach the original cannon checkpoint")
 }
+
+func TestExpertThirdFinalAdmissionFromCompleteIntroWithoutShipLossOptional(t *testing.T) {
+	if os.Getenv("XENON2_HUMAN_PRESENTATION_CHECK") == "" {
+		t.Skip("enable the connected expert final admission explicitly")
+	}
+	g := verifyPresentationFirstTwoLevelsFromDefaultIntro(t)
+	w := g.Driver.(*worldDriver).world
+	ships, credits := w.Equipment.Lives, w.ContinueCredits
+	first, second := false, false
+	for update := 0; update < 60*800; update++ {
+		advanceFrontend(t, g, inputFrame{})
+		d := g.Driver.(*worldDriver)
+		w = d.world
+		if w.Level.Number != 3 || !w.PlayerAlive || w.GameOver || w.Equipment.Lives != ships || w.ContinueCredits != credits || w.Cheats.Enabled() || d.diagnostic {
+			t.Fatal("final approach consumed the carried ship or changed ordinary rules")
+		}
+		if w.Checkpoint.ScrollY <= 1696 && !first {
+			if w.Equipment.Shield < 27 {
+				t.Fatal("final approach lost the first cannon checkpoint reserve")
+			}
+			first = true
+		}
+		if w.Checkpoint.ScrollY <= 1152 && !second {
+			if !first || w.Equipment.Shield < 27 {
+				t.Fatal("final approach lost the second cannon checkpoint reserve")
+			}
+			second = true
+		}
+		if w.ThirdFinal != nil && w.ThirdFinal.LaunchCount > 0 {
+			if !first || !second || w.ThirdMiddle == nil || !w.ThirdMiddle.Defeated || w.PendingExitDrops != 0 || w.ScrollY > 208 || w.Equipment.Shield < 19 {
+				t.Fatal("final admission omitted its real source route or shield reserve")
+			}
+			t.Logf("Carried final launch at frame%d camera%d: ships%d shield%d credits%d", w.Frame, w.ScrollY, ships, w.Equipment.Shield, credits)
+			return
+		}
+	}
+	t.Fatal("bounded carried route did not reach the genuine final worm launch")
+}

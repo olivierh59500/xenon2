@@ -55,7 +55,7 @@ func (n *demoNavigation) searchPoint(x, y, tx, goal int) bool {
 					continue
 				}
 				nx, ny := current.x+dx, current.y+dy
-				if nx < 14 || nx > 304 || ny < low || ny > high || n.touching(nx, ny) {
+				if nx < 14 || nx > 304 || ny < low || ny > high || n.touching(nx, ny) || !n.clearSegment(current.x, current.y, demoNavPoint{nx, ny}) {
 					continue
 				}
 				cost := current.cost + 1
@@ -86,10 +86,10 @@ func (n *demoNavigation) pointWaypoint(w *World, tx, ty int) (int, int, bool) {
 	invalid := len(n.path) == 0 || n.goal != ty || n.pointTargetX != tx
 	if !invalid && changed {
 		// Animated cannon tiles can change without occupying the planned route.
-		// Keep its rearward legs unless new coverage actually blocks a node.
+		// Keep its rearward legs unless new coverage blocks a node or an edge.
 		rear := demoScrollMaximum(w, w.ScrollY, w.MaximumScrollY) + 176
-		for _, point := range n.path {
-			if n.touching(point.x, point.y) || point.y > rear {
+		for index, point := range n.path {
+			if n.touching(point.x, point.y) || point.y > rear || index > 0 && !n.clearSegment(n.path[index-1].x, n.path[index-1].y, point) {
 				invalid = true
 				break
 			}
