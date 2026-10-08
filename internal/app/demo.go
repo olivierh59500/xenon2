@@ -33,8 +33,24 @@ func manualDemoActivity(manual inputFrame) bool {
 		manual.cheatItem != engine.ItemNone || manual.cheatEnergy != 0 || manual.gameMotion != (engine.MotionInput{})
 }
 
+// passiveDemoIdle includes the Android startup presentation loop. Interactive
+// game messages retain their own input and timing instead of starting a demo.
+func (g *Game) passiveDemoIdle() bool {
+	if g.Screen == TitleScreen {
+		return true
+	}
+	if g.Screen != PresentationScreen || g.director == nil || g.readyRunning || g.gameOverRunning || g.continueAfterScores {
+		return false
+	}
+	switch g.director.Phase {
+	case presentation.LogoDelay, presentation.LogoIn, presentation.Credits, presentation.LogoOut, presentation.ScoresIn, presentation.ScoresHold, presentation.ScoresOut:
+		return true
+	}
+	return false
+}
+
 func (g *Game) advanceTitleIdle(manual inputFrame) {
-	if g.Config.Demo || g.Screen != TitleScreen || g.paused || g.fade != nil && !g.fade.Done || manualDemoActivity(manual) {
+	if g.Config.Demo || !g.passiveDemoIdle() || g.paused || g.fade != nil && !g.fade.Done || manualDemoActivity(manual) {
 		g.titleIdleUpdates = 0
 		return
 	}

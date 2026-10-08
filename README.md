@@ -31,12 +31,13 @@ at the expense of the basic loadout. Priorities work across both shop pages.
 A key or click immediately returns control of the current game to the player.
 It does not grant health, equipment or money, skip guardians or change terrain.
 
-After sixty seconds without input on the title menu, the expert controller starts
+After sixty seconds without input on the title menu or passive logo/credits/scores
+presentation, the expert controller starts
 an ordinary single-player demo at level one with cheats disabled. DEMO MODE and
 `-demo` select the same controller. Keyboard, mouse movement/buttons/wheel, held
 controls and touch restart the idle interval and immediately return control of
 an active demo; that same action is passed to the game. Fades, pause, the cheat
-menu and merchants do not count as title idle time. The controller remains in
+menu, interactive game messages and merchants do not count as idle time. The controller remains in
 development; its complete five-level route is not yet validated.
 
 The controller completes the first three stages from the full default intro,
@@ -58,7 +59,9 @@ genuine health pickup; this is not a near-lossless route.
 The current carried Pixel route also destroys both upper satellites through Rear
 shots, the lower-right satellite through Cannon shots and the lower-left satellite
 through primary shots. All 27 shield, the same ship and both continues remain at
-the exposed core. The core fight and the rest of the campaign are unfinished.
+the exposed core. It then defeats the core and reaches the real middle merchant
+with the same 27 shield. The second half of level four and the remaining campaign
+controller are unfinished.
 Beating the remaining guardians and validating the whole campaign remain active
 work.
 Cached routes, bonus collection, dive requests and merchant purchases use

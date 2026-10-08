@@ -395,5 +395,34 @@ complete frontend/GPU suite passes in 101.924 seconds. Upper/right focused race
 checks pass in 24.253 seconds; left checks pass in 69.168 seconds. Tests retain
 native hit ownership, exact endpoints, repeated input sampling, world/frame
 reset, lifecycle/resource scope and all 3,783 horizontal states at each alignment
-target. The core fight remains unpromoted while its source-derived attack and
-escape timing is investigated.
+target.
+
+The exposed-core controller now times its approach and retreat from the native
+head's Counter/Direction/Budget cycle. Four linked curve segments and the largest
+companion/ship offsets give a conservative future floor; when that floor cannot
+fit the arena's rear bound, the ordinary target becomes the clear left flank.
+The same six-pass, nine-input native forecasts retain authority over collisions.
+
+The core dies at frame 4496 through 73 new Forward 1 and 15 Cannon two-damage
+hits. Its final native unsigned subtraction stores 0xffff, with Defeated true.
+Ten real coins drain before the actual middle merchant at frame 4544, with all
+27 shield, one ship, both continue credits and 1,050 cash. The complete-intro
+Pixel frontend confirms this connected boundary in 29.75 seconds without drawing.
+No guardian damage, health or drops are assigned by the controller. Original-resource
+engine tests pass in 28.255 seconds and focused core race checks in 19.243 seconds.
+The second half of level four, final guardian and earned fifth-stage route remain
+unfinished.
+
+## Automatic startup demonstration
+
+The Android startup configuration opens the original logo/credit/score loop;
+it reaches the selection menu only after input. The earlier title-only inactivity
+counter therefore never started a demo when that loop was left untouched. The
+same 60-second counter now includes those passive presentation phases on both
+desktop and Android. It spans phase changes, resets on actual input and excludes
+READY, score entry, continues, game-over/ending messages, pause, fades and shops.
+
+A full startup regression reaches ordinary level-one expert play without cheats
+or diagnostic admission, then verifies same-action manual takeover. The new
+startup, interactive-phase and reset checks all pass on the Pixel. This fixes
+admission to the existing controller; it does not claim a complete expert campaign.
