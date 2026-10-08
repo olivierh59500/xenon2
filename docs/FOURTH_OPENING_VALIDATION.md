@@ -327,6 +327,12 @@ guard ranking, beam nor under-wall route is enabled in production.
 
 The Pixel diagnostic completes in 229.16 seconds and reports the negative
 gameplay outcome. The diagnostic's test success means it recorded both branches
-and preserved the source state; it does not mean the boss was defeated. The
-next investigation concerns the actual contact and mounted-weapon firing from
-a safe flank, with the original HP, collision rules and firing clocks intact.
+and preserved the source state; it does not mean the boss was defeated.
+
+A second, otherwise identical diagnostic identifies the lethal source callback:
+the ship's published rectangle overlaps companion part 5 by two horizontal
+pixels, applying its native 16-point strong-body contact. It completes in
+278.83 seconds. No enemy projectile or terrain contact causes that loss. A safe
+crossing must clear the moving articulated body as well as the terrain; mounted
+firing from a safe flank remains another possibility. Original HP, collision
+rules and firing clocks remain intact.
