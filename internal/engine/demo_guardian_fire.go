@@ -20,6 +20,19 @@ func presentationGuardianShotOpportunity(w *World, motion MotionInput, forecast 
 	count := 0
 	var volleyFrame uint64
 	useful := false
+	var mounted [4]int
+	observeRectangle := func(event WeaponRectImpact) {
+		if w.Level.Number != 5 || event.Kind != "laser" || event.ProjectileID <= w.nextActorID || event.OwnerSlot < 1 || event.OwnerSlot > len(w.Equipment.Mounts) || w.Equipment.Mounts[event.OwnerSlot-1].Item != ItemLaser {
+			return
+		}
+		id := &mounted[event.OwnerSlot-1]
+		if *id == 0 {
+			*id = event.ProjectileID
+		}
+		if *id == event.ProjectileID {
+			useful = useful || guardianRectImpactUseful(forecast.State(), event)
+		}
+	}
 	observe := func(event WeaponPointImpact) {
 		if event.Kind != "small-shot" || event.OwnerSlot != 0 || event.ProjectileID <= w.nextActorID {
 			return
@@ -48,7 +61,13 @@ func presentationGuardianShotOpportunity(w *World, motion MotionInput, forecast 
 		if future == 0 {
 			input.Motion = motion
 		}
-		result, err := forecast.AdvanceObserved(input, observe)
+		var result ForecastResult
+		var err error
+		if w.Level.Number == 5 {
+			result, err = forecast.AdvanceWeaponObserved(input, observe, observeRectangle)
+		} else {
+			result, err = forecast.AdvanceObserved(input, observe)
+		}
 		if useful {
 			return true, true
 		}
@@ -62,7 +81,9 @@ func presentationGuardianShotOpportunity(w *World, motion MotionInput, forecast 
 					active = active || projectile.Render.ID == id && projectile.Render.Active
 				}
 			}
-			if !active {
+			// A fifth-stage mounted beam can still be travelling after the
+			// primary volley retires. Its own callback decides useful damage.
+			if !active && w.Level.Number != 5 {
 				return false, true
 			}
 		}

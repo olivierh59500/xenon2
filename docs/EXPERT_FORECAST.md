@@ -722,3 +722,18 @@ a modified defense cancels the rehearsed admission.
 This is an arrival, not a guardian victory. The bounded fight experiment can
 damage the real core from 200 to 146 but loses the ship; it remains excluded.
 Both fifth guardians and the remaining campaign validation are unfinished.
+
+## Fifth guardian trigger includes mounted lasers
+
+The reactive fifth-guardian trigger now follows the first new beam from each
+installed Laser as well as the primary volley. The native rectangle observer
+checks actual damage eligibility and physical absorption order; retained old
+projectiles are not credited as new emissions. A retired primary volley no
+longer ends this fifth-only check while a new mounted beam can still hit.
+Third- and fourth-guardian trigger policies are unchanged.
+
+The original mounted-core fixture fails with the previous primary-only policy
+and passes with a real Laser damage callback while the primary misses. Read-only
+and existing rectangle-observer checks pass, as does the full-intro fifth
+guardian approach. This corrects firing recognition without claiming a fifth
+guardian victory.
