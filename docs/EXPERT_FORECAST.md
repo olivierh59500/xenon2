@@ -377,3 +377,16 @@ Original-resource movement tests pass under the race detector, and the full
 engine suite passes with this solver alone. A connected experimental route
 destroys the previously blocking1696 cannon and advances to subsequent guns
 with35 shield; this is not yet proof of completing that route or the campaign.
+
+## Avoiding an unused terrain query
+
+Terrain rewind reads its contact argument only while its timer is negative.
+The motion forecast now skips the initial stencil query when that argument
+cannot be used, retaining the later movement and camera contact checks.
+A360-case comparison covers clear and covered poses on all five original maps,
+timers−17/−1/0/1 and all nine controls. Complete forecast values, including every
+history entry, match the earlier implementation. Three native search scenes
+retain identical nodes, queue, visited states, command sequences and results,
+including an exhausted9000-node search. Focused resource tests and race checks
+pass. Single M4 Max samples reduce the rear-corner benchmark54.37→35.43µs
+and the lane2.306→1.959ms; these are not Pixel frame-rate measurements.

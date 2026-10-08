@@ -38,7 +38,12 @@ func (s *demoMotionForecast) advance(w *World, input MotionInput) bool {
 	}
 	handled, crushed := false, false
 	if w.Dive.Phase == 0 {
-		handled, crushed = s.rewind.Advance(&s.player, s.scroll.Y, w.BaseScrollStep, touching())
+		// Advance only consults contact while Timer < 0.
+		contact := false
+		if s.rewind.Timer < 0 {
+			contact = touching()
+		}
+		handled, crushed = s.rewind.Advance(&s.player, s.scroll.Y, w.BaseScrollStep, contact)
 	}
 	if crushed {
 		return false
