@@ -84,7 +84,7 @@ func (p *PresentationPilot) NormalInput(w *World) Input {
 // Source-specific arena movement retains the already verified controller.
 // Trigger decisions still require a live shot opportunity in those arenas.
 func presentationSpecialist(w *World) bool {
-	return fifthBarrierTarget(w) != nil ||
+	return fifthBarrierTarget(w) != nil || fourthCorridorActive(w) ||
 		w.Level.Number == 2 && (w.secondScheduler != nil && w.ScrollY >= 2512 && w.ScrollY <= 2896 || w.secondMiddleReleased && w.ScrollY <= 1280) ||
 		w.Level.Number == 3 && (w.ThirdMiddle != nil || w.ThirdFinal != nil && !w.ThirdFinal.Defeated && w.ScrollY <= 208) ||
 		w.Level.Number == 4 && w.ScrollY <= 176 ||

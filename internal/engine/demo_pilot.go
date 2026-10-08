@@ -58,6 +58,9 @@ func (p *DemoPilot) NormalInput(w *World) Input {
 	if input, handled := p.SecondFinalInput(w); handled {
 		return input
 	}
+	if input, handled := p.FourthCorridorInput(w); handled {
+		return input
+	}
 	if input, handled := p.StageInput(w); handled {
 		return input
 	}

@@ -84,14 +84,10 @@ shop and five level captures have been inspected.
 
 A real fifteen-second desktop run measured approximately 60 updates per second
 and 120 draw calls per second on its 120 Hz display after warm-up. That run does
-not establish dense-combat performance or a complete playthrough. A historical
-public-input replay completed the first level before the lethal-contact
-correction. Its observed state now diverges at step 920, so it no longer proves
-current first-level completion. Current normal-menu pilot regressions complete
-levels one and two through the corrected engine, including all four merchants
-and guardian/exit-coin gates, then admit level three. The third opening, middle
-and final arenas have separate ordinary-input resource proofs. The remaining
-connected stages and complete campaign require current validation.
+not establish dense-combat performance or a complete playthrough. The current
+complete-intro logical regression completes the first three stages with their
+real merchants, guardian destruction and exit rewards. Its limits are detailed
+below; a complete campaign and rendered mobile performance remain unverified.
 
 Finite common explosions and converted fourth-stage pods now retire and release
 their physical slots. Animation-only effects preserve untouched slot fields;
@@ -101,29 +97,16 @@ their owning tiled body, and the middle body retains its last normal muzzle
 table during flash callbacks. A real basic-gun hit also passes the production
 GPU pixel check for the final body.
 
-After native fractional enemy-shot coordinates were corrected, the current
-direct-menu route enters stage three with three ships; the complete-intro route
-enters it with two. Both gameplay cadences retain real shop/guardian/exit gates.
-The separate no-loss third-middle regression still detects a lost ship before
-the arena. The earlier legal-continue probe predates the fractional correction
-and does not establish the current carried route. Isolated arena wins are not
-substitutes for a connected victory through ordinary controls.
+The practiced presentation and the development reference controller have
+different survival results. The complete-intro presentation currently enters
+stage three with one ship and no continue credits: eight ships and both credits
+are consumed in the first two stages. No source rule makes those losses
+unavoidable, and this route does not yet meet the near-lossless expert target.
+Isolated arena wins are not substitutes for a connected victory.
 
-The practiced presentation controller now also completes the entire first level
-from the production intro: known left junction, both genuine merchants, final
-guardian destruction and collected exit drops. Its exported MP4 is 413.05 seconds
-and ends before playing level two. The practiced controller now carries the
-real first-stage result through the second arena and enters its middle merchant,
-with ordinary deaths and one continue. Hazard-aware final preparation now also
-completes stage two, its final merchant and exit rewards, then admits stage three
-with one ship after ordinary recovery. A permanent real-intro regression covers
-that entire route. The separate reference controller and practiced presentation
-have distinct survival results; connected victory through stages three to five
-remains unverified. A current full-intro reference observation reaches and
-defeats the third middle guardian after ordinary recovery and visits its
-merchant, but then stalls in a terrain turn at camera 2,440. An experimental
-route clears that turn and loses its last ship farther ahead; it is not part
-of the production pilot or evidence of a third-stage victory.
+The first-stage presentation MP4 is 413.05 seconds and includes the production
+intro, known left junction, both genuine merchants, final guardian destruction
+and collected exit drops. It ends before playing level two.
 
 Fifth guardian/column creation and updates now preserve the physical emitter,
 phase, direction and untouched fields written or retained by the native callbacks.
@@ -162,8 +145,17 @@ loss. Its logical runner works on the locked device; this does not verify drawin
 The clean complete-intro regression now also defeats the final third guardian
 without shield loss, collects its exit rewards, visits the real final merchant
 and enters stage four with the same ship and repaired shield. Stages four/five
-and low-loss play across the whole campaign remain open. Automatic title admission after sixty idle seconds is shared by the
-desktop and Android frontend, with immediate manual takeover.
+and low-loss play across the whole campaign remain open. Automatic title
+admission after sixty idle seconds is shared by the desktop and Android frontend,
+with immediate manual takeover.
+
+The fourth opening now uses the exact six-pass safety guard and a practiced
+native command sequence through the left forest fork. Its connected comparison
+clears the previous camera4018 stall, then exposes a rearward terrain turn at
+camera3863 with the same ship and11 shield. See the
+[fourth opening validation](FOURTH_OPENING_VALIDATION.md). Fifth laser columns
+are included in movement scoring with their native growth and pre-movement ship
+prefix; isolated source tests establish avoidance, not a complete fifth boss.
 
 The remaining live checks are:
 

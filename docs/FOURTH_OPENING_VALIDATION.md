@@ -49,6 +49,26 @@ an ordinary terrain-rewind cycle around camera 4019/4020, ship positions (263/27
 frame 2179 it still has its carried ship and 27 shield, but no navigation path and
 no middle guardian admission. A 90-second forward-progress stop ends the check.
 
-The opening safety improvement is verified. Fourth-level navigation through
-that terrain, the middle guardian and the remainder of levels four and five
-are not established by this result.
+## Preparing the left forest fork
+
+The practiced controller now prepares the original left corridor before the
+right-hand pocket closes. Edge-safe geometric routing supplies the next point;
+the native-motion planner retains the actual commands needed to reach it. The
+safety guard previews that retained command sequence rather than holding its
+first direction for all six forecast passes. Tactical aiming does not replace
+the active corridor specialist.
+
+Two original-resource scenes execute nine and eight commands from observed
+earlier poses. Every ordinary World.Step matches the predicted position and
+camera, retains rewind zero and clears the complete ship stencil. A later pose
+inside the closed right pocket remains unreachable; no exit is invented.
+
+The connected Pixel run again passes the strict first-three-level helper and
+clears the previous camera4018 stall. It reaches camera3863, then stops making
+forward progress for90 seconds with the same ship and11 shield. Its geometric
+route begins with a rearward turn, but generic controls remain Down and cycle
+through terrain rewind. The full diagnostic takes70.32 seconds without drawing.
+
+The opening safety and left-fork improvements are verified. Executing subsequent
+terrain turns, the middle guardian and the remainder of levels four and five
+remain open. The logical runner does not establish visual frame pacing.
