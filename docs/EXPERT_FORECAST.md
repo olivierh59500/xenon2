@@ -785,3 +785,12 @@ corrected forecast leaves the live world unchanged and matches its player,
 camera, rewind and scroll limit. The full engine suite passes in 29.721 seconds
 and focused source/race checks in 18.053 seconds. This corrects prediction;
 it does not establish a successful final fight.
+
+The geometric planner now uses that same renewed final-arena bound when
+choosing its admissible rear search region. The previous contracted bound could
+exclude a clear path behind the body even though the original controller allows
+the camera to return to 416. An original-terrain regression restores the route
+from the recorded right-side pose to a clear rear point, verifies every segment
+against the complete source stencil, and leaves the live world unchanged.
+The previous planner fails that case. This is route capability evidence;
+the final-guardian victory remains unfinished.

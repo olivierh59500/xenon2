@@ -30,6 +30,10 @@ func TestFifthFinalForecastRenewsOriginalReverseBoundOptional(t *testing.T) {
 		prediction := newDemoMotionForecast(w)
 		for pass := 0; pass < 6; pass++ {
 			before := forecastIsolationDigest(w)
+			maximum := demoScrollMaximum(w, w.ScrollY, w.MaximumScrollY)
+			if mode == "active" && maximum != 416 || mode != "active" && maximum != w.MaximumScrollY {
+				t.Fatal("geometric navigation did not use the same source reverse bound")
+			}
 			if !prediction.advance(w, MotionInput{Down: true}) {
 				t.Fatal("clear original side edge rejected")
 			}
