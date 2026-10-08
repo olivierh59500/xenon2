@@ -69,7 +69,7 @@ func TestWorldPoolAllocatesShadowEntriesBeforeWeaponMount(t *testing.T) {
 			t.Fatal("four source shadow entries must reserve the first slots")
 		}
 	}
-	if w.Weapons.mounts[0].Binding.Slot != 4 || w.Pool.Slot(4).ResourceTag != 160 || w.Pool.First(ActorPoolPlayer) != 0 {
+	if w.Weapons.mounts[0].Binding.Slot != 4 || w.Pool.Slot(4).ResourceTag != 148 || w.Pool.First(ActorPoolPlayer) != 0 {
 		t.Fatal("basic weapon follows shadows; ship has dedicated state outside this pool")
 	}
 }

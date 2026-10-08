@@ -343,6 +343,25 @@ reaches its genuine merchant but collects 1,150 instead of 1,250; the isolated
 third-final fixture wins earlier with 31 shield instead of 15. These outcomes
 identify changed simulation history, not verified campaign improvement.
 
+### Installed weapon identities
+
+An independent constructor trace now compares all fourteen installed weapon
+families, including their equipment position, item, power and maximum power.
+The basic forward gun, double shots, flamer, bomb mount and homing launcher
+previously used incorrect physical record types. They now retain the original
+148, 192, 176, 156 and 160 respectively. Emitted projectiles have separate types;
+the bomb and homing projectiles still use 40 and 72. The other nine installed
+families already match their original constructors.
+
+The actual idle-state investigation also locates the death correction's first
+effects more precisely. Both paths retain identical randomness through the
+first death at second-level frame 3713. Their equipment allocation identities
+first differ at checkpoint admission, frame 3729; movement first diverges at
+5709, before the first changed random state at 5736 following another loss.
+Running the journey in isolation reproduces the difference, so preceding
+frontend tests do not explain it. Death-phase emissions and physical slot
+reuse remain under investigation before that separate correction is integrated.
+
 ## Remaining third-level encounters and fourth-level guardians
 
 All third-level fixed selectors now have semantic Go controllers. The extending

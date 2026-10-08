@@ -135,9 +135,9 @@ type WeaponRuntime struct {
 func equipmentResourceTag(item Item) int16 {
 	switch item {
 	case ItemForwardShot:
-		return 160
+		return 148
 	case ItemDoubleShot:
-		return 24
+		return 192
 	case ItemRearShot:
 		return 68
 	case ItemSideShot:
@@ -149,7 +149,7 @@ func equipmentResourceTag(item Item) int16 {
 	case ItemLaser:
 		return 32
 	case ItemFlamer:
-		return 28
+		return 176
 	case ItemDrone:
 		return 44
 	case ItemElectroBall:
@@ -159,9 +159,9 @@ func equipmentResourceTag(item Item) int16 {
 	case ItemMineLarge:
 		return 60
 	case ItemBomb:
-		return 40
+		return 156
 	case ItemHomingMissile:
-		return 72
+		return 160
 	}
 	return 0
 }
