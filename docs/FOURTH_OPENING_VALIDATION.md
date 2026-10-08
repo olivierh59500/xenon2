@@ -388,3 +388,26 @@ result takes precedence over an earlier full-shield entry experiment that used
 the previous READY seed. The purchase is therefore not enabled in production.
 The side-shot combat fixtures remain weapon/controller capability evidence;
 the real opening route must be corrected and rechecked before integration.
+
+## Integrated normal-loadout guard
+
+The terminal contact check now applies to the normal fourth-opening controller.
+It inspects the fresh player rectangle against the source-ordered published
+moving colliders, honoring the native damage suppressions. Recorded ordinary
+controls reconstruct three real contact states; all nine next inputs still take
+their source damage, which demonstrates why the preceding plan must avoid that
+endpoint. First-three-stage controls, the six-pass horizon, firing clocks and
+native terrain command commitments remain unchanged.
+
+The exact guard also remains active during the living fourth middle guardian.
+Its predicted commands must not enter covered terrain or a rewind. This prevents
+the formerly unguarded companion contacts while preserving native tail damage.
+
+A complete default-intro Pixel run passes the unchanged strict first-three-stage
+assertions, reaches the middle guardian at frame 2007 with 23 shield, and destroys
+its tail at frame 2494 without losing shield. The same ship and both continues
+survive. It uses the original Forward/Cannon/Rear loadout and normal merchant
+purchases; no Side purchase is enabled. The forest minimum remains 3 shield,
+followed by a genuine health pickup at frame 1017. The check completes in
+175.55 seconds without drawing. This is a connected survival improvement, not a
+fourth-guardian, five-stage, rendering or frame-pacing victory.

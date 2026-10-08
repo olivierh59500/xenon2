@@ -129,7 +129,7 @@ func TestFourthOpeningGuardDoesNotEnterOtherArenasOptional(t *testing.T) {
 		name   string
 		modify func(*World)
 	}{
-		{"middle-admitted", func(w *World) { w.FourthMiddle = &FourthMiddleGuardian{} }},
+		{"middle-defeated", func(w *World) { w.FourthMiddle = &FourthMiddleGuardian{Defeated: true} }},
 		{"final-boundary", func(w *World) { w.ScrollY = 176 }},
 		{"ready", func(w *World) { w.Ready = true }},
 		{"destroyed", func(w *World) { w.PlayerAlive = false }},

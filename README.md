@@ -46,11 +46,14 @@ its admission ship, crosses both cannon checkpoints with at least 27 shield,
 reaches its final guardian with 23 shield and defeats it without losing shield.
 Normal rewards and repair restore 39 shield before level four.
 
-In level four the retained native corner commands clear the known forest forks
-and reach the middle guardian. The latest carried route reaches that fight with
-15 shield and destroys its tail, but later stops damaging its satellites.
-Improving that approach, beating the
-remaining guardians and validating the whole campaign remain active work.
+In level four the retained native corner commands clear the known forest forks.
+The controller rejects forecasts that already end in an unavoidable published
+enemy contact, and its exact guard now continues during the middle guardian.
+The connected Pixel route reaches that fight with 23 shield and destroys the
+tail without losing shield, retaining the same ship and both continues. The
+forest still falls to 3 shield before a genuine health pickup; this is not a
+near-lossless route. Beating the remaining guardians and validating the whole
+campaign remain active work.
 Cached routes, bonus collection, dive requests and merchant purchases use
 ordinary game rules. This is not yet a near-lossless five-level demonstration.
 
