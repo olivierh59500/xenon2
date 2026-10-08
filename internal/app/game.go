@@ -106,6 +106,7 @@ type Game struct {
 	cheatRow                 int
 	cheatReturn              Screen
 	demo                     *demoDirector
+	demoLastLevel            int
 	titleIdleUpdates         int
 	pointerX, pointerY       int
 	pointerKnown             bool
@@ -161,7 +162,7 @@ func New(bundle *Bundle) (*Game, error) {
 	if err != nil {
 		return nil, err
 	}
-	g := &Game{Bundle: bundle, Screen: TitleScreen, clock: engine.NewRationalFrameClock(50, 3, 60), stream: stream, music: true}
+	g := &Game{Bundle: bundle, Screen: TitleScreen, clock: engine.NewRationalFrameClock(50, 3, 60), stream: stream, music: true, demoLastLevel: 3}
 	g.graphics = prepareGraphics(bundle)
 	g.palClock = engine.NewFrameClock(50, 60)
 	random := engine.NewRandomState()

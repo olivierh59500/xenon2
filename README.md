@@ -14,78 +14,38 @@ HUD, loading and ending presentation are connected. All fixed encounter families
 are implemented. Shared-state and artwork audits and full-game validation remain
 in progress; this build is not yet the complete playable game.
 
-## Demonstration pilot
+## Three-level demonstration
 
 ```sh
 GOWORK=off go run ./cmd/xenon2 -demo
 ```
 
-The menu also offers DEMO MODE. This starts an ordinary single-player session at level one
-with trainer aids disabled. The development pilot uses ordinary movement, fire
-and dive commands. It enters
-through the normal menu and READY, handles score entry and continues, and buys
-available upgrades through the original merchant quote/confirmation interface.
-It chooses the cheapest sufficient shield repair, saves for extra ships when
-the current merchant stocks them, and avoids repeatedly upgrading rear weapons
-at the expense of the basic loadout. Priorities work across both shop pages.
-A key or click immediately returns control of the current game to the player.
-It does not grant health, equipment or money, skip guardians or change terrain.
+DEMO MODE, the desktop flag and Android's automatic demonstration play levels
+one through three. After the third guardian, the original exit rewards and
+final merchant, the tour returns through the original menu animation. Sixty
+seconds without input on that menu starts a new level-one tour. The automatic
+startup deadline also applies throughout the passive logo, credits and scores
+presentation; the normal loading and READY transitions follow it.
 
-After sixty seconds without input on the title menu or passive logo/credits/scores
-presentation, the expert controller starts
-an ordinary single-player demo at level one with cheats disabled. DEMO MODE and
-`-demo` select the same controller. Keyboard, mouse movement/buttons/wheel, held
-controls and touch restart the idle interval and immediately return control of
-an active demo; that same action is passed to the game. Fades, pause, the cheat
-menu, interactive game messages and merchants do not count as idle time. The controller remains in
-development; its complete five-level route is not yet validated.
-The normal loading and READY transitions follow the idle deadline before the
-ship starts moving.
+The pilot supplies ordinary movement, fire and dive commands and buys upgrades
+through the original merchant quote/confirmation interface. It uses actual
+health, equipment, earned money, collisions, enemies and random state. A key,
+mouse action or touch immediately returns the same active session to manual
+control. Pause, fades, the cheat menu, interactive game messages and merchants
+do not count as menu inactivity.
 
-The controller completes the first three stages from the full default intro,
-visits their real merchants and enters level four with one ship and both
-continues. Level one loses no ships; level two loses two. The third stage keeps
-its admission ship, crosses both cannon checkpoints with 35 shield,
-reaches its final guardian with 35 shield and defeats it without losing shield.
-Normal rewards and repair restore 39 shield before level four.
+The reference intro route completes all three levels with one surviving ship
+and both continues, losing two ships in level two. It reaches the third final
+guardian with 35 shield and defeats it without losing shield. The idle-start
+entry is tested separately: it consumes its continues in level two, then keeps
+its remaining ship throughout level three. Its route now recovers from the
+observed cannon pocket, defeats the final guardian with 23 shield, collects
+rewards, completes the genuine final merchant and returns to the menu. This is
+a development pilot, not a claim of perfect or near-lossless play.
 
-In level four the retained native corner commands clear the known forest forks.
-The controller rejects forecasts that already end in an unavoidable published
-enemy contact, and its exact guard now continues during the middle guardian.
-A corrected screen-clear callback exposed a fourth-opening control trap. A
-verified maneuver-retention controller now completes the actual intro and
-three-stage route, reaches that fight with 27 shield and destroys the tail
-without losing shield. It rechecks each remaining maneuver against the live
-world before using ordinary controls. The forest minimum remains 11 before a
-genuine health pickup; this is not a near-lossless route.
-The current carried Pixel route also destroys both upper satellites through Rear
-shots, the lower-right satellite through Cannon shots and the lower-left satellite
-through primary shots. All 27 shield, the same ship and both continues remain at
-the exposed core. It then defeats the core and reaches the real middle merchant
-with the same 27 shield. After ordinary repair and rewards, the current desktop
-route also reaches the fourth final guardian with 31 shield, defeats it with
-27 shield and enters level five after its final merchant and normal repair.
-At that last shop it sells the Cannon and buys a left-mounted Laser through the
-normal quote and confirmation controls. A rehearsed fifth-stage opening then
-crosses all three barriers and the guided-missile corridor with the same ship
-and both continues. It reaches checkpoint 3424 with 39 shield after a genuine
-health pickup; its minimum is 23. Every proposed command is checked through an
-isolated copy of the Go simulation, and different entry states use the reactive
-controller. The route now also defeats the middle guardian, drains its ten
-real reward coins and buys a normal full repair at the fifth-level shop. The
-same ship and both continues survive. The second half now also reaches the
-final guardian with 35 shield and all eighteen defenses intact. That final
-fight and the near-lossless campaign remain unfinished.
-Beating the remaining guardians and validating the whole campaign remain active
-work.
-Cached routes, bonus collection, dive requests and merchant purchases use
-ordinary game rules. This is not yet a near-lossless five-level demonstration.
-
-Idle-start gameplay is tested separately from the reference intro route. The
-current idle path consumes its continues in level two but completes level three
-with its remaining ship, passes the genuine final merchant and enters level four.
-The fourth opening for this different loadout and random state is still being
-improved.
+Existing later-stage code and reference fixtures remain in the project. They
+are outside the three-level demonstration tour; full-game fidelity and a
+five-stage expert campaign are not established.
 
 ## MP4 recording
 
@@ -114,8 +74,8 @@ and embedded scene chapters. The current desktop graphics tests also pass.
 This capture was generated from runtime `0a9efa0`.
 Ordinary damage and purchases still apply. The current controller's first-three-stage
 validation uses the real intro, merchants, native guardian damage and exit drops;
-its third-final fight retains all 35 admission shield points. The broader expert
-route still needs the fourth/fifth strategies and mobile frame-pacing work. See
+its third-final fight retains all 35 admission shield points. Later-stage expert
+strategies remain experimental; the normal tour ends after level three. See
 [expert forecast design](docs/EXPERT_FORECAST.md) for the verified boundaries.
 Generated MP4, PNG poster and chapter JSON files stay
 under locally excluded `recordings/`. The export command requires Go 1.26 or

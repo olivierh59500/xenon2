@@ -92,6 +92,11 @@ func (g *Game) leaveShop() error {
 		return fmt.Errorf("shop return needs an active world")
 	}
 	if g.shopFinal {
+		w := driver.world
+		if g.DemoActive() && g.demoLastLevel > 0 && w.Level.Number >= g.demoLastLevel && w.LevelFinished && w.ExitReady && w.PendingExitDrops == 0 {
+			g.finishDemoTour()
+			return nil
+		}
 		next := driver.world.Level.Number%5 + 1
 		// A second surviving player may still be on the same stage, so admission
 		// happens before deciding whether a next-stage loading caption is needed.

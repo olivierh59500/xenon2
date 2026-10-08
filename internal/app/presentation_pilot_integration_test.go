@@ -23,6 +23,9 @@ func presentationFrontendGame(t *testing.T) *Game {
 	if err != nil {
 		t.Fatal(err)
 	}
+	// Reference checks retain access to the existing later-stage development
+	// routes; the desktop and Android demonstration tour ends after level three.
+	g.demoLastLevel = 5
 	return g
 }
 

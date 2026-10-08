@@ -266,10 +266,14 @@ opening guard; owner, cadence, lifecycle and changed-projectile checks remain.
 
 The complete idle-start regression now passes camera 1399 at frame 6096, with
 27 shield, the same remaining ship and no continue consumed in stage three.
-Its original input path stalled beyond twenty-five simulated minutes. The
+Its original input path stalled beyond twenty-five simulated minutes.
+The released demonstration tour now stops after the third final merchant and
+returns to the menu. Both idle and explicit admissions verify this boundary
+and a fresh level-one tour after sixty idle seconds. The
 separate reference route still reaches the fifth final guardian at frame 5402
 with 35 shield and both continues. These two entry paths are tested separately;
-the idle-start run is not a near-lossless campaign or final-guardian victory.
+the idle-start run does not establish a near-lossless campaign or a fifth-level
+final-guardian victory.
 
 A clear geometric path does not guarantee that a fast ship can follow its
 corners with one continuously replanned direction. An observed eight-command

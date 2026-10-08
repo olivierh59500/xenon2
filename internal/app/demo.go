@@ -75,6 +75,25 @@ func (g *Game) beginTitleDemo() {
 	g.selectMusic()
 }
 
+// finishDemoTour returns through the original menu animation after the final
+// merchant. The completed world remains available until a new session starts.
+func (g *Game) finishDemoTour() {
+	g.Config.Demo, g.Config.HumanDemo = false, false
+	g.demo = nil
+	g.titleIdleUpdates = 0
+	g.pendingFire, g.pendingDive, g.paused = false, false, false
+	g.backdropOnly, g.continueAfterScores = false, false
+	g.readyRunning, g.gameOverRunning = false, false
+	g.shop, g.shopFinal = nil, false
+	g.headerAction = headerNone
+	g.presentationInput = presentation.Input{}
+	g.menu, g.pendingPlayers = 0, 1
+	g.stream.StopEffects()
+	g.BeginAttract()
+	g.director.BeginMenu()
+	g.selectMusic()
+}
+
 func (g *Game) demoControls(manual inputFrame) inputFrame {
 	if !g.Config.Demo {
 		return manual

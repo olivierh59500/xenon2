@@ -5,6 +5,12 @@ This inventory distinguishes integrated game behavior from extracted artwork
 and isolated controller comparisons. A resource export does not by itself
 establish that the corresponding encounter is playable.
 
+The desktop and Android expert demonstration is limited to levels one through
+three. Its completed third-level final merchant returns to the original menu;
+sixty idle seconds start another tour. Tests cover both automatic idle admission
+and an explicit demo launch, the real third guardian/rewards/merchant sequence,
+menu return and a fresh ordinary level-one READY admission.
+
 The reference complete-intro frontend completes levels one through four through
 ordinary controls, real merchants, guardian deaths and exit rewards. It loses
 two ships in level two, then retains its last ship and both continues through
@@ -20,10 +26,11 @@ level consumes both continues, so its third-level equipment differs from the
 reference profile. After the cannon-pocket recovery correction, this path
 also completes the entire third level, defeats its final guardian with the
 same remaining ship and 23 shield, drains rewards and buys a normal repair.
-It enters level four with 39 shield, one ship and no continues. Its fourth
-opening is not yet validated: the installed controller still loses that ship
-in this different entry profile. A passing reference route does not establish
-that every menu timing, loadout or random state completes the campaign.
+At the menu it retains the completed third world with 39 shield, one ship
+and no continues. The later-stage reference fixtures use an explicit test-only
+tour limit; ordinary demonstration launches do not enter level four. A passing
+reference route does not establish that every menu timing, loadout or random
+state completes the campaign.
 
 ## Fixed encounters and scripted arenas
 
