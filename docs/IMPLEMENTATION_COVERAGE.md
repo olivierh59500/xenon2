@@ -453,6 +453,27 @@ projectiles. Additional isolated guard and barrier-alignment comparisons improve
 survival but stall before the middle guardian or introduce earlier losses. They
 remain excluded; no complete five-stage or near-lossless campaign is claimed.
 
+The fifth-opening barrier stall has two verified causes. At the recorded post
+lane 83..93, the ship rests at X75. Three held Right passes end at X102, so the
+old distance score prefers staying 13 pixels away over overshooting by 14. A
+single Right pass followed by native release coast stops inside the firing lane.
+That local correction opens the barrier, but its isolated full route is not an
+improvement without additional combat planning and remains excluded.
+
+One combined diagnostic reaches a later terrain-rewind loop at camera 3941,
+ship X85/Y176, with 31 shield and upgraded Forward/Rear weapons. Its geometric
+route is clear. After the native recovery callback restores X94 at camera 3942,
+the existing motion search finds six ordinary commands to X115/world4094 in
+65 expansions. Executing that route removes the loop; subsequent enemy waves
+still exhaust the carried ship. No position, health or terrain is assigned by
+the route executor.
+
+Further native callback beam and longer rollout experiments either lose the
+ship or stay alive without useful forward progress. Such diagnostic package
+passes only confirm recorded outcomes; they are not successful game tests.
+Their controllers remain local and excluded. Fifth-stage completion requires
+both safe traversal and real guardian/merchant progression.
+
 ## Automatic startup demonstration
 
 The Android startup configuration opens the original logo/credit/score loop;
