@@ -18,6 +18,9 @@ through the real fourth final merchant. Full-intro validation retains the same
 ship and both continue credits; shield falls to 23 and returns to 39 through
 the original health pickup. The later terrain/turret route and both fifth
 guardians remain incomplete for the expert controller.
+The route also crosses the following terrain defenses and reaches checkpoint
+2880 with 23 shield, the same ship and both continues. The pilot recognizes
+their live damage colliders independently of their terrain drawing and flashes.
 
 ## Fixed encounters and scripted arenas
 

@@ -691,3 +691,20 @@ validation, repeated calls and foreign-state rejection. The full-intro frontend
 passes in 12.48 seconds. Active missile-scene validation takes about 13
 microseconds per call on the desktop. The reactive continuation remains alive
 but stalls near camera 3234 with three shield before the middle guardian.
+
+## Terrain-rendered fifth defenses and the next checkpoint
+
+The pilot now recognizes the original aiming, radial and persistent terrain
+turrets between their damage flashes. Their drawing uses terrain tiles and
+sets sprite visibility false, while their live moving-list colliders still
+accept ordinary weapons. Original factory tests reproduce the former missed
+targets and verify a real one-point shot, flash recovery and unchanged
+recognition state. The indestructible linking band remains excluded.
+
+The rehearsed route now continues through these defenses to checkpoint 2880.
+The complete-intro frontend reaches frame 1729, camera 2879, with 23 shield,
+150 cash, score 203330 and random state 3281101092/3188931690. The same ship and
+both continues survive. Independent source replay verifies all 544 additional
+commands, and the next-step guard checks every one in the live controller.
+The first launcher checkpoint remains unchanged. The subsequent approach and
+both fifth guardians remain unfinished.

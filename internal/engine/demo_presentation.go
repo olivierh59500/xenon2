@@ -365,13 +365,21 @@ func presentationTargetBounds(w *World, actor *WorldActor) (CollisionRect, bool)
 	if actor != nil && (actor.fourthIndex > 0 || actor.fifthIndex > 0) {
 		return presentationGuardianTargetBounds(w, actor)
 	}
-	if actor != nil && actor.Active && actor.fifthTile != nil && actor.fixedTileArt != nil && actor.fixedTileArt.Kind == 1 {
-		// Barrier posts are drawn into terrain, so their live damage callback
-		// remains targetable without a sprite. The linking band cannot be damaged.
-		part := actor.fifthTile.Part
-		damageable := part >= 0 && part < len(actor.fixedTileArt.Parts) && actor.fixedTileArt.Parts[part].Damageable
+	if actor != nil && actor.Active && actor.fifthTile != nil && actor.fixedTileArt != nil {
+		// Posts and turrets draw into terrain. Their native moving-list damage
+		// callbacks remain targetable between flashes; only the linking band
+		// rejects hits, independently of the sprite visibility flag.
+		damageable := false
+		switch actor.fixedTileArt.Kind {
+		case 1:
+			part := actor.fifthTile.Part
+			damageable = part >= 0 && part < len(actor.fixedTileArt.Parts) && actor.fixedTileArt.Parts[part].Damageable
+		case 3, 4, 9:
+			damageable = true
+		}
 		return actor.Collision, damageable && actor.Health > 0 && !actor.Collision.Empty() && actor.Collision.Left < 320 && actor.Collision.Right >= 0
 	}
+
 	if actor != nil && actor.Active && actor.thirdCannon != nil {
 		return actor.Collision, actor.Health > 0 && !actor.Collision.Empty()
 	}
