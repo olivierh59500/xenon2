@@ -325,6 +325,24 @@ world matches every case. Ordinary tests also exercise contact and dive through
 actual `World.Step` input, clear recovery, a new underwater contact and terminal
 crushing. These are isolated callback comparisons, not an Amiga playthrough.
 
+### Death callback integration boundary
+
+A separate extension executes the original death routine at `0x5d00` for
+54 crushing cases. That callback sets dive phase one and stops its direction,
+which also hides thrust. Crushing returns before the living ship's trail/phase
+update; later death-animation callbacks do not execute that update either.
+The current Go death state does not yet preserve all of these details.
+
+A local correction matches all 54 native phase/direction states and retains
+history when a previous dive countdown expires during death. The explicit
+three-level demonstration still completes, but the actual idle-start path
+changes its carried state after level two and loses its last ship in level three.
+The correction remains outside production while death cleanup, countdown and
+post-continue state are investigated. The second-middle resource fixture still
+reaches its genuine merchant but collects 1,150 instead of 1,250; the isolated
+third-final fixture wins earlier with 31 shield instead of 15. These outcomes
+identify changed simulation history, not verified campaign improvement.
+
 ## Remaining third-level encounters and fourth-level guardians
 
 All third-level fixed selectors now have semantic Go controllers. The extending
