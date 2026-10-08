@@ -515,3 +515,23 @@ The fourth-middle rearward terminal probe exposes a satellite, but its normal
 tactical handoff finds no useful firing position. Center placements fall within
 the original wall; nearby cannon-offset probes are not established safe. Those
 strategies remain excluded pending an actual carried-state comparison.
+
+## Native checkpoint preparation before the third final
+
+After the final cannon and reinforced formation are finished, the controller
+can prepare the source final restart point (152, world 352) before the first
+fan reaches the left terrain fork. The point comes from the original checkpoint
+X/camera plus the native restart ship height. It uses existing full-stencil
+navigation and retained source commands, before one selective-firing decision.
+The exact guard still owns avoidance. The helper requires the real destroyed
+cannon patch and passed encounter gates, and does not move the camera or ship
+directly.
+
+The original-resource route retains its initial shield and zero rewind through
+160 ordinary passes and the native first fan. Scope checks reject nil, changed
+patch, unvisited formation and outside-window states without mutating them.
+The isolated comparison does not claim better shield than its simplified
+baseline. The genuine connected comparison removes both observed 4-point hits,
+and the unchanged strict first-three-level regression passes with 23 final-entry
+shield, zero final damage and both continues retained. Fourth-route regression
+caused by the subsequent changed RNG remains under correction.

@@ -77,6 +77,9 @@ func (p *PresentationPilot) NormalInput(w *World) Input {
 			input.Motion = motion
 		}
 	}
+	if motion, prepare := p.thirdFinalEntryPreparation(w); prepare {
+		input.Motion = motion
+	}
 	input.Fire = p.selectiveFireForMotion(w, input.Motion)
 	if w.blockedFireUntilRelease || w.Dive.Phase != 0 {
 		input.Fire = false
