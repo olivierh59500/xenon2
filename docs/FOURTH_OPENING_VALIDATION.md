@@ -195,3 +195,10 @@ and 31 shield. Eight predicted-defeat serial fallbacks return normally. These
 results rule out a first-middle-decision or defeat-transition hang; the later
 post-merchant corridor still needs a bounded state check before campaign
 validation can be claimed.
+
+The first post-merchant corridor window also advances normally: after ten
+seconds of bounded test execution it reaches camera 1778/frame 3310 with the
+same ship, both credits and 35 shield. The first cannon row is cleared; the
+1696 row is admitted. No callback exceeds about 196 ms in that window and no
+watchdog fires. This narrows the incomplete long-run investigation to later
+checkpoints and the final route rather than the initial middle/corridor entry.
