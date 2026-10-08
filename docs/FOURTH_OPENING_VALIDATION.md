@@ -276,3 +276,18 @@ the fourth middle guardian at frame 1997/camera 2480 with the same ship and both
 continues. It has only 7 shield and loses the ship shortly afterward. This is real
 route progress, not a fourth-stage or boss victory; preserving more energy and
 the guardian strategy remain required.
+
+## Fourth-middle isolated maneuver comparison
+
+Two fresh pilots now start from independent copies of the same genuinely
+reached middle-guardian stall. A terrain-derived rear/firing maneuver without
+exact protection loses the ship after149native passes, with no further target
+damage. The identical maneuver with the existing six-pass guard remains alive
+for1200passes with19shield, taking one4-point original enemy-shot hit.
+Neither branch damages another satellite or exposes the core.
+
+This establishes a useful survival difference, not a guardian win. The guard
+still uses its existing center-height tie ranking, which does not establish
+progress toward the rear firing position. Both branch strategies remain
+excluded; a goal-aware choice among equally safe source outcomes is the next
+bounded correction. No damage, health, collision or firing clock is changed.
