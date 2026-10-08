@@ -6,6 +6,7 @@ package engine
 type fifthOpeningPractice struct {
 	world    *World
 	forecast WorldForecast
+	start    uint64
 }
 
 func fifthPracticeMarker(w *World) uint64 {
@@ -68,11 +69,21 @@ func fifthPracticeMarker(w *World) uint64 {
 			flag(part.Destroyed)
 		}
 	}
+	if w.FifthFinal != nil {
+		word(1)
+		integers(w.FifthFinal.OuterRemaining, int(w.FifthFinal.CoreHealth))
+		flag(w.FifthFinal.Defeated)
+		for _, part := range w.FifthFinal.Parts {
+			integers(part.X, part.Y, part.Clock, part.MoveRemaining, part.Health, int(part.Heading), int(part.FireAccumulator), int(part.SecondaryAccumulator))
+			flag(part.Active)
+			flag(part.Destroyed)
+		}
+	}
 	return h
 }
 
 func fifthPracticeWindow(w *World, pal int) bool {
-	return w != nil && w.Level.Number == 5 && w.Frame >= 1 && w.Frame <= uint64(len(fifthOpeningControls)) &&
+	return w != nil && w.Level.Number == 5 && w.Frame >= 1 &&
 		w.PlayerAlive && !w.GameOver && !w.Ready && !w.Cheats.Enabled() && w.Dive.Phase == 0 &&
 		w.ScreenClearFrames == 0 && !w.stepContinuation.active && !w.ShopReady && !w.ExitReady &&
 		!w.LevelFinished && w.FifthFinal == nil &&
@@ -88,29 +99,33 @@ func (p *PresentationPilot) fifthPracticedOpeningInput(w *World) (Input, bool) {
 		p.fifthPractice = nil
 		return Input{}, false
 	}
-	index := int(w.Frame) - 1
-	if fifthPracticeMarker(w) != fifthOpeningMarkers[index] {
+	controls, markers, start := fifthOpeningControls[:], fifthOpeningMarkers[:], uint64(1)
+	if w.Frame >= fifthSecondPracticeStart && (p.fifthPractice == nil || p.fifthPractice.start == fifthSecondPracticeStart || w.Frame > uint64(len(fifthOpeningControls))) {
+		controls, markers, start = fifthSecondControls[:], fifthSecondMarkers[:], fifthSecondPracticeStart
+	}
+	index := int(w.Frame - start)
+	if w.Frame < start || index >= len(controls) || fifthPracticeMarker(w) != markers[index] {
 		p.fifthPractice = nil
 		return Input{}, false
 	}
-	if p.fifthPractice == nil {
+	if p.fifthPractice == nil || p.fifthPractice.start != start {
 		if index != 0 {
 			return Input{}, false
 		}
-		p.fifthPractice = &fifthOpeningPractice{world: w}
+		p.fifthPractice = &fifthOpeningPractice{world: w, start: start}
 	}
 	q := p.fifthPractice
 	if q.world != w || q.forecast.Load(w) != nil {
 		p.fifthPractice = nil
 		return Input{}, false
 	}
-	input := fifthPracticeControl(fifthOpeningControls[index])
+	input := fifthPracticeControl(controls[index])
 	for range 3 {
 		q.forecast.AdvancePALTick()
 	}
 	result, err := q.forecast.Advance(input)
-	boundary := result.Boundary == ForecastRunning || index+1 == len(fifthOpeningControls) && result.Boundary == ForecastShop
-	if err != nil || !boundary || !result.Alive || result.Lives != w.Equipment.Lives || fifthPracticeMarker(q.forecast.State()) != fifthOpeningMarkers[index+1] {
+	boundary := result.Boundary == ForecastRunning || index+1 == len(controls) && result.Boundary == ForecastShop
+	if err != nil || !boundary || !result.Alive || result.Lives != w.Equipment.Lives || fifthPracticeMarker(q.forecast.State()) != markers[index+1] {
 		p.fifthPractice = nil
 		return Input{}, false
 	}

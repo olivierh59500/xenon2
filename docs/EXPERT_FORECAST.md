@@ -758,3 +758,18 @@ forecast step to enter that merchant boundary. Live shop updates remain outside
 the route. Direct original-resource replay checks all 3,194 commands; the
 complete frontend victory/repair regression passes in 13.17 seconds. The second
 half, final guardian and full campaign comparison remain unfinished.
+
+## Separate post-merchant route to the final guardian
+
+A second guarded control segment starts at the genuine repaired merchant return,
+frame 3195, with random state 1681535540/1568541330 and 39 shield. It has a new
+owner and first marker; no controls or state are carried through shop updates.
+The real loader's star seed is reproduced independently by the source fixture.
+
+The complete frontend crosses checkpoints 2032 and 1008, then destroys the two
+remaining original barriers and admits the final guardian at frame 5402. The
+native final constructor resets its arena to camera 416, followed by the normal
+scroll to 415. Admission retains 35 shield, the same ship and two continues,
+with 200 cash, score 241730 and random state 4235635824/2611229262. All eighteen
+defenses and the twenty-point core start intact. The route markers include
+final-guardian state. The final fight and complete ending remain unverified.

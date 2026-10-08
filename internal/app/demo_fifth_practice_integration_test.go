@@ -147,3 +147,64 @@ func verifyPresentationFifthMiddleMerchantReturn(t *testing.T) *Game {
 	t.Fatal("bounded earned fifth middle did not return from its genuine merchant")
 	return nil
 }
+
+func TestPresentationPilotCrossesFifthSecondHalfFromRealMerchantOptional(t *testing.T) {
+	if os.Getenv("XENON2_HUMAN_PRESENTATION_CHECK") == "" {
+		t.Skip("enable the earned fifth second-half route explicitly")
+	}
+	verifyPresentationFifthSecondHalfCheckpoint(t)
+}
+
+func verifyPresentationFifthSecondHalfCheckpoint(t *testing.T) *Game {
+	t.Helper()
+	g := verifyPresentationFifthMiddleMerchantReturn(t)
+	minimum := 39
+	first := false
+	for update := 0; update < 60*150; update++ {
+		advanceFrontend(t, g, inputFrame{})
+		d := g.Driver.(*worldDriver)
+		w := d.world
+		if !g.DemoActive() || d.diagnostic || w.Cheats.Enabled() || !w.PlayerAlive || w.GameOver || w.Equipment.Lives != 1 || w.ContinueCredits != 2 || w.Level.Number != 5 || w.Rewind.Timer != 0 || !w.FifthMiddle.Defeated {
+			t.Fatalf("second-half route changed earned reserves: F%d C%d HP%d", w.Frame, w.ScrollY, w.Equipment.Shield)
+		}
+		minimum = min(minimum, w.Equipment.Shield)
+		if w.Checkpoint.ScrollY == 2032 && !first {
+			if w.Frame != 3370 || w.ScrollY != 2031 || w.Equipment.Shield != 39 || w.Score != 216730 || w.RandomState() != (engine.RandomState{A: 3250089722, B: 1681548392}) {
+				t.Fatal("first second-half checkpoint differs from native replay")
+			}
+			first = true
+		}
+		if w.Checkpoint.ScrollY == 1008 {
+			if !first || w.Frame != 4394 || w.ScrollY != 1007 || w.Equipment.Shield != 35 || minimum != 35 || w.Money != 0 || w.Score != 219530 || w.RandomState() != (engine.RandomState{A: 49170192, B: 4115510000}) {
+				t.Fatalf("native final-forest checkpoint differs: F%d C%d HP%d min%d score%d RNG%+v", w.Frame, w.ScrollY, w.Equipment.Shield, minimum, w.Score, w.RandomState())
+			}
+			t.Logf("Complete intro and genuine fifth merchant reach checkpoint1008 at frame%d with35shield, same ship and two continues", w.Frame)
+			return g
+		}
+	}
+	t.Fatal("bounded second-half route never reached the original final-forest checkpoint")
+	return nil
+}
+
+func TestPresentationPilotReachesFifthFinalFromDefaultIntroOptional(t *testing.T) {
+	if os.Getenv("XENON2_HUMAN_PRESENTATION_CHECK") == "" {
+		t.Skip("enable the complete earned final approach explicitly")
+	}
+	g := verifyPresentationFifthSecondHalfCheckpoint(t)
+	for update := 0; update < 60*100; update++ {
+		advanceFrontend(t, g, inputFrame{})
+		d := g.Driver.(*worldDriver)
+		w := d.world
+		if !g.DemoActive() || d.diagnostic || w.Cheats.Enabled() || !w.PlayerAlive || w.GameOver || w.Equipment.Lives != 1 || w.ContinueCredits != 2 || w.Level.Number != 5 || w.Rewind.Timer != 0 || w.Equipment.Shield != 35 {
+			t.Fatalf("final approach lost carried reserves: F%d C%d HP%d", w.Frame, w.ScrollY, w.Equipment.Shield)
+		}
+		if w.FifthFinal != nil {
+			if w.Frame != 5402 || w.ScrollY != 415 || w.Checkpoint.ScrollY != 416 || w.FifthFinal.OuterRemaining != 18 || w.FifthFinal.CoreHealth != 20 || w.FifthFinal.Defeated || w.Score != 241730 || w.Money != 200 || w.RandomState() != (engine.RandomState{A: 4235635824, B: 2611229262}) {
+				t.Fatalf("original final constructor differs: F%d C%d HP%d score%d RNG%+v", w.Frame, w.ScrollY, w.Equipment.Shield, w.Score, w.RandomState())
+			}
+			t.Logf("Complete intro reaches genuine fifth final at frame5402 with35shield, all18defenses and20corehealth, same ship and two continues")
+			return
+		}
+	}
+	t.Fatal("bounded earned final approach never admitted the original guardian")
+}

@@ -28,6 +28,10 @@ The current route also defeats that middle guardian at frame 3087, drains its
 ten real reward coins and enters the actual merchant at frame 3195. The native
 500-cost fifth-level full repair restores 39 shield with the same ship and both
 continue credits. The second half and final guardian remain unfinished.
+The post-merchant controller now also crosses the second-half checkpoints and
+last two barriers, reaching the actual final guardian with 35 shield and all
+eighteen defenses intact. The final fight, ending and full-game comparison
+remain unfinished.
 
 ## Fixed encounters and scripted arenas
 
