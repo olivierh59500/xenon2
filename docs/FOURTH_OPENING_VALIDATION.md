@@ -308,3 +308,25 @@ damage stall at frame 3480/camera 2176 with 7 shield and all four satellites ali
 The connected diagnostic takes 315.94 s without drawing. This is a verified
 survival/progression improvement, not a guardian victory. Earlier anticipation
 of the path18 formation and a safe firing route remain required.
+
+## Rejected under-wall satellite route
+
+An excluded comparison reuses the earlier, genuinely reached satellite stall
+with 23 shield. It freezes that older approach explicitly; it is not a result
+for the current 15-shield admission. Goal-based ties among the same six-pass
+guard outcomes bring the ship to world Y2543 with 19 shield, but still cause no
+satellite damage.
+
+A bounded 12-pass, eight-state source forecast then reaches the terrain-clear
+height Y2554 in eleven ordinary commands, with 15 shield. From there the
+unchanged native geometry planner finds a fifteen-command horizontal route in
+83 expansions. Replaying that route through the complete world kills the ship
+on its second command, despite a clear terrain stencil. Terrain feasibility
+alone therefore does not admit this combat maneuver. Neither the experimental
+guard ranking, beam nor under-wall route is enabled in production.
+
+The Pixel diagnostic completes in 229.16 seconds and reports the negative
+gameplay outcome. The diagnostic's test success means it recorded both branches
+and preserved the source state; it does not mean the boss was defeated. The
+next investigation concerns the actual contact and mounted-weapon firing from
+a safe flank, with the original HP, collision rules and firing clocks intact.
