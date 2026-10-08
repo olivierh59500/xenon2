@@ -249,8 +249,8 @@ the same ship and credits and 27 shield. Checkpoint 1152 is reached at frame
 6473/camera 1151; the entire simulated intro/carried route takes 46.63 seconds.
 This runner performs no drawing and does not establish visual frame pacing.
 Subsequent edge and sequence validation advances the same carried route to the
-real final guardian launch, as described below. Its defeat and final merchant
-remain unverified; this is a connected milestone, not campaign completion.
+real final guardian launch and victory, as described below. Campaign completion
+and rendered mobile frame pacing remain unverified.
 
 ## Geometric edges and safety previews
 
@@ -273,7 +273,8 @@ Pixel, the complete default-intro route reaches both cannon checkpoints with
 27 shield and admits the first final worm at frame 9633/camera 207 with 19 shield.
 The same carried ship and zero credits are preserved; no cheat or diagnostic
 state is used. That full logical run takes 68.76 seconds and stops on launch.
-Final victory, remaining stages and rendered frame pacing remain open.
+The subsequent complete-intro regression below establishes final victory;
+remaining stages and rendered frame pacing remain open.
 
 ## Exact horizontal bound under evaluation
 
@@ -305,7 +306,7 @@ eighteen-pass horizon. A native fan case retains full shield under the guard;
 a second-path incoming-head case avoids three pre-movement contacts and retains
 its source-earned 27 shield. Prediction leaves live state unchanged and the
 scope is limited to a launched, undefeated final guardian at camera 208 or below.
-These bounded regressions do not establish a connected final victory.
+The bounded regressions isolate the causes; the connected result follows below.
 
 The clean permanent complete-intro three-stage frontend regression now passes
 on the locked Pixel in 71.68 seconds, without a diagnostic source overlay. It
@@ -316,3 +317,23 @@ fight uses paths 61/65/63/66 and reduces shared health from 80 to zero at frame
 10253, retaining all 19 admission shield points. The real final merchant is
 admitted at frame 10313 with no pending drops. Earlier first/two-stage recovery
 still applies; this does not establish near-lossless play across all stages.
+
+## Fifth guardian laser hazards
+
+Movement scoring now includes projectile-list laser columns, including newborn
+columns whose collision rectangle has not yet been published. A private copy
+uses the original growth, signed travel and expiry callbacks. As with ordinary
+shot projection, this short preview holds the current scroll delta; it does not
+predict subsequent camera reversals or contact removing a column.
+
+Column contact uses the ship position and bank from before that pass's movement.
+World.Step publishes this prefix before moving the ship, and the later projectile
+callback retains it. Testing against the new ship position would allow a turn
+one pass too late. Other moving-actor reaction margins remain unchanged.
+
+Eight original projectile-phase scenes cover both travel directions and scroll
+deltas -2, 0, 1 and 2 through growth and expiration. A separate eight-pass scene
+with two ordinary speed upgrades compares held controls with replanned tactical
+movement: held controls lose six shield; the tactical path retains all 39.
+Prediction leaves the live pool, controller and random stream unchanged. These
+isolated tests do not establish a fifth-stage boss victory.

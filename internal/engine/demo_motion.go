@@ -97,7 +97,7 @@ func demoRouteMotionAvoidingShots(w *World, x, worldY, comfortY, clearance int) 
 		if index >= ActorPoolCapacity {
 			break
 		}
-		if !actor.Active || actor.Collision.Empty() || actor.ActorList != "moving" && actor.ActorList != "scenery" || !demoRouteActorCacheable(actor) {
+		if !demoActorHazard(actor) || !demoRouteActorCacheable(actor) {
 			continue
 		}
 		for depth := range risks.actors {
@@ -132,6 +132,7 @@ func demoRouteMotionSearch(w *World, x, worldY, comfortY int, risks *demoRouteRi
 			for action, input := range demoDirections {
 				candidate := current[index]
 				actorCamera := candidate.motion.scroll.Y
+				previousPlayer := candidate.motion.player
 				if !candidate.motion.advance(w, input) {
 					continue
 				}
@@ -151,7 +152,7 @@ func demoRouteMotionSearch(w *World, x, worldY, comfortY int, risks *demoRouteRi
 					bounds.Top, bounds.Bottom = bounds.Top-clearance, bounds.Bottom+clearance
 				}
 				for actorIndex, actor := range w.Actors {
-					if !actor.Active || actor.Collision.Empty() || actor.ActorList != "moving" && actor.ActorList != "scenery" {
+					if !demoActorHazard(actor) {
 						continue
 					}
 					dx, dy := int(actor.X-actor.PreviousX)*(depth+1), int(actor.Y-actor.PreviousY)*(depth+1)
@@ -161,7 +162,7 @@ func demoRouteMotionSearch(w *World, x, worldY, comfortY int, risks *demoRouteRi
 					var predicted demoRouteRisk
 					if risks != nil && actorIndex < ActorPoolCapacity && demoRouteActorCacheable(actor) {
 						predicted = risks.actors[depth][actorIndex]
-						if predicted.supported && actor.part.MotionMode == "world-anchored" {
+						if predicted.supported && actor.part != nil && actor.part.MotionMode == "world-anchored" {
 							change := w.ScrollY - actorCamera
 							predicted.bounds.Top, predicted.bounds.Bottom = predicted.bounds.Top+change, predicted.bounds.Bottom+change
 						}
@@ -175,7 +176,11 @@ func demoRouteMotionSearch(w *World, x, worldY, comfortY int, risks *demoRouteRi
 						}
 						other = predicted.bounds
 					}
-					if bounds.Intersects(other) {
+					contact := bounds
+					if actor.fifthColumn != nil {
+						contact = thirdMiddlePlayerBounds(w, previousPlayer)
+					}
+					if contact.Intersects(other) {
 						candidate.score += 100000
 					}
 				}

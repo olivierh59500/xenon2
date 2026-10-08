@@ -273,6 +273,7 @@ func presentationMotionScore(w *World, motion MotionInput, x, y int) (risk, dist
 	const horizon = 6
 	for future := 1; future <= horizon; future++ {
 		actorCamera := scroll.Y
+		previousPlayer := player
 		player.Advance(motion, MotionContext{ScrollY: scroll.Y, VisitedScrollY: scroll.Maximum, BaseScrollStep: w.BaseScrollStep})
 		if w.Coverage != nil && w.Level.PlayerStencil != nil && w.Coverage.Touches(player.X, player.Y, scroll.Y, *w.Level.PlayerStencil) {
 			return 10000000, 0
@@ -282,7 +283,7 @@ func presentationMotionScore(w *World, motion MotionInput, x, y int) (risk, dist
 			return 10000000, 0
 		}
 		for _, actor := range w.Actors {
-			if !actor.Active || actor.Collision.Empty() || actor.ActorList != "moving" && actor.ActorList != "scenery" {
+			if !demoActorHazard(actor) {
 				continue
 			}
 			ox, oy := int(math.Round(actor.X-actor.PreviousX))*future, int(math.Round(actor.Y-actor.PreviousY))*future
@@ -294,7 +295,13 @@ func presentationMotionScore(w *World, motion MotionInput, x, y int) (risk, dist
 				}
 				r = predicted.Bounds
 			}
-			if (CollisionRect{Left: player.X - 14, Top: player.Y - 16, Right: player.X + 14, Bottom: player.Y + 16}).Intersects(r) {
+			bounds := CollisionRect{Left: player.X - 14, Top: player.Y - 16, Right: player.X + 14, Bottom: player.Y + 16}
+			if actor.fifthColumn != nil {
+				// World.Step publishes the ship prefix before movement. Later
+				// projectile callbacks still test that earlier position and bank.
+				bounds = thirdMiddlePlayerBounds(w, previousPlayer)
+			}
+			if bounds.Intersects(r) {
 				risk += 150000 / float64(future)
 			}
 		}

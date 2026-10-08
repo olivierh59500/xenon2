@@ -190,6 +190,7 @@ func (p *DemoPilot) NormalInput(w *World) Input {
 		immediateThreat := false
 		forecast := newDemoMotionForecast(w)
 		for future := 1; future <= c.Lookahead; future++ {
+			previousPlayer := player
 			if retreat || p.practicedRoute && w.Rewind.Timer != 0 {
 				if !forecast.advance(w, motion) {
 					score += 10000000
@@ -222,11 +223,22 @@ func (p *DemoPilot) NormalInput(w *World) Input {
 				score += (dx*dx*.003 + dy*dy*.005) / float64(c.Lookahead)
 			}
 			for _, actor := range w.Actors {
-				if !actor.Active || actor.Collision.Empty() || actor.ActorList != "moving" && actor.ActorList != "scenery" {
+				if !demoActorHazard(actor) {
 					continue
 				}
 				ox, oy := int(math.Round(actor.X-actor.PreviousX))*future, int(math.Round(actor.Y-actor.PreviousY))*future
 				r := actor.Collision
+				if actor.fifthColumn != nil {
+					view, supported := demoFifthColumnPrediction(w, actor, future)
+					if !supported || !view.Active {
+						continue
+					}
+					if thirdMiddlePlayerBounds(w, previousPlayer).Intersects(view.Bounds) {
+						score += 150000 / float64(future)
+						immediateThreat = immediateThreat || future <= 2
+					}
+					continue
+				}
 				if player.X+c.SafetyMargin >= r.Left+ox && player.X-c.SafetyMargin <= r.Right+ox && player.Y+c.SafetyMargin >= r.Top+oy && player.Y-c.SafetyMargin <= r.Bottom+oy {
 					score += 150000 / float64(future)
 					immediateThreat = immediateThreat || future <= 2

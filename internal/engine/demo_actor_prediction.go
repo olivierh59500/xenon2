@@ -15,6 +15,9 @@ type demoActorView struct {
 // Random path branches use a copy of the current stream, without forecasting
 // unrelated actors' random draws or later combat deaths.
 func demoActorPrediction(w *World, actor *WorldActor, passes, cameraY int) (demoActorView, bool) {
+	if actor != nil && actor.fifthColumn != nil {
+		return demoFifthColumnPrediction(w, actor, passes)
+	}
 	if w == nil || actor == nil || passes < 0 || passes > 18 || actor.part == nil || actor.ActorList != "moving" {
 		return demoActorView{}, false
 	}
