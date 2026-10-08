@@ -2,29 +2,26 @@
 
 ## Current status
 
-Correcting the original Supernova callback changes the random state carried out
-of the third level. The current connected Pixel route passes every unchanged
-first-three-stage assertion and enters level four with one ship, two continues,
-39 shield and Forward 1 / Cannon 0 / Rear 0. Its READY random state is
-1818979822/680038254. The earlier fourth-stage results below describe their
-recorded entry states and should not be read as current campaign proof.
+The current default-intro controller completes level four with its carried
+ship and both continue credits intact. Fourth READY has 39 shield,
+Forward 1 / Cannon 0 / Rear 0 and random state 1818979822/680038254. The
+opening reaches the middle guardian at frame 1953 with 27 shield, after a
+forest minimum of 11 and a genuine health pickup. Its tail falls at frame
+2542 and all four satellites at frame 3983, with all 27 shield intact.
 
-The former opening guard alone loses that ship at frame 805. The updated
-ordinary-control controller retains an already chosen safe six-command fallback
-instead of interrupting it with a new tactical proposal. Every remaining command
-is rechecked against the actual world before use. In an exact reconstructed
-fourth-stage frontend, it reaches the native middle guardian at frame 1953 with
-27 shield and destroys the tail at frame 2542 with all 27 intact. The forest
-minimum is 11, followed by a real health pickup; no health or inventory is granted.
-The complete default-intro desktop frontend also passes every unchanged strict
-first-three-stage and fourth-tail assertion in 13.131 seconds, with the same
-27-shield tail endpoint. A cleaned main-code replay matches both endpoints exactly.
-The carried Pixel frontend now continues through both upper satellites, the
-lower-right satellite and the lower-left satellite. All outer targets are
-destroyed at frame 3983 with the same 27 shield, one ship and two continue
-credits. The complete-intro logical check takes 38.26 seconds and leaves the
-175-health core exposed. It does not draw or establish mobile frame pacing.
-The core fight and complete campaign remain unfinished.
+Ordinary Forward and Cannon hits defeat the exposed core at frame 4496.
+Ten real coins drain before the actual middle merchant at frame 4544; normal
+repair restores 39 shield. The final guardian is admitted at frame 6560 with
+31 shield and defeated at frame 7366 with 27. Twenty exit coins drain before
+the final merchant at frame 7424. Normal repair and the real next-level loader
+then enter stage five with 39 shield, the same ship and both continue credits.
+
+The complete default-intro logical replay passes on desktop and Pixel 10a.
+The latest desktop regression takes 14.45 seconds; the recorded Pixel run
+takes 206.87 seconds. Neither logical timing establishes mobile drawing or
+smoothness. The fifth-stage expert route and the complete campaign remain
+unfinished. The sections below retain earlier capability and campaign
+comparisons; their old entry states are not current campaign evidence.
 
 ## Historical carried route
 

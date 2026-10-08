@@ -5,10 +5,12 @@ This inventory distinguishes integrated game behavior from extracted artwork
 and isolated controller comparisons. A resource export does not by itself
 establish that the corresponding encounter is playable.
 
-The current complete-intro Go frontend completes levels one through three,
+The current complete-intro Go frontend completes levels one through four,
 including their real merchants, guardians and exit rewards. The third level
-retains its carried ship and shield through the final fight. Levels four and
-five and whole-level Amiga visual/playthrough comparisons remain under audit.
+retains its carried ship and shield through the final fight. The fourth keeps
+that ship and both continues, then enters level five after normal repair.
+The fifth-stage expert route and whole-level Amiga visual/playthrough
+comparisons remain unfinished.
 
 ## Fixed encounters and scripted arenas
 
@@ -148,8 +150,9 @@ later routes. The current Pixel frontend reaches checkpoints 1696 and 1152 with
 loss. Its logical runner works on the locked device; this does not verify drawing.
 The clean complete-intro regression now also defeats the final third guardian
 without shield loss, collects its exit rewards, visits the real final merchant
-and enters stage four with the same ship and repaired shield. Stages four/five
-and low-loss play across the whole campaign remain open. Automatic title
+and enters stage four with the same ship and repaired shield. The later
+fourth-stage completion is detailed below. Stage five and low-loss play across
+the whole campaign remain open. Automatic title
 admission after sixty idle seconds is shared by the desktop and Android frontend,
 with immediate manual takeover.
 
@@ -163,9 +166,10 @@ fallback now reaches the middle guardian with 27 shield and destroys its tail
 without shield loss in the complete-intro desktop frontend. The forest minimum
 is 11 before a genuine health pickup. The old entry remains a recorded capability
 fixture, not current campaign proof.
-The remaining satellites and core are not yet defeated by the live controller.
-See the
-[fourth opening validation](FOURTH_OPENING_VALIDATION.md). Fifth laser columns
+The current controller also destroys the remaining satellites and core, reaches
+the real middle merchant, then defeats the final guardian and enters level five;
+the current completion evidence is recorded below. See the
+[fourth opening validation](FOURTH_OPENING_VALIDATION.md) for earlier comparisons. Fifth laser columns
 are included in movement scoring with their native growth and pre-movement ship
 prefix; isolated source tests establish avoidance, not a complete fifth boss.
 
