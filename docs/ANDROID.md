@@ -139,8 +139,13 @@ The 8 October locked-Pixel check passes all title-idle and takeover cases:
 automatic expert admission after sixty idle seconds, idle reset for keyboard,
 pointer and held touch activity, suspended-screen exclusions, and applying the
 same keyboard or touch action when manual control takes over. The installed
-debug build now uses runtime commit `7c0aabd`, including the validated early-stage
-controller, third-final preparation and complete fourth-fork command sequence. Its APK passes
+debug build now uses runtime commit `0a9efa0`, including the validated early-stage
+controller, third-final preparation, complete fourth-fork command sequence and
+native fourth-middle contact/terrain guard. Its APK passes
 signature and 16 KiB alignment checks, installs on the authorized Pixel 10a and
-cold-launches in 1013 ms. This is a startup/logic check, not visual verification, dense-combat frame
+cold-launches in 952 ms. A full default-intro device logic replay preserves all
+strict first-three-stage reserves and reaches the native fourth-middle tail kill
+with 23 shield, the same ship and both continues in 175.55 seconds. The forest
+minimum is still 3 shield before a genuine health pickup. This is a startup/logic
+check, not visual verification, dense-combat frame
 pacing or a complete five-stage expert route.
