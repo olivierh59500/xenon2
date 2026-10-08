@@ -3,7 +3,12 @@ package engine
 // forecastOpeningGuard evaluates the first level, third routes/final encounter
 // and fourth opening/middle encounter through isolated World.Step callbacks.
 // It retains the planned action unless its existing lookahead is unsafe.
-func (p *PresentationPilot) forecastOpeningGuard(w *World, planned Input) Input {
+func (p *PresentationPilot) forecastOpeningGuard(w *World, planned Input) (answer Input) {
+	defer func() {
+		if answer.Motion != planned.Motion {
+			p.captureFourthOpeningBranch(w, answer)
+		}
+	}()
 	opening := w.Checkpoint.ScrollY > 3408 && w.ThirdMiddle == nil
 	corridor := w.ThirdMiddle != nil && w.ThirdMiddle.Defeated && w.PendingExitDrops == 0 && !w.ShopReady && w.ScrollY > 208
 	final := w.ThirdFinal != nil && !w.ThirdFinal.Defeated && w.ThirdFinal.LaunchCount > 0 && w.ScrollY <= 208

@@ -49,11 +49,12 @@ Normal rewards and repair restore 39 shield before level four.
 In level four the retained native corner commands clear the known forest forks.
 The controller rejects forecasts that already end in an unavoidable published
 enemy contact, and its exact guard now continues during the middle guardian.
-An earlier recorded-entry Pixel route reached that fight with 23 shield and
-destroyed the tail without losing shield. Correcting the original screen-clear
-callback order changes the random state carried into level four; the current
-connected route fails in the forest and is being adapted. The earlier tail
-result remains a recorded-state capability test, not current campaign proof.
+A corrected screen-clear callback exposed a fourth-opening control trap. A
+verified maneuver-retention controller now completes the actual intro and
+three-stage route, reaches that fight with 27 shield and destroys the tail
+without losing shield. It rechecks each remaining maneuver against the live
+world before using ordinary controls. The forest minimum remains 11 before a
+genuine health pickup; this is not a near-lossless route.
 Beating the remaining guardians and validating the whole campaign remain active
 work.
 Cached routes, bonus collection, dive requests and merchant purchases use

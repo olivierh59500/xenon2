@@ -1,5 +1,28 @@
 # Fourth-level opening validation
 
+## Current status
+
+Correcting the original Supernova callback changes the random state carried out
+of the third level. The current connected Pixel route passes every unchanged
+first-three-stage assertion and enters level four with one ship, two continues,
+39 shield and Forward 1 / Cannon 0 / Rear 0. Its READY random state is
+1818979822/680038254. The earlier fourth-stage results below describe their
+recorded entry states and should not be read as current campaign proof.
+
+The former opening guard alone loses that ship at frame 805. The updated
+ordinary-control controller retains an already chosen safe six-command fallback
+instead of interrupting it with a new tactical proposal. Every remaining command
+is rechecked against the actual world before use. In an exact reconstructed
+fourth-stage frontend, it reaches the native middle guardian at frame 1953 with
+27 shield and destroys the tail at frame 2542 with all 27 intact. The forest
+minimum is 11, followed by a real health pickup; no health or inventory is granted.
+The complete default-intro desktop frontend also passes every unchanged strict
+first-three-stage and fourth-tail assertion in 13.131 seconds, with the same
+27-shield tail endpoint. A cleaned main-code replay matches both endpoints exactly.
+The rest of the guardian and complete campaign remain unfinished.
+
+## Historical carried route
+
 The carried presentation completes the first three levels, including the real
 third final merchant, before entering level four. It enters with one ship, no
 continue credits, 39 shield, basic forward shot tier 1, rear shot tier 0, speed 2 and

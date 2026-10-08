@@ -158,9 +158,11 @@ contact checks and practiced native command sequences through the forest. Before
 the Supernova callback correction, a full default-intro Pixel run reached its
 middle guardian with 23 shield and destroyed the native tail without losing
 shield, keeping the same ship and both continues. The corrected third-stage
-history changes fourth-stage admission; the current connected route fails in
-the forest. The old entry remains a recorded capability fixture, not current
-campaign proof.
+history changes fourth-stage admission. Retaining a verified six-command
+fallback now reaches the middle guardian with 27 shield and destroys its tail
+without shield loss in the complete-intro desktop frontend. The forest minimum
+is 11 before a genuine health pickup. The old entry remains a recorded capability
+fixture, not current campaign proof.
 The remaining satellites and core are not yet defeated by the live controller.
 See the
 [fourth opening validation](FOURTH_OPENING_VALIDATION.md). Fifth laser columns
@@ -282,8 +284,9 @@ two continue credits. The corrected callback history produces a new fourth-stage
 READY random state, 1818979822/680038254. The existing fourth-opening strategy
 then fails at frame 805 in the forest. The earlier tail-destruction proof remains
 a valid original-resource capability test with its recorded entry state, but no
-longer proves the currently connected route. Fourth-stage pilot adaptation is
-still in progress; no campaign-wide success or new Pixel installation is claimed.
+longer proves the currently connected route. Fourth-stage pilot adaptation
+has since improved through the verified-maneuver controller described below;
+no campaign-wide success or new Pixel installation is claimed.
 
 An exact fourth-stage frontend reconstruction matches all six observed protection
 losses and the first death at frame 805, including the current carried inventory,
@@ -303,6 +306,29 @@ title admission, keyboard/touch takeover, blocking-frame control sampling and th
 one-PAL resume boundary. The sixth-command forecast now honors retained native
 routes in the third final encounter; unowned and foreign-owner routes retain
 their existing behavior.
+
+## Verified fourth-opening maneuvers
+
+The controller now retains a changed fallback only after all six ordinary source
+passes remain safe. Every remaining command is rechecked from the actual world
+before use; changed state, terrain, damage, rewind or lifecycle boundaries reject
+the commitment. One-shot Dive requests are not retained. Safe planned moves,
+other levels and the admitted middle guardian keep their existing controllers.
+
+The complete default-intro desktop frontend passes all unchanged first-three-stage
+and fourth-tail assertions in 13.131 seconds. Native middle admission is frame
+1953 with 27 shield; the real tail dies at frame 2542 with the same 27. The forest
+minimum is 11 before an ordinary health pickup. A main-code replay after lifecycle
+cleanup matches both endpoints exactly in 1.116 seconds. The permanent strategy
+regression now uses this current recorded entry, retaining its original reserve
+requirement and additionally asserting the exact 27-shield tail endpoint.
+The complete original-resource engine suite passes in 22.379 seconds, the full
+frontend/GPU suite in 113.250 seconds and focused race checks in 7.887 seconds.
+Tests also change an existing projectile while leaving the entire compact key
+unchanged: the remaining-callback replay still detects the danger and rejects
+the commitment. Native shot creation, terrain obstruction, repeated sampling,
+ownership, PAL cadence and lifecycle invalidation are covered.
+The rest of the guardian and the complete five-stage expert route remain open.
 
 ## Fourth-middle weapon positioning
 

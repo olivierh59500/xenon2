@@ -186,6 +186,12 @@ func TestFourthOpeningPublishedContactPrecedesInputOptional(t *testing.T) {
 
 func TestFourthGuardKeepsRecordedRearProfileAliveThroughNativeTailOptional(t *testing.T) {
 	w := fourthGuardRecordedEntry(t, false)
+	// This strategy check follows the current connected campaign's READY
+	// state. The older entry above remains available to recorded contact tests.
+	w.Score, w.DisplayScore = 130480, 130480
+	w.SetRandomState(RandomState{A: 344191127, B: 4035761264})
+	w.ResetBackgroundStars()
+	w.PrimeBackgroundStars(2)
 	p := PresentationPilot{PALRefreshes: 3}
 	admitted := false
 	for pass := 0; pass < 4500; pass++ {
@@ -195,6 +201,9 @@ func TestFourthGuardKeepsRecordedRearProfileAliveThroughNativeTailOptional(t *te
 		}
 		if err := w.Step(input); err != nil {
 			t.Fatal(err)
+		}
+		if w.Frame == 1 && (w.Player.X != 160 || w.Player.Y != 171 || w.ScrollY != 4607 || w.RandomState() != (RandomState{A: 2364670790, B: 3602040142})) {
+			t.Fatal("current fourth-entry first pass differs from the connected route")
 		}
 		if !w.PlayerAlive || w.GameOver || w.Cheats.Enabled() || w.Equipment.Lives != 1 || w.ContinueCredits != 2 {
 			t.Fatalf("recorded fourth profile lost its ship atframe%d", w.Frame)
@@ -211,6 +220,9 @@ func TestFourthGuardKeepsRecordedRearProfileAliveThroughNativeTailOptional(t *te
 		if w.FourthMiddle.Parts[15].Disabled {
 			if w.Equipment.Shield < 23 || w.FourthMiddle.Parts[15].Health != 0 || w.FourthMiddle.OuterTargets != 4 || w.PendingExitDrops != 0 || w.ShopReady {
 				t.Fatal("native tail boundary changed health/gates/rewards")
+			}
+			if w.Frame != 2542 || w.ScrollY != 2176 || w.Equipment.Shield != 27 || w.RandomState() != (RandomState{A: 34059241, B: 4155321188}) {
+				t.Fatal("current connected tail endpoint differs")
 			}
 			t.Logf("native middle/tail frame%d shield%d sameShip1 credits2", w.Frame, w.Equipment.Shield)
 			return

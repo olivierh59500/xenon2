@@ -287,6 +287,28 @@ state is used. That full logical run takes 68.76 seconds and stops on launch.
 The subsequent complete-intro regression below establishes final victory;
 remaining stages and rendered frame pacing remain open.
 
+## Retaining a verified fourth-opening maneuver
+
+The corrected fourth entry exposes a control-coherence problem. The guard can
+choose a safe six-pass fallback, then interrupt it on the next pass with a new
+tactical proposal. At the actual frame 354, retaining the chosen Down-Left input
+for its already evaluated six passes avoids the frame-363 contact; interrupting
+it leads into that contact before movement can escape.
+
+The controller therefore retains only changed fallbacks that pass the existing
+six-pass native simulation without damage, terrain contact, rewind or lifecycle
+boundaries. On every new completed frame it loads the actual world into one
+private forecast and rechecks only the remaining original commands. It neither
+extends that maneuver back to six passes nor predicts from stale actor state.
+Unchanged safe planned actions and unsafe fallbacks are not retained.
+
+The exact current fourth-stage replay reaches the native middle guardian at
+frame 1953 with 27 shield and destroys its tail at frame 2542 with the same 27.
+The complete default-intro desktop frontend independently passes all unchanged
+three-stage and fourth-tail assertions in 13.131 seconds. The lowest forest
+shield is 11 before a real health pickup. This establishes connected survival
+through the tail, not the remaining guardian, complete game or mobile frame rate.
+
 ## Exact horizontal bound under evaluation
 
 The relaxed horizontal machine derives every transition from Player.Advance,
