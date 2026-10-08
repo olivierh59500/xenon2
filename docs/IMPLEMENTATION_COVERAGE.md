@@ -282,6 +282,18 @@ a valid original-resource capability test with its recorded entry state, but no
 longer proves the currently connected route. Fourth-stage pilot adaptation is
 still in progress; no campaign-wide success or new Pixel installation is claimed.
 
+An exact fourth-stage frontend reconstruction matches all six observed protection
+losses and the first death at frame 805, including the current carried inventory,
+score, pose and random stream. Passive guard traces classify two earlier traps:
+at frame 325 every six-pass held action either loses protection or ends in an
+already published moving-actor contact; by frame 330 all next commands take the
+same projectile hit. At frame 360 the only held action preserving protection
+ends in a body contact, and the real contact occurs at frame 363. Neither case
+is a forecast-versus-runtime collision discrepancy. A separate native terrain
+route from frame 318 reaches its ordinary waypoint with exact motion and no
+terrain rewind, but takes eight protection points from enemies. It is rejected
+as a pilot improvement; terrain planning alone does not solve these traps.
+
 The current complete original-resource engine suite passes in 21.970 seconds.
 The frontend controls checks pass in 16.163 seconds, including automatic
 title admission, keyboard/touch takeover, blocking-frame control sampling and the
