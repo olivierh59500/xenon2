@@ -288,3 +288,21 @@ title admission, keyboard/touch takeover, blocking-frame control sampling and th
 one-PAL resume boundary. The sixth-command forecast now honors retained native
 routes in the third final encounter; unowned and foreign-owner routes retain
 their existing behavior.
+
+## Fourth-middle weapon positioning
+
+Separate ordinary-control prototypes continue from the earlier recorded tail
+endpoint with 23 shield and the earned Forward 1, Cannon 0 and Rear 0 loadout.
+A camera-aware route travels around the guardian, reaches the upper screen edge
+and defeats both upper satellites through 40 new native Rear-shot hits. It ends
+at frame 3195 with all 23 shield. A subsequent route respects the complete ship
+terrain stencil on the right flank and positions Cannon 0's actual first query
+rectangle against the lower-right weak point. Ten new native two-damage Cannon
+hits defeat that satellite at frame 3359, still with 23 shield. The lower-left
+satellite retains 20 health and the core retains 175.
+
+These tests compare each command against direct World.Step results and verify
+that forecasts leave their source untouched. Focused race checks pass. They are
+recorded-entry weapon/navigation capabilities, not a connected current campaign
+victory or a production pilot upgrade. The lower-left strategy still loses
+protection to the animated companion body and has not been promoted.
