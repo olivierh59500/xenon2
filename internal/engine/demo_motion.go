@@ -67,6 +67,9 @@ func (s *demoMotionForecast) advanceWithTouchCache(w *World, input MotionInput, 
 			return false
 		}
 	}
+	if w.Level.Number == 4 && w.FourthMiddle != nil && !w.FourthMiddle.Defeated && !w.FourthMiddle.Parts[4].Disabled && w.fourthMiddleActors[4] != nil && w.fourthMiddleActors[4].Active {
+		s.scroll.Maximum = max(s.scroll.Maximum, 2480)
+	}
 	s.scroll.Advance(s.player.ScrollStep, w.BaseScrollStep, input.Down)
 	return !touching()
 }

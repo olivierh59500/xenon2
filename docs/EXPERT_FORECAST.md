@@ -472,3 +472,15 @@ independent guardian worker ownership. Full engine/source and race checks pass.
 A same-binary Pixel sample retains exact parity and reduces the 1257-node lane
 33.89→17.27 ms and exhausted 9000-node search 265.38→122.12 ms. These are single
 100 ms samples; the costly case still exceeds a 60 Hz frame budget.
+
+## Fourth-middle late reverse-bound prediction
+
+The live fourth-middle core renews the camera's maximum to 2480 during the
+moving-actor phase, after player movement and before final scrolling. The
+motion forecast previously omitted that update. It now applies it at the same
+phase only while the actual core actor is active and its part enabled.
+Six original-resource Down/idle cases compare complete player, camera and
+rewind state with World.Step for active, disabled and absent cores. Active
+cases fail before the correction and pass afterward; other scopes stay
+unchanged. Full engine/source and focused race checks pass. This corrects
+prediction, separately from the still-unverified fourth-middle rear strategy.
