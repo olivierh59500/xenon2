@@ -5,6 +5,11 @@ This inventory distinguishes integrated game behavior from extracted artwork
 and isolated controller comparisons. A resource export does not by itself
 establish that the corresponding encounter is playable.
 
+The current complete-intro Go frontend completes levels one through three,
+including their real merchants, guardians and exit rewards. The third level
+retains its carried ship and shield through the final fight. Levels four and
+five and whole-level Amiga visual/playthrough comparisons remain under audit.
+
 ## Fixed encounters and scripted arenas
 
 | Level | Integrated families | Remaining work |
