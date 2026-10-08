@@ -98,3 +98,19 @@ A separate practiced second-corridor experiment models the original rewind and
 pre-movement projectile prefix more precisely, but exhausts ordinary recovery
 before stage three. It is also excluded. The current first-three-stage controller
 and its assertions remain unchanged.
+
+## Earlier-stage anticipation and firing
+
+Legal alternating trigger presses produce twelve basic-gun volleys over 24
+source passes, versus three with the initial held-fire clock or nine with the
+upgraded clock. The source weapon clock is unchanged. Target-aware pulsing alone
+nevertheless loses more ships and exhausts recovery in stage two, so it remains
+excluded rather than replacing the retained held-fire controller.
+
+Extending the exact safety guard to stages one and two completes the first stage
+without a ship loss, entering its final merchant with three ships and full shield
+at 371.50 simulated seconds. It then fails the bounded second-stage completion.
+A separate stage-one-only comparison preserves that first-stage improvement but
+exhausts ordinary recovery in stage two. Neither comparison establishes a better
+connected campaign, and neither is promoted. Their logs retain the changed
+merchant timing, equipment, cash and survival context for further diagnosis.
