@@ -165,3 +165,24 @@ stream-body contacts leave fifteen shield; two top-passage contacts consume it.
 This is worse than the phase-correct controller's bounded survival result, so
 the crossing policy is not promoted. The terrain route remains a valid source
 proof; anticipating live stream contacts along it remains required.
+
+## First-contact scoring and connected improvement
+
+Native moving contact processes the first intersecting actor in physical order,
+then returns. A source fixture confirms that two simultaneous overlaps cause one
+eight-point hit, remove the first body and retain the head. The light beam had
+charged every overlap separately. An excluded correction shares one moving
+contact penalty across nodes and stream members per predicted pass, retaining
+separate projectile penalties. Future actor retirement remains approximate.
+
+The combined candidate reaches the genuine second middle merchant at frame 2663
+with all three ships, both credits, seven shield and 1850 cash. The clean permanent
+campaign test then completes both first and second stages and admits stage three
+at 777.83 simulated seconds with one ship, full shield and both credits. This
+reduces confirmed first-two-stage ship losses from eight to two.
+
+The downstream run does not produce a final third-stage result: its process ends
+without a status file after prolonged execution, and the log stops at stage-three
+admission. No fatal log explains that termination. This is an incomplete check,
+not a campaign pass or an asserted gameplay failure. The candidate remains
+excluded until the new carried third-stage state is diagnosed and validated.
