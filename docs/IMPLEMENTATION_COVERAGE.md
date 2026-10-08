@@ -143,8 +143,8 @@ merchant with its carried ship intact. The
 36-pass boss forecast covers the arm's extension and recovery, but its mobile
 cost does not establish a smooth-frame guarantee. Private concurrent branches
 preserve serial decisions, and native command sequences now clear the narrow
-later routes. The actual Pixel frontend reaches checkpoints 1696 and 1152 with
-at least 27 shield, then the final third guardian with 23 shield, without another ship
+later routes. The current Pixel frontend reaches checkpoints 1696 and 1152 with
+35 shield, then the final third guardian with 35 shield, without another ship
 loss. Its logical runner works on the locked device; this does not verify drawing.
 The clean complete-intro regression now also defeats the final third guardian
 without shield loss, collects its exit rewards, visits the real final merchant
@@ -153,11 +153,14 @@ and low-loss play across the whole campaign remain open. Automatic title
 admission after sixty idle seconds is shared by the desktop and Android frontend,
 with immediate manual takeover.
 
-The fourth opening now uses the exact six-pass safety guard, terminal moving
-contact checks and practiced native command sequences through the forest. A
-full default-intro Pixel run reaches its middle guardian with 23 shield and
-destroys the native tail without losing shield, keeping the same ship and both
-continues. The forest still falls to 3 shield before a genuine health pickup.
+The fourth opening uses the exact six-pass safety guard, terminal moving
+contact checks and practiced native command sequences through the forest. Before
+the Supernova callback correction, a full default-intro Pixel run reached its
+middle guardian with 23 shield and destroyed the native tail without losing
+shield, keeping the same ship and both continues. The corrected third-stage
+history changes fourth-stage admission; the current connected route fails in
+the forest. The old entry remains a recorded capability fixture, not current
+campaign proof.
 The remaining satellites and core are not yet defeated by the live controller.
 See the
 [fourth opening validation](FOURTH_OPENING_VALIDATION.md). Fifth laser columns
