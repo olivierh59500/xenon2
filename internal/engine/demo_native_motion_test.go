@@ -2,6 +2,30 @@ package engine
 
 import "testing"
 
+func BenchmarkNativeMotionOriginalRoutes(b *testing.B) {
+	for _, fixture := range []struct {
+		name                           string
+		x, y, camera, targetX, targetY int
+	}{
+		{"rear-corner", 193, 176, 1896, 202, 2077},
+		{"three-pixel-lane", 251, 176, 1732, 254, 1908},
+	} {
+		b.Run(fixture.name, func(b *testing.B) {
+			w := nativeMotionFixture(b, fixture.x, fixture.y, fixture.camera)
+			var planner nativeMotionPlanner
+			b.ReportAllocs()
+			b.ResetTimer()
+			for b.Loop() {
+				if !planner.search(w, fixture.targetX, fixture.targetY) {
+					b.Fatal("source route was not found")
+				}
+			}
+			b.ReportMetric(float64(planner.expanded), "expanded/op")
+			b.ReportMetric(float64(len(planner.nodes)), "states/op")
+		})
+	}
+}
+
 func TestNativeMotionTimeBoundUsesSourceMovement(t *testing.T) {
 	cases := 0
 	for speed := 0; speed <= 2; speed++ {

@@ -273,12 +273,19 @@ func (f *WorldForecast) Load(source *World) error {
 		world.weaponTargetActors[id] = c.cloneActor(actor)
 	}
 	if source.Weapons != nil {
+		callbacks := storage.weapons.context
 		storage.weapons = *source.Weapons
 		storage.weapons.projectiles = forecastActorSliceReuse(&storage.weaponProjectiles, source.Weapons.projectiles)
+		// These callbacks address the forecast's stable World record. Retain
+		// only its own binding; source callbacks must never reach this branch.
+		storage.weapons.context = WeaponContext{}
+		if callbacks.Equipment == &world.Equipment {
+			storage.weapons.context = callbacks
+		}
+		world.Weapons = &storage.weapons
 		storage.weapons.context = world.weaponContext(Input{}, false)
 		storage.weapons.context.ObservePointImpact = nil
 		storage.weapons.newID = storage.weapons.context.NextID
-		world.Weapons = &storage.weapons
 	}
 	f.world = world
 	return nil

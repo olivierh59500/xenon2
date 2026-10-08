@@ -6,7 +6,7 @@ import (
 	"xenon2/internal/visualassets"
 )
 
-func originalGuardianTargetWorld(t *testing.T, level int, final bool) *World {
+func originalGuardianTargetWorld(t testing.TB, level int, final bool) *World {
 	t.Helper()
 	w, err := NewWorld(originalWorldData(t, level))
 	if err != nil {

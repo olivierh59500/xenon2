@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func fifthFinalPointScene(t *testing.T, bodyY int) *World {
+func fifthFinalPointScene(t testing.TB, bodyY int) *World {
 	t.Helper()
 	w := originalGuardianTargetWorld(t, 5, true)
 	// Replay the original controller into a particular reachable body pose.
@@ -25,6 +25,32 @@ func fifthFinalPointScene(t *testing.T, bodyY int) *World {
 		w.advanceFifthGuardian(true)
 	}
 	return w
+}
+
+func BenchmarkGuardianPrimaryFirstImpact(b *testing.B) {
+	for _, clear := range []bool{false, true} {
+		b.Run(fmt.Sprintf("clear%v", clear), func(b *testing.B) {
+			w := fifthFinalPointScene(b, 0)
+			// This admitted arena already crossed earlier encounter records.
+			// A pose-only setup must not rebirth the whole preceding level.
+			w.cursor = RestartEncounterCursor(w.ScrollY)
+			w.Ready, w.MaterializationFrames = false, 0
+			mount := w.fifthFinalActors[3]
+			w.Player.X, w.Player.Y = (mount.Collision.Left+mount.Collision.Right)/2, 176
+			if clear {
+				w.Player.Y = mount.Collision.Bottom + 15
+			}
+			var forecast WorldForecast
+			b.ReportAllocs()
+			b.ResetTimer()
+			for b.Loop() {
+				got, supported := presentationGuardianShotOpportunity(w, MotionInput{}, &forecast, 3)
+				if !supported || got != clear {
+					b.Fatal("source first-impact benchmark lost its intended callback")
+				}
+			}
+		})
+	}
 }
 
 func TestGuardianFirstPointImpactMatchesOrdinaryBulletCallbacksOptional(t *testing.T) {
