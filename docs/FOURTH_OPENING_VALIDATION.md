@@ -114,3 +114,13 @@ A separate stage-one-only comparison preserves that first-stage improvement but
 exhausts ordinary recovery in stage two. Neither comparison establishes a better
 connected campaign, and neither is promoted. Their logs retain the changed
 merchant timing, equipment, cash and survival context for further diagnosis.
+
+The bounded read-only loss ledger identifies a concrete second-arena omission:
+at camera 2528, frames 2115 through 2118 repeatedly collide with the same live
+defense node, losing eight shield per pass. Its published rectangle intersects
+the ship prefix before movement; moving down takes four passes to clear it.
+A later twelve-member stream consumes the remaining seven shield at frame 2451.
+The arena beam currently scores stream formations and projectiles, but omits
+the nodes themselves. The observed loadout already includes a cannon alongside
+the basic tier-one forward and rear guns. This diagnosis does not change the
+retained controller or establish an arena victory.
