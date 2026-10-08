@@ -74,7 +74,8 @@ func presentationGuardianAimSupported(w *World) bool {
 	if w == nil || w.Weapons == nil || w.Equipment.Primary.Item != ItemForwardShot && w.Equipment.Primary.Item != ItemDoubleShot {
 		return false
 	}
-	return w.Level.Number == 4 && (w.FourthMiddle != nil && !w.FourthMiddle.Defeated || w.FourthFinal != nil && !w.FourthFinal.Defeated) ||
+	return w.Level.Number == 3 && w.ScrollY <= 208 && w.ThirdFinal != nil && !w.ThirdFinal.Defeated && w.ThirdFinal.LaunchCount > 0 ||
+		w.Level.Number == 4 && (w.FourthMiddle != nil && !w.FourthMiddle.Defeated || w.FourthFinal != nil && !w.FourthFinal.Defeated) ||
 		w.Level.Number == 5 && (w.FifthMiddle != nil && !w.FifthMiddle.Defeated || w.FifthFinal != nil && !w.FifthFinal.Defeated)
 }
 

@@ -290,3 +290,19 @@ short chosen route, costing four additional shield points in the connected
 checkpoint test. The integration therefore remains disabled; the helper is
 available for further evaluation and the validated route is retained. Neither
 sample is a general frame-pacing guarantee.
+
+## Third final head and fan prediction
+
+The active final arena now uses the six-pass exact safety guard and the cached
+first-new-primary observer. The earlier controller compared future ship positions
+only with current worm rectangles and omitted projectiles. A contact already
+present at the start of the source player callback cannot be escaped by that
+pass's movement. A linear head lead also missed curved-path firing windows.
+
+Original checkpoint fixtures distinguish a real useful primary from a linear
+false positive. Ordinary point callbacks confirm both outcomes within the same
+eighteen-pass horizon. A native fan case retains full shield under the guard;
+a second-path incoming-head case avoids three pre-movement contacts and retains
+its source-earned 27 shield. Prediction leaves live state unchanged and the
+scope is limited to a launched, undefeated final guardian at camera 208 or below.
+These bounded regressions do not establish a connected final victory.
