@@ -630,3 +630,18 @@ This is a prediction correction, not fifth-stage completion. The excluded
 barrier/recovery prototype reaches camera 3686 before losing its ship at frame
 1115, compared with frame 1086 without the correction. Its navigation policies
 remain excluded; the complete five-stage expert route is still unfinished.
+
+## Narrow fifth-stage barrier alignment
+
+Barrier alignment scores one horizontal impulse followed by its native release
+drift. Every release step is checked with the existing player, camera, rewind
+and full-stencil forecast. The previous three-held-command endpoint could
+reject a right impulse from X75 even though it stops at X84, inside the original
+post's inclusive 83..93 firing lane. The pilot now admits that impulse and
+releases it on the next pass, without changing the ship's inertia rules.
+
+The original second-barrier factory regression fails with the former alignment
+and passes with the correction. Actual ordinary steps retain 39 shield and
+zero terrain rewind. Existing first-barrier destruction and terrain-patch
+regressions also pass. This establishes alignment capability separately from
+the unfinished complete fifth-stage route.

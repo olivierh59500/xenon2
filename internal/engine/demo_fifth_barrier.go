@@ -49,7 +49,25 @@ func (p *DemoPilot) FifthBarrierInput(w *World) (Input, bool) {
 		if !safe {
 			continue
 		}
-		score := absDemo(forecast.player.X-x) + absDemo(forecast.player.Y-176)*2
+		// The next decision can release the horizontal control. Score its
+		// actual stopping point rather than three full-speed held commands,
+		// which can reject the only impulse that enters a narrow post lane.
+		coast := newDemoMotionForecast(w)
+		if !coast.advance(w, motion) {
+			continue
+		}
+		release := motion
+		release.Left, release.Right = false, false
+		for coast.player.Inertia != 0 {
+			if !coast.advance(w, release) {
+				safe = false
+				break
+			}
+		}
+		if !safe {
+			continue
+		}
+		score := absDemo(coast.player.X-x) + absDemo(forecast.player.Y-176)*2
 		if !found || score < rank || score == rank && motion.Down && !best.Down {
 			best, rank, found = motion, score, true
 		}
