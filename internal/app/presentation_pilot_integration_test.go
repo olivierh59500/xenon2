@@ -430,6 +430,11 @@ func TestPresentationPilotCompletesFirstFourLevelsFromDefaultIntroOptional(t *te
 	if os.Getenv("XENON2_HUMAN_PRESENTATION_CHECK") == "" {
 		t.Skip("enable the complete carried fourth-stage route explicitly")
 	}
+	verifyPresentationFirstFourLevelsFromDefaultIntro(t)
+}
+
+func verifyPresentationFirstFourLevelsFromDefaultIntro(t *testing.T) *Game {
+	t.Helper()
 	g := verifyPresentationFirstThreeLevelsFromDefaultIntro(t)
 	middleMerchant, finalMerchant, finalAdmission := false, false, false
 	for update := 0; update < 60*900; update++ {
@@ -444,7 +449,7 @@ func TestPresentationPilotCompletesFirstFourLevelsFromDefaultIntroOptional(t *te
 				t.Fatal("fifth admission omitted fourth guardians, merchants or normal repair")
 			}
 			t.Logf("Complete carried presentation enters stage5: ships%d shield%d credits%d", w.Equipment.Lives, w.Equipment.Shield, w.ContinueCredits)
-			return
+			return g
 		}
 		if w.Level.Number != 4 {
 			t.Fatal("fourth-stage completion entered an unexpected level")
@@ -472,6 +477,7 @@ func TestPresentationPilotCompletesFirstFourLevelsFromDefaultIntroOptional(t *te
 		}
 	}
 	t.Fatal("bounded carried presentation did not complete the fourth final merchant")
+	return nil
 }
 
 func verifyPresentationFirstThreeLevelsFromDefaultIntro(t *testing.T) *Game {

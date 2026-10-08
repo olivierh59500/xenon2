@@ -6,6 +6,7 @@ import "math"
 // committed tactical goals and held firing bursts. The game still owns every
 // movement, hit, reward, terrain change and random value.
 type PresentationPilot struct {
+	fifthPractice     *fifthOpeningPractice
 	fourthFinalNative *fourthFinalNativePilot
 	fourthMiddleUpper *fourthMiddleUpperPilot
 	fourthMiddleRight *fourthMiddleRightPilot
@@ -48,6 +49,9 @@ func (p *PresentationPilot) NormalInput(w *World) Input {
 		*p = PresentationPilot{PALRefreshes: p.PALRefreshes, world: w, frame: w.Frame, decisionAt: w.Frame + 3, planner: DemoPilot{practicedRoute: true}}
 	}
 	p.frame = w.Frame
+	if input, handled := p.fifthPracticedOpeningInput(w); handled {
+		return input
+	}
 	if input, handled := p.fourthFinalNativeInput(w); handled {
 		return input
 	}
@@ -346,7 +350,7 @@ func presentationMotionScoreWithRisk(w *World, motion MotionInput, x, y int, nat
 		}
 		for _, shot := range w.Projectiles {
 			sx, sy, alive := demoProjectilePosition(w, shot, future, w.ScrollDelta)
-			if alive && absDemo(player.X-sx) < 15 && absDemo(player.Y-sy) < 19 {
+			if alive && absDemo(player.X-sx) < 15 && absDemo(player.Y-sy) < 19 || demoFifthEnemyShotContact(w, shot, future, previousPlayer) {
 				risk += 100000 / float64(future)
 			}
 		}

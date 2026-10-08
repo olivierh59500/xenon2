@@ -12,6 +12,13 @@ that ship and both continues, then enters level five after normal repair.
 The fifth-stage expert route and whole-level Amiga visual/playthrough
 comparisons remain unfinished.
 
+The carried fifth opening now reaches its genuine checkpoint at camera 3424
+after the original barriers and guided-missile corridor. Its Laser is financed
+through the real fourth final merchant. Full-intro validation retains the same
+ship and both continue credits; shield falls to 23 and returns to 39 through
+the original health pickup. The later terrain/turret route and both fifth
+guardians remain incomplete for the expert controller.
+
 ## Fixed encounters and scripted arenas
 
 | Level | Integrated families | Remaining work |
@@ -442,7 +449,7 @@ consuming its carried ship or continue credits.
 
 Twenty real coins drain before the final merchant at frame 7424 with 5,050 cash.
 Normal repair and purchases then admit level five with 39 shield, Forward 1,
-Cannon 0 and Rear 1, one ship and two continue credits. This recorded-current-fourth
+Cannon 0 and Rear 1, one ship and two continue credits. This earlier recorded-fourth
 frontend check passes in 2.376 seconds. The production controller also passes
 the full default-intro route, including the unchanged first-three-stage assertions,
 in 15.005 seconds on desktop and 206.87 seconds in the Pixel logic runner. The
@@ -461,8 +468,9 @@ The fifth-opening barrier stall has two verified causes. At the recorded post
 lane 83..93, the ship rests at X75. Three held Right passes end at X102, so the
 old distance score prefers staying 13 pixels away over overshooting by 14. A
 single Right pass followed by native release coast stops inside the firing lane.
-That local correction opens the barrier, but its isolated full route is not an
-improvement without additional combat planning and remains excluded.
+That local correction opens the barrier. Its impulse/release alignment is now
+integrated with an original-resource regression; the earlier combined combat
+strategy remained excluded.
 
 One combined diagnostic reaches a later terrain-rewind loop at camera 3941,
 ship X85/Y176, with 31 shield and upgraded Forward/Rear weapons. Its geometric

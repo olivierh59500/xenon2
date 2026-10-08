@@ -2,6 +2,40 @@ package app
 
 import "xenon2/internal/engine"
 
+// The fifth launcher corridor benefits from a piercing left mount. Trade only
+// after the fourth guardian is defeated and a normal repair and laser fit in
+// the actual sale budget. The shop director executes the quote and purchase.
+func demoFourthFinalLaserSale(equipment engine.Equipment, money int, rules engine.ShopRules) bool {
+	if rules.Level != 4 || equipment.Mounts[0].Item != engine.ItemCannon || equipment.SuperLoadoutActive {
+		return false
+	}
+	refund, err := rules.QuoteSale(equipment, engine.SaleMount0)
+	if err != nil {
+		return false
+	}
+	budget := money + refund
+	if equipment.Shield < 39 {
+		repair := demoShopPurchase(equipment, budget, rules)
+		if repair != engine.ItemHealth1 && repair != engine.ItemHealth2 {
+			return false
+		}
+		price, err := rules.Price(repair)
+		if err != nil {
+			return false
+		}
+		budget -= price
+	}
+	price, err := rules.Price(engine.ItemLaser)
+	if err != nil || price > rules.StockLimit || budget < price {
+		return false
+	}
+	probe, wallet := equipment, money
+	if _, err := rules.Sell(&probe, &wallet, engine.SaleMount0); err != nil {
+		return false
+	}
+	return rules.CanBuy(probe, budget, engine.ItemLaser) == nil
+}
+
 // demoShopPurchase chooses one item without changing equipment or cash. The
 // director still has to find it on a shop page, request its quote and confirm.
 func demoShopPurchase(equipment engine.Equipment, money int, rules engine.ShopRules) engine.Item {

@@ -694,24 +694,28 @@ func (w *World) advanceEnemyShot(projectile *WorldProjectile) error {
 	}
 	projectile.X, projectile.Y = float64(projectile.Motion.X>>16), float64(projectile.Motion.Y>>16)
 	if projectile.Active && w.PlayerAlive && w.Dive.Phase == 0 {
-		box, ok := w.shotSpriteBoxes[projectile.Sprite]
-		if !ok && (projectile.Atlas == "fixed" || projectile.Atlas == "guardian-parts") {
-			box, ok = w.movingSpriteBoxes[projectile.Sprite]
-		}
-		if !ok && projectile.Atlas == "guardians" && w.Level.Guardians != nil {
-			for _, sprite := range w.Level.Guardians.Atlas.Sprites {
-				if sprite.Name == projectile.Sprite && sprite.Collision != nil {
-					box, ok = *sprite.Collision, true
-					break
-				}
-			}
-		}
+		box, ok := w.enemyShotCollisionBox(projectile.Sprite, projectile.Atlas)
 		if ok && ActorCollisionRect(box, int(projectile.X), int(projectile.Y)).Intersects(w.playerCollision) {
 			w.damagePlayer(EnemyBulletDamage)
 			projectile.Active = false
 		}
 	}
 	return nil
+}
+
+func (w *World) enemyShotCollisionBox(name, atlas string) (visualassets.CollisionBox, bool) {
+	box, ok := w.shotSpriteBoxes[name]
+	if !ok && (atlas == "fixed" || atlas == "guardian-parts") {
+		box, ok = w.movingSpriteBoxes[name]
+	}
+	if !ok && atlas == "guardians" && w.Level.Guardians != nil {
+		for _, sprite := range w.Level.Guardians.Atlas.Sprites {
+			if sprite.Name == name && sprite.Collision != nil {
+				return *sprite.Collision, true
+			}
+		}
+	}
+	return box, ok
 }
 
 func (w *World) advanceSmallShot(shot *WorldSmallShot) {

@@ -191,6 +191,18 @@ func (g *Game) demoShopControls() inputFrame {
 		return inputFrame{}
 	}
 	if s.Phase == shopui.Selling {
+		w := g.Driver.(*worldDriver).world
+		if g.shopFinal && w.Level.Number == 4 && demoFourthFinalLaserSale(w.Equipment, w.Money, s.Rules) {
+			for index, entry := range s.Entries {
+				if !entry.Available || entry.Sale != engine.SaleMount0 {
+					continue
+				}
+				if s.QuoteValid && s.Quoted == index {
+					return inputFrame{confirm: true}
+				}
+				return click(index%5, index/5)
+			}
+		}
 		return click(0, 4)
 	}
 	if s.Phase != shopui.Buying {
@@ -200,6 +212,9 @@ func (g *Game) demoShopControls() inputFrame {
 	// Select one purchase across both pages so a priority on the second page
 	// cannot be replaced by a cheaper optional upgrade on the first page.
 	item := demoShopPurchase(w.Equipment, w.Money, s.Rules)
+	if g.shopFinal && w.Level.Number == 4 && w.Equipment.Shield == 39 && w.Equipment.Mounts[0].Item == engine.ItemNone && s.Rules.CanBuy(w.Equipment, w.Money, engine.ItemLaser) == nil {
+		item = engine.ItemLaser
+	}
 	if item == engine.ItemNone {
 		return click(0, 4)
 	}

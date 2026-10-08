@@ -267,7 +267,7 @@ func (p *DemoPilot) NormalInput(w *World) Input {
 					continue
 				}
 				sx, sy, alive := demoProjectilePosition(w, shot, future, w.ScrollDelta)
-				if alive && absDemo(player.X-sx) < c.SafetyMargin && absDemo(player.Y-sy) < c.SafetyMargin+4 {
+				if alive && absDemo(player.X-sx) < c.SafetyMargin && absDemo(player.Y-sy) < c.SafetyMargin+4 || demoFifthEnemyShotContact(w, shot, future, previousPlayer) {
 					score += 100000 / float64(future)
 					immediateThreat = immediateThreat || future <= 2
 				}

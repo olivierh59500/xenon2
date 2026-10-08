@@ -655,6 +655,39 @@ an isolated original post, but enabling it throughout the opening regresses
 the connected route. Restricting it to the launcher corridor still does not
 complete that passage. Retaining short avoidance maneuvers and adopting a
 terrain-only native route also fail in connected combat. These strategies
-remain excluded. A bounded offline search of ordinary controls has not yet
-produced an independently replayed route through the launcher corridor;
+remain excluded. The early bounded offline search of ordinary controls did not
+produce an independently replayed route through the launcher corridor;
 search exhaustion does not establish that the source passage is unreachable.
+
+## Earned left-laser route through the fifth launcher corridor
+
+The fourth final merchant now trades the Cannon in the first additional mount
+for a Laser. The original sale refunds 2,000; the 500-cost repair and 4,000-cost
+Laser leave 2,550 from the earned 5,050 wallet. No reserve ship, money or weapon
+is granted. The quote and confirmation interface executes every transaction.
+The policy rejects a sale unless the complete repair and purchase fit the
+native stock and budget. The fifth loader resets the wallet normally.
+
+An offline search of normal controls produced a route from the real fifth
+frame-one state through checkpoint 3424. Independent replay and the integrated
+full-intro frontend both reach frame 1185, camera 3423, with 39 shield, the
+same ship, two continue credits, 150 cash and score 197280. Minimum shield is
+23, followed by the original health pickup. The final random state is
+678879552/2328483032. This validates the first launcher corridor, not the
+remaining fifth level or either guardian.
+
+Runtime uses the recorded directional/fire commands only for their earned
+entry. Compact progression markers check player, camera, equipment, checkpoint,
+firing state and randomness. Before returning each command, a private complete
+world forecast executes that next step and checks its actual outcome. A changed
+existing projectile therefore rejects a command even when it does not change
+the compact marker. Foreign worlds, entry states, cadence and lifecycle changes
+release the route. Repeated calls for one source frame do not consume inputs.
+The route ends at its verified checkpoint; it never forces a position, hit,
+health value, terrain change or checkpoint.
+
+Original-resource regressions cover all 1,184 native commands, read-only
+validation, repeated calls and foreign-state rejection. The full-intro frontend
+passes in 12.48 seconds. Active missile-scene validation takes about 13
+microseconds per call on the desktop. The reactive continuation remains alive
+but stalls near camera 3234 with three shield before the middle guardian.

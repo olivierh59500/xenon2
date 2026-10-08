@@ -63,6 +63,13 @@ the exposed core. It then defeats the core and reaches the real middle merchant
 with the same 27 shield. After ordinary repair and rewards, the current desktop
 route also reaches the fourth final guardian with 31 shield, defeats it with
 27 shield and enters level five after its final merchant and normal repair.
+At that last shop it sells the Cannon and buys a left-mounted Laser through the
+normal quote and confirmation controls. A rehearsed fifth-stage opening then
+crosses all three barriers and the guided-missile corridor with the same ship
+and both continues. It reaches checkpoint 3424 with 39 shield after a genuine
+health pickup; its minimum is 23. Every proposed command is checked through an
+isolated copy of the Go simulation, and different entry states use the reactive
+controller. The remaining fifth-stage route and guardians are unfinished.
 The earned fifth-stage controller and near-lossless campaign remain unfinished.
 Beating the remaining guardians and validating the whole campaign remain active
 work.
