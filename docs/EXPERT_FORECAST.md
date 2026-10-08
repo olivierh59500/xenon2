@@ -442,3 +442,17 @@ The bounded run takes81.19s without drawing. Repeated unsuccessful native
 searches remain costly. Completing this diagnostic does not establish the
 strict controller criteria or either of the last two stages, so the improved
 early policy remains excluded pending further correction.
+
+## Preserve admitted commands near firing positions
+
+The third-corridor firing hold previously appended Down after the native planner
+had admitted a command. A clear original right1328 cannon scene demonstrates
+the error: at ship(255,176), camera1306, the planned Up becomes Up+Down, leaving
+the ship at176 instead of171 and invalidating both the guard preview and next
+retained command. The corridor now returns an admitted command unchanged; the
+Down hold remains available only for uncommitted fallback movement.
+
+The regression fails before and passes after, including the actual World.Step
+position, guard preview and second-command retention. Existing fallback hold,
+full resource/source suite and race checks pass. This corrects execution of an
+approved maneuver; it does not claim improved complete-campaign survival.

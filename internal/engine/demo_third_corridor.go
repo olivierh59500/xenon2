@@ -61,7 +61,7 @@ func (p *DemoPilot) ThirdCorridorInput(w *World) (Input, bool) {
 		}
 		motion := demoRouteMotionWithOptions(w, x, y, comfort, true)
 		if committed, found := p.nativeMotion.command(w, x, y, firingX, firingY); found {
-			motion = committed
+			return Input{Motion: committed, Fire: (w.Frame+1)%2 != 0 && !w.blockedFireUntilRelease}, true
 		}
 		if absDemo(w.Player.X-firingX) < 9 && w.Player.Y+w.ScrollY < firingY+36 && w.Player.Y >= 176 {
 			motion.Down = true
