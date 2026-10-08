@@ -215,3 +215,16 @@ forward without an early fifth-victory credit or difficulty increase. The clear
 initial pose and in-flight bullets are explicit arrangements; no guardian health
 or completion/drop field is assigned. This proves connected engine boundaries,
 not an earned fourth-stage win. Native/race and full source suites pass.
+
+A fifth-middle boundary fixture retains the four 40-health mounts and the
+200-health narrow core. An ordinary point bullet can damage that core beside
+living mounts; the middle guardian has no final-style armored collision band
+around it. A bullet just outside the core therefore remains active without
+damage or flash. Real projectile callbacks destroy the mounts/core, clear the
+original terrain rectangle and release their physical slots. Ten native coins
+drain before the same-stage merchant returns to the same living World, with no
+fifth-victory credit, stage-completion flag or difficulty increase. The explicit
+on-screen arena and in-flight bullet packet isolate this boundary from firing
+cadence and navigation; they do not establish an earned campaign victory.
+Focused original/race checks pass in 2.341 seconds; the complete original-resource
+engine suite, including all retained native traces, passes in 17.977 seconds.
