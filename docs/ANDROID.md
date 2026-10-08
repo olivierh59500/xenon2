@@ -130,3 +130,12 @@ do nothing so their remaining logic assertions still execute. Normal desktop
 tests retain their Ebitengine graphics loop. This runner does not verify Draw,
 ReadPixels, device rendering, audio playback or manual touch interaction, and
 passing a bounded route test does not establish completion of all five stages.
+
+The 8 October locked-Pixel check passes all title-idle and takeover cases:
+automatic expert admission after sixty idle seconds, idle reset for keyboard,
+pointer and held touch activity, suspended-screen exclusions, and applying the
+same keyboard or touch action when manual control takes over. The installed
+debug build uses verified runtime commit `8e10b88`; signature, 16 KiB alignment,
+installation, cold launch and fatal-log checks also pass. Later documentation
+and equipment-fixture corrections do not change that runtime. Neither check
+establishes rendered performance or a complete five-stage expert route.
