@@ -98,15 +98,19 @@ table during flash callbacks. A real basic-gun hit also passes the production
 GPU pixel check for the final body.
 
 The practiced presentation and the development reference controller have
-different survival results. The complete-intro presentation currently enters
-stage three with one ship and no continue credits: eight ships and both credits
-are consumed in the first two stages. No source rule makes those losses
-unavoidable, and this route does not yet meet the near-lossless expert target.
-Isolated arena wins are not substitutes for a connected victory.
+different survival results. The current complete-intro presentation enters
+stage three with one ship and both continue credits. Level one loses no ships;
+level two loses two. No source rule makes those losses unavoidable, and this
+route does not yet meet the near-lossless expert target. Isolated arena wins
+are not substitutes for a connected victory.
 
-The first-stage presentation MP4 is 413.05 seconds and includes the production
+The latest first-stage presentation MP4 is 381.53 seconds and includes the production
 intro, known left junction, both genuine merchants, final guardian destruction
-and collected exit drops. It ends before playing level two.
+and collected exit drops, with all three starting ships remaining. It ends before
+playing level two. The exported file contains 22,892 1280 × 800 frames at 60 FPS,
+stereo 44.1 kHz AAC and scene chapters. Video frames were inspected during the
+opening, middle arena, final guardian and exit. The desktop application/GPU
+suite passes in 48.961 seconds with the original runtime exports present.
 
 Fifth guardian/column creation and updates now preserve the physical emitter,
 phase, direction and untouched fields written or retained by the native callbacks.
@@ -135,12 +139,12 @@ ship and credits intact, using changing directions within a copied source horizo
 A separate reference continuation destroys the terrain cannon that blocks the
 later passage by ordinary shots. The connected expert now also defeats both eyes
 of the third middle guardian, collects its real drops and reaches the middle
-merchant with its carried ship and all 19 admission shield points intact. The
+merchant with its carried ship intact. The
 36-pass boss forecast covers the arm's extension and recovery, but its mobile
 cost does not establish a smooth-frame guarantee. Private concurrent branches
 preserve serial decisions, and native command sequences now clear the narrow
 later routes. The actual Pixel frontend reaches checkpoints 1696 and 1152 with
-27 shield, then the final third guardian with 19 shield, without another ship
+at least 27 shield, then the final third guardian with 23 shield, without another ship
 loss. Its logical runner works on the locked device; this does not verify drawing.
 The clean complete-intro regression now also defeats the final third guardian
 without shield loss, collects its exit rewards, visits the real final merchant
@@ -149,10 +153,13 @@ and low-loss play across the whole campaign remain open. Automatic title
 admission after sixty idle seconds is shared by the desktop and Android frontend,
 with immediate manual takeover.
 
-The fourth opening now uses the exact six-pass safety guard and a practiced
-native command sequence through the left forest fork. Its connected comparison
-clears the previous camera 4018 stall, then exposes a rearward terrain turn at
-camera 3863 with the same ship and 11 shield. See the
+The fourth opening now uses the exact six-pass safety guard, terminal moving
+contact checks and practiced native command sequences through the forest. A
+full default-intro Pixel run reaches its middle guardian with 23 shield and
+destroys the native tail without losing shield, keeping the same ship and both
+continues. The forest still falls to 3 shield before a genuine health pickup.
+The remaining satellites and core are not yet defeated by the live controller.
+See the
 [fourth opening validation](FOURTH_OPENING_VALIDATION.md). Fifth laser columns
 are included in movement scoring with their native growth and pre-movement ship
 prefix; isolated source tests establish avoidance, not a complete fifth boss.

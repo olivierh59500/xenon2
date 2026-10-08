@@ -77,8 +77,11 @@ position; reward collection follows the moving coin rather than its old anchor.
 Upcoming formations can also guide preparatory movement, without firing early.
 
 The complete-first-level option includes the intro, both merchants, final guardian
-and exit drops, then stops before playing level two. Its real frontend regression
-completes that route in about 6 minutes 53 seconds with two ships remaining.
+and exit drops, then stops before playing level two. The latest recording is
+381.53 seconds (6 minutes 21 seconds), with all three starting ships remaining.
+Its MP4 contains 22,892 frames at 1280 × 800 and 60 FPS, with stereo AAC audio
+and embedded scene chapters. The current desktop graphics tests also pass.
+This capture was generated from runtime `0a9efa0`.
 Ordinary damage and purchases still apply. The current controller's first-three-stage
 validation uses the real intro, merchants, native guardian damage and exit drops;
 its third-final fight retains all 23 admission shield points. The broader expert
