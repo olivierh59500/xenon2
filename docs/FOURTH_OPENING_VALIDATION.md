@@ -149,3 +149,12 @@ player x below 160 and an interrupted defense stream. With no valid frontal
 target at the retained position, the pilot stops firing. The next correction
 must reach the opposite half safely before lining up the node; changing its
 native gate or firing at a closed collider would not solve the control error.
+
+Original full-stencil geometry explains the failed crossing: the bottom row is
+clear only on each side of the central structure, and the local aiming search
+does not extend high enough to include the upper passage. A bounded source-motion
+detour through the top crosses legally and opens the left node; an ordinary
+weapon projectile then reduces its health from 12 to 10. The same fixed command
+macro loses the ship to live streams despite remaining clear of terrain. Route
+feasibility is therefore separate from combat safety; the next policy retains
+the geometric objective while leaving immediate avoidance active.
