@@ -336,3 +336,24 @@ pixels, applying its native 16-point strong-body contact. It completes in
 crossing must clear the moving articulated body as well as the terrain; mounted
 firing from a safe flank remains another possibility. Original HP, collision
 rules and firing clocks remain intact.
+
+## Exact short replays and articulated-body clearance
+
+READY presentation stars also consume the shared random stream. Reconstructing
+their state and the normal gameplay-star reset produces short stage-four replays
+that match the connected route's positions, random state and damage. The current
+route reproduces the impacts at frames 505, 549 and 706 on both the host and the
+Pixel; the device test takes 5.17 seconds. Seven independent snapshots, six to
+twelve passes before the contact, replay the recorded controls to the same
+physical pool, player, weapon clocks and random state. These are diagnostic
+starting points; no gameplay seed or random generator has changed.
+
+On the older captured middle-guardian stall, the rear goal derived from actual
+head/neck/core rectangles permits one lower satellite kill and reduces the
+other to four HP. Two further excluded corrections reject an infeasible cached
+height and retain the crossing phase across the camera's one-pixel limit
+oscillation. The resulting ordinary commands destroy both lower satellites and
+damage an upper one. A terrain-rewind exit then exposes the ship to another
+16-point companion contact. The experiment remains alive but cannot finish the
+fight. These results guide the next avoidance correction and are not enabled in
+the installed build or reported as a complete guardian victory.
