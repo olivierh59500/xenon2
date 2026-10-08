@@ -55,6 +55,10 @@ three-stage route, reaches that fight with 27 shield and destroys the tail
 without losing shield. It rechecks each remaining maneuver against the live
 world before using ordinary controls. The forest minimum remains 11 before a
 genuine health pickup; this is not a near-lossless route.
+The current carried Pixel route also destroys both upper satellites through Rear
+shots, the lower-right satellite through Cannon shots and the lower-left satellite
+through primary shots. All 27 shield, the same ship and both continues remain at
+the exposed core. The core fight and the rest of the campaign are unfinished.
 Beating the remaining guardians and validating the whole campaign remain active
 work.
 Cached routes, bonus collection, dive requests and merchant purchases use

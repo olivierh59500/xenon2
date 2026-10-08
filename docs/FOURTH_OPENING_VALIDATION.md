@@ -19,7 +19,12 @@ minimum is 11, followed by a real health pickup; no health or inventory is grant
 The complete default-intro desktop frontend also passes every unchanged strict
 first-three-stage and fourth-tail assertion in 13.131 seconds, with the same
 27-shield tail endpoint. A cleaned main-code replay matches both endpoints exactly.
-The rest of the guardian and complete campaign remain unfinished.
+The carried Pixel frontend now continues through both upper satellites, the
+lower-right satellite and the lower-left satellite. All outer targets are
+destroyed at frame 3983 with the same 27 shield, one ship and two continue
+credits. The complete-intro logical check takes 38.26 seconds and leaves the
+175-health core exposed. It does not draw or establish mobile frame pacing.
+The core fight and complete campaign remain unfinished.
 
 ## Historical carried route
 

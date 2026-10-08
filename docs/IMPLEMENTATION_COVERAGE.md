@@ -367,3 +367,33 @@ that forecasts leave their source untouched. Focused race checks pass. They are
 recorded-entry weapon/navigation capabilities, not a connected current campaign
 victory or a production pilot upgrade. The lower-left strategy still loses
 protection to the animated companion body and has not been promoted.
+
+The current 27-shield entry has since produced a stronger ordinary-control
+continuation. Native coast-and-release steering stops within the actual clear
+left corridor before reversing the camera. Stable firing axes come from the
+intersection of every satellite heading's collision rectangle. During alignment
+and firing, the controller re-evaluates its six-pass choices every native pass
+instead of committing to an approaching projectile lane.
+
+Both upper satellites die at frame 3555 through 40 new Rear-shot hits, with all
+27 shield intact. The lower-right target already has four health at the tail
+boundary: seven ordinary Forward 1 hits and one Cannon hit inflict its earlier
+16 damage during frames 1978–2026. The upper continuation does not cause that
+collateral. Two further native Cannon hits destroy it at frame 3673, still with
+27 shield. A receding version of the lower-left controller then applies ten new
+ordinary primary hits and destroys the last outer target at frame 3983, retaining
+all 27 shield, one ship and two continue credits. The core still has 175 health.
+Each stage compares actual callbacks with direct World.Step and checks forecast
+isolation; none assigns guardian health, completion, player resources or position
+to win. The production integration also passes the complete default-intro Pixel
+frontend route in 38.26 seconds, preserving every unchanged first-three-stage
+assertion. All four outer targets are genuinely destroyed at frame 3983 with
+27 shield, the same ship and both continue credits; the core remains at 175.
+This is logical device validation without drawing. The production engine/source
+suite, including the permanent new regressions, passes in 27.131 seconds. The
+complete frontend/GPU suite passes in 101.924 seconds. Upper/right focused race
+checks pass in 24.253 seconds; left checks pass in 69.168 seconds. Tests retain
+native hit ownership, exact endpoints, repeated input sampling, world/frame
+reset, lifecycle/resource scope and all 3,783 horizontal states at each alignment
+target. The core fight remains unpromoted while its source-derived attack and
+escape timing is investigated.
