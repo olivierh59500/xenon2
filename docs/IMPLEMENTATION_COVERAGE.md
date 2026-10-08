@@ -330,6 +330,19 @@ the commitment. Native shot creation, terrain obstruction, repeated sampling,
 ownership, PAL cadence and lifecycle invalidation are covered.
 The rest of the guardian and the complete five-stage expert route remain open.
 
+## Fresh disk extraction
+
+A fresh isolated import from the supplied supported ADF verifies all six packed
+asset containers and the offline executable image, then runs every exporter.
+All 169 generated runtime files match the live resource tree byte for byte;
+the only live-only files are the tracked Go embedding wrapper and generated-data
+notice. No executable bytes are published as runtime logic.
+
+The newly generated tree also passes frontend checks for bundle/world loading,
+normal menu/READY/gameplay/pause/attract, ordinary middle-shop purchase/reload,
+and the fifth merchant/ending/next-stage boundary in 2.219 seconds. These are
+resource-reproducibility and flow checks, not an earned five-level victory.
+
 ## Fourth-middle weapon positioning
 
 Separate ordinary-control prototypes continue from the earlier recorded tail

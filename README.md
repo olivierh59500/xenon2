@@ -87,7 +87,7 @@ and embedded scene chapters. The current desktop graphics tests also pass.
 This capture was generated from runtime `0a9efa0`.
 Ordinary damage and purchases still apply. The current controller's first-three-stage
 validation uses the real intro, merchants, native guardian damage and exit drops;
-its third-final fight retains all 23 admission shield points. The broader expert
+its third-final fight retains all 35 admission shield points. The broader expert
 route still needs the fourth/fifth strategies and mobile frame-pacing work. See
 [expert forecast design](docs/EXPERT_FORECAST.md) for the verified boundaries.
 Generated MP4, PNG poster and chapter JSON files stay
