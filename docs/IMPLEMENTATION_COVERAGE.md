@@ -537,3 +537,29 @@ These checks complement the existing growing/full-length motion, collision,
 physical residue, expiry and slot-reuse comparisons. Allocation is deliberately
 available in this isolated emitter fixture; it does not prove behavior under a
 full actor pool or a complete fifth-stage playthrough.
+
+## Column pixels and merchant sprite anchors
+
+The original column shaft rasterizer has been executed at 160 combinations of
+horizontal alignment, vertical clipping, growing/full length, signed travel
+direction and black/patterned background. Production Ebitengine rendering agrees
+with its planar output. A second pass adds the raw original cap images at the
+recorded original call coordinates, independently of the exported atlas decoder.
+Together these checks compare 19,660,800 pixels. They found and corrected swapped
+shaft palette indices and a double application of the cap anchors.
+
+Merchant cursors, buttons and hands now use the same single-anchor drawing path.
+A separate original-call recorder covers 50 selected and 50 normal cursor/button
+selections, all 35 introduction-hand passes and all 47 sale-hand passes. Exported
+positions, animation images and durations agree; 11,648,000 GPU pixels match the
+raw masked artwork. The hand callback temporarily limits the original blitter to
+row 104, and Go now applies that same inclusive limit when drawing the hand.
+This restores its entry and exit through the portrait instead of covering the
+interface below it.
+
+An additional resource-independent GPU regression checks positive/negative
+anchors, nonzero atlas origins, transparency and screen clipping. The original
+column shaft itself is executed in the offline reference; caps and merchant
+images use recorded arguments and independently decoded raw masks. These are
+isolated drawing comparisons, not full Amiga framebuffer captures or evidence
+of a completed five-stage campaign.

@@ -671,12 +671,12 @@ func (g *Game) drawShop(screen *ebiten.Image) {
 	op.GeoM.Translate(float64(scene.PortraitX), float64(scene.PortraitY))
 	screen.DrawImage(g.graphics.portraits[s.Mouth], &op)
 	for _, ambient := range scene.Ambient {
-		g.drawAnchoredAtlasSprite(screen, g.graphics.shopControls, animationImage(ambient.Animation, s.Frame), float64(ambient.X), float64(ambient.Y))
+		g.drawAtlasSprite(screen, g.graphics.shopControls, animationImage(ambient.Animation, s.Frame), float64(ambient.X), float64(ambient.Y))
 	}
 	if s.BlinkFrames > 0 {
 		for _, control := range scene.Controls {
 			if control.ID == "blink-left" || control.ID == "blink-right" {
-				g.drawAnchoredAtlasSprite(screen, g.graphics.shopControls, control.Sprite, float64(control.X), float64(control.Y))
+				g.drawAtlasSprite(screen, g.graphics.shopControls, control.Sprite, float64(control.X), float64(control.Y))
 			}
 		}
 	}
@@ -687,7 +687,7 @@ func (g *Game) drawShop(screen *ebiten.Image) {
 				g.drawShopNoise(screen, index, cell.X, cell.Y)
 			}
 			if counter := s.Television[index]; counter < 0 && counter >= -9 && len(scene.TVTransition) > counter+9 {
-				g.drawAnchoredAtlasSprite(screen, g.graphics.shopControls, scene.TVTransition[counter+9], float64(cell.X), float64(cell.Y))
+				g.drawAtlasSprite(screen, g.graphics.shopControls, scene.TVTransition[counter+9], float64(cell.X), float64(cell.Y))
 			}
 			continue
 		}
@@ -720,12 +720,12 @@ func (g *Game) drawShop(screen *ebiten.Image) {
 	for _, control := range scene.Controls {
 		selected := s.Row == 4 && ((s.Column == 0 && strings.HasPrefix(control.ID, "exit")) || (s.Column != 0 && strings.HasPrefix(control.ID, action)))
 		if (control.ID == "exit" || control.ID == action) && !selected || (control.ID == "exit-active" || control.ID == action+"-active") && selected {
-			g.drawAnchoredAtlasSprite(screen, g.graphics.shopControls, control.Sprite, float64(control.X), float64(control.Y))
+			g.drawAtlasSprite(screen, g.graphics.shopControls, control.Sprite, float64(control.X), float64(control.Y))
 		}
 	}
 	if s.Row < 4 {
 		cell := scene.Cells[s.Row*5+s.Column]
-		g.drawAnchoredAtlasSprite(screen, g.graphics.shopControls, "shop-control-cursor-active", float64(cell.CursorX), float64(cell.CursorY))
+		g.drawAtlasSprite(screen, g.graphics.shopControls, "shop-control-cursor-active", float64(cell.CursorX), float64(cell.CursorY))
 	}
 	amount := fmt.Sprintf("%07d", s.DisplayMoney)
 	g.drawGlyphs(screen, g.graphics.cashFont, amount, scene.MoneyX, scene.MoneyY, scene.CashFont.Width)
@@ -734,13 +734,22 @@ func (g *Game) drawShop(screen *ebiten.Image) {
 	}
 	if s.HandRemaining > 0 && s.HandFrame < len(scene.SaleHand) {
 		frame := scene.SaleHand[s.HandFrame]
-		g.drawAnchoredAtlasSprite(screen, g.graphics.shopControls, frame.Sprite, float64(frame.X), float64(frame.Y))
+		g.drawShopHand(screen, frame.Sprite, float64(frame.X), float64(frame.Y))
 	}
 	if s.DisplayPhase == shopui.HeadphoneHand && s.IntroHandFrame < len(scene.IntroHand) {
 		frame := scene.IntroHand[s.IntroHandFrame]
-		g.drawAnchoredAtlasSprite(screen, g.graphics.shopControls, frame.Sprite, float64(frame.X), float64(frame.Y))
+		g.drawShopHand(screen, frame.Sprite, float64(frame.X), float64(frame.Y))
 	}
 	g.drawShopTransition(screen)
+}
+
+func (g *Game) drawShopHand(screen *ebiten.Image, name string, x, y float64) {
+	// The original hand callback temporarily clips its blitter at row 104.
+	// This lets the arm enter and leave the portrait without covering the UI.
+	clip := screen.Bounds().Intersect(image.Rect(0, 0, ScreenWidth, 105))
+	if !clip.Empty() {
+		g.drawAtlasSprite(screen.SubImage(clip).(*ebiten.Image), g.graphics.shopControls, name, x, y)
+	}
 }
 
 func (g *Game) drawShopTransition(screen *ebiten.Image) {
@@ -836,14 +845,6 @@ func wrapLerp(a, b, t, period float64) float64 {
 	return result
 }
 
-func (g *Game) drawAnchoredAtlasSprite(destination *ebiten.Image, atlas atlasGraphics, name string, x, y float64) {
-	sprite, ok := atlas[name]
-	if !ok {
-		return
-	}
-	g.drawAtlasSprite(destination, atlas, name, x-float64(sprite.anchorX), y-float64(sprite.anchorY))
-}
-
 func (g *Game) drawFifthColumn(destination *ebiten.Image, view SpriteView, level int, alpha float64) {
 	x, y := view.X, view.Y
 	if view.Interpolate {
@@ -866,12 +867,12 @@ func (g *Game) drawFifthColumn(destination *ebiten.Image, view SpriteView, level
 		}
 	}
 	if view.Tier != 0 || view.Length == 48 {
-		g.drawAnchoredAtlasSprite(destination, atlas, top, x, y)
+		g.drawAtlasSprite(destination, atlas, top, x, y)
 	}
 	if view.Tier == 0 || view.Length == 48 {
-		g.drawAnchoredAtlasSprite(destination, atlas, bottom, x, y+float64(view.Length)-1)
+		g.drawAtlasSprite(destination, atlas, bottom, x, y+float64(view.Length)-1)
 	}
-	colors := [12]uint8{15, 7, 14, 14, 14, 14, 14, 14, 14, 14, 7, 15}
+	colors := [12]uint8{15, 14, 7, 7, 7, 7, 7, 7, 7, 7, 14, 15}
 	for column, index := range colors {
 		c := g.Bundle.Levels[level-1].Terrain.Palette[index]
 		vector.FillRect(destination, float32(x)+float32(column), float32(y), 1, float32(view.Length), color.RGBA{c[0], c[1], c[2], c[3]}, false)
