@@ -1971,3 +1971,32 @@ match, as do every frame's sound requests and shared random state. This closes
 the growing-column emission gap without treating the historical mixed counter
 as authoritative. Integrated motion, collision, residue and slot-reuse tests
 remain separate evidence from a complete stage-five victory.
+
+## Every moving-wave constructor
+
+The moving encounter tables contain 113, 87, 149, 103 and 149 records in the
+five levels: 601 total. A new offline recorder runs the common startup and each
+original level initializer before dispatching every real record through its
+selector. Fresh and deliberately reused slots produce 1,202 cases. The one
+count-zero record produces no actors; the other 1,200 cases produce 3,048 births.
+
+The production Go constructors match allocation and physical-list order, first
+image and animation counter, collision bounds, positions and fractions, delays,
+movement budgets, health/strength, score, firing state, group owner/follower
+links, shared RNG and bonus-cache state. The reused fixture additionally proves
+retention of spare vertical and mount words. Unwritten cold-memory values are
+excluded from startup claims; the source executable's backing bytes are not an
+authoritative capture of unassigned Amiga RAM at actual game startup.
+
+This comparison found that ordinary wave creation did not immediately publish
+its initialized state to the physical pool. It also selected a direction-specific
+third-level image before the original updater would select it, changing the
+newborn collision width. Both are corrected. A resource-independent regression
+reclaims a compound wave's slot before its first update and checks the replacement
+bullet's exact fractional trajectory. Carrier reward and bonus-token publication
+have a separate regression. Running the same tests against the previous Go
+constructor reproduces both failures.
+
+This fixture guarantees available allocation and isolates each wave's birth.
+Existing allocator, full-world simulation and playthrough comparisons remain
+necessary for crowded scenes and complete-game fidelity.

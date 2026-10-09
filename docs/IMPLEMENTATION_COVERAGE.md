@@ -81,6 +81,17 @@ their construction pass; encounter-table actors are created afterward and move
 on the following pass. Enemy counting includes pending-removal entries until
 their owning list releases them. Damage and rendering use physical list order.
 
+All 601 actual moving-wave records now have original-constructor comparisons
+with fresh and deliberately reused slots. The 1,202 cases include 3,048 actor
+births and the original empty wave. Initial image/collision, physical allocation
+order, positions, delays, movement budgets, health, firing accumulators, body
+links, shared RNG and bonus buckets agree. The comparison found missing immediate
+publication of constructor fields and an early heading-image selection in the
+third level. Both are corrected. An ordinary bullet reclaiming a wave slot before
+its first movement now inherits the constructor's cleared coordinate fractions.
+These checks cover construction with available capacity; they do not establish
+initial unassigned Amiga RAM contents or every crowded-pool interaction.
+
 ## Validation boundaries
 
 Private source comparisons run only when the local decoded disk resources and

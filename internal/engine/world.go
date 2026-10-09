@@ -800,7 +800,9 @@ func (w *World) spawnWave(wave visualassets.Wave) error {
 			if leader == nil {
 				leader = actor
 			}
-			actor.selectSprite()
+			// The constructor uses its descriptor's first image. Heading-based
+			// artwork is selected by the first movement callback, not at birth.
+			actor.Sprite = actor.animationState.Sprite(actor.animation)
 			if box, ok := w.movingSpriteBoxes[actor.Sprite]; ok {
 				actor.Collision = ActorCollisionRect(box, int(actor.X), int(actor.Y))
 			} else {
@@ -817,9 +819,11 @@ func (w *World) spawnWave(wave visualassets.Wave) error {
 			}
 			group = append(group, actor)
 			w.Pool.Slot(actor.Binding.Slot).Linked = part.Linked
-			if part.Linked {
-				actor.Binding.Residue.OwnerSlot = leader.Binding.Slot
-				w.storeWorldResidue(actor.Binding)
+			w.initializeWaveActorResidue(actor, leader)
+			if partIndex > 0 {
+				previous := group[len(group)-2]
+				previous.Binding.Residue.FollowingSlot = actor.Binding.Slot
+				w.storeWorldResidue(previous.Binding)
 			}
 			spawned = append(spawned, actor)
 		}
@@ -831,11 +835,17 @@ func (w *World) spawnWave(wave visualassets.Wave) error {
 		token := w.WaveBonuses.Register(spawned[len(spawned)-1].part.StrongHealth, wave.Count)
 		for _, actor := range spawned {
 			actor.WaveToken = token
+			actor.Binding.Residue.WaveBonusToken = token
+			w.storeWorldResidue(actor.Binding)
 		}
 		// Carrier creation registers its bucket before the wrapper clears the
 		// carrier's token. Its orphan count can suppress a shared wave bonus.
 		if kind.CarriedRewardFromMotionBudget {
-			spawned[len(spawned)-1].WaveToken = 0
+			carrier := spawned[len(spawned)-1]
+			carrier.WaveToken = 0
+			carrier.Binding.Residue.WaveBonusToken = 0
+			carrier.Binding.Residue.VerticalFraction = uint16(carrier.CarriedReward)
+			w.storeWorldResidue(carrier.Binding)
 		}
 	}
 	return nil

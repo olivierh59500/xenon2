@@ -214,6 +214,7 @@ func DecodeWaveActors(level []byte, palette [16][4]uint8, encounters *Encounters
 		actors.Kinds = append(actors.Kinds, actor)
 	}
 	actors.Atlas = packSprites(images)
+	actors.Atlas.SourceSpriteNames = imageNames
 	return actors, nil
 }
 
