@@ -30,7 +30,7 @@ func TestDemoSecondFinalBarrierWithOrdinaryShotsOptional(t *testing.T) {
 			w = session.ActiveWorld()
 		}
 		if w.ShopReady && w.LevelFinished {
-			if pass != 752 || w.secondGuardianActor.Active || w.secondGuardianActor.Health != 0 || !w.ExitReady || w.PendingExitDrops != 0 || w.Equipment.Lives != 2 || w.Equipment.Shield != 3 || cleared != 11 || continues != 0 {
+			if pass != 1037 || w.secondGuardianActor.Active || w.secondGuardianActor.Health != 0 || !w.ExitReady || w.PendingExitDrops != 0 || w.Equipment.Lives != 1 || w.Equipment.Shield != 23 || cleared != 6 || continues != 0 {
 				t.Fatalf("final boundary differs: pass%d HP%d lives%d shield%d cleared%d continues%d", pass, w.secondGuardianActor.Health, w.Equipment.Lives, w.Equipment.Shield, cleared, continues)
 			}
 			t.Logf("Boundary final shop pass%d HP%d lives%d shield%d cleared%d continues%d", pass, w.secondGuardianActor.Health, w.Equipment.Lives, w.Equipment.Shield, cleared, continues)

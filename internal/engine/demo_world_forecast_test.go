@@ -21,7 +21,7 @@ func TestExpertWorldGuardPreservesLiveWorldAndHostCadenceOptional(t *testing.T) 
 	if !valid {
 		t.Fatal("expert emitted a movement outside ordinary controls")
 	}
-	if pilot.forecast.State() == nil {
+	if pilot.encounterPractice == nil || pilot.encounterPractice.forecast.State() == nil {
 		t.Fatal("expert did not load its isolated callback forecast")
 	}
 }

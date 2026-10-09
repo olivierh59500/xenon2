@@ -33,6 +33,9 @@ type demoNavigation struct {
 // movement. Its copy retains arena admission and shop-boundary ordering without
 // changing gates, launch seeds, the world or the shared random stream.
 func demoScrollMaximum(w *World, camera, maximum int) int {
+	if w != nil && w.Level.Number == 2 && w.SecondGuardian != nil && w.secondGuardianActor != nil && w.secondGuardianActor.Active {
+		maximum = max(maximum, 288)
+	}
 	if w != nil && w.Level.Number == 5 && w.FifthFinal != nil && w.fifthFinalArt != nil && w.fifthFinalActors[0] != nil && w.fifthFinalActors[0].Active {
 		return w.fifthFinalArt.MotionParameters["maximum_scroll"]
 	}

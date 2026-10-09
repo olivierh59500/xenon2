@@ -246,6 +246,17 @@ func (p *nativeMotionPlanner) guardSequence(w *World, first MotionInput) ([6]Mot
 	return sequence, true
 }
 
+// guardCommands previews the complete remaining commitment. A longer combat
+// forecast must include a corner's final turn, even when it follows the first
+// six controls. The returned slice is read-only and expires on the next search.
+func (p *nativeMotionPlanner) guardCommands(w *World, first MotionInput) ([]MotionInput, bool) {
+	index := p.at - 1
+	if p.world != w || w == nil || index < 0 || index >= len(p.commands) || index >= len(p.states) || p.commands[index] != first || !nativeMotionMatches(w, p.states[index]) {
+		return nil, false
+	}
+	return p.commands[index:], true
+}
+
 // continueRoute must be called before asking the geometric planner for another
 // waypoint. An intermediate braking pose can temporarily lack a straight
 // geometric shortcut even while the committed source-motion sequence is valid.

@@ -1,10 +1,10 @@
 # Expert gameplay forecast
 
-The demonstration controller aims to complete all five levels through ordinary
-controls, using known terrain routes, enemy formations, carrier rewards and boss
-phases. The current carried route still loses too much energy and does not yet
-complete the campaign. More accurate individual movement helpers cannot predict
-all interactions between births, firing, combat, terrain and shared actor slots.
+The public demonstration tour plays the first three levels through ordinary
+controls, using known terrain routes, encounter tables, carrier rewards and boss
+paths. Damage, weapon emissions, money, rewards and merchants remain owned by the
+game. Development fixtures for levels four and five remain available; a completed
+three-level tour does not establish complete five-level game fidelity.
 
 ## Isolated full-world lookahead
 
@@ -849,3 +849,58 @@ from the recorded right-side pose to a clear rear point, verifies every segment
 against the complete source stencil, and leaves the live world unchanged.
 The previous planner fails that case. This is route capability evidence;
 the final-guardian victory remains unfinished.
+
+## Prepared encounters and the current three-level tour
+
+The third opening compares up to 24 attack, collection and placement goals over
+72 complete gameplay passes: 4.32 seconds at the default three-PAL cadence.
+Only three verified controls are committed. Eight private workers evaluate the
+known formations and their real callbacks. Candidate order resolves ties, so
+worker scheduling does not change the selected command.
+
+The next decision is prepared while those controls execute. Two owned planning
+buffers rotate between playback and calculation. The rendering thread never
+waits for a background job. Admission checks physical pool contents and list
+order, checkpoint, rewards, shared RNG, player/camera history, actor/controller
+graphs, projectiles, stars and weapon state. Changed or late results fall back to
+the ordinary planner. Independent comparison, changed-controller rejection,
+buffer rotation and race-detector tests cover this preparation.
+
+Rear and side guns now retain useful firing windows as well as the forward gun.
+Their source emission offsets, velocities and clipping bounds determine aiming.
+Unlimited basic weapons do not pause arbitrarily during a genuine target window.
+The second guardian's reverse bound is renewed after player movement and before
+scrolling, matching its actual callback order. Point-route search includes the
+horizontal destination when returning beneath the central terrain.
+
+Corridor protection follows the complete remaining motion commitment, including
+turns after the first six commands. Its forecast stops at that commitment's own
+waypoint instead of substituting a different continuation. The final worm compares
+nine ordinary held escapes over 36 real passes and authenticates the current shot
+with the original moving-list hit order. An isolated original checkpoint starting
+with seven energy defeats the guardian without losing a ship or a continue.
+
+The full frontend scorecard starts from the original intro and visits the real
+merchants, guardians, rewards and final menu. The current results are:
+
+| Start | Level | Ships lost | Scoring enemy removals | Collected cash |
+| --- | ---: | ---: | ---: | ---: |
+| Menu inactivity | 1 | 0 | 191 | 3,650 |
+| Menu inactivity | 2 | 1 | 295 | 5,350 |
+| Menu inactivity | 3 | 0 | 211 | 5,100 |
+| Explicit demonstration | 1 | 0 | 190 | 2,850 |
+| Explicit demonstration | 2 | 0 | 296 | 4,200 |
+| Explicit demonstration | 3 | 0 | 218 | 5,900 |
+
+Both tours retain their two continue credits. The explicit tour finishes with
+three ships and score 156,570; the idle-start tour finishes with two ships and
+score 157,380. A scoring removal counts a damageable actor's final destruction,
+not both phases of one compound cannon. These are earned observations, not
+maximum-clearance claims or resource grants. Both menu-return tests also verify
+another level-one admission after sixty seconds without input.
+
+On the USB Pixel 10a, a warm full opening decision measures 30.18 ms over 100
+iterations. This calculation now runs ahead of the live controls. Validating a
+prepared state measures 0.700 ms over 100 iterations, with 24,456 bytes and 15
+allocations. The matched M4 Max validation measures 0.058 ms. These are isolated
+CPU measurements; they do not by themselves establish rendered frame pacing.

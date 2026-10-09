@@ -45,7 +45,7 @@ func (p *DemoPilot) SecondFinalInput(w *World) (Input, bool) {
 		return input, true
 	}
 	if worldY < 448 && (w.Player.X < 124 || w.Player.X > 196) {
-		x, y, found := p.secondFinalWaypoint(w, 448)
+		x, y, found := p.secondFinalPointWaypoint(w, 160, 448)
 		if !found {
 			return Input{}, false
 		}
@@ -69,16 +69,11 @@ func demoAimMotion(player PlayerMotionState, x, y int) MotionInput {
 func secondFinalRouteMotion(w *World, x, y int) MotionInput {
 	best, rank := MotionInput{}, math.Inf(1)
 	for _, motion := range demoDirections {
-		player := w.Player
-		player.Advance(motion, MotionContext{ScrollY: w.ScrollY, VisitedScrollY: w.MaximumScrollY, BaseScrollStep: w.BaseScrollStep})
-		scroll := ScrollState{Y: w.ScrollY, Minimum: w.MinimumScrollY, Maximum: w.MaximumScrollY, DeviationPasses: w.ScrollDeviationPasses}
-		if w.Coverage.Touches(player.X, player.Y, scroll.Y, *w.Level.PlayerStencil) {
+		forecast := newDemoMotionForecast(w)
+		if !forecast.advance(w, motion) {
 			continue
 		}
-		scroll.Advance(player.ScrollStep, w.BaseScrollStep, motion.Down)
-		if w.Coverage.Touches(player.X, player.Y, scroll.Y, *w.Level.PlayerStencil) {
-			continue
-		}
+		player, scroll := forecast.player, forecast.scroll
 		distance := float64(absDemo(player.X-x) + absDemo(player.Y+scroll.Y-y)*2)
 		if distance < rank {
 			best, rank = motion, distance
@@ -88,6 +83,10 @@ func secondFinalRouteMotion(w *World, x, y int) MotionInput {
 }
 
 func (p *DemoPilot) secondFinalWaypoint(w *World, goal int) (int, int, bool) {
+	return p.secondFinalPointWaypoint(w, 0, goal)
+}
+
+func (p *DemoPilot) secondFinalPointWaypoint(w *World, targetX, goal int) (int, int, bool) {
 	if w.Coverage == nil || w.Level.PlayerStencil == nil || w.Coverage.Columns != 20 || w.Coverage.Rows != 300 || len(w.Coverage.Map) != 6000 {
 		return 0, 0, false
 	}
@@ -95,9 +94,10 @@ func (p *DemoPilot) secondFinalWaypoint(w *World, goal int) (int, int, bool) {
 		p.navigation = &demoNavigation{}
 	}
 	n := p.navigation
+	n.targetX = targetX
 	changed := n.refresh(w)
 	x, y := w.Player.X, w.Player.Y+w.ScrollY
-	if changed || len(n.path) == 0 || n.goal != goal || w.Frame-n.frame >= 24 {
+	if changed || len(n.path) == 0 || n.goal != goal || n.pathTargetX != targetX || w.Frame-n.frame >= 24 {
 		n.goal, n.frame = goal, w.Frame
 		if !n.searchSecondFinal(x, y, goal) {
 			return 0, 0, false
@@ -130,6 +130,7 @@ func (p *DemoPilot) secondFinalWaypoint(w *World, goal int) (int, int, bool) {
 // searchSecondFinal shares the bounded terrain cache and heap with ordinary
 // navigation, while allowing the source arena's required backward traversal.
 func (n *demoNavigation) searchSecondFinal(x, y, goal int) bool {
+	n.pathTargetX = n.targetX
 	direction := 1
 	if goal < y {
 		direction = -1
@@ -142,7 +143,15 @@ func (n *demoNavigation) searchSecondFinal(x, y, goal int) bool {
 		clear(n.visited)
 	}
 	n.visited[demoNavPoint{x, y}] = 0
-	n.push(demoNavNode{x: x, y: y, parent: -1, rank: float64(absDemo(y-goal)) / 3})
+	distance := func(x, y int) float64 {
+		dy := max(0, direction*(goal-y))
+		dx := 0
+		if n.targetX != 0 {
+			dx = max(0, absDemo(x-n.targetX)-3)
+		}
+		return (float64(max(dx, dy)) + .42*float64(min(dx, dy))) / 3
+	}
+	n.push(demoNavNode{x: x, y: y, parent: -1, rank: distance(x, y)})
 	for len(n.queue) > 0 && len(n.nodes) < 9000 {
 		current := n.pop()
 		if best, ok := n.visited[demoNavPoint{current.x, current.y}]; ok && current.cost > best+.01 {
@@ -150,7 +159,7 @@ func (n *demoNavigation) searchSecondFinal(x, y, goal int) bool {
 		}
 		index := len(n.nodes)
 		n.nodes = append(n.nodes, current)
-		if direction*(current.y-goal) >= 0 {
+		if direction*(current.y-goal) >= 0 && (n.targetX == 0 || absDemo(current.x-n.targetX) <= 3) {
 			for at := index; at >= 0; at = n.nodes[at].parent {
 				node := n.nodes[at]
 				n.path = append(n.path, demoNavPoint{node.x, node.y})
@@ -178,7 +187,7 @@ func (n *demoNavigation) searchSecondFinal(x, y, goal int) bool {
 					continue
 				}
 				n.visited[point] = cost
-				n.push(demoNavNode{x: nx, y: ny, parent: index, cost: cost, rank: cost + float64(absDemo(ny-goal))/3})
+				n.push(demoNavNode{x: nx, y: ny, parent: index, cost: cost, rank: cost + distance(nx, ny)})
 			}
 		}
 	}

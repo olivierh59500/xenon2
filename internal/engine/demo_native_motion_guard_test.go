@@ -5,6 +5,31 @@ import (
 	"testing"
 )
 
+func TestNativeMotionPreviewIncludesOriginalTurnBeyondSixCommandsOptional(t *testing.T) {
+	w := nativeMotionFixture(t, 251, 176, 1732)
+	var planner nativeMotionPlanner
+	input, ok := planner.command(w, 254, 1908, 254, 1908)
+	if !ok {
+		t.Fatal("original narrow route was not prepared")
+	}
+	at := planner.at
+	commands, ok := planner.guardCommands(w, input)
+	if !ok || len(commands) != 7 || planner.at != at {
+		t.Fatal("preview omitted the original final alignment or consumed its route")
+	}
+	for _, motion := range commands {
+		if err := w.Step(Input{Motion: motion}); err != nil {
+			t.Fatal(err)
+		}
+		if w.Rewind.Timer != 0 || !w.PlayerAlive {
+			t.Fatal("complete commitment entered terrain or lost its ship")
+		}
+	}
+	if !nativeMotionMatches(w, planner.states[len(planner.states)-1]) {
+		t.Fatal("full preview diverged from its actual source-motion endpoint")
+	}
+}
+
 func nativeGuardCannonFixture(t testing.TB) (*World, nativeMotionPlanner, Input) {
 	t.Helper()
 	w := nativeMotionFixture(t, 93, 166, 690)

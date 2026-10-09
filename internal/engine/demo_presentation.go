@@ -6,6 +6,9 @@ import "math"
 // committed tactical goals and held firing bursts. The game still owns every
 // movement, hit, reward, terrain change and random value.
 type PresentationPilot struct {
+	encounterPractice   *expertEncounterPilot
+	routeGuard          *expertRouteGuard
+	finalForecasts      *expertThirdFinalWorkers
 	thirdCorridorBranch *retainedGuardPlan
 	thirdCorridorWatch  thirdCorridorProgress
 	fifthPractice       *fifthOpeningPractice
@@ -51,6 +54,9 @@ func (p *PresentationPilot) NormalInput(w *World) Input {
 		*p = PresentationPilot{PALRefreshes: p.PALRefreshes, world: w, frame: w.Frame, decisionAt: w.Frame + 3, planner: DemoPilot{practicedRoute: true}}
 	}
 	p.frame = w.Frame
+	if input, handled := p.practicedEncounterInput(w); handled {
+		return input
+	}
 	if input, retained := p.continueThirdCorridorBranch(w); retained {
 		return input
 	}
@@ -112,12 +118,17 @@ func (p *PresentationPilot) NormalInput(w *World) Input {
 		input.Fire = false
 	}
 	fireMotion := input.Motion
+	if checked, safe := p.forecastPracticedRoute(w, input); safe {
+		return checked
+	}
+	input = p.forecastSecondGuard(w, input)
 	input = p.forecastOpeningGuard(w, input)
-	if w.Level.Number == 1 && input.Fire && input.Motion != fireMotion {
+	if w.Level.Number <= 3 && input.Fire && input.Motion != fireMotion {
 		// Recheck the final gun position without advancing burst state twice.
-		input.Fire = presentationShotOpportunityWithForecast(w, input.Motion, &p.guardianAimForecast, p.PALRefreshes)
+		input.Fire = presentationShotOpportunityWithForecast(w, input.Motion, &p.guardianAimForecast, p.PALRefreshes) || w.Level.Number > 1 && presentationAuxiliaryShotOpportunity(w, input.Motion)
 	}
 	input = p.forecastThirdMiddleInput(w, input)
+	input = p.forecastThirdFinalInput(w, input)
 	return input
 }
 
@@ -421,6 +432,11 @@ func (p *PresentationPilot) selectiveFire(w *World) bool {
 }
 
 func (p *PresentationPilot) selectiveFireForMotion(w *World, motion MotionInput) bool {
+	if w.Level.Number == 2 || w.Level.Number == 3 && w.ThirdMiddle != nil && w.ThirdMiddle.Defeated {
+		// These weapons do not spend ammunition. Keep a useful firing window
+		// open, including rear and side intersections, until the target leaves.
+		return presentationShotOpportunityWithForecast(w, motion, &p.guardianAimForecast, p.PALRefreshes) || presentationAuxiliaryShotOpportunity(w, motion)
+	}
 	if w.Frame < p.restUntil && p.burstUntil == 0 {
 		return false
 	}
@@ -462,6 +478,10 @@ func presentationShotOpportunityWithForecast(w *World, motion MotionInput, guard
 	if opportunity, supported := presentationGuardianShotOpportunity(w, motion, guardianForecast, palRefreshes); supported {
 		return opportunity
 	}
+	return presentationGeometricShotOpportunity(w, motion)
+}
+
+func presentationGeometricShotOpportunity(w *World, motion MotionInput) bool {
 	forecast := newDemoMotionForecast(w)
 	// Terrain contact can start a rewind without suppressing this pass's
 	// weapon phase. Its resulting gun position still determines the shot ray.

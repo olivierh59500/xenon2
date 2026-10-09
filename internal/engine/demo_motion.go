@@ -73,6 +73,12 @@ func (s *demoMotionForecast) advanceWithTouchCache(w *World, input MotionInput, 
 	if w.Level.Number == 4 && w.FourthMiddle != nil && !w.FourthMiddle.Defeated && !w.FourthMiddle.Parts[4].Disabled && w.fourthMiddleActors[4] != nil && w.fourthMiddleActors[4].Active {
 		s.scroll.Maximum = max(s.scroll.Maximum, 2480)
 	}
+	if w.Level.Number == 2 && w.SecondGuardian != nil && w.secondGuardianActor != nil && w.secondGuardianActor.Active {
+		// The guardian callback renews this bound after player movement and
+		// before scrolling. Its previous sixteen-pixel buffer is not the
+		// arena's actual reverse limit on the next pass.
+		s.scroll.Maximum = max(s.scroll.Maximum, 288)
+	}
 	s.scroll.Advance(s.player.ScrollStep, w.BaseScrollStep, input.Down)
 	return w.Dive.Phase != 0 || !touching()
 }
