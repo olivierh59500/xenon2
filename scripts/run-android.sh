@@ -86,7 +86,23 @@ fi
 echo "Checking the Android module graph..."
 GOOS=android GOARCH=arm64 go list -m -tags=android all >/dev/null
 echo "Building the Go/Ebitengine ARM64 library..."
-go run github.com/hajimehoshi/ebiten/v2/cmd/ebitenmobile@v2.9.11 \
+run_ebitenmobile() {
+    if [ -n "${EBITENMOBILE_BIN:-}" ]; then
+        if [ ! -x "$EBITENMOBILE_BIN" ]; then
+            echo "EBITENMOBILE_BIN is not executable." >&2
+            exit 1
+        fi
+        tool_version=$(go version -m "$EBITENMOBILE_BIN" | awk '$1 == "mod" && $2 == "github.com/hajimehoshi/ebiten/v2" { print $3 }')
+        if [ "$tool_version" != "$ebiten_version" ]; then
+            echo "The supplied ebitenmobile must match $ebiten_version; found $tool_version." >&2
+            exit 1
+        fi
+        "$EBITENMOBILE_BIN" "$@"
+    else
+        go run github.com/hajimehoshi/ebiten/v2/cmd/ebitenmobile@"$ebiten_version" "$@"
+    fi
+}
+run_ebitenmobile \
     bind -target android/arm64 -androidapi 23 \
     -javapkg com.olivierh.xenon2 \
     -o android/app/libs/libxenon2.aar ./mobile

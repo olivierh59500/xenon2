@@ -214,3 +214,11 @@ idle admission, releases it, then verifies the full idle interval and ordinary
 single-player READY admission without cheats. It passes on desktop and in the
 Pixel logic runner (2.36 seconds). This complements the visible check; the logic
 runner itself does not render Android frames.
+
+## Reusing a verified mobile build tool
+
+`EBITENMOBILE_BIN` can select an existing ebitenmobile executable when building
+without network access. The script checks its embedded module version against
+the game's pinned Ebitengine version before using it. The default continues to
+run the pinned tool through Go. This avoids adding build-tool dependencies to
+the game's module solely to reuse a locally compiled tool.
