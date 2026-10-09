@@ -62,14 +62,20 @@ mouse action or touch immediately returns the same active session to manual
 control. Pause, fades, the cheat menu, interactive game messages and merchants
 do not count as menu inactivity.
 
-The reference intro route completes all three levels with one surviving ship
-and both continues, losing two ships in level two. It reaches the third final
-guardian with 35 shield and defeats it without losing shield. The idle-start
-entry is tested separately: it consumes its continues in level two, then keeps
-its remaining ship throughout level three. Its route now recovers from the
-observed cannon pocket, defeats the final guardian with 23 shield, collects
-rewards, completes the genuine final merchant and returns to the menu. This is
-a development pilot, not a claim of perfect or near-lossless play.
+The complete original-intro regression finishes all three stages with its three
+starting ships and both continue credits intact. The separate idle-start route
+loses one ship in level two and finishes level three without another loss or
+continue. Both paths use the original merchants, guardian damage and exit rewards,
+then return to the original menu. The current scorecard records 704 scoring enemy
+removals and 12,950 collected cash for the explicit tour, and 697 removals and
+14,100 cash for idle admission. These observations do not claim that every enemy
+or bonus is collected under every starting state.
+
+The pilot rehearses known formations and their actual callbacks, prepares its
+next decision while verified controls execute, and rejects a prepared plan if
+the live state differs. Rear and side guns retain useful firing windows alongside
+the forward weapon. Corridor forecasts keep the complete prepared turn, and the
+final worm has a separate survival and aiming forecast.
 
 Existing later-stage code and reference fixtures remain in the project. They
 are outside the three-level demonstration tour; full-game fidelity and a
@@ -88,7 +94,7 @@ video/audio route and FFmpeg for H.264/AAC encoding; other windows and system
 audio are never captured. The default three-minute presentation follows the
 intro, menu and first-level play. Its presentation controller approaches actual
 enemies and reachable bonuses, commits to short tactical routes and holds aimed
-firing bursts with reassessment pauses. Known terrain junctions guide the route
+firing bursts in the opening and retains useful target windows in later combat. Known terrain junctions guide the route
 before a wrong branch closes. A trapped ship can reverse to the junction and
 rejoin its forward route. Targeting forecasts the source paths and the next gun
 position; reward collection follows the moving coin rather than its old anchor.
@@ -102,7 +108,7 @@ and embedded scene chapters. The current desktop graphics tests also pass.
 This capture was generated from runtime `0a9efa0`.
 Ordinary damage and purchases still apply. The current controller's first-three-stage
 validation uses the real intro, merchants, native guardian damage and exit drops;
-its third-final fight retains all 35 admission shield points. Later-stage expert
+both supported starts now finish the third stage without losing their carried ship. Later-stage expert
 strategies remain experimental; the normal tour ends after level three. See
 [expert forecast design](docs/EXPERT_FORECAST.md) for the verified boundaries.
 Generated MP4, PNG poster and chapter JSON files stay

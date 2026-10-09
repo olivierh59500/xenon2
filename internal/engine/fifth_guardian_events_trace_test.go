@@ -33,8 +33,8 @@ func fifthGuardianEventTraceArt(t *testing.T) []visualassets.GuardianGroup {
 // words persist across components, so only the final row represents the frame's
 // final requests. Keep -1 distinct from sampled requests such as 0x84.
 // The historical "lasers" counter also counts side-seeker/mouth factories and
-// omits known growing-column births. Its recorder hook is unavailable, so this
-// test deliberately makes no assertion or coverage claim for that field.
+// omits known growing-column births. Actual column factories have a separate
+// completed-birth trace; this test makes no claim for the historical counter.
 func TestFifthGuardianOrdinaryShotAndSoundEventsNativeTraceOptional(t *testing.T) {
 	groups := fifthGuardianEventTraceArt(t)
 	for _, final := range []bool{false, true} {

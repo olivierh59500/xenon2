@@ -11,26 +11,19 @@ sixty idle seconds start another tour. Tests cover both automatic idle admission
 and an explicit demo launch, the real third guardian/rewards/merchant sequence,
 menu return and a fresh ordinary level-one READY admission.
 
-The reference complete-intro frontend completes levels one through four through
-ordinary controls, real merchants, guardian deaths and exit rewards. It loses
-two ships in level two, then retains its last ship and both continues through
-levels three and four. The fifth-level route crosses the barriers, guided
-missiles and later terrain defenses, defeats the middle guardian, drains its
-ten reward coins and buys the original 500-cost full repair. It crosses the
-second half and admits the final guardian at frame 5402 with 35 shield; all
-eighteen defenses and the 20-point core remain intact. The final fight and
-complete-game Amiga visual/playthrough comparisons remain unfinished.
+The current complete-intro expert tour finishes all three supported demonstration
+stages with its three starting ships and two continue credits intact. The separate
+idle-start route loses one ship in level two, keeps its carried ships throughout
+level three and finishes with both continues. Both use real guardian deaths,
+rewards and merchants before returning to the menu. The measured scorecard is
+recorded in [EXPERT_FORECAST.md](EXPERT_FORECAST.md).
 
-The actual sixty-second idle admission is a separate entry path. Its second
-level consumes both continues, so its third-level equipment differs from the
-reference profile. After the cannon-pocket recovery correction, this path
-also completes the entire third level, defeats its final guardian with the
-same remaining ship and 23 shield, drains rewards and buys a normal repair.
-At the menu it retains the completed third world with 39 shield, one ship
-and no continues. The later-stage reference fixtures use an explicit test-only
-tour limit; ordinary demonstration launches do not enter level four. A passing
-reference route does not establish that every menu timing, loadout or random
-state completes the campaign.
+Later-stage reference fixtures remain available but use an explicit test-only
+tour limit. Their earlier carried loadouts and random states are capability
+records, not current whole-campaign proof. In those recorded routes the fourth
+stage reaches its real final merchant; the fifth reaches its final guardian.
+The complete final fight and integrated Amiga playthrough comparison remain
+unfinished. Ordinary demonstration launches do not enter level four.
 
 ## Fixed encounters and scripted arenas
 
@@ -125,12 +118,11 @@ their owning tiled body, and the middle body retains its last normal muzzle
 table during flash callbacks. A real basic-gun hit also passes the production
 GPU pixel check for the final body.
 
-The practiced presentation and the development reference controller have
-different survival results. The current complete-intro presentation enters
-stage three with one ship and both continue credits. Level one loses no ships;
-level two loses two. No source rule makes those losses unavoidable, and this
-route does not yet meet the near-lossless expert target. Isolated arena wins
-are not substitutes for a connected victory.
+The practiced presentation and the development reference controller are distinct.
+The current public three-level tour has connected near-lossless observations:
+zero losses for explicit admission, and one second-stage loss for idle admission.
+Neither spends a continue. These results do not establish every starting state,
+maximum enemy/bonus clearance or complete five-level fidelity.
 
 The latest first-stage presentation MP4 is 381.53 seconds and includes the production
 intro, known left junction, both genuine merchants, final guardian destruction
@@ -522,3 +514,17 @@ The complete frontend/GPU suite passes in 151.826 seconds after the startup fix
 and core integration. The corrected APK is installed. The timeout is verified by
 the native Android frontend tests; an interrupted real-screen observation is not
 counted as additional visual confirmation.
+
+## Native growing-column emission coverage
+
+A separate completed-factory recorder executes the original inline constructors
+at `0x56144` and `0x5679e`. It observes the newly initialized tag-272 projectile
+record rather than the historical mixed factory counter. Across 2,700 guardian
+frames, Go matches all 224 births: 49 downward columns from the middle body and
+175 upward columns from final components 11 through 14. Exact emission order,
+X/Y, zero initial length, signed speed, sound queues and shared RNG agree.
+
+These checks complement the existing growing/full-length motion, collision,
+physical residue, expiry and slot-reuse comparisons. Allocation is deliberately
+available in this isolated emitter fixture; it does not prove behavior under a
+full actor pool or a complete fifth-stage playthrough.

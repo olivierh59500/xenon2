@@ -327,21 +327,14 @@ crushing. These are isolated callback comparisons, not an Amiga playthrough.
 
 ### Death callback integration boundary
 
-A separate extension executes the original death routine at `0x5d00` for
-54 crushing cases. That callback sets dive phase one and stops its direction,
+The original death routine at `0x5d00` sets dive phase one and stops its direction,
 which also hides thrust. Crushing returns before the living ship's trail/phase
 update; later death-animation callbacks do not execute that update either.
-The current Go death state does not yet preserve all of these details.
-
-A local correction matches all 54 native phase/direction states and retains
-history when a previous dive countdown expires during death. The explicit
-three-level demonstration still completes, but the actual idle-start path
-changes its carried state after level two and loses its last ship in level three.
-The correction remains outside production while death cleanup, countdown and
-post-continue state are investigated. The second-middle resource fixture still
-reaches its genuine merchant but collects 1,150 instead of 1,250; the isolated
-third-final fixture wins earlier with 31 shield instead of 15. These outcomes
-identify changed simulation history, not verified campaign improvement.
+The integrated Go callback now retains those details and retires the original
+physical equipment head. Seventy-two constructor/death comparisons and ordinary
+lethal-contact regressions cover its current behavior; see "Ship death equipment
+and motion" below. Both actual three-level entry routes now complete under these
+death rules without spending a continue.
 
 ### Installed weapon identities
 
@@ -1961,3 +1954,20 @@ rules: the second defense merchant still requires 3,841 public commands, with
 after 1,542 commands, with one ship, 31 shield and one legal continue. These
 fixture totals describe the Go controller; they are separate from the original
 callback comparisons and from a complete campaign.
+
+## Growing-column factory events
+
+The old guardian event trace combines several different factories in its `lasers`
+column. A new recorder observes the actual completed constructors at `0x56144`
+and `0x5679e`, including their tag-272 record, updater `0x56940`, renderer
+`0x56a10`, list links, X/Y, zero length and signed speed. It executes the original
+writes; drawing and ordinary-shot creation are isolated. Available allocation
+and the absence of player combat are explicit fixture boundaries.
+
+Across 1,500 middle and 1,200 final frames, 49 downward and 175 upward columns
+match Go's complete guardian events. Final components 11, 12, 13 and 14 emit
+41, 40, 47 and 47 respectively. Emission frames, ordering, coordinates and speeds
+match, as do every frame's sound requests and shared random state. This closes
+the growing-column emission gap without treating the historical mixed counter
+as authoritative. Integrated motion, collision, residue and slot-reuse tests
+remain separate evidence from a complete stage-five victory.
