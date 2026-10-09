@@ -283,7 +283,7 @@ func DecodeFirstLevelFixedTiles(data []byte) (*FixedTiles, []uint16, error) {
 		kind, health, initial0, initial1, frames0, frames1, dead0, dead1, frameRows, frameCount, duration int
 		mode                                                                                              string
 	}{
-		{1, 0x5c, 0x5568c - levelBase, 0x556ac - levelBase, 0x556ac - levelBase, 0x5568c - levelBase, 0x556d4 - levelBase, 0x556cc - levelBase, 2, 4, 1, "cycle"},
+		{1, 0x5c, 0x5568c - levelBase, 0x556ac - levelBase, 0x5568c - levelBase, 0x556ac - levelBase, 0x556d4 - levelBase, 0x556cc - levelBase, 2, 4, 1, "cycle"},
 		{2, 0x5a, 0x553d2 - levelBase, 0x553b2 - levelBase, 0x553d2 - levelBase, 0x553b2 - levelBase, 0x553fa - levelBase, 0x553f2 - levelBase, 2, 4, 1, "cycle"},
 		{3, 0x5e, 0x55ad4 - levelBase, 0x55adc - levelBase, 0x554fa - levelBase, 0x5554a - levelBase, 0x5559a - levelBase, 0x5559a - levelBase, 1, 20, 2, "triggered-cycle"},
 	} {
@@ -302,10 +302,9 @@ func DecodeFirstLevelFixedTiles(data []byte) (*FixedTiles, []uint16, error) {
 				initial, frames, dead = table.initial1, table.frames1, table.dead1
 			}
 			v := FixedTileVariant{ID: variant, OriginOffsetX: -8, OriginOffsetY: -8, Initial: read(initial, 2, 2), Destroyed: read(dead, 2, 2)}
-			v.ResourceTag = map[int]int{1: 232, 2: 224, 3: 216}[table.kind] + variant*4
-			if table.kind == 2 || table.kind == 3 {
-				v.ResourceTag = map[int]int{2: 228, 3: 220}[table.kind] - variant*4
-			}
+			// The original constructors choose their larger tag for record
+			// variant zero; the first plant's animation follows the same tag.
+			v.ResourceTag = map[int]int{1: 236, 2: 228, 3: 220}[table.kind] - variant*4
 			if table.kind == 2 && variant == 0 {
 				v.OriginOffsetX = -24
 			}

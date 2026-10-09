@@ -69,10 +69,9 @@ func StepFirstTileCannon(s *FixedTileState, kind visualassets.FixedTileKind, scr
 	if s.Kind == 3 {
 		offsetY = 2
 	}
-	right := s.Variant == 1
-	if s.Kind == 2 || s.Kind == 3 {
-		right = s.Variant == 0
-	}
+	// All three constructors use record variant zero for the right-facing
+	// cannon. Their resource tags use different numeric orders.
+	right := s.Variant == 0
 	if right {
 		event.ShotDirection = 2
 		switch s.Kind {

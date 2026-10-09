@@ -55,6 +55,18 @@ To verify the already imported resources:
 ./scripts/prepare-assets.sh -verify
 ```
 
+After updating the game, regenerate exported resources when their decoder changes.
+If `.local/imported/` already contains the verified decoded inputs, the graphics
+and gameplay metadata can be rebuilt without importing the disk again:
+
+```sh
+GOWORK=off go run ./cmd/export-assets -analysis .local/imported -output assets/runtime
+```
+
+In particular, the opening first-stage plant correction updates both the Go
+firing logic and its local orientation/animation metadata. Android builds embed
+the regenerated resources.
+
 ## Resource directories
 
 `assets/original/` contains the six packed resource containers. Five correspond

@@ -62,13 +62,13 @@ mouse action or touch immediately returns the same active session to manual
 control. Pause, fades, the cheat menu, interactive game messages and merchants
 do not count as menu inactivity.
 
-The complete original-intro regression finishes all three stages with its three
-starting ships and both continue credits intact. The separate idle-start route
-loses one ship in level two and finishes level three without another loss or
-continue. Both paths use the original merchants, guardian damage and exit rewards,
-then return to the original menu. The current scorecard records 704 scoring enemy
-removals and 12,950 collected cash for the explicit tour, and 697 removals and
-14,100 cash for idle admission. These observations do not claim that every enemy
+The complete original-intro and idle-start regressions both finish all three
+stages with two ships and both continue credits intact. Each loses one ship in
+level two and finishes level three without another loss or continue. Both paths
+use the original merchants, guardian damage and exit rewards, then return to the
+original menu. The current scorecard records 678 scoring enemy removals and
+12,650 collected cash for the explicit tour, and 701 removals and 13,250 cash for
+idle admission. These observations do not claim that every enemy
 or bonus is collected under every starting state.
 
 The pilot rehearses known formations and their actual callbacks, prepares its

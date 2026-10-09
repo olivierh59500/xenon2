@@ -11,10 +11,9 @@ sixty idle seconds start another tour. Tests cover both automatic idle admission
 and an explicit demo launch, the real third guardian/rewards/merchant sequence,
 menu return and a fresh ordinary level-one READY admission.
 
-The current complete-intro expert tour finishes all three supported demonstration
-stages with its three starting ships and two continue credits intact. The separate
-idle-start route loses one ship in level two, keeps its carried ships throughout
-level three and finishes with both continues. Both use real guardian deaths,
+The current complete-intro and idle-start expert tours finish all three supported
+demonstration stages with two ships and two continue credits intact. Each loses
+one ship in level two and keeps its carried ships throughout level three. Both use real guardian deaths,
 rewards and merchants before returning to the menu. The measured scorecard is
 recorded in [EXPERT_FORECAST.md](EXPERT_FORECAST.md).
 
@@ -43,6 +42,16 @@ empty encounters.
 All fixed selector families have explicit implementations. The integration
 audit still checks their shared state, drawing, contacts and lifetime boundaries;
 selector coverage alone does not establish a complete playable conversion.
+
+The terrain-cannon audit executes the original constructors for all 71 actual
+placements across the five stages before comparing 11,360 updates and 339 shots.
+It checks orientation tags, origins, health, collision, animated tile writes,
+firing positions, headings, speed and RNG. This exposed reversed orientation tags
+and animation tables in the first stage's opening plants: record variant zero
+must fire right from the left wall, and variant one must fire left from the right
+wall. Earlier isolated callback traces supplied their tags directly and did not
+verify this record-to-constructor mapping. A permanent regression also verifies
+that both orientations of all three first-stage cannon families emit inward.
 
 ## Shared systems
 
@@ -120,7 +129,7 @@ GPU pixel check for the final body.
 
 The practiced presentation and the development reference controller are distinct.
 The current public three-level tour has connected near-lossless observations:
-zero losses for explicit admission, and one second-stage loss for idle admission.
+one second-stage ship loss for each admission path, with no third-stage loss.
 Neither spends a continue. These results do not establish every starting state,
 maximum enemy/bonus clearance or complete five-level fidelity.
 

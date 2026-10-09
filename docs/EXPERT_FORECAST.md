@@ -101,9 +101,11 @@ reduces copy pressure, not the whole tactical policy's cost.
 ## Third middle guardian
 
 The boss controller compares nine ordinary movements over 36 real gameplay
-passes, including the complete arm lunge and recovery. Each branch holds its
-initial movement for three simulated passes, then follows the source-based
-six-pass policy. Only its first command is applied to the live game. Survival
+passes, including the complete arm lunge and recovery. Each branch evaluates a
+held escape while the guardian remains active. Substituting a short pursuit after
+three passes could make every escape predict the same avoidable arm contact.
+Post-defeat branches resume ordinary navigation. Only the first command is
+applied to the live game. Survival
 and remaining shield rank before signed eye health and firing alignment. Trigger
 release and diving still suppress fire normally.
 
@@ -885,16 +887,18 @@ merchants, guardians, rewards and final menu. The current results are:
 
 | Start | Level | Ships lost | Scoring enemy removals | Collected cash |
 | --- | ---: | ---: | ---: | ---: |
-| Menu inactivity | 1 | 0 | 191 | 3,650 |
-| Menu inactivity | 2 | 1 | 295 | 5,350 |
-| Menu inactivity | 3 | 0 | 211 | 5,100 |
-| Explicit demonstration | 1 | 0 | 190 | 2,850 |
-| Explicit demonstration | 2 | 0 | 296 | 4,200 |
-| Explicit demonstration | 3 | 0 | 218 | 5,900 |
+| Menu inactivity | 1 | 0 | 199 | 3,050 |
+| Menu inactivity | 2 | 1 | 283 | 4,600 |
+| Menu inactivity | 3 | 0 | 219 | 5,600 |
+| Explicit demonstration | 1 | 0 | 183 | 2,700 |
+| Explicit demonstration | 2 | 1 | 277 | 4,900 |
+| Explicit demonstration | 3 | 0 | 218 | 5,050 |
 
-Both tours retain their two continue credits. The explicit tour finishes with
-three ships and score 156,570; the idle-start tour finishes with two ships and
-score 157,380. A scoring removal counts a damageable actor's final destruction,
+Both tours retain two ships and their two continue credits. The explicit tour
+finishes with score 151,930; the idle-start tour finishes with score 158,290.
+These results include the corrected original inward-facing plant constructors
+and animations. Their shots affect the shared RNG, enemy damage and subsequent
+carried loadouts. A scoring removal counts a damageable actor's final destruction,
 not both phases of one compound cannon. These are earned observations, not
 maximum-clearance claims or resource grants. Both menu-return tests also verify
 another level-one admission after sixty seconds without input.

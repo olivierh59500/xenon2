@@ -25,8 +25,11 @@ func evaluateThirdMiddleCandidate(forecast *WorldForecast, policy *DemoPilot, mo
 	for pass := 0; pass < 36; pass++ {
 		state := forecast.State()
 		input := fallback
-		if pass < 3 {
+		if pass < 3 || state.ThirdMiddle != nil && !state.ThirdMiddle.Defeated {
 			input.Motion = motion
+			// Evaluate a complete held escape while the guardian is active.
+			// Returning to the short pursuit policy after three passes can
+			// make every escape inherit the same avoidable arm collision.
 		} else {
 			if independent && (state.ThirdMiddle == nil || state.ThirdMiddle.Defeated) {
 				candidate.stateful = true
