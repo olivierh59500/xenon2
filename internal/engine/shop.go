@@ -278,7 +278,8 @@ func (e *Equipment) ApplyItem(item Item) bool {
 	return true
 }
 
-// EnsureBasicWeapon is called when leaving the shop, not while selling guns.
+// EnsureBasicWeapon restores the fallback after gameplay removal or when
+// leaving the shop. Selling keeps its own catalogue entry empty until exit.
 func (e *Equipment) EnsureBasicWeapon() {
 	if e.Primary.Item == ItemNone {
 		e.ApplyItem(ItemForwardShot)

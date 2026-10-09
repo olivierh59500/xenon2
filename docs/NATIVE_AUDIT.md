@@ -1937,3 +1937,27 @@ run. Existing middle boundary validation remains 1004 commands/one life/two
 continues under both constructors. The carried exact-lookahead fight now reaches
 its real middle merchant with 19 shield unchanged from admission; the later level
 route remains incomplete.
+
+## Ship death equipment and motion
+
+The complete original death callback at `0x5d00` retires the current equipment
+head, skipping only an unmodified basic gun. A cannon also retires its matching
+projectile support; a removed primary is replaced by the ordinary basic emitter.
+Checkpoint equipment and dormant Nashwan equipment remain unchanged. Physical
+slots stay allocated as dead entries until their owning cleanup phase.
+
+Seventy-two original constructor/death boundaries cover all fourteen installed
+weapon families, power variants, protected exits and mixed loadouts. Comparisons
+include all 159 physical resource tags, free/equipment list heads, current
+catalogue ownership, previous owners and the unchanged checkpoint, dormant
+loadout and shared random state. Separate gameplay tests verify that lethal
+contact consumes pending fire without emitting a ghost projectile, and that a
+dead ship retains its dive phase and living trail until the normal lifecycle
+transition.
+
+The development controller fixtures retain exact outcomes under these death
+rules: the second defense merchant still requires 3,841 public commands, with
+1,150 cash; the isolated third final checkpoint reaches its real final merchant
+after 1,542 commands, with one ship, 31 shield and one legal continue. These
+fixture totals describe the Go controller; they are separate from the original
+callback comparisons and from a complete campaign.

@@ -605,6 +605,7 @@ func (w *World) Step(input Input) error {
 		handled, crushed := w.Rewind.Advance(&w.Player, w.ScrollY, w.BaseScrollStep, touching)
 		if crushed {
 			w.destroyPlayer()
+			playerContactStopped = true
 		}
 		if !handled {
 			w.Player.Advance(input.Motion, MotionContext{ScrollY: w.ScrollY, VisitedScrollY: w.VisitedScrollY, BaseScrollStep: w.BaseScrollStep})
@@ -621,7 +622,7 @@ func (w *World) Step(input Input) error {
 	} else if !playerContactStopped {
 		w.Player.ScrollStep = 0
 	}
-	if !playerContactStopped {
+	if !playerContactStopped && w.PlayerAlive {
 		if w.Dive.AdvancePhase() {
 			w.Rewind.Timer = -15
 		}
@@ -868,11 +869,13 @@ func (w *World) destroyPlayer() {
 	}
 	w.PlayerAlive = false
 	w.Equipment.Shield = 0
+	w.Dive.Phase, w.Dive.Direction = 1, 0
 	w.deathAnimation = w.commonAnimations["player-death"]
 	w.deathState = NewAnimation(w.deathAnimation.Animation)
 	w.PlayerSprite = w.deathState.Sprite(w.deathAnimation.Animation)
 	w.SoundRequests[2] = "synthesized-effect-10"
 	w.SoundRequests[1] = "synthesized-effect-10"
+	w.retireDeathEquipment()
 }
 
 func (w *World) damageActor(actor *WorldActor, amount uint16) {
