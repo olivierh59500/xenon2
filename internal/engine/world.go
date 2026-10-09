@@ -750,7 +750,7 @@ func entryEdge(x, y int) int {
 		}
 		return 2
 	}
-	if x-320 < y-192 {
+	if y-192 < x-320 {
 		return 2
 	}
 	return 3

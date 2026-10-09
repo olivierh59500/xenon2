@@ -92,6 +92,17 @@ its first movement now inherits the constructor's cleared coordinate fractions.
 These checks cover construction with available capacity; they do not establish
 initial unassigned Amiga RAM contents or every crowded-pool interaction.
 
+The same 601 waves also have 64-pass moving-list comparisons after construction:
+97,536 actor states and 38,464 shared-state boundaries, including the empty wave.
+Live actors match animation images/countdowns, original collision rectangles,
+fractional position and angle, firing and reused-slot words. All 880 observed
+point-shot factory calls match order, position, direction and speed, together
+with shared RNG and bonus invalidation. These checks corrected the third level's
+right-edge entry animation/collision and publication of curve words shared with
+later slot owners. Unrelated stage callbacks, player combat and projectile
+allocation are isolated; these are bounded wave comparisons, not complete-stage
+playthroughs or projectile-pool pressure tests.
+
 ## Validation boundaries
 
 Private source comparisons run only when the local decoded disk resources and

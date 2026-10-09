@@ -2000,3 +2000,37 @@ constructor reproduces both failures.
 This fixture guarantees available allocation and isolates each wave's birth.
 Existing allocator, full-world simulation and playthrough comparisons remain
 necessary for crowded scenes and complete-game fidelity.
+
+## Every moving-wave update
+
+The follow-up recorder executes 64 moving-list callback passes after each of
+the 601 real wave constructors. Unrelated initial stage controllers and player
+combat are isolated. Point-shot creation is observed at the original factory;
+its firing and shared random callbacks execute, while projectile allocation is
+isolated. The Go fixture observes its ordinary shot creations and clears them
+before the following moving pass to keep capacity available.
+
+The comparison covers 97,536 actor-state rows: 90,671 live rows match their
+animation image/countdown, collision, fractional position/angle, firing state,
+health, body links and retained vertical/mount words. The other 6,865 rows check
+actor inactivity after path removal. A separate 38,464-boundary comparison checks
+live counts, RNG and wave-bonus invalidation, including the count-zero record.
+All 880 original point-shot emissions match creation order, position, direction,
+speed and the original default image choice across the five levels.
+
+The source curve callback writes its angular-velocity low word and acceleration
+to the same physical words later used for mounted-equipment offsets. Go now
+publishes those values once a curve has actually executed, while an initial pause
+continues to preserve the preceding owner's words. A resource-independent
+regression checks both the pause and first curve, then releases the slot and
+verifies retention.
+
+At the third level's right entry, the original comparison selects the right
+animation when `y - 192 < x - 320`. The reversed condition selected the bottom
+animation and its different collider. Wave 83 exposed this at its first update;
+all sampled wave updates now match the original images and bounds. An ordinary
+Go fixture also reproduces this right-entry case without disk resources.
+
+These checks validate bounded isolated wave behavior. They do not establish
+collision outcomes with a live player, later random-branch states, the original
+hardware drawing or projectile allocation under a crowded full-game scene.

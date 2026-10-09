@@ -38,7 +38,7 @@ func (p *PresentationPilot) forecastPracticedRoute(w *World, planned Input) (Inp
 	var selected [6]Input
 	var keys [7]retainedGuardKey
 	for _, motion := range demoDirections {
-		candidate, inputs, nextKeys, ok := g.evaluate(w, planned, sequence, useSequence, motion, 3, pal, path)
+		candidate, inputs, nextKeys, ok := g.evaluate(w, planned, sequence, useSequence, motion, 6, pal, path)
 		if ok && candidate.better(best) {
 			best, selected, keys = candidate, inputs, nextKeys
 		}

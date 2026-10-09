@@ -860,6 +860,13 @@ Only three verified controls are committed. Eight private workers evaluate the
 known formations and their real callbacks. Candidate order resolves ties, so
 worker scheduling does not change the selected command.
 
+The same anticipation also covers nearby directed formations after the middle
+guardian. Their original entry-specific animations have different collision
+rectangles, so future callbacks determine their hazards and shot opportunities.
+Between those formations the existing cannon route retains control. Applying
+the placement controller to every quiet corridor could stall its deliberate
+rearward turn; an admission regression keeps those windows separate.
+
 The next decision is prepared while those controls execute. Two owned planning
 buffers rotate between playback and calculation. The rendering thread never
 waits for a background job. Admission checks physical pool contents and list
@@ -876,8 +883,11 @@ scrolling, matching its actual callback order. Point-route search includes the
 horizontal destination when returning beneath the central terrain.
 
 Corridor protection follows the complete remaining motion commitment, including
-turns after the first six commands. Its forecast stops at that commitment's own
-waypoint instead of substituting a different continuation. The final worm compares
+turns after the first six commands. Alternative escapes now hold the evaluated
+movement for six passes before rejoining the known route; a three-pass return
+could make all escapes inherit an avoidable formation contact. Its forecast stops
+at the commitment's own waypoint instead of substituting a different continuation.
+The final worm compares
 nine ordinary held escapes over 36 real passes and authenticates the current shot
 with the original moving-list hit order. An isolated original checkpoint starting
 with seven energy defeats the guardian without losing a ship or a continue.
@@ -889,16 +899,17 @@ merchants, guardians, rewards and final menu. The current results are:
 | --- | ---: | ---: | ---: | ---: |
 | Menu inactivity | 1 | 0 | 199 | 3,050 |
 | Menu inactivity | 2 | 1 | 283 | 4,600 |
-| Menu inactivity | 3 | 0 | 219 | 5,600 |
+| Menu inactivity | 3 | 0 | 224 | 6,000 |
 | Explicit demonstration | 1 | 0 | 183 | 2,700 |
 | Explicit demonstration | 2 | 1 | 277 | 4,900 |
-| Explicit demonstration | 3 | 0 | 218 | 5,050 |
+| Explicit demonstration | 3 | 0 | 234 | 5,600 |
 
 Both tours retain two ships and their two continue credits. The explicit tour
-finishes with score 151,930; the idle-start tour finishes with score 158,290.
+finishes with score 153,130; the idle-start tour finishes with score 159,590.
 These results include the corrected original inward-facing plant constructors
-and animations. Their shots affect the shared RNG, enemy damage and subsequent
-carried loadouts. A scoring removal counts a damageable actor's final destruction,
+and animations, and the third level's corrected right-entry images and collisions.
+Their shots and collision outcomes affect the shared RNG, enemy damage and
+subsequent carried loadouts. A scoring removal counts a damageable actor's final destruction,
 not both phases of one compound cannon. These are earned observations, not
 maximum-clearance claims or resource grants. Both menu-return tests also verify
 another level-one admission after sixty seconds without input.

@@ -66,8 +66,8 @@ The complete original-intro and idle-start regressions both finish all three
 stages with two ships and both continue credits intact. Each loses one ship in
 level two and finishes level three without another loss or continue. Both paths
 use the original merchants, guardian damage and exit rewards, then return to the
-original menu. The current scorecard records 678 scoring enemy removals and
-12,650 collected cash for the explicit tour, and 701 removals and 13,250 cash for
+original menu. The current scorecard records 694 scoring enemy removals and
+13,200 collected cash for the explicit tour, and 706 removals and 13,650 cash for
 idle admission. These observations do not claim that every enemy
 or bonus is collected under every starting state.
 

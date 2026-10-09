@@ -27,7 +27,9 @@ type PathMotionState struct {
 	Remaining           int
 	Budget              int
 	Active              bool
-	callbackTurnBias    callbackTurnBias
+	// Curve words remain untouched until the first curve command executes.
+	curveStarted     bool
+	callbackTurnBias callbackTurnBias
 }
 
 // NewPathMotion initializes a path without retaining its original byte layout.
@@ -141,6 +143,7 @@ func (s *PathMotionState) Advance(path *visualassets.Path, sine *[256]int8, next
 		case "origin":
 			s.ProgramCounter++
 		case "curve":
+			s.curveStarted = true
 			s.AngleFixed = int32(command.Heading) << 16
 			s.AngularVelocity = int32(int16(command.AngularVelocity)) << 8
 			s.AngularAcceleration = int32(int16(command.AngularAcceleration))

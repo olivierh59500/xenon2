@@ -300,6 +300,12 @@ func (w *World) storeActorResidue(actor *WorldActor) {
 		r.SetFireState(actor.fire.Accumulator, actor.fire.Rate)
 		r.Counter, r.MotionBudget = int16(actor.motion.Remaining), int16(actor.motion.Budget)
 		r.Direction, r.HorizontalDriftRemainder = int16(uint16(actor.motion.AngleFixed)), uint16(uint32(actor.motion.AngleFixed)>>16)
+		if actor.motion.curveStarted {
+			// The curve's velocity low word and acceleration share the words
+			// later used as mount offsets by other owners of this slot.
+			r.MountOffsetX = int16(actor.motion.AngularVelocity)
+			r.MountOffsetY = int16(actor.motion.AngularAcceleration)
+		}
 	}
 	w.storeWorldResidue(actor.Binding)
 	if !actor.Active {

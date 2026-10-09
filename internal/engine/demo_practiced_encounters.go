@@ -62,6 +62,16 @@ func practicedEncounterWindow(w *World) bool {
 		return false
 	}
 	section := w.Level.Number == 3 && w.ThirdMiddle == nil && w.ScrollY > 208
+	if w.Level.Number == 3 && w.ThirdMiddle != nil && w.ThirdMiddle.Defeated && w.ScrollY > 208 {
+		// Rehearse the directed formations through their actual sprite/collision
+		// changes, while keeping the existing cannon route between encounters.
+		for _, actor := range w.Actors {
+			if actor.Active && actor.part != nil && actor.part.MotionMode == "path-entry-edge-frames" && actor.X >= -48 && actor.X <= 368 && actor.Y >= -48 && actor.Y <= 240 {
+				section = true
+				break
+			}
+		}
+	}
 	return section && w.PlayerAlive &&
 		!w.GameOver && !w.Ready && !w.ShopReady && !w.LevelFinished && !w.ExitReady &&
 		w.PendingExitDrops == 0 && w.ScreenClearFrames == 0 && !w.stepContinuation.active && w.Rewind.Timer == 0 && w.Coverage != nil && w.Level.PlayerStencil != nil

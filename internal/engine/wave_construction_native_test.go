@@ -16,10 +16,9 @@ func waveConstructorResidueFixture(slot int) ActorResidue {
 		MotionBudget: int16(9 + slot), EmitterClock: uint16(0xa55a + slot), OwnerSlot: 3, LeaderSlot: NoActorSlot, FollowingSlot: 2}
 }
 
-// Unlike the earlier representative formation fixture, this comparison runs
-// every actual encounter through the production World constructor. Reused
-// slots contain distinguishable values, so writes and retention are separate.
-func TestAllMovingWaveConstructorsNativeTraceOptional(t *testing.T) {
+// Load exported gameplay data and independent original image identities.
+func nativeWaveReferenceData(t *testing.T) ([5]LevelData, [5]map[int]string, map[int]string) {
+	t.Helper()
 	root := os.Getenv("XENON2_NATIVE_TRACE_DIR")
 	if root == "" {
 		t.Skip("set XENON2_NATIVE_TRACE_DIR to compare every original wave constructor")
@@ -54,6 +53,15 @@ func TestAllMovingWaveConstructorsNativeTraceOptional(t *testing.T) {
 		}
 		sprites[level] = bank.Atlas.SourceSpriteNames
 	}
+	return data, sprites, commonArt.SourceSpriteNames
+}
+
+// Unlike the earlier representative formation fixture, this comparison runs
+// every actual encounter through the production World constructor. Reused
+// slots contain distinguishable values, so writes and retention are separate.
+func TestAllMovingWaveConstructorsNativeTraceOptional(t *testing.T) {
+	data, sprites, commonSprites := nativeWaveReferenceData(t)
+	var err error
 	var world *World
 	var ordered [ActorPoolCapacity]*WorldActor
 	var actors []*WorldActor
@@ -83,7 +91,7 @@ func TestAllMovingWaveConstructorsNativeTraceOptional(t *testing.T) {
 		actor := actors[order]
 		name := sprites[level-1][int(v[25])]
 		if actor.Atlas == "common" {
-			name = commonArt.SourceSpriteNames[int(v[25])]
+			name = commonSprites[int(v[25])]
 		}
 		collision := CollisionRect{Left: int(v[27]), Top: int(v[28]), Right: int(v[29]), Bottom: int(v[30])}
 		if actor.Binding.Slot != int(v[4]) || actor.part.ResourceTag != int(v[5]) || int(actor.X) != int(v[6]) || int(actor.Y) != int(v[7]) || actor.motion.Remaining != int(v[10]) || actor.Health != int(v[15]) || actor.part.StrongHealth != (v[16] != 0) || actor.Score != int(v[17]) || actor.WaveToken != uint16(v[18]) || actor.fire.Accumulator != uint8(v[19]>>8) || actor.fire.Rate != uint8(v[19]) || actor.motion.Budget != int(v[20]) || actor.Sprite != name || actor.animationState.Remaining != int(v[26]) || actor.Collision != collision || world.Pool.Slot(actor.Binding.Slot).Linked != (v[31] != 0) {

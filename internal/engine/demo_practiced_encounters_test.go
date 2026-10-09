@@ -1,6 +1,42 @@
 package engine
 
-import "testing"
+import (
+	"testing"
+
+	"xenon2/internal/visualassets"
+)
+
+func TestPostMiddleEncounterPracticeKeepsCannonRouteBetweenFormations(t *testing.T) {
+	w := testWorld(t)
+	w.Level.Number, w.ScrollY = 3, 1000
+	w.ThirdMiddle = &ThirdGuardianState{Defeated: true}
+	w.Coverage, w.Level.PlayerStencil = &TerrainCoverage{}, &visualassets.PlayerTerrainStencil{}
+	if practicedEncounterWindow(w) {
+		t.Fatal("ordinary post-middle corridor must retain its cannon route")
+	}
+	actor := &WorldActor{Active: true, X: 352, Y: 120, part: &visualassets.ActorPart{MotionMode: "path-entry-edge-frames"}}
+	w.Actors = append(w.Actors, actor)
+	if !practicedEncounterWindow(w) {
+		t.Fatal("directed incoming formation did not receive full callback anticipation")
+	}
+	actor.Active = false
+	if practicedEncounterWindow(w) {
+		t.Fatal("expired formation kept control away from the ordinary cannon route")
+	}
+	actor.Active, actor.X = true, 500
+	if practicedEncounterWindow(w) {
+		t.Fatal("distant formation took control of the local cannon route")
+	}
+	actor.X = 343
+	w.ThirdMiddle.Defeated = false
+	if practicedEncounterWindow(w) {
+		t.Fatal("formation anticipation replaced the active middle guardian policy")
+	}
+	w.ThirdMiddle.Defeated, w.ScrollY = true, 208
+	if practicedEncounterWindow(w) {
+		t.Fatal("formation anticipation replaced the final guardian policy")
+	}
+}
 
 func TestEncounterPracticeMatchesSerialCallbacksAndKeepsLiveWorldOptional(t *testing.T) {
 	w, err := NewWorld(playableOriginalWorldData(t, 3))
