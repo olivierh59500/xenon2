@@ -2485,3 +2485,28 @@ This is captured-profile Go progression evidence. It does not execute the
 original program during gameplay or claim a new Amiga battle comparison. Current
 admission from the preceding four victories, integrated hardware timing/drawing
 and a complete five-stage campaign remain separate unproven requirements.
+
+## Current carried fourth-stage progression
+
+The ordinary default-intro Ebitengine reference journey now earns fifth READY
+with three ships, two continue credits, 39 shield and Forward 1 / Laser 0 / Rear 2.
+Both fourth guardians die through their actual callbacks; ten and twenty exit
+coins drain before the real merchants. The intermediate merchant occurs at
+frame 4,692 with 27 shield and 750 cash, and the final merchant at frame 7,747
+with seven shield and 4,250 cash. Actual repair, sale/purchase controls and loading
+produce score 203,700 and fifth READY RNG 1213999438/2626127522.
+
+This restores a current four-stage progression check after the preceding source
+corrections changed carried equipment/RNG. The optional fourth opening rehearsal
+uses twelve complete Go passes with changing-camera projectile geometry. The
+middle core retains a two-command escape when all six-pass proposals fail. Both
+fourth specialists accept valid Rear Shot tiers zero through two; the real Rear 2
+pickup had otherwise disabled the final specialist. Native health, hits, timing,
+rewards and game rules remain unchanged.
+
+The original-resource engine/artwork suite, existing captured fourth cases and
+focused race checks pass. The logical frontend journey takes 40.86 seconds in
+the local Xvfb/Mesa environment, covering 1,963.02 simulated seconds. No original
+program executes in gameplay. This is connected Go progression evidence through
+the current fifth admission, not integrated Amiga drawing/audio/timing parity or
+a completed fifth stage. Earlier fifth records use a distinct captured profile.

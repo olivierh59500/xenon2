@@ -24,7 +24,7 @@ func fourthMiddleCoastMotion(player PlayerMotionState, target int) (MotionInput,
 }
 
 // The complete heading-frame intersection gives a point lane valid for every
-// satellite heading. Native Rear0 has zero horizontal spawn/movement offset.
+// satellite heading. Every Rear Shot tier has zero horizontal spawn/movement offset.
 func fourthMiddleStableAim(w *World, index int) (int, int, int, bool) {
 	if w == nil || w.fourthMiddleArt == nil || index < 0 || index >= len(w.fourthMiddleArt.Components) {
 		return 0, 0, 0, false

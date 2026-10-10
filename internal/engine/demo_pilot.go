@@ -22,6 +22,7 @@ type DemoPilot struct {
 	fourthRearTargetX, fourthRearTargetY int
 	retreatGoal                          int
 	practicedRoute                       bool
+	preciseFourthProjectiles             bool
 	retreatX, retreatY                   int
 	secondArenaScratch                   []demoSecondDefenseView
 	middleTerrainFrozen                  bool
@@ -271,7 +272,7 @@ func (p *DemoPilot) NormalInput(w *World) Input {
 				}
 				var view demoActorView
 				supported := false
-				if p.practicedRoute && w.Level.Number <= 3 {
+				if p.practicedRoute && (w.Level.Number <= 3 || w.Level.Number == 4 && p.preciseFourthProjectiles) {
 					view, supported = demoProjectilePredictionSteps(w, shot, shotSteps[:future])
 				}
 				if supported {

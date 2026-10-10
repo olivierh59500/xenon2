@@ -51,6 +51,9 @@ func (p *PresentationPilot) forecastCombatGuard(w *World, planned Input) (answer
 		// escape the formation that follows it, not only its nearest bullet.
 		horizon = 12
 	}
+	if fourthOpening && p.FourthLookahead > 6 {
+		horizon = min(18, p.FourthLookahead)
+	}
 	if corridor || final || fourthOpening {
 		sequence, useSequence = p.planner.nativeMotion.guardSequence(w, planned.Motion)
 	}
@@ -64,7 +67,7 @@ func (p *PresentationPilot) forecastCombatGuard(w *World, planned Input) (answer
 			forecast.AdvancePALTick()
 		}
 		input := planned
-		if useSequence {
+		if useSequence && pass < len(sequence) {
 			input.Motion = sequence[pass]
 		}
 		r, err := forecast.Advance(input)

@@ -179,6 +179,12 @@ func (p *fourthMiddleCorePilot) Input(w *World) Input {
 		}
 	}
 	if !found {
+		if escape, ok := p.shortEscape(w); ok {
+			// Repeated samples reuse this first command for the same state.
+			p.world, p.plan, p.at = w, fourthMiddleCorePlan{count: 1}, 1
+			p.plan.before[0], p.plan.inputs[0] = fourthMiddleCoreState(w), escape
+			return escape
+		}
 		return fourthMiddleCoreIntent(w)
 	}
 	p.world, p.plan, p.at = w, best, 1
@@ -206,4 +212,54 @@ func fourthMiddleCoreTerminalUnsafe(w *World) bool {
 		return damage.Applied && damage.Lost > 0
 	}
 	return false
+}
+
+// shortEscape keeps a changing two-pass exit available when every six-pass
+// proposal fails. All contacts, weapon hits and shield changes remain owned by
+// ordinary callbacks; a further native input must still preserve the shield.
+func (p *fourthMiddleCorePilot) shortEscape(w *World) (Input, bool) {
+	best := Input{}
+	found := false
+	bestShield, bestHP, bestDistance := -1, 999999, 999999
+	for _, first := range demoDirections {
+		for _, second := range demoDirections {
+			if p.forecast.Load(w) != nil {
+				return Input{}, false
+			}
+			safe := true
+			for _, motion := range []MotionInput{first, second} {
+				for range 3 {
+					p.forecast.AdvancePALTick()
+				}
+				r, err := p.forecast.Advance(Input{Motion: motion, Fire: true})
+				q := p.forecast.State()
+				if err != nil || !r.Alive || q.Equipment.Shield < w.Equipment.Shield || fourthAdmissionTerrainUnsafe(q) || fourthMiddleCoreTerminalUnsafe(q) {
+					safe = false
+					break
+				}
+				if q.FourthMiddle.Defeated {
+					break
+				}
+			}
+			if !safe {
+				continue
+			}
+			q := p.forecast.State()
+			if !q.FourthMiddle.Defeated {
+				viable, err := p.terminal.check(q, true)
+				if err != nil || !viable.safe {
+					continue
+				}
+			}
+			x, y := fourthMiddleCoreTargets(q)
+			distance := absDemo(q.Player.X-x) + absDemo(q.Player.Y+q.ScrollY-y) + absDemo(q.Player.Y-176)
+			hp := int(int16(q.FourthMiddle.Parts[4].Health))
+			if !found || q.Equipment.Shield > bestShield || q.Equipment.Shield == bestShield && (hp < bestHP || hp == bestHP && distance < bestDistance) {
+				found = true
+				best = Input{Motion: first, Fire: true}
+				bestShield, bestHP, bestDistance = q.Equipment.Shield, hp, distance
+			}
+		}
+	}
+	return best, found
 }

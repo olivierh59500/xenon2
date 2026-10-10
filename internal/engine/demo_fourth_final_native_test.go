@@ -50,6 +50,16 @@ func TestFourthFinalNativeScopeResourcesAndTriggerReleaseOptional(t *testing.T) 
 	if !fourthFinalNativeEligible(w, 3) {
 		t.Fatalf("native checkpoint profile rejected: %+v", w.Equipment)
 	}
+	for _, tier := range []int{-1, 0, 1, 2, 3} {
+		var branch WorldForecast
+		if err := branch.Load(w); err != nil {
+			t.Fatal(err)
+		}
+		branch.State().Equipment.Rear.Tier = tier
+		if got := fourthFinalNativeEligible(branch.State(), 3); got != (tier >= 0 && tier <= 2) {
+			t.Fatalf("native Rear Shot tier %d eligibility %v", tier, got)
+		}
+	}
 	for _, mode := range []string{"level", "missing-final", "defeated", "ready", "dead", "blocked-fire", "strobe", "partial", "shop", "drops", "dive", "PAL", "primary", "rear", "extra-mount", "art", "ships", "paths", "stencil", "coverage", "weapons", "boxes"} {
 		t.Run(mode, func(t *testing.T) {
 			var clone WorldForecast
@@ -85,7 +95,7 @@ func TestFourthFinalNativeScopeResourcesAndTriggerReleaseOptional(t *testing.T) 
 			case "primary":
 				q.Equipment.Primary.Item = ItemFlamer
 			case "rear":
-				q.Equipment.Rear.Tier = 0
+				q.Equipment.Rear = WeaponSlot{}
 			case "extra-mount":
 				q.Equipment.Mounts[1].Item = ItemCannon
 			case "art":

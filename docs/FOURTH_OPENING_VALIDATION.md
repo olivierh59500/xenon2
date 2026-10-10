@@ -2,7 +2,47 @@
 
 ## Current status
 
-The current default-intro controller completes level four with its carried
+The current default-intro reference tour completes all four stages with three
+ships and both continue credits intact. It uses a test-only five-stage tour
+limit; the public desktop and Android demonstration still returns after stage
+three. Fourth READY carries Forward 1 / Cannon 0 / Rear 1, 39 shield and score
+163,850. Its first combat pass has RNG 4128617536/3288965136.
+
+The optional twelve-pass fourth opening guard follows changing camera
+displacement for projectile geometry. The six-command terrain commitment remains
+bounded; later forecast passes use the held proposal. The forest reaches the
+middle guardian at frame 2,777 with 35 shield and no ship loss. The native tail
+falls at frame 3,209; the final satellite falls at frame 4,153 with 31 shield.
+A changing two-pass escape remains available when every six-pass core proposal
+fails, and its endpoint must still admit a shield-preserving ordinary next input.
+Repeated same-state samples reuse the chosen first command.
+
+The exposed core is defeated through ordinary weapon callbacks. Its ten real
+coins drain before the intermediate merchant at frame 4,692 with 27 shield and
+750 earned cash. Normal repair restores full shield. The final guardian is
+admitted at frame 6,706 with 39 shield and a genuinely collected Rear 2. Both
+fourth specialists now accept the three valid Rear Shot tiers; the old final
+specialist rejected Rear 2 and fell back to the general controller. Native
+motion, weapon damage and enemy health are unchanged.
+
+The final guardian's eyes and core are defeated, twenty real coins drain, and
+the final merchant opens at frame 7,747 with seven shield and 4,250 cash. The
+normal repair, cannon sale, laser purchase and loader enter fifth READY with
+39 shield, Forward 1 / Laser 0 / Rear 2, score 203,700, three ships, two continues
+and RNG 1213999438/2626127522. The full logical journey takes 1,963.02 simulated
+seconds; the local Ebitengine/Xvfb test takes 40.86 seconds. Simulation execution
+time does not establish real-time display pacing or audible mixing.
+
+The captured-entry middle regression, existing recorded fourth cases, complete
+original-resource engine/artwork suite and focused race checks pass. This proves
+current carried admission to stage five. Completing that stage from the new
+profile, integrated Amiga playthrough comparison and current device drawing
+remain separate requirements. The historical fifth records use another profile.
+
+## Previous single-ship reference
+
+At the earlier single-ship baseline, the default-intro controller completed
+level four with its carried
 ship and both continue credits intact. Fourth READY has 39 shield,
 Forward 1 / Cannon 0 / Rear 0 and random state 1818979822/680038254. The
 opening reaches the middle guardian at frame 1953 with 27 shield, after a
@@ -16,9 +56,9 @@ repair restores 39 shield. The final guardian is admitted at frame 6560 with
 the final merchant at frame 7424. Normal repair and the real next-level loader
 then enter stage five with 39 shield, the same ship and both continue credits.
 
-The complete default-intro logical replay passes on desktop and Pixel 10a.
-The latest desktop regression takes 14.45 seconds; the recorded Pixel run
-takes 206.87 seconds. Neither logical timing establishes mobile drawing or
+That complete default-intro logical replay passed on desktop and Pixel 10a.
+The desktop regression took 14.45 seconds; the recorded Pixel run took
+206.87 seconds. Neither logical timing establishes mobile drawing or
 smoothness. The fifth-stage expert route and the complete campaign remain
 unfinished. The sections below retain earlier capability and campaign
 comparisons; their old entry states are not current campaign evidence.

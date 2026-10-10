@@ -139,7 +139,7 @@ func fourthFinalNativeEligible(w *World, pal int) bool {
 		return false
 	}
 	e := w.Equipment
-	if e.Primary.Item != ItemForwardShot || e.Primary.Tier != 1 || e.Mounts[0].Item != ItemCannon || e.Mounts[0].Tier != 0 || e.Rear.Item != ItemRearShot || e.Rear.Tier != 1 || e.Side.Item != ItemNone || e.SpeedTier != 2 || e.FirePeriod != 8 || e.FireAdvance != 3 || e.SuperFrames != 0 || e.SuperLoadoutActive {
+	if e.Primary.Item != ItemForwardShot || e.Primary.Tier != 1 || e.Mounts[0].Item != ItemCannon || e.Mounts[0].Tier != 0 || e.Rear.Item != ItemRearShot || e.Rear.Tier < 0 || e.Rear.Tier > 2 || e.Side.Item != ItemNone || e.SpeedTier != 2 || e.FirePeriod != 8 || e.FireAdvance != 3 || e.SuperFrames != 0 || e.SuperLoadoutActive {
 		return false
 	}
 	for _, slot := range e.Mounts[1:] {

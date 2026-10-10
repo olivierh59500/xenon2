@@ -166,6 +166,12 @@ func (g *Game) demoControls(manual inputFrame) inputFrame {
 			var input engine.Input
 			if g.Config.HumanDemo {
 				d.presentation.PALRefreshes = g.Config.LogicPALRefreshes
+				// Extended reference tours retain the fourth-stage preparation;
+				// the public desktop/Android tour still ends after stage three.
+				d.presentation.FourthLookahead = 0
+				if g.demoLastLevel > 3 {
+					d.presentation.FourthLookahead = 12
+				}
 				input = d.presentation.NormalInput(w)
 			} else {
 				input = d.pilot.NormalInput(w)

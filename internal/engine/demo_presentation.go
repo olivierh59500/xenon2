@@ -19,7 +19,10 @@ type PresentationPilot struct {
 	fourthMiddleCore    *fourthMiddleCorePilot
 	fourthBranch        *retainedGuardPlan
 	// PALRefreshes matches the host's gameplay cadence; zero uses three ticks.
-	PALRefreshes            int
+	PALRefreshes int
+	// FourthLookahead optionally extends fourth-stage opening rehearsals to
+	// 7..18 passes with camera-aware projectile geometry; zero retains six.
+	FourthLookahead         int
 	forecast                WorldForecast
 	guardianAimForecast     WorldForecast
 	middleForecastPolicy    DemoPilot
@@ -52,7 +55,7 @@ func (p *PresentationPilot) NormalInput(w *World) Input {
 		return Input{Fire: true}
 	}
 	if p.world != w || w.Frame < p.frame {
-		*p = PresentationPilot{PALRefreshes: p.PALRefreshes, world: w, frame: w.Frame, decisionAt: w.Frame + 3, planner: DemoPilot{practicedRoute: true}}
+		*p = PresentationPilot{PALRefreshes: p.PALRefreshes, FourthLookahead: p.FourthLookahead, world: w, frame: w.Frame, decisionAt: w.Frame + 3, planner: DemoPilot{practicedRoute: true}}
 	}
 	p.frame = w.Frame
 	if input, handled := p.practicedEncounterInput(w); handled {
@@ -74,6 +77,7 @@ func (p *PresentationPilot) NormalInput(w *World) Input {
 		return input
 	}
 	p.planner.palRefreshes = p.PALRefreshes
+	p.planner.preciseFourthProjectiles = p.FourthLookahead > 6
 	base := p.planner.NormalInput(w)
 	input := base
 	if w.Level.Number == 2 && w.secondScheduler != nil && !w.secondMiddleReleased && w.ScrollY >= 2512 && w.ScrollY <= 2896 {

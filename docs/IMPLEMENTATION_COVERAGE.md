@@ -17,14 +17,19 @@ losing a ship. Both use real guardian deaths, rewards and merchants before
 returning to the menu. The measured scorecard and remaining collection limits
 are recorded in [EXPERT_TARGETING.md](EXPERT_TARGETING.md).
 
-Later-stage reference fixtures remain available but use an explicit test-only
-tour limit. Their earlier carried loadouts and random states are capability
-records, not current whole-campaign proof. In those recorded routes the fourth
-stage reaches its real final merchant; the fifth reaches its final guardian.
-A separate isolated final fight now reaches the final merchant through ordinary
-controls, with a prepared loadout and five ships. Carried fifth-stage admission
-and integrated Amiga playthrough comparison remain unfinished. Ordinary
-demonstration launches do not enter level four.
+A separate current reference tour uses a test-only five-stage limit and earns
+all four preceding victories, real reward drains, merchants, repairs and the
+fifth READY loader from the ordinary intro. It retains all three starting ships
+and both continues. Stage five receives full shield, Forward 1 / Laser 0 / Rear 2
+and score 203,700. The [fourth-stage validation](FOURTH_OPENING_VALIDATION.md)
+records the exact boundaries and remaining hardware/timing limits.
+
+Historical fifth-stage records remain explicit captured-profile capabilities.
+Their renewed ordinary inputs reach the fifth final guardian, while a separate
+isolated final fight reaches the final merchant with a prepared loadout and five
+ships. Neither establishes fifth-stage completion from the newly earned profile.
+Integrated Amiga playthrough equivalence and a connected five-stage victory
+remain unfinished. Ordinary demonstration launches do not enter level four.
 
 ## Fixed encounters and scripted arenas
 
@@ -369,8 +374,9 @@ at frame 5,402 with 35 shield and both continue credits. Per-pass expected state
 is regenerated from full callbacks, and the obsolete earlier-health outcome
 still fails the same next-pass validator. The six formerly failing replay
 checks, the complete original-resource engine/artwork suite and focused race
-checks now pass. These records still start from an explicit captured admission
-and loader timing; they do not establish a current connected five-stage tour.
+checks now pass. These records still start from an explicit historical admission and loader
+timing; they do not establish completion from the newly earned Rear 2 profile
+or a current connected five-stage tour.
 
 Fifth guardian event traces now independently check 2,700 complete frames,
 1,007 ordinary mount shots and 1,513 final queued sound requests. Per-component

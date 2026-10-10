@@ -969,3 +969,48 @@ fifth-stage profile, with recorded loader/star timing at the intermediate return
 They do not establish current carried admission from the preceding four stages,
 a current full frontend journey, a lossless final fight or integrated Amiga
 playthrough equivalence. The public demonstration remains a three-stage tour.
+
+## Current four-stage campaign admission
+
+The test-only extended reference tour now completes the first four stages from
+the ordinary intro, retaining three ships and two continue credits. It visits
+every genuine intermediate/final merchant and uses real purchases, repairs and
+stage loaders. No inventory, RNG, health or completion fields are assigned by
+the frontend regression. The public desktop/Android tour still ends after stage
+three.
+
+`PresentationPilot.FourthLookahead` optionally extends fourth opening rehearsal
+to 7..18 passes; zero retains the six-pass recorded policy. Extended reference
+tours select twelve and use the actual future camera displacement for ordinary
+projectile geometry. Existing six-command terrain commitments remain within
+their array bounds. The setting survives normal pilot/world replacement.
+
+Both fourth specialists accept Rear Shot tiers zero through two while retaining
+their weapon/resource/phase gates. The current carried Rear 1 becomes Rear 2
+through a real pickup, which previously disabled the final specialist. The middle
+core also compares two changing ordinary commands when its six-pass proposals
+all fail. Contacts, terrain, damage and firing are still produced by native Go
+callbacks, and a further ordinary command must preserve the surviving shield.
+This short escape is cached for repeated sampling of the same source state.
+
+| Current fourth-stage boundary | Frame | Shield | Cash |
+| --- | ---: | ---: | ---: |
+| Middle guardian admitted | 2,777 | 35 | 0 |
+| Tail disabled | 3,209 | 35 | 0 |
+| All satellites disabled | 4,153 | 31 | 0 |
+| Intermediate merchant | 4,692 | 27 | 750 |
+| Final guardian admitted with Rear 2 | 6,706 | 39 | 2,750 |
+| Final merchant | 7,747 | 7 | 4,250 |
+
+Fifth READY carries Forward 1 / Laser 0 / Rear 2, 39 shield, zero wallet,
+score 203,700 and RNG 1213999438/2626127522. The journey takes 1,963.02 simulated
+seconds. The logical Ebitengine/Xvfb regression passes in 40.86 seconds; that
+execution time is not a rendered frame-rate or audio measurement.
+
+The current captured-entry middle regression and original recorded fourth
+regressions pass, as do the complete original-resource engine/artwork suite and
+focused race checks. The captured fixture does not replay the preceding stages;
+the separate frontend regression supplies that connected evidence. Completion
+of the fifth stage from this new profile and an integrated Amiga five-stage
+comparison remain unproven. Historical fifth frontend/profile assertions still
+require renewal for the new entry.
