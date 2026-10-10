@@ -90,8 +90,8 @@ func (w *World) activateFifthGuardian(record visualassets.FixedEncounter, final 
 		// physical words while initializing phase, direction and component data.
 		state.FireAccumulator, state.SecondaryAccumulator = binding.Residue.FireAccumulator(), binding.Residue.FireRate()
 		actor.Binding.Residue.Counter, actor.Binding.Residue.Direction = 0, 4
-		actor.Binding.Residue.MountOffsetX, actor.Binding.Residue.MountOffsetY = int16(descriptor.OffsetX), int16(descriptor.OffsetY)
 		actor.Binding.Residue.WaveBonusToken = 0
+		w.Pool.Slot(binding.Slot).AuxiliaryFlags[0] = true
 		if final {
 			actor.Binding.Residue.StrongHealth = descriptor.StrongHealth
 		} else {
@@ -116,6 +116,16 @@ func (w *World) storeFifthGuardianResidue(actor *WorldActor) {
 	if actor.Binding.EntityID == 0 {
 		return
 	}
+	w.publishFifthGuardianResidue(actor)
+	if !actor.Active {
+		w.retireWorldActor(actor.Binding)
+	}
+}
+
+func (w *World) publishFifthGuardianResidue(actor *WorldActor) {
+	if actor.Binding.EntityID == 0 {
+		return
+	}
 	s, r := w.fifthPartState(actor), &actor.Binding.Residue
 	r.X, r.Y, r.Health, r.Counter = int16(s.X), int16(s.Y), uint16(s.Health), int16(s.Clock)
 	switch actor.fifthPart.Behavior {
@@ -126,9 +136,6 @@ func (w *World) storeFifthGuardianResidue(actor *WorldActor) {
 	}
 	r.SetFireState(s.FireAccumulator, s.SecondaryAccumulator)
 	w.storeWorldResidue(actor.Binding)
-	if !actor.Active {
-		w.retireWorldActor(actor.Binding)
-	}
 }
 
 func (w *World) fifthPartState(actor *WorldActor) *FifthGuardianPartState {
@@ -292,6 +299,7 @@ func (w *World) damageFifthGuardian(actor *WorldActor, amount uint16) {
 	state := w.fifthPartState(actor)
 	actor.Health = state.Health
 	actor.Active = state.Active
+	w.publishFifthGuardianResidue(actor)
 	index := actor.fifthIndex - 1
 	if actor.fifthFinal && index == 21 || !actor.fifthFinal && index == 5 {
 		body := w.fifthMiddleActors[0]
@@ -326,13 +334,33 @@ func (w *World) damageFifthGuardian(actor *WorldActor, amount uint16) {
 	}
 	w.Score += event.Score
 	if event.Explosions == 1 {
-		w.spawnActorDeathEffect(actor)
+		// The component callback selects effect size independently of the
+		// contact-strength byte retained by a reused physical entry.
+		region := w.actorRegion(actor)
+		name := "explosion-small"
+		if actor.fifthPart.StrongHealth {
+			name = "explosion-large"
+		}
+		x, y := int(actor.X)-region.AnchorX+region.Width/2, int(actor.Y)-region.AnchorY+(region.Height-1)/2
+		if !actor.fifthFinal {
+			// Middle mounts use an explicit eight-pixel attachment offset.
+			x, y, name = int(actor.X)+8, int(actor.Y)+8, "explosion-small"
+		}
+		w.spawnSecondNamedExplosion(x, y, name)
 	}
 	if event.Defeated {
+		// The source releases the moving list immediately, head first. Its
+		// slots become the free head before any explosion or reward allocation.
+		for slot := w.Pool.First(ActorPoolMoving); slot != NoActorSlot; {
+			next := w.Pool.Next(slot)
+			binding := ActorPoolBinding{Slot: slot, EntityID: w.Pool.Slot(slot).EntityID}
+			w.discardWorldEntity(binding.EntityID)
+			w.releaseWorldActor(binding)
+			slot = next
+		}
 		for _, member := range w.Actors {
 			if member.Active && member.ActorList == "moving" {
 				member.Active = false
-				w.storeActorResidue(member)
 			}
 		}
 		if actor.fifthFinal {

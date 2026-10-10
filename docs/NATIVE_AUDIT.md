@@ -2379,3 +2379,44 @@ the independent lifecycle trace. Ordinary engine/asset suites and focused race
 checks pass; the original-resource suite retains the same six stale fifth-stage
 practice failures. These fixtures do not establish a connected fifth-stage or
 complete campaign playthrough.
+
+## Fifth-stage guardian damage, release and reward allocation
+
+All 24 damageable components of the fifth-stage middle and final guardians now
+invoke their original damage callbacks with available capacity, a full pool of
+actual point shots, and a full pool of inert moving entries. Damage one and 255
+produce 144 complete callback cases and 22,176 physical-slot rows. Original map
+restoration, RNG, score, queued/immediate sounds, reward caches, outer-defense
+count and stage-completion flag match without corruption exceptions.
+
+The comparison restores the live flag initialized by both constructors and
+preserves spare physical offset words. Component positioning still uses its
+separate decoded attachment data. It also separates the middle mount's fixed
+small explosion from an inherited strong-contact byte: the original always
+places that effect eight pixels from the attachment anchor. Final components
+retain their individual small/large effect choices.
+
+Core death releases the entire moving list immediately, in head-to-tail order,
+instead of leaving its entries dead until another traversal. Released slots
+enter the free head before any effects or rewards are constructed. Middle death
+then allocates explosions before cash; final death allocates cash before
+explosions. Go now publishes the core subtraction before this release and drops
+the old logical ownership, preserving source slot reuse and inherited reward
+headings.
+
+Resource-independent regressions verify constructor fields, effect size/centre,
+release order, inclusion of unrelated moving entries, factory counts and both
+allocation orders. The preceding implementation fails these regressions and the
+independent source comparison. Original-resource cannon-reuse and final-projectile
+boundary checks also pass. The latter retains every native defense/core health
+value but arranges in-flight ordinary bullets; with corrected release, all twenty
+paired exit coins remain live at its lethal-pass boundary. Its reward drain,
+merchant purchase and next-loop admission retain the same survival requirements.
+
+The production core-flash GPU pixel check passes. A separate two-player frontend
+completion fixture verifies merchant-ending phases and shared next-loop
+admission; it assigns its completion boundary and is not an earned victory.
+Ordinary engine/asset suites and focused race checks pass. The original-resource
+suite retains only the same six stale fifth-stage practice failures. The final
+fight through normal gun controls and a complete five-stage playthrough remain
+unverified.

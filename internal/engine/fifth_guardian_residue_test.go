@@ -86,6 +86,11 @@ func TestOriginalFifthBodyInheritsEmitterFromReleasedCannonOptional(t *testing.T
 		t.Run(strconv.FormatBool(final), func(t *testing.T) {
 			w := fifthResourceWorld(t)
 			slot, residue := releasedOriginalCannonMount(t, w)
+			var offsets [ActorPoolCapacity][2]int16
+			for index := range offsets {
+				r := w.Pool.Slot(index).Residue
+				offsets[index] = [2]int16{r.MountOffsetX, r.MountOffsetY}
+			}
 			if err := w.activateFifthGuardian(visualassets.FixedEncounter{Y: 2336}, final); err != nil {
 				t.Fatal(err)
 			}
@@ -104,8 +109,8 @@ func TestOriginalFifthBodyInheritsEmitterFromReleasedCannonOptional(t *testing.T
 			}
 			for _, component := range actors {
 				r := w.Pool.Slot(component.Binding.Slot).Residue
-				if r.OwnerSlot != slot || r.Counter != 0 || r.Direction != 4 || r.WaveBonusToken != 0 || r.MountOffsetX != int16(component.fifthPart.OffsetX) || r.MountOffsetY != int16(component.fifthPart.OffsetY) {
-					t.Fatal("guardian constructor did not publish its physical owner, phase, direction and offsets")
+				if r.OwnerSlot != slot || r.Counter != 0 || r.Direction != 4 || r.WaveBonusToken != 0 || [2]int16{r.MountOffsetX, r.MountOffsetY} != offsets[component.Binding.Slot] {
+					t.Fatal("guardian constructor lost its physical owner, phase, direction or retained spare offsets")
 				}
 			}
 			part := w.fifthPartState(body)

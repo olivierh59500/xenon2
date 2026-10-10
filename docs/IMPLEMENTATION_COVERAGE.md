@@ -199,6 +199,14 @@ of a turret's firing state before self-reclamation and repeated coordinate reads
 inside saturated radial bursts. Original-resource and resource-independent
 regressions cover these cases; full-stage progression remains separate.
 
+All 24 damageable fifth-stage guardian components now have complete damage
+callbacks under three capacity profiles: 144 cases and 22,176 physical-slot
+states, including core deaths and real reward/effect factories. Constructor live
+flags/spare words, middle-mount effect selection/centering and immediate moving
+list release are corrected. Original maps, scores, RNG, audio and completion
+metadata match. Core-flash GPU and separate projectile/UI boundary checks pass;
+they do not establish an earned final fight or connected five-stage victory.
+
 Checkpoint restoration across alternating turns, the second guardian's
 crowded-scene direction, retained hatch/pod state, and death-image attachment
 centers now have explicit implementations and source comparisons. Accepted
