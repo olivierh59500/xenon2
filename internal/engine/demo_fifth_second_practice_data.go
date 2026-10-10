@@ -697,5 +697,6 @@ var fifthSecondMarkers = [...]uint64{
 	0x5ec1d66c4a186885, 0x4aafebea6d4f5641, 0x9e8e80118749699c, 0x91f7d73581dc6a51,
 	0xd61b7cf427da606d, 0xe4f14e82f1135431, 0x40373871643eaae4, 0xd6725de050ef52e1,
 	0x254076bf0bc4b585, 0xdf8cf5a753609d91, 0xc906e24bc530986c, 0xc75f08b157639251,
-	0xa5ef1311b7675cd5, 0xa1616ef9e2080301, 0x8e1833280407b015, 0x77a173dffac6eb6b,
+	// Final construction inherits the terrain constructor's cleared emitter word.
+	0xa5ef1311b7675cd5, 0xa1616ef9e2080301, 0x8e1833280407b015, 0xb65cfcbeaf6b5043,
 }

@@ -7,8 +7,11 @@ import (
 	"xenon2/internal/visualassets"
 )
 
-func TestFirstWorldTileCannonUpdatesAndRestoresTerrain(t *testing.T) {
+func terrainCannonFixture(t *testing.T, level int, retained ActorResidue) (*World, *WorldActor) {
+	t.Helper()
 	w := testWorld(t)
+	w.Level.Number, w.ScrollY = level, 900
+	w.Pool.Slot(w.Pool.FreeFirst()).Residue = retained
 	patch := func(a, b, c, d uint16) visualassets.TilePatch {
 		return visualassets.TilePatch{Columns: 2, Rows: 2, Tiles: []uint16{a, b, c, d}}
 	}
@@ -17,7 +20,11 @@ func TestFirstWorldTileCannonUpdatesAndRestoresTerrain(t *testing.T) {
 	if !w.spawnFixedTile(visualassets.FixedEncounter{EnemyKind: 2, X: 40, Y: 1000}) {
 		t.Fatal("tile encounter was not consumed")
 	}
-	actor := w.Actors[0]
+	return w, w.Actors[0]
+}
+
+func TestFirstWorldTileCannonUpdatesAndRestoresTerrain(t *testing.T) {
+	w, actor := terrainCannonFixture(t, 1, ActorResidue{})
 	if actor.part.ResourceTag != 228 || actor.Binding.EntityID == 0 || actor.Visible {
 		t.Fatal("terrain actor must use its moving-list slot without a sprite placeholder")
 	}
@@ -34,6 +41,75 @@ func TestFirstWorldTileCannonUpdatesAndRestoresTerrain(t *testing.T) {
 	w.damageActor(actor, 4)
 	if actor.Active || w.Score != 100 || w.Level.Terrain.Map[index] != 9 || w.Level.Terrain.Map[index+21] != 12 || w.Pool.Slot(actor.Binding.Slot).ResourceTag != 4 {
 		t.Fatal("death must score once, restore the terrain and leave a dead slot")
+	}
+}
+
+func TestTerrainCannonPublishesWorldPositionAndRetainsUnassignedWords(t *testing.T) {
+	for level := 1; level <= 5; level++ {
+		t.Run(fmt.Sprint(level), func(t *testing.T) {
+			retained := waveConstructorResidueFixture(7)
+			w, actor := terrainCannonFixture(t, level, retained)
+			want := retained
+			want.X, want.Y, want.Counter = 32, 992, 0
+			want.Health, want.VerticalFraction, want.EmitterClock = 4, 0, 0
+			if level != 4 {
+				want.PowerOrScore = 100
+			}
+			if got := w.Pool.Slot(actor.Binding.Slot).Residue; got != want {
+				t.Fatalf("terrain constructor fields %v, want %v", got, want)
+			}
+			if actor.Y != 92 || !actor.part.StrongHealth {
+				t.Fatal("screen anchor or inherited contact strength differs")
+			}
+			w.advanceFixedTile(actor)
+			w.finishActorUpdate(actor)
+			if got := w.Pool.Slot(actor.Binding.Slot).Residue; got.Y != 992 || got.XFraction != retained.XFraction || got.Direction != retained.Direction || got.WaveBonusToken != retained.WaveBonusToken || got.PowerOrScore != want.PowerOrScore {
+				t.Fatal("terrain update replaced world Y or unrelated retained words")
+			}
+		})
+	}
+}
+
+func TestTerrainCannonNonlethalDamagePublishesHealthImmediately(t *testing.T) {
+	w, actor := terrainCannonFixture(t, 1, ActorResidue{})
+	w.damageActor(actor, 1)
+	slot := w.Pool.Slot(actor.Binding.Slot)
+	if !actor.Active || !actor.Visible || actor.Patch == nil || actor.Health != 3 || slot.Residue.Health != 3 || slot.Residue.Y != 992 || slot.ResourceTag != 228 || w.Score != 0 || len(w.Actors) != 1 {
+		t.Fatal("nonlethal terrain damage deferred health or ran the death callback")
+	}
+}
+
+func TestTerrainCannonRestoresValidTilesWhenExplosionReclaimsItsSlot(t *testing.T) {
+	for _, level := range []int{1, 4} {
+		t.Run(fmt.Sprint(level), func(t *testing.T) {
+			w, actor := terrainCannonFixture(t, level, waveConstructorResidueFixture(7))
+			w.commonAnimations["explosion-large"] = visualassets.NamedActorAnimation{Ending: "hold", Animation: visualassets.ActorAnimation{Frames: []visualassets.AnimationFrame{{Sprite: "fx"}}}}
+			slot, identity := actor.Binding.Slot, actor.ID
+			fillWaveDamageMovingTail(t, w)
+			w.damageActor(actor, 4)
+			current, effect := w.Pool.Slot(slot), w.poolActors[slot]
+			points := 100
+			if level == 4 {
+				points = 400
+			}
+			if w.poolError != nil || actor.Active || current.EntityID == identity || current.ResourceTag != 4 || current.list != ActorPoolProjectile || effect == nil || effect.Active || w.Score != points {
+				t.Fatalf("terrain death lost source score or physical replacement retirement: %+v score %d error %v", current, w.Score, w.poolError)
+			}
+			for i, index := range []int{62*20 + 2, 62*20 + 3, 63*20 + 2, 63*20 + 3} {
+				if w.Level.Terrain.Map[index] != uint16(9+i) {
+					t.Fatal("reclaimed explosion corrupted the intended destroyed terrain")
+				}
+			}
+			if w.SoundRequests[2] != "sampled-effect-03" {
+				t.Fatal("terrain destruction lost its original sound voice")
+			}
+			if err := w.advancePooledProjectiles(Input{}); err != nil {
+				t.Fatal(err)
+			}
+			if w.Pool.Slot(slot).allocated {
+				t.Fatal("next projectile traversal retained the reclaimed dead effect")
+			}
+		})
 	}
 }
 
@@ -59,7 +135,11 @@ func TestWorldTileCannonsUseOriginalResourcesAcrossFiveLevelsOptional(t *testing
 					t.Fatal("cannon lost source collision or lifetime")
 				}
 				w.damageActor(actor, uint16(actor.Health))
-				if actor.Active || w.Score != (variant+1)*100 {
+				points := 100
+				if number == 4 {
+					points = 400
+				}
+				if actor.Active || w.Score != (variant+1)*points {
 					t.Fatal("cannon death or score differs")
 				}
 			}

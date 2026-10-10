@@ -53,6 +53,16 @@ wall. Earlier isolated callback traces supplied their tags directly and did not
 verify this record-to-constructor mapping. A permanent regression also verifies
 that both orientations of all three first-stage cannon families emit inward.
 
+Damage coverage adds 852 cases over all 71 placements, before and after their
+first update, with two damage values and three capacity profiles. All 130,176
+physical-slot states, score, RNG and queued sounds match. The comparison corrects
+immediate publication of terrain constructor/health state, retained world Y,
+retirement of a self-reclaimed explosion and the fourth level's 400-point award.
+Go deliberately restores valid destroyed tiles when the original would copy a
+reclaimed explosion's animation data into the map. All 6,000 cells are checked:
+734 maps match the pressured source directly, and 118 match the same source
+callback without saturation. See [NATIVE_AUDIT.md](NATIVE_AUDIT.md).
+
 ## Shared systems
 
 Movement, path commands, deterministic randomness, equipment, projectiles,

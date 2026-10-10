@@ -2144,3 +2144,46 @@ produce the same count but different explosion selection. The original-resource
 engine suite, focused race checks and both genuine three-level frontend journeys
 pass. These fixtures still isolate damage callbacks from player combat, moving
 updates and hardware drawing; complete five-stage fidelity remains unproven.
+
+## Terrain-cannon damage and safe map restoration
+
+All 71 terrain-cannon placements now have damage comparisons before their first
+update and after one actual update. Damage values one and 127 run with free
+capacity, a full list of actual point shots, and a full list of inert moving
+entries. These 852 cases compare 130,176 physical-slot states, score, RNG, sound
+voices and all eight reward-cache buckets across the five levels.
+
+The comparison corrects immediate constructor publication, retained world Y and
+unassigned slot words, nonlethal health publication, and final dead marking when
+an explosion reclaims its parent. Fourth-stage cannons award a constant 400
+points; their constructor leaves the physical score word unassigned. Other
+terrain cannons initialize that word and award 100 points.
+
+There is one deliberate visual correction to the original. When the pool is
+full of moving entries, explosion allocation can reclaim the hit cannon before
+its map copy. The common damage routine then reads the replacement explosion's
+animation cursor as terrain words. Some resulting codes request graphics outside
+the level resources. Go preserves the cannon's intended destroyed patch instead.
+
+The comparison checks all 6,000 map cells through their original tile codes.
+For 734 cases the map matches the actual source callback directly. In the 118
+corrupted cases it matches the same original record, damage and update boundary
+with available capacity. Physical slot state still matches the pressured source
+case directly, including retirement of the replacement explosion. No map check
+is skipped to accommodate this difference.
+
+Resource-independent tests cover immediate state and health, retained fields,
+the 400-point award, valid destroyed tiles under reclamation and release of the
+dead replacement on the next projectile traversal. The preceding implementation
+fails these regressions and the independent original-state comparison. These
+isolated callbacks do not establish arbitrary mixed combat or full-game fidelity.
+
+Replaying the unchanged fifth-stage practice controls preserves every earlier
+outcome marker, final approach position, protection, score and RNG. Only the
+endpoint marker changes: final guardian part nine now inherits the corrected
+cleared terrain-emitter word. The final-approach fixture retains the same controls
+and survival requirements; this does not extend the public three-level tour.
+
+The complete original-resource engine and visual-asset suites, focused race
+checks, both real frontend admissions and the independent three-level scorecard
+pass. Both public tours finish without losing a ship or spending a continue.

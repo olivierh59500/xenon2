@@ -28,7 +28,7 @@ scope. Survival requirements in the complete journey tests remain unchanged.
 
 Both full frontend journey regressions now finish the three levels with three
 ships and two continue credits intact. The idle-start journey finishes at
-1,538.68 seconds with 159,970 points; explicit admission finishes at 1,453.58
+1,510.00 seconds with 159,970 points; explicit admission finishes at 1,463.60
 seconds with 164,350 points. The two independent scorecard observation runs also
 finish with no ship losses or spent continues. The complete original-resource
 engine and visual-asset suites pass, as do focused race checks covering private
@@ -67,7 +67,7 @@ counts complement the exact money totals rather than claiming every creation.
 | Updated idle start | 3 | 95 / 83 / 12 | 7 / 6 / 1 |
 | Updated explicit start | 1 | 57 / 49 / 8 | 7 / 5 / 2 |
 | Updated explicit start | 2 | 83 / 59 / 24 | 4 / 2 / 2 |
-| Updated explicit start | 3 | 95 / 77 / 18 | 7 / 6 / 1 |
+| Updated explicit start | 3 | 96 / 78 / 18 | 7 / 6 / 1 |
 
 Here, "published" identifies the preceding controller at `2c3a6a8`.
 
@@ -82,9 +82,9 @@ The first level collects more observed rewards, while later levels still miss
 too many. In particular, second-level collection regresses even though both
 complete tours destroy more actors without ship losses. Cash improves on the
 explicit and idle tours. Changed combat also changes which bubbles are created;
-the current simulation includes all eight original extending-chain explosions.
-These figures
-do not establish that every destructible or reward is reached.
+the current simulation includes all eight original extending-chain explosions
+and immediate terrain-cannon constructor state. These figures do not establish
+that every destructible or reward is reached.
 
 The fixed bank still contains at most 24 candidates over 72 simulation passes,
 and only three verified commands are retained before reassessment. A warm

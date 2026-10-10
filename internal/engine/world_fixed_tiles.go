@@ -23,6 +23,10 @@ func (w *World) spawnFixedTile(record visualassets.FixedEncounter) bool {
 			tag := variant.ResourceTag
 			actor := &WorldActor{Active: true, ActorList: "moving", Health: kind.Health, Score: 100, fixedTileState: &state, fixedTileArt: kind, fixedTileVariant: variant,
 				X: float64(state.X), Y: float64(state.WorldY - w.ScrollY), part: &visualassets.ActorPart{ResourceTag: tag, DamageMode: "fixed-tile"}, Collision: CollisionRect{Right: -1, Bottom: -1}}
+			if w.Level.Number == 4 {
+				// This level awards a constant 400 without initializing the slot's score word.
+				actor.Score = 400
+			}
 			actor.PreviousX, actor.PreviousY = actor.X, actor.Y
 			if err := w.bindWorldActor(actor); err != nil {
 				w.poolError = err
@@ -30,6 +34,14 @@ func (w *World) spawnFixedTile(record visualassets.FixedEncounter) bool {
 			}
 			// These terrain constructors leave the reused strength byte intact.
 			actor.part.StrongHealth = actor.Binding.Residue.StrongHealth
+			residue := &actor.Binding.Residue
+			residue.X, residue.Y = int16(state.X), int16(state.WorldY)
+			residue.Counter, residue.VerticalFraction, residue.EmitterClock = 0, 0, 0
+			residue.Health = uint16(kind.Health)
+			if w.Level.Number != 4 {
+				residue.PowerOrScore = 100
+			}
+			w.storeWorldResidue(actor.Binding)
 			w.setSecondMapPatch(state.X/16, state.WorldY/16, variant.Initial)
 			w.Actors = append([]*WorldActor{actor}, w.Actors...)
 			return true
@@ -37,6 +49,22 @@ func (w *World) spawnFixedTile(record visualassets.FixedEncounter) bool {
 		return true
 	}
 	return false
+}
+
+func (w *World) storeFixedTileResidue(actor *WorldActor) {
+	if actor.Binding.EntityID == 0 {
+		return
+	}
+	state, residue := actor.fixedTileState, &actor.Binding.Residue
+	// The native terrain entry retains world Y. Screen anchors are only used
+	// for drawing and collisions; unrelated reused words remain untouched.
+	residue.X, residue.Y, residue.Counter = int16(state.X), int16(state.WorldY), int16(state.Phase)
+	residue.Health = uint16(actor.Health)
+	residue.SetFireState(state.Accumulator, residue.FireRate())
+	w.storeWorldResidue(actor.Binding)
+	if !actor.Active {
+		w.retireWorldActor(actor.Binding)
+	}
 }
 
 func (w *World) advanceFixedTile(actor *WorldActor) {
@@ -74,19 +102,26 @@ func (w *World) advanceFixedTile(actor *WorldActor) {
 }
 
 func (w *World) damageFixedTile(actor *WorldActor, amount uint16) {
+	index := w.waveDamageSlot(actor)
 	result := ApplyEnemyDamage(uint16(actor.Health), amount)
 	actor.Health = int(result.Health)
 	actor.Patch = &actor.fixedTileVariant.Initial
 	actor.Visible = true
 	if !result.Destroyed {
+		w.storeFixedTileResidue(actor)
 		return
 	}
-	actor.Active = false
-	w.storeActorResidue(actor)
+	w.storeFixedTileResidue(actor)
 	w.Score += actor.Score
 	state := actor.fixedTileState
 	patch := actor.fixedTileVariant.Destroyed
 	w.spawnSecondNamedExplosion(state.X+patch.Columns*8, state.WorldY-w.ScrollY+patch.Rows*8, "explosion-large")
 	w.SoundRequests[2] = "sampled-effect-03"
+	// Keep the intended destroyed tiles if the explosion reuses this slot.
+	// The original then reads its overwritten animation cursor as tile data.
 	w.setSecondMapPatch(state.X/16, state.WorldY/16, actor.fixedTileVariant.Destroyed)
+	actor.Active = false
+	// The original final dead write follows its physical entry even when the
+	// explosion reclaimed that entry during allocation.
+	w.retireWaveDamageSlot(index)
 }

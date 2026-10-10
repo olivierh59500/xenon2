@@ -100,22 +100,28 @@ func compareWaveDamageNativeTrace(t *testing.T, name string, compound bool, want
 			t.Fatalf("damage %v skipped original physical slot%d for%d", key, nextSlot, index)
 		}
 		nextSlot++
-		slot := w.Pool.Slot(index)
-		if slot.ResourceTag != int16(v[11]) || int(slot.list) != int(v[8]) || slot.Linked != (v[12] != 0) || slot.SkipDeathEffect != (v[12]&128 != 0) || slot.AuxiliaryFlags != ([2]bool{v[13] != 0, v[14] != 0}) || slot.list != ActorPoolNone && (slot.previous != int(v[9]) || slot.next != int(v[10])) || slot.list == ActorPoolNone && slot.freeNext != int(v[9]) {
-			t.Fatalf("damage %v slot%d: physical type/list/flags %+v, original%v", key, index, slot, v[8:15])
-		}
-		r := slot.Residue
-		got := [19]int64{int64(r.X), int64(r.Y), int64(r.XFraction), int64(r.YFraction), int64(r.Counter), int64(r.Direction), int64(r.HorizontalDriftRemainder), int64(r.VerticalVelocity), int64(r.VerticalFraction), int64(r.Health), int64(boolCount(r.StrongHealth)), int64(r.PowerOrScore), int64(r.WaveBonusToken), int64(r.MotionBudget), int64(r.EmitterClock), int64(r.MountOffsetX), int64(r.MountOffsetY), int64(r.OwnerSlot), int64(r.FollowingSlot)}
-		var want [19]int64
-		copy(want[:], v[15:34])
-		want[10] = int64(boolCount(v[25] != 0))
-		if got != want {
-			t.Fatalf("damage %v slot%d tag%d: fields%v; original%v", key, index, slot.ResourceTag, got, want)
-		}
+		compareDamageNativePoolRow(t, key, w, v)
 		rows++
 	})
 	if cases != wantCases || rows != wantRows || nextSlot != ActorPoolCapacity || levels != wantLevels {
 		t.Fatalf("incomplete actual-wave damage coverage: cases%d rows%d levels%v", cases, rows, levels)
 	}
 	t.Logf("Compared %d actual-wave damage/capacity cases and %d physical-slot states", cases, rows)
+}
+
+func compareDamageNativePoolRow(t *testing.T, key any, w *World, v []int64) {
+	t.Helper()
+	index := int(v[5])
+	slot := w.Pool.Slot(index)
+	if slot.ResourceTag != int16(v[11]) || int(slot.list) != int(v[8]) || slot.Linked != (v[12] != 0) || slot.SkipDeathEffect != (v[12]&128 != 0) || slot.AuxiliaryFlags != ([2]bool{v[13] != 0, v[14] != 0}) || slot.list != ActorPoolNone && (slot.previous != int(v[9]) || slot.next != int(v[10])) || slot.list == ActorPoolNone && slot.freeNext != int(v[9]) {
+		t.Fatalf("damage %v slot%d: physical type/list/flags %+v, original%v", key, index, slot, v[8:15])
+	}
+	r := slot.Residue
+	got := [19]int64{int64(r.X), int64(r.Y), int64(r.XFraction), int64(r.YFraction), int64(r.Counter), int64(r.Direction), int64(r.HorizontalDriftRemainder), int64(r.VerticalVelocity), int64(r.VerticalFraction), int64(r.Health), int64(boolCount(r.StrongHealth)), int64(r.PowerOrScore), int64(r.WaveBonusToken), int64(r.MotionBudget), int64(r.EmitterClock), int64(r.MountOffsetX), int64(r.MountOffsetY), int64(r.OwnerSlot), int64(r.FollowingSlot)}
+	var want [19]int64
+	copy(want[:], v[15:34])
+	want[10] = int64(boolCount(v[25] != 0))
+	if got != want {
+		t.Fatalf("damage %v slot%d tag%d: fields%v; original%v", key, index, slot.ResourceTag, got, want)
+	}
 }
