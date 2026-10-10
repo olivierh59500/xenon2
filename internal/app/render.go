@@ -418,6 +418,10 @@ func (g *Game) drawOriginalHUD(screen *ebiten.Image) {
 	op.GeoM.Translate(0, 192)
 	screen.DrawImage(gpu.hudBase, &op)
 	count := max(1, g.View.PlayerCount)
+	if count == 1 {
+		// The original still draws the inactive player's zero score in solo play.
+		g.drawGlyphs(screen, gpu.hudScore, "0000000", 240, p.ScoreY, 8)
+	}
 	for player := 0; player < count; player++ {
 		score, lives, shield := g.View.PlayerScores[player], g.View.PlayerLives[player], g.View.PlayerShields[player]
 		if g.View.PlayerCount == 0 {

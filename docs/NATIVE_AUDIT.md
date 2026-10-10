@@ -2600,3 +2600,20 @@ This is current connected Go progression, rather than a new original-Amiga battl
 comparison or public five-stage expert mode. See
 [FIFTH_FINISH_VALIDATION.md](FIFTH_FINISH_VALIDATION.md) for the exact scope,
 reproducible command and remaining audiovisual/hardware requirements.
+
+## Original gameplay HUD and inactive score
+
+A true first-level gameplay capture confirms that the inactive player's
+seven-digit zero score remains visible in solo mode. The Go renderer drew only
+active player scores and left that field blank. The independent capture check
+failed at 248 score-mask pixels before the correction; the active score's shared
+sampling control differed at seven edge pixels.
+
+The corrected HUD retains 322 exact flat palette samples, with seven and four
+edge-mask differences in the active and inactive score fields. Both use the
+same fixed window calibration and eight-pixel edge bound. A separate GPU check
+matches the original routine's nonzero second-player raster across all five
+palettes: 5,760 exact pixels covering score, lives and shield. No gameplay state,
+life count or player control changes. The references remain excluded locally.
+See [GAMEPLAY_RENDER_VALIDATION.md](GAMEPLAY_RENDER_VALIDATION.md) for scope and
+the reproducible test command.
