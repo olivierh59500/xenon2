@@ -2634,3 +2634,18 @@ No starting state was changed to fit that picture. Static terrain composition
 does not establish combat drawing, mutable-map evolution, temporal interpolation
 or physical blitter timing. The private rasters and analysis helper stay excluded
 from Git; the persistent optional GPU regression contains no original resources.
+
+## Complete campaign reference on Pixel ARM64
+
+The physical Pixel 10a now passes the current ordinary-intro journey through
+all five stages, complete final rewards, every ending phase and the next
+difficulty round in 362.54 seconds. The original earned balances match the
+desktop reference: score 284,750, two surviving ships, three continue credits
+after the victory award and no continue spent. Android gesture/resume,
+menu-tap-release and reported-inset regressions pass in the same runner.
+
+The APK from runtime `2af306d` is installed and cold-launches successfully.
+The phone was locked with its display off; the independent logic runner draws
+no graphics. These checks establish current ARM64 progression and input-policy
+logic, not real-time frame pacing, audio continuity or an actual app-switch
+gesture. See [ANDROID.md](ANDROID.md) for the APK digest and repeatable command.

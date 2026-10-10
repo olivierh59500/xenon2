@@ -59,7 +59,11 @@ test execution, not the duration of real-time gameplay. Its 1,099 final inputs
 contain directions and fire only; a single marked READY acknowledgement crosses
 the actual director after the ship loss. The controls contain no original artwork
 or executable bytes. The optional Android logic runner retains the game-flow
-assertions while omitting GPU captures.
+assertions while omitting GPU captures. The physical Pixel 10a passes that
+complete reference in 362.54 seconds, including the same score, final reward
+drain, one ship loss, unchanged continue spending and next-round admission.
+This locked-device check establishes ARM64 game-flow agreement; it does not
+measure frame pacing, sound output or touchscreen interaction.
 
 Set `XENON2_RENDER_CAPTURE_DIR` to an excluded local directory to retain four
 actual GPU frames: final victory, stable merchant ending, next-round READY and

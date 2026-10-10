@@ -68,10 +68,23 @@ messages, READY, shops, fades and pause do not count toward that deadline.
 
 ## Verification
 
-The build at `0a1da36` was installed and cold-launched on the Pixel 10a. Its
-default-intro reference journey reaches the genuine fifth final encounter with
-three ships, two continues and full shield. The public automatic tour still
-returns to the menu after stage three.
+The APK built from runtime `2af306d` was installed and cold-launched on the
+Pixel 10a on 10 October. Its SHA-256 is
+`90a1e24e563223b269262fa39417a912cef44923ded296a357b4fe174a723593`.
+Installation succeeds, launch reports `Status: ok` and the application process
+remains active. This build includes the corrected solo score display and system
+gesture handling. The public automatic tour still returns to the menu after
+stage three.
+
+The same runtime now passes the complete default-intro five-stage reference on
+the physical Pixel's ARM64 logic runner in 362.54 seconds. It earns the preceding
+victories and merchants, defeats the fifth final guardian, collects all twenty
+exit coins, runs every ending phase and starts the next difficulty round with
+score 284,750, two ships and three continue credits. One ship is lost in the
+final fight; no continue is spent. The system-gesture/resume, menu-tap release
+and reported-inset regressions also pass on the device in 1.41, 1.40 and 0.00
+seconds respectively. This is accelerated simulation with drawing disabled,
+not a frame-rate measurement or a real-time game duration.
 
 After an application switch, Pixel captures showed a stationary ship at second
 level camera 3,962. The original terrain at that pose admits a normal exit;
@@ -79,8 +92,16 @@ isolated ordinary-input replays confirm it. The old input path could silently
 leave automatic mode when a system swipe began on the canvas or when the touch
 pointer disappeared. Regressions now cover edge swipes, cancellation, synthetic
 cursor resets, menu-tap release and deliberate manual takeover in the same
-session. The corrected APK is prepared locally; device verification of the
-application-switch sequence remains pending reconnection.
+session. The corrected APK is installed. The device was locked with its screen
+off during these checks, so the actual foreground/background gesture sequence,
+rendering smoothness and sound continuity remain unverified.
+
+To repeat the bounded checks on one explicitly selected device:
+
+```sh
+ANDROID_SERIAL=your-device-serial ./scripts/check-android-logic.sh \
+  --run '^Test(CurrentFiveStageReferenceCompletesEndingAndStartsNextRoundOptional|MobileSystemGestureAndResumeKeepExpertInSameSession|MobileDemoCanvasTapAndReleaseKeepExpertAdmission|MobileGestureInsetsUseReportedViewCoordinates)$'
+```
 
 ### Earlier verification
 
