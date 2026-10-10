@@ -36,12 +36,17 @@ The preceding production source fails the independent factory comparison.
 
 The corrected exit headings change collection timing. The arranged fourth-final
 ordinary-input fixture reaches its merchant ten passes earlier, preserving the
-same ships, shield and guardian damage. The fifth-final projectile fixture creates
-all ten pairs, but one coin is already collected during the lethal projectile
-pass. It now checks twenty original coin records, nineteen pending coins and
-conservation of all 1,500 cash across live rewards and the wallet.
+same ships, shield and guardian damage. The fifth-final projectile fixture
+originally collected one coin during the lethal pass. The later source-correct
+moving-list release order changes inherited headings: all twenty paired coins
+now remain live at that boundary, conserving all 1,500 cash. A separate ordinary
+controls replay also destroys every defense and the core, then collects the full
+1,500 cash and opens the final merchant. Its prepared loadout and five ships are
+explicit capability fixtures; three ships are lost during that isolated fight.
 
-Complete engine/artwork comparisons and focused race checks pass. Both public
+Resource-independent engine/artwork suites, focused native comparisons and
+race checks pass. The original-resource suite retains six stale fifth-stage
+practice-recording failures after the projectile-state corrections. Both public
 expert-tour admission journeys now finish all three levels with their three
 ships and two continue credits intact. Their survival assertions are unchanged.
 The controller values real partial emitter damage before destruction and

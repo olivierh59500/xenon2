@@ -21,8 +21,10 @@ Later-stage reference fixtures remain available but use an explicit test-only
 tour limit. Their earlier carried loadouts and random states are capability
 records, not current whole-campaign proof. In those recorded routes the fourth
 stage reaches its real final merchant; the fifth reaches its final guardian.
-The complete final fight and integrated Amiga playthrough comparison remain
-unfinished. Ordinary demonstration launches do not enter level four.
+A separate isolated final fight now reaches the final merchant through ordinary
+controls, with a prepared loadout and five ships. Carried fifth-stage admission
+and integrated Amiga playthrough comparison remain unfinished. Ordinary
+demonstration launches do not enter level four.
 
 ## Fixed encounters and scripted arenas
 
@@ -343,6 +345,18 @@ restoration, retained temporary timer and doubled first-wave health. The fixture
 does not assign completion/drop counters or call direct damage to win.
 Its arranged inventory/projectiles are explicit; it is not earned fifth-stage
 play or a frontend/graphics victory. Focused native and race checks pass.
+
+A second fifth-final fixture now replays 2,594 recorded ordinary inputs without
+injected bullets, direct damage calls or assigned completion/reward fields.
+It starts at the original final encounter with actual terrain coverage, all
+native health values, four upgraded lasers, homing/side/forward guns, protection,
+and five hypothetical purchased ships. It destroys all eighteen defenses and
+the gated core, then collects all 1,500 exit cash and opens the real final
+merchant. Three ships are lost; two survive with three shield points. READY
+acknowledgements and checkpoint recovery are part of the recording. This is a
+Go weapon-capability and lifecycle regression, not an earned inventory, lossless
+expert fight, frontend rendering comparison or connected five-stage victory.
+The public expert tour remains limited to the first three stages.
 
 Fifth guardian event traces now independently check 2,700 complete frames,
 1,007 ordinary mount shots and 1,513 final queued sound requests. Per-component

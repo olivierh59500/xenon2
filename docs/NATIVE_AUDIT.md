@@ -2418,5 +2418,39 @@ completion fixture verifies merchant-ending phases and shared next-loop
 admission; it assigns its completion boundary and is not an earned victory.
 Ordinary engine/asset suites and focused race checks pass. The original-resource
 suite retains only the same six stale fifth-stage practice failures. The final
-fight through normal gun controls and a complete five-stage playthrough remain
-unverified.
+fight through normal gun controls was still unverified at that comparison
+boundary; the isolated Go replay below supplies a separate capability check. A
+complete five-stage playthrough remains unverified.
+
+## Final guardian through ordinary Go controls
+
+`TestOriginalFifthFinalOrdinaryControlsDefeatAndReachMerchantOptional` now
+replays 2,594 ordinary input bytes in a fresh Go world, without the planning
+code that produced them. After its explicit arena/loadout setup, every change
+to enemies, weapons, terrain, health, rewards and completion gates comes from
+normal `World.Step` callbacks and PAL ticks. No original program is executed by
+this regression, and the recorded result is not an Amiga battle trace.
+
+The fixture uses actual fifth-stage terrain coverage and the native final
+encounter constructor. Its hypothetical inventory contains four tier-two
+lasers, upgraded forward/side guns, a homing missile, autofire, speed and
+protection. Two ordinary extra-life items increase the initial three ships to
+five. Earlier encounter streams are omitted; the inventory and arena admission
+were not earned in a campaign.
+
+The last defense falls through normal damage before the core opens. The lethal
+core callback occurs after input 2,531 and creates all twenty exit coins.
+Sixty-three more ordinary inputs collect all 1,500 cash and reach the final
+merchant. The independent replay finishes at gameplay frame 2,591 with 7,500
+points, two ships, three shield points and both continue credits. Its final RNG
+words are 534033797 and 2235120218. The test also checks the core gate, all
+eighteen destroyed defenses, normal deaths/READY recovery, released guardian
+slots and absence of cheats, temporary invulnerability or Nashwan equipment.
+
+This closes the isolated normal-weapon capability gap left by the earlier
+in-flight-projectile boundary fixture. Three ship losses, a prepared loadout and
+an isolated admission remain material limits: it does not establish a lossless
+expert fight, current carried fifth-stage admission, hardware presentation or a
+complete integrated five-stage comparison. The six older fifth-stage practice
+recordings still require renewal after the projectile-state corrections; their
+strict admission checks remain unchanged.
