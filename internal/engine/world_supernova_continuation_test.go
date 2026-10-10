@@ -78,7 +78,7 @@ func TestOriginalSupernovaCollectionSuspendsPhysicalProjectileOrderOptional(t *t
 					}
 					w.AdvancePALTick()
 					mask := uint16(random.Next())
-					if w.Frame != frame || w.ScrollY != camera || w.Player != player || w.fire != fire || !slices.Equal(w.RenderTerrainMap, terrain) || !slices.Equal(w.ActorRenderTerrainMap, actorTerrain) || w.ScreenClearFrames != 31-tick || w.ScreenClearPaletteMask != mask || w.SoundRequests[2] != "synthesized-effect-02" || shot.Active != pickupFirst || pickupFirst && shot.Y != shotY {
+					if w.Frame != frame || w.ScrollY != camera || w.Player != player || w.fire != fire || !slices.Equal(w.RenderTerrainMap, terrain) || !slices.Equal(w.ActorRenderTerrainMap, actorTerrain) || w.ScreenClearFrames != 31-tick || w.ScreenClearPaletteMask != mask || w.SoundRequests[1] != "synthesized-effect-02" || shot.Active != pickupFirst || pickupFirst && shot.Y != shotY {
 						t.Fatalf("flash advanced a blocked pass or lost its sound atPAL%d", tick)
 					}
 				}

@@ -38,7 +38,9 @@ func TestDemoFourthFinalBoundaryThroughOrdinaryShotsOptional(t *testing.T) {
 			if w.FourthFinal == nil || !w.FourthFinal.Defeated || !w.LevelFinished || !w.ExitReady || w.PendingExitDrops != 0 {
 				t.Fatal("shop reached without real final guardian victory")
 			}
-			if pass != 1785 || w.Equipment.Lives != 2 || w.Equipment.Shield != 23 || continues != 0 || w.FourthFinal.Parts[0].Health != 0 || w.FourthFinal.Parts[1].Health != 0 || w.FourthFinal.Parts[2].Health != 0 {
+			// Native inherited coin directions shorten this fixture's reward
+			// collection by ten passes compared with zero-initialized headings.
+			if pass != 1775 || w.Equipment.Lives != 2 || w.Equipment.Shield != 23 || continues != 0 || w.FourthFinal.Parts[0].Health != 0 || w.FourthFinal.Parts[1].Health != 0 || w.FourthFinal.Parts[2].Health != 0 {
 				t.Fatalf("verified ordinary final outcome changed: pass%d ships%d shield%d continues%d health%v", pass, w.Equipment.Lives, w.Equipment.Shield, continues, w.FourthFinal.Parts[:3])
 			}
 			t.Logf("Final shop at%d commands lives%d shield%d continues%d", pass, w.Equipment.Lives, w.Equipment.Shield, continues)

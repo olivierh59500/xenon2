@@ -214,10 +214,10 @@ func TestCombatCashNativeTraceOptional(t *testing.T) {
 	var cash CashMotion
 	nativeCombatRows(t, "combat-cash-trace.csv", func(v []int64) {
 		if v[5] == 0 {
-			cash = CashMotion{X: int(v[1]), Y: int(v[2]), Mode: int(v[3]), Direction: uint8(v[4])}
+			cash = CashMotion{X: int(v[1]), Y: int(v[2]), Mode: int(v[3]), Direction: uint16(v[4])}
 		}
 		alive := cash.Advance()
-		if cash.X != int(v[6]) || cash.Y != int(v[7]) || cash.Mode != int(v[8]) || cash.Direction != uint8(v[9]) || alive != (v[10] != 0) {
+		if cash.X != int(v[6]) || cash.Y != int(v[7]) || cash.Mode != int(v[8]) || cash.Direction != uint16(v[9]) || alive != (v[10] != 0) {
 			t.Fatalf("cash %v: got %+v alive=%v", v, cash, alive)
 		}
 	})

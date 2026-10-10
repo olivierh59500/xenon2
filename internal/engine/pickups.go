@@ -30,8 +30,9 @@ func (w *World) spawnWaveCash(x, y int, heavy bool) {
 		return
 	}
 	p := &WorldCollectible{ID: binding.EntityID, Binding: binding, Cash: CashValue(heavy), X: float64(x), Y: float64(y), PreviousX: float64(x), PreviousY: float64(y), Active: true,
-		Motion: CashMotion{X: x, Y: y, Mode: 7, Direction: uint8(w.random.Next() & 7)}, animation: animation, animationState: NewAnimation(animation.Animation)}
+		Motion: CashMotion{X: x, Y: y, Mode: 7, Direction: uint16(w.random.Next())}, animation: animation, animationState: NewAnimation(animation.Animation)}
 	p.Sprite = p.animationState.Sprite(animation.Animation)
+	w.finishCollectibleUpdate(p)
 	w.poolCollectibles[binding.Slot] = p
 	w.Collectibles = append([]*WorldCollectible{p}, w.Collectibles...)
 }
@@ -61,9 +62,10 @@ func (w *World) spawnExitCash(pairs int) {
 			x, _ := w.random.Below(300)
 			y, _ := w.random.Below(180)
 			p := &WorldCollectible{ID: binding.EntityID, Binding: binding, Cash: CashValue(heavy), X: float64(x + 10), Y: float64(y + 6), Active: true,
-				Motion: CashMotion{X: int(x) + 10, Y: int(y) + 6, Mode: 7}, animation: animation, animationState: NewAnimation(animation.Animation)}
+				Motion: CashMotion{X: int(x) + 10, Y: int(y) + 6, Mode: 7, Direction: uint16(binding.Residue.Direction)}, animation: animation, animationState: NewAnimation(animation.Animation)}
 			p.PreviousX, p.PreviousY = p.X, p.Y
 			p.Sprite = p.animationState.Sprite(animation.Animation)
+			w.finishCollectibleUpdate(p)
 			w.poolCollectibles[binding.Slot] = p
 			w.PendingExitDrops++
 			w.nextTailOrder--
@@ -87,10 +89,13 @@ func (w *World) spawnPickup(reward, x, y int) {
 		return
 	}
 	p := &WorldCollectible{ID: binding.EntityID, Binding: binding, Reward: reward, X: float64(x), Y: float64(y), PreviousX: float64(x), PreviousY: float64(y), Active: true,
-		Motion: CashMotion{X: x, Y: y, Mode: 7}, animation: animation, animationState: NewAnimation(animation.Animation)}
+		Motion: CashMotion{X: x, Y: y, Mode: 7, Direction: uint16(binding.Residue.Direction)}, animation: animation, animationState: NewAnimation(animation.Animation)}
 	p.Sprite = p.animationState.Sprite(animation.Animation)
+	p.Binding.Residue.VerticalFraction = uint16(reward)
+	w.finishCollectibleUpdate(p)
 	w.poolCollectibles[binding.Slot] = p
 	w.Collectibles = append([]*WorldCollectible{p}, w.Collectibles...)
+	w.SoundRequests[1] = "synthesized-effect-17"
 }
 
 func (w *World) advanceCollectible(p *WorldCollectible) {
@@ -118,12 +123,12 @@ func (w *World) advanceCollectible(p *WorldCollectible) {
 	p.Active = false
 	if p.Cash > 0 {
 		w.Money += p.Cash
-		w.SoundRequests[2] = "synthesized-effect-05"
+		w.SoundRequests[1] = "synthesized-effect-05"
 		w.consumeExitDrop()
 		return
 	}
 	if p.animation.SoundEffect != "" {
-		w.SoundRequests[2] = p.animation.SoundEffect
+		w.SoundRequests[1] = p.animation.SoundEffect
 	}
 	w.applyCarrierReward(p.Reward)
 }
@@ -148,7 +153,7 @@ func (w *World) applyCarrierReward(reward int) {
 	case 18:
 		w.ScreenClearFrames = 31
 		w.ScreenClearPaletteMask = uint16(w.random.Next())
-		w.SoundRequests[2] = "synthesized-effect-02"
+		w.SoundRequests[1] = "synthesized-effect-02"
 	default:
 		w.Equipment.ApplyItem(carrierItems[reward])
 	}

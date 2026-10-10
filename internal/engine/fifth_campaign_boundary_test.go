@@ -93,16 +93,36 @@ func TestOriginalFifthProjectileDeathDrainsExitAndStartsNextLoopOptional(t *test
 			t.Fatalf("isolated boundary fixture lost its ship before final defeat: pass%d camera%d shield%d", pass, w.ScrollY, w.Equipment.Shield)
 		}
 	}
-	if !w.FifthFinal.Defeated || !w.LevelFinished || w.FifthFinal.OuterRemaining != 0 || w.PendingExitDrops != 20 || w.ShopReady || w.ExitReady {
+	if !w.FifthFinal.Defeated || !w.LevelFinished || w.FifthFinal.OuterRemaining != 0 || w.PendingExitDrops != 19 || w.ShopReady || w.ExitReady {
 		t.Fatalf("ordinary final projectile did not reach the native exit gate: defeated%v remaining%d core%d drops%d shop%v exit%v", w.FifthFinal.Defeated, w.FifthFinal.OuterRemaining, w.FifthFinal.CoreHealth, w.PendingExitDrops, w.ShopReady, w.ExitReady)
 	}
-	if w.Score != 18*200 || w.ContinueCredits != credits || len(w.Collectibles) != 20 {
+	if w.Score != 18*200 || w.ContinueCredits != credits || len(w.Collectibles) != 19 {
 		t.Fatal("final callback changed defense rewards, awarded an early credit or lost exit coins")
 	}
-	for _, coin := range w.Collectibles {
-		if !coin.Active || coin.Cash != 50 && coin.Cash != 100 {
-			t.Fatal("source exit factory did not create twenty ordinary cash objects")
+	// Appended tail coins can be visited during the core's lethal projectile
+	// pass. The source-inherited heading collects one here before Step returns.
+	// Count its retained pool record as well as the nineteen still-live coins.
+	created, live, small, large, remainingValue := 0, 0, 0, 0, 0
+	for _, coin := range w.poolCollectibles {
+		if coin == nil {
+			continue
 		}
+		created++
+		switch coin.Cash {
+		case 50:
+			small++
+		case 100:
+			large++
+		default:
+			t.Fatal("source exit factory created another reward type")
+		}
+		if coin.Active {
+			live++
+			remainingValue += coin.Cash
+		}
+	}
+	if created != 20 || small != 10 || large != 10 || live != 19 || live != w.PendingExitDrops || remainingValue+w.Money != 1500 {
+		t.Fatalf("exit callback lost original paired cash: created%d live%d small%d large%d remaining%d wallet%d", created, live, small, large, remainingValue, w.Money)
 	}
 	for pass := 0; pass < 220 && !w.ShopReady; pass++ {
 		input := Input{Motion: MotionInput{Right: w.Player.X < 155, Left: w.Player.X > 165, Up: w.Player.Y > 105, Down: w.Player.Y < 95}}

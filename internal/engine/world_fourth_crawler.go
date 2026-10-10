@@ -98,20 +98,7 @@ func (w *World) damageFourthCrawler(actor *WorldActor, amount uint16) {
 	}
 	w.spawnSecondNamedExplosion(event.ExplosionX, event.ExplosionY, "explosion-large")
 	w.Score += event.Score
-	animation, ok := w.commonAnimations["cash-large"]
-	if ok {
-		binding, err := w.reserveWorldActor(24, ActorPoolProjectile, false)
-		if err != nil {
-			w.poolError = err
-			return
-		}
-		direction := uint8(w.random.Next()) & 7
-		coin := &WorldCollectible{ID: binding.EntityID, Binding: binding, Cash: 100, X: float64(event.CashX), Y: float64(event.CashY), Active: true, Motion: CashMotion{X: event.CashX, Y: event.CashY, Mode: 7, Direction: direction}, animation: animation, animationState: NewAnimation(animation.Animation)}
-		coin.PreviousX, coin.PreviousY = coin.X, coin.Y
-		coin.Sprite = coin.animationState.Sprite(animation.Animation)
-		w.poolCollectibles[binding.Slot] = coin
-		w.Collectibles = append([]*WorldCollectible{coin}, w.Collectibles...)
-	}
+	w.spawnWaveCash(event.CashX, event.CashY, true)
 	actor.X, actor.Y = float64(state.X), float64(state.Y-w.ScrollY)
 	actor.PreviousX, actor.PreviousY = actor.X, actor.Y
 	actor.Sprite, actor.Health, actor.Collision, actor.Flash = state.Sprite(*art), int(state.Health), state.Collision, false

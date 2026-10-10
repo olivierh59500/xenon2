@@ -3,9 +3,11 @@ package engine
 // CashMotion reproduces the shared movement of cash and collectible rewards.
 // Positive mode seeks the centre; negative mode spirals; zero mode falls away.
 type CashMotion struct {
-	X, Y      int
-	Mode      int
-	Direction uint8
+	X, Y int
+	Mode int
+	// The original stores the entire word even when only its low three bits
+	// select movement. Slot reuse can expose the retained upper bits.
+	Direction uint16
 }
 
 var cashX = [8]int{0, 2, 2, 2, 0, -2, -2, -2}
@@ -26,7 +28,7 @@ func (s *CashMotion) Advance() bool {
 	} else {
 		s.Mode &= 7
 		if s.Mode == 0 {
-			s.Direction = AimDirection(160-s.X, 100-s.Y)
+			s.Direction = uint16(AimDirection(160-s.X, 100-s.Y))
 		}
 		s.Mode++
 		dx, dy := 160-s.X, 100-s.Y
@@ -34,9 +36,9 @@ func (s *CashMotion) Advance() bool {
 			s.Mode = -34
 		}
 	}
-	s.Direction &= 7
-	s.X += cashX[s.Direction]
-	s.Y += cashY[s.Direction]
+	direction := s.Direction & 7
+	s.X += cashX[direction]
+	s.Y += cashY[direction]
 	return true
 }
 

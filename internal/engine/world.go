@@ -945,7 +945,6 @@ func (w *World) damageActor(actor *WorldActor, amount uint16) {
 		actor.Active = false
 		w.storeActorResidue(actor)
 		w.spawnPickup(actor.CarriedReward, int(actor.X), int(actor.Y))
-		w.SoundRequests[2] = "synthesized-effect-17"
 		return
 	}
 	target := actor

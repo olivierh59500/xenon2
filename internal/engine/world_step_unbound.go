@@ -22,6 +22,7 @@ func (w *World) advanceUnboundProjectiles(input Input) error {
 				continue
 			}
 			if actor.animation.Ending == "remove" && actor.animationState.Frame == len(actor.animation.Frames)-1 && actor.animationState.Remaining == 1 {
+				actor.animationState.Remaining = 0
 				actor.Active = false
 				w.finishActorUpdate(actor)
 				continue

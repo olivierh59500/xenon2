@@ -82,6 +82,7 @@ func (w *World) advanceTransientActor(actor *WorldActor) error {
 	} else if actor.secondFragment != nil {
 		w.advanceSecondFragment(actor)
 	} else if actor.animation.Ending == "remove" && actor.animationState.Frame == len(actor.animation.Frames)-1 && actor.animationState.Remaining == 1 {
+		actor.animationState.Remaining = 0
 		actor.Active = false
 	} else {
 		actor.animationState.Advance(actor.animation)

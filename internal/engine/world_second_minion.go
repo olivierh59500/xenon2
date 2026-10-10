@@ -108,6 +108,7 @@ func (w *World) spawnSecondNamedExplosion(x, y int, name string) {
 		w.poolError = err
 		return
 	}
+	w.storeActorResidue(actor)
 	w.Actors = append([]*WorldActor{actor}, w.Actors...)
 }
 func (w *World) spawnSecondRandomExplosions(count, left, top, width, height int) {
