@@ -2549,7 +2549,26 @@ power-ups cost 6,000; same-stage return retains 550, full shield, Forward 2 /
 Laser 2 / Side 1 and all reserves. Purchase policy and transaction regressions
 also check the limited-budget case and reject unrelated or temporary loadouts.
 
-This is connected Go progression through the current middle merchant. The
-second-half route, final victory, ending, next loop and integrated Amiga
-presentation comparison remain separate unproven requirements. The public
+This is connected Go progression through the current middle merchant. Final
+victory, ending, next loop and integrated Amiga presentation comparison remain
+separate unproven requirements. The public
 desktop and Android expert tour still ends after level three.
+
+## Current fifth final admission with all reserves
+
+The actual default-intro frontend now continues through the repaired merchant's
+second half and reaches the final encounter at frame 5,507. It retains all 39
+shield, three ships, two continues, 850 cash and score 280,050. The original
+constructor resets the arena camera to 416; the first completed pass has camera
+415, all eighteen outer defenses and core health 20. RNG is
+1906578826/683871768. No game state or resources are assigned by this connected
+frontend regression.
+
+An independent captured-return fixture repeats all prior fifth-stage combat and
+real shop transactions. Its presentation RNG timing is explicit reference input.
+The continuation checks 2,269 ordinary controls and 2,270 complete-pass markers,
+rejects foreign merchant profiles and stops at genuine final admission. Existing
+historical continuation tests retain their distinct entry profile. The current
+normal-intro frontend regression passes in 42.16 seconds locally. Final victory,
+ending, next-loop progression and integrated Amiga presentation parity remain
+unfinished.

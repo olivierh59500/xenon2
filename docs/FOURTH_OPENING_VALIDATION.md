@@ -39,9 +39,10 @@ current carried admission to stage five. A subsequent connected check now reache
 its genuine middle guardian at frame 2,241 with 31 shield and all reserves intact,
 defeats it at frame 3,193 and collects all ten exit coins. Actual merchant
 transactions repair and refit the same ship before returning to stage five.
-The remaining second half and final fight from the new profile, integrated Amiga
-playthrough comparison and current device drawing remain separate requirements.
-The historical fifth records use another profile.
+The same connected journey subsequently reaches the genuine fifth final at
+frame 5,507 with full shield and all reserves. Its final fight from the new
+profile, integrated Amiga playthrough comparison and current device drawing
+remain separate requirements. The historical fifth records use another profile.
 
 ## Previous single-ship reference
 

@@ -115,7 +115,10 @@ func (p *PresentationPilot) fifthPracticedOpeningInput(w *World) (Input, bool) {
 	}
 	controls, markers, start := fifthOpeningControls[:], fifthOpeningMarkers[:], uint64(1)
 	current := p.fifthPractice != nil && p.fifthPractice.start == 0 || w.Frame == 0 && fifthPracticeMarker(w) == fifthCurrentOpeningMarkers[0]
-	if current {
+	currentSecond := p.fifthPractice != nil && p.fifthPractice.start == fifthCurrentSecondPracticeStart || w.Frame == fifthCurrentSecondPracticeStart && fifthPracticeMarker(w) == fifthCurrentSecondMarkers[0]
+	if currentSecond {
+		controls, markers, start = fifthCurrentSecondControls[:], fifthCurrentSecondMarkers[:], fifthCurrentSecondPracticeStart
+	} else if current {
 		controls, markers, start = fifthCurrentOpeningControls[:], fifthCurrentOpeningMarkers[:], 0
 	} else if w.Frame >= fifthSecondPracticeStart && (p.fifthPractice == nil || p.fifthPractice.start == fifthSecondPracticeStart || w.Frame > uint64(len(fifthOpeningControls))) {
 		controls, markers, start = fifthSecondControls[:], fifthSecondMarkers[:], fifthSecondPracticeStart

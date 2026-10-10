@@ -1070,7 +1070,32 @@ sale value, while buying Side before selling Homing is correctly rejected.
 
 The captured-source replay validates all 3,239 markers, including the unchanged
 first 2,241 inputs. The normal-intro frontend test supplies the separate connected
-evidence through both real sale and purchase pages. The second half, final fight,
-ending and next loop still need validation from this new carried profile.
+evidence through both real sale and purchase pages. Final victory, ending and
+the next loop still need validation from this new carried profile.
 Earlier isolated victories and the historical five-stage records do not
 establish those results.
+
+### Current second half and final admission
+
+The current merchant return admits a separate 2,269-command continuation.
+Every command has a full-step outcome marker and uses ordinary controls. Its
+entry includes the actual shop inventory, saved checkpoint loadout, 550 cash,
+three ships, two continues and RNG 4115466107/4167859090. Foreign protection,
+weapon tiers/serials, shield, cash, RNG and middle-guardian state are rejected.
+The historical continuation retains its own entry and regression cases.
+
+| Current fifth continuation | Frame | Shield | Cash | Score |
+| --- | ---: | ---: | ---: | ---: |
+| Checkpoint 2,032 | 3,475 | 39 | 550 | 249,450 |
+| Checkpoint 1,008 | 4,499 | 39 | 550 | 254,450 |
+| Checkpoint 160 | 5,347 | 39 | 850 | 280,050 |
+| Final guardian / checkpoint 416 | 5,507 | 39 | 850 | 280,050 |
+
+The source final constructor resets the camera to its arena; the route search
+must distinguish that event from backward motion in the preceding corridor.
+Independent replay and the normal-intro frontend both retain all 39 shield,
+three ships and two continues throughout the second half. Final admission has
+all eighteen defenses, core health 20 and RNG 1906578826/683871768. No enemy
+health, guardian completion or extra resources are assigned. This proves current
+connected admission to the final encounter, not its defeat or integrated Amiga
+presentation parity.

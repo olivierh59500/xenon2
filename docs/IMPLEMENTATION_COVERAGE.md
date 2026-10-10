@@ -39,9 +39,13 @@ the real merchant opens at frame 3,238 with 1,050. The shop director sells the
 collected Homing Missile and Rear 2 through actual quotes and confirmations,
 then buys a full repair, Side Shot, Protection and two power-ups. Same-stage
 return retains 39 shield, Forward 2 / Laser 2 / Side 1, period eight and 550 cash.
-This extends connected evidence through the middle fight and merchant. The
-second half, final fight, ending and next loop still require renewal and
-validation from this current carried state.
+The current continuation then crosses the entire second half without losing
+shield or rewinding into terrain. Genuine final admission occurs at frame 5,507
+with 39 shield, three ships, two continues, 850 cash and score 280,050. All
+eighteen defenses and the 20-health core retain their original admission state.
+Both captured-profile replay and the default-intro Ebitengine journey validate
+this continuation. Final victory, ending and next-loop progression still
+require validation from the current carried state.
 
 Historical fifth-stage records remain explicit captured-profile capabilities.
 Their renewed ordinary inputs reach the fifth final guardian, while a separate
