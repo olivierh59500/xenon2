@@ -244,6 +244,7 @@ type World struct {
 	thirdMiddleArt                   *visualassets.GuardianGroup
 	thirdFinalArt                    *visualassets.GuardianGroup
 	thirdMiddleActors                [17]*WorldActor
+	thirdSceneryActor                *WorldActor
 	thirdMiddleUpdated               bool
 	thirdFinalUpdated                bool
 	FirstGuardian                    *FirstGuardianState
@@ -312,6 +313,10 @@ func NewWorld(data LevelData) (*World, error) {
 }
 
 func newWorldWithPool(data LevelData, pool *ActorPool, initializeActors bool) (*World, error) {
+	return newWorldWithSavedPlayer(data, pool, nil, initializeActors)
+}
+
+func newWorldWithSavedPlayer(data LevelData, pool *ActorPool, saved *World, initializeActors bool) (*World, error) {
 	if data.Number < 1 || data.Number > 5 || data.Terrain == nil || data.Paths == nil || data.Encounters == nil || data.Actors == nil {
 		return nil, fmt.Errorf("level needs its complete decoded data")
 	}
@@ -334,6 +339,9 @@ func newWorldWithPool(data LevelData, pool *ActorPool, initializeActors bool) (*
 		MaximumScrollY: 4608, ScrollDelta: 1, BaseScrollStep: 1, Equipment: equipment, PlayerAlive: true, MaterializationFrames: 8, cursor: NewEncounterCursor(), random: random,
 		kinds: make(map[int]*visualassets.WaveActor), paths: make(map[int]*visualassets.Path), fixedKinds: make(map[int]*visualassets.FixedSpriteKind),
 	}
+	if saved != nil {
+		w.Player.X, w.Player.Y = saved.Player.X, saved.Player.Y
+	}
 	w.PreviousPlayer = w.Player
 	for i := range w.shipTrail {
 		w.shipTrail[i] = w.Player
@@ -346,8 +354,21 @@ func newWorldWithPool(data LevelData, pool *ActorPool, initializeActors bool) (*
 		}
 	}
 	w.ContinueCredits = 2
-	if err := w.initializeWorldPoolUsing(pool); err != nil {
-		return nil, err
+	if saved == nil {
+		if err := w.initializeWorldPoolUsing(pool); err != nil {
+			return nil, err
+		}
+	} else {
+		w.Pool, w.poolShadows, w.nextActorID = pool, saved.poolShadows, saved.nextActorID
+		w.poolBindings = make(map[int]ActorPoolBinding, len(saved.poolBindings))
+		for id, binding := range saved.poolBindings {
+			w.poolBindings[id] = binding
+		}
+		w.turnPrepared = saved.turnPrepared
+		if w.Weapons != nil && saved.Weapons != nil {
+			w.Weapons.mounts, w.Weapons.savedMounts = saved.Weapons.mounts, saved.Weapons.savedMounts
+			w.Weapons.savedMountsActive = saved.Weapons.savedMountsActive
+		}
 	}
 	w.WaveBonuses = NewWaveBonusCache()
 	w.Checkpoint = CheckpointState{ScrollY: w.ScrollY, PlayerX: w.Player.X, WorldY: w.Player.Y, Loadout: w.Equipment.WeaponLoadout}

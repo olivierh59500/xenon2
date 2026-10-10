@@ -49,6 +49,9 @@ func (w *World) RestartCheckpoint() {
 	w.Money = w.Checkpoint.Money
 	w.Player = PlayerMotionState{X: w.Checkpoint.PlayerX, Y: 176, SpeedTier: w.Equipment.SpeedTier}
 	w.PreviousPlayer = w.Player
+	for i := range w.shipTrail {
+		w.shipTrail[i] = w.Player
+	}
 	w.ScrollY, w.PreviousScrollY, w.RenderScrollY = w.Checkpoint.ScrollY, w.Checkpoint.ScrollY, w.Checkpoint.ScrollY
 	w.MaximumScrollY, w.VisitedScrollY = w.ScrollY, w.ScrollY
 	w.cursor = RestartEncounterCursor(w.ScrollY)
@@ -112,6 +115,9 @@ func (w *World) prepareCheckpointActors(scrollChange int, rebuildEquipment bool)
 	}
 	w.restoreSecondArenaActors()
 	w.restoreThirdMiddleActors()
+	if w.thirdSceneryActor != nil && w.thirdSceneryActor.Active {
+		w.Actors = append(w.Actors, w.thirdSceneryActor)
+	}
 	w.restoreFourthGuardianActors(scrollChange)
 	w.restoreFifthGuardianActors(scrollChange)
 	for _, actor := range w.Actors {

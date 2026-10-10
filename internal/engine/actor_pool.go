@@ -112,6 +112,12 @@ func newActorPoolView(pool *ActorPool) *ActorPool {
 	return p
 }
 
+// A level load keeps this saved game's lists and physical storage while giving
+// the new world its own view. The previous world is no longer advanced.
+func retainedActorPoolView(pool *ActorPool) *ActorPool {
+	return &ActorPool{shared: pool.storage(), first: pool.first, last: pool.last}
+}
+
 func (p *ActorPool) storage() *actorPoolStorage {
 	if p.shared != nil {
 		return p.shared

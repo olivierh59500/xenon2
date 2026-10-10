@@ -110,6 +110,11 @@ func (s *Session) switchTurn() bool {
 	world.SetRandomState(random)
 	// The backdrop offset is shared display state outside the saved players.
 	world.BackgroundY, world.PreviousBackgroundY = background, background
+	if !s.hasPlayed[next] {
+		// The original first admission restores over the already constructed
+		// initial equipment; it does not run an outgoing cleanup on that game.
+		world.turnPrepared = true
+	}
 	world.RestartCheckpoint()
 	world.LevelFinished = s.Completed[next]
 	s.hasPlayed[next] = true

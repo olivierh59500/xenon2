@@ -47,6 +47,9 @@ func (s *Session) CompleteStage(next LevelData) (StageTransition, error) {
 	current.ShopReady = false
 	other := s.Current ^ 1
 	if s.PlayerCount == 2 && s.Players[other].Equipment.Lives > 0 && !s.Players[other].GameOver && !s.Completed[other] {
+		if err := current.clearCompletedStageActors(); err != nil {
+			return WaitForOtherPlayer, err
+		}
 		if !s.switchTurn() {
 			return WaitForOtherPlayer, fmt.Errorf("remaining player cannot enter its turn")
 		}
@@ -60,23 +63,26 @@ func (s *Session) CompleteStage(next LevelData) (StageTransition, error) {
 	if current.Level.Number == 5 {
 		difficulty++
 	}
+	if err := current.clearCompletedStageActors(); err != nil {
+		return LoadedNextStage, err
+	}
+	if err := current.restoreStageEquipment(); err != nil {
+		return LoadedNextStage, err
+	}
 	random := s.ActiveWorld().RandomState()
 	replacements := s.Players
-	pool := NewActorPool()
 	for index, old := range s.Players {
 		if old == nil {
 			continue
 		}
-		world, err := advanceStageWorldUsingPool(old, next, random, difficulty, pool, false)
+		world, err := advanceStageWorld(old, next, random, difficulty)
 		if err != nil {
 			return LoadedNextStage, err
 		}
 		replacements[index] = world
-		if index+1 < s.PlayerCount {
-			pool = newActorPoolView(pool)
-		}
 	}
-	for _, world := range replacements {
+	for _, index := range [2]int{s.Current, other} {
+		world := replacements[index]
 		if world == nil {
 			continue
 		}
@@ -88,27 +94,26 @@ func (s *Session) CompleteStage(next LevelData) (StageTransition, error) {
 	}
 	s.Players, s.Completed, s.Difficulty = replacements, [2]bool{}, difficulty
 	s.hasPlayed = [2]bool{true, s.PlayerCount == 2}
-	// The shared-level initializer clears both completion flags before the
-	// normal turn admission. Two surviving players therefore alternate here,
-	// rather than leaving the player who completed last in control.
+	// The source clears completion flags, cleans the current turn and restores
+	// the newly admitted player after constructing both games' level actors.
+	s.ActiveWorld().suspendTurn()
+	if s.ActiveWorld().poolError != nil {
+		return LoadedNextStage, s.ActiveWorld().poolError
+	}
 	if s.PlayerCount == 2 && s.Players[other].Equipment.Lives > 0 && !s.Players[other].GameOver {
 		s.Current = other
 	}
+	s.ActiveWorld().RestartCheckpoint()
+	if s.ActiveWorld().poolError != nil {
+		return LoadedNextStage, s.ActiveWorld().poolError
+	}
+	s.ActiveWorld().Ready = true
 	return LoadedNextStage, nil
 }
 
 func advanceStageWorld(old *World, data LevelData, random RandomState, difficulty int) (*World, error) {
-	return advanceStageWorldUsingPool(old, data, random, difficulty, NewActorPool(), true)
-}
-
-func advanceStageWorldUsingPool(old *World, data LevelData, random RandomState, difficulty int, pool *ActorPool, initializeActors bool) (*World, error) {
 	equipment := old.Equipment
-	equipment.RestoreSuperLoadout()
-	loadout := equipment.WeaponLoadout
-	shield, advance := equipment.Shield, equipment.FireAdvance
-	equipment.RestoreCheckpointLoadout(loadout)
-	// Death resets these properties separately. The level initializer does not.
-	equipment.Shield, equipment.FireAdvance = shield, advance
+	loadout := old.Checkpoint.Loadout
 	data.InitialEquipment, data.InitialRandom = &equipment, &random
 	if data.Rules != nil {
 		rules := *data.Rules
@@ -116,7 +121,7 @@ func advanceStageWorldUsingPool(old *World, data LevelData, random RandomState, 
 		rules.StrongHealthMultiplier *= difficulty
 		data.Rules = &rules
 	}
-	world, err := newWorldWithPool(data, pool, initializeActors)
+	world, err := newWorldWithSavedPlayer(data, retainedActorPoolView(old.Pool), old, false)
 	if err != nil {
 		return nil, err
 	}

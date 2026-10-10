@@ -296,5 +296,6 @@ func (w *World) initializeThirdScenery() {
 		return
 	}
 	actor := &WorldActor{Active: true, ActorList: "scenery", thirdScenery: true, Patch: &w.Level.FixedSprites.Third.Scenery, part: &visualassets.ActorPart{ResourceTag: 80, DamageMode: "block-shot"}, Collision: CollisionRect{Right: -1, Bottom: -1}}
+	w.thirdSceneryActor = actor
 	w.Actors = append(w.Actors, actor)
 }

@@ -252,6 +252,7 @@ func (c *forecastClone) cloneControllers(source *World) {
 	}
 	w.firstGuardianActor = c.cloneActor(source.firstGuardianActor)
 	w.secondGuardianActor = c.cloneActor(source.secondGuardianActor)
+	w.thirdSceneryActor = c.cloneActor(source.thirdSceneryActor)
 	for index, actor := range source.firstGuardianParts {
 		w.firstGuardianParts[index] = c.cloneActor(actor)
 	}
