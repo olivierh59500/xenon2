@@ -1,6 +1,7 @@
 package com.olivierh.xenon2;
 
 import android.app.Activity;
+import android.graphics.Insets;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
@@ -9,6 +10,7 @@ import android.view.WindowInsetsController;
 import android.view.WindowManager;
 
 import go.Seq;
+import com.olivierh.xenon2.mobile.Mobile;
 
 /** Android lifecycle glue; game rules, input and rendering remain in Go. */
 public final class MainActivity extends Activity {
@@ -29,7 +31,20 @@ public final class MainActivity extends Activity {
         ebitenView = new XenonView(this);
         ebitenView.setFocusableInTouchMode(true);
         ebitenView.requestFocus();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            ebitenView.setOnApplyWindowInsetsListener((view, insets) -> {
+                Insets gestures = insets.getSystemGestureInsets();
+                Mobile.setSystemGestureInsets(gestures.left, gestures.top,
+                        gestures.right, gestures.bottom, view.getWidth(), view.getHeight());
+                return insets;
+            });
+            ebitenView.addOnLayoutChangeListener((view, left, top, right, bottom,
+                    oldLeft, oldTop, oldRight, oldBottom) -> view.requestApplyInsets());
+        }
         setContentView(ebitenView);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            ebitenView.requestApplyInsets();
+        }
         hideSystemUi();
     }
 

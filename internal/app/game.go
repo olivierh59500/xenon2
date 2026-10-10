@@ -232,10 +232,10 @@ func (g *Game) advanceWithInput(controls inputFrame) error {
 		return ebiten.Termination
 	}
 	g.updates++
-	if g.pointerKnown && (controls.mouseX != g.pointerX || controls.mouseY != g.pointerY) {
+	if !controls.pointerFromTouch && g.pointerKnown && (controls.mouseX != g.pointerX || controls.mouseY != g.pointerY) {
 		controls.deviceActivity = true
 	}
-	g.pointerX, g.pointerY, g.pointerKnown = controls.mouseX, controls.mouseY, true
+	g.pointerX, g.pointerY, g.pointerKnown = controls.mouseX, controls.mouseY, !controls.pointerFromTouch
 	g.advanceTitleIdle(controls)
 	controls = g.demoControls(controls)
 	if g.fade != nil && !g.fade.Done {

@@ -53,7 +53,12 @@ taps translated to the original canvas coordinates. The controls change color
 while held.
 
 The ordinary demonstration pilot remains reachable from the title menu.
-Any new touch takes manual control. The Android host starts in the original
+A deliberate game touch takes manual control. Navigation and notification
+swipes that begin inside Android's reported system gesture areas are ignored
+for their entire contact sequence, including movement into the game canvas.
+Synthetic mouse-coordinate changes and releasing a menu tap do not cancel the
+automatic demonstration. Desktop mouse movement retains its ordinary behavior.
+The Android host starts in the original
 presentation sequence and opens audio during its first Update, after Android
 has installed the view and context.
 Sixty seconds without input in that passive logo, credits and scores loop also
@@ -63,7 +68,23 @@ messages, READY, shops, fades and pause do not count toward that deadline.
 
 ## Verification
 
-The current build from runtime `66568a0` is installed on the Pixel 10a. Its
+The build at `0a1da36` was installed and cold-launched on the Pixel 10a. Its
+default-intro reference journey reaches the genuine fifth final encounter with
+three ships, two continues and full shield. The public automatic tour still
+returns to the menu after stage three.
+
+After an application switch, Pixel captures showed a stationary ship at second
+level camera 3,962. The original terrain at that pose admits a normal exit;
+isolated ordinary-input replays confirm it. The old input path could silently
+leave automatic mode when a system swipe began on the canvas or when the touch
+pointer disappeared. Regressions now cover edge swipes, cancellation, synthetic
+cursor resets, menu-tap release and deliberate manual takeover in the same
+session. The corrected APK is prepared locally; device verification of the
+application-switch sequence remains pending reconnection.
+
+### Earlier verification
+
+The earlier build from runtime `66568a0` was installed on the Pixel 10a. Its
 complete default-intro logic regression reaches the fifth final guardian in
 40.14 seconds, after the genuine middle victory, ten-coin drain and native
 500-cost repair. It retains the carried ship, both continues and 35 shield;

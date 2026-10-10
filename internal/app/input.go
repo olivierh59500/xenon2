@@ -12,6 +12,7 @@ import (
 type inputFrame struct {
 	escape, music, pause, anyKey                      bool
 	deviceActivity                                    bool
+	pointerFromTouch                                  bool
 	confirm, menuConfirm, firePressed, divePressed    bool
 	left, right                                       bool
 	leftPressed, rightPressed, upPressed, downPressed bool
@@ -26,6 +27,14 @@ type inputFrame struct {
 }
 
 func sampleInput() inputFrame {
+	return sampleDeviceInput(true)
+}
+
+func sampleMobileInput() inputFrame {
+	return sampleDeviceInput(false)
+}
+
+func sampleDeviceInput(includeNativeTouches bool) inputFrame {
 	pressed := inpututil.IsKeyJustPressed
 	i := inputFrame{
 		escape: pressed(ebiten.KeyEscape), music: pressed(ebiten.KeyM), pause: pressed(ebiten.KeyP),
@@ -39,7 +48,7 @@ func sampleInput() inputFrame {
 		fire:         ebiten.IsKeyPressed(ebiten.KeySpace) || ebiten.IsKeyPressed(ebiten.KeyControl),
 		mousePressed: inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft),
 	}
-	i.deviceActivity = len(inpututil.AppendPressedKeys(nil)) != 0 || len(ebiten.AppendTouchIDs(nil)) != 0
+	i.deviceActivity = len(inpututil.AppendPressedKeys(nil)) != 0 || includeNativeTouches && len(ebiten.AppendTouchIDs(nil)) != 0
 	for button := ebiten.MouseButtonLeft; button <= ebiten.MouseButtonMax; button++ {
 		i.deviceActivity = i.deviceActivity || ebiten.IsMouseButtonPressed(button)
 	}
@@ -114,4 +123,12 @@ func mergeTouchInput(i inputFrame, touch controls.Frame) inputFrame {
 		i.mousePressed, i.mouseX, i.mouseY = true, int(touch.TapX), int(touch.TapY)
 	}
 	return i
+}
+
+func mergeMobileInput(i inputFrame, touch controls.Frame) inputFrame {
+	// Only mapped contacts provide mobile pointer coordinates. Android can
+	// reset its synthetic mouse position while another application has focus.
+	i.mousePressed, i.mouseX, i.mouseY = false, -1, -1
+	i.pointerFromTouch = true
+	return mergeTouchInput(i, touch)
 }

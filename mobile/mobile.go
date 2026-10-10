@@ -14,3 +14,9 @@ func init() {
 
 // Dummy ensures gomobile generates bindings for the mobile package.
 func Dummy() {}
+
+// SetSystemGestureInsets passes the platform navigation areas to the Go input
+// filter. It is safe to call from Android's UI thread during a layout change.
+func SetSystemGestureInsets(left, top, right, bottom, width, height int) {
+	app.SetMobileGestureInsets(left, top, right, bottom, width, height)
+}

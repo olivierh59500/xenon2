@@ -3,6 +3,7 @@ package app
 import (
 	"image/color"
 	"math"
+	"sync/atomic"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
@@ -20,6 +21,30 @@ type MobileGame struct {
 	pad      controls.Pad
 	touches  []ebiten.TouchID
 	contacts []controls.Touch
+	filtered []controls.Touch
+	gestures controls.GestureGuard
+}
+
+type mobileGestureInsets struct{ left, top, right, bottom float64 }
+
+var androidGestureInsets atomic.Pointer[mobileGestureInsets]
+
+// SetMobileGestureInsets receives Android's system gesture areas without
+// accessing game state from the platform UI thread.
+func SetMobileGestureInsets(left, top, right, bottom, width, height int) {
+	if width <= 0 || height <= 0 {
+		return
+	}
+	androidGestureInsets.Store(&mobileGestureInsets{float64(left) / float64(width), float64(top) / float64(height), float64(right) / float64(width), float64(bottom) / float64(height)})
+}
+
+func (g *MobileGame) gestureInsets() controls.GestureInsets {
+	if areas := androidGestureInsets.Load(); areas != nil {
+		return controls.GestureInsets{Left: max(12, areas.left*float64(g.width)), Top: max(8, areas.top*controls.Height), Right: max(12, areas.right*float64(g.width)), Bottom: max(24, areas.bottom*controls.Height)}
+	}
+	// The minimum leaves every virtual control accessible and reserves the
+	// original HUD's bottom strip even while immersive bars report zero insets.
+	return controls.GestureInsets{Left: 12, Top: 8, Right: 12, Bottom: 24}
 }
 
 func NewMobileGame(config Config) *MobileGame {
@@ -50,11 +75,11 @@ func (g *MobileGame) Update() error {
 		x, y := ebiten.CursorPosition()
 		g.contacts = append(g.contacts, controls.Touch{ID: -1, X: float64(x), Y: float64(y), Pressed: inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft)})
 	}
-	i := sampleInput()
+	i := sampleMobileInput()
 	// The wide host's mouse coordinates must pass through the same transform
 	// as touchscreen taps before reaching the original menus and shop.
-	i.mousePressed = false
-	i = mergeTouchInput(i, g.pad.Update(g.contacts))
+	g.filtered = g.gestures.Filter(g.filtered[:0], g.contacts, float64(g.width), controls.Height, g.gestureInsets())
+	i = mergeMobileInput(i, g.pad.Update(g.filtered))
 	if i.escape && g.game.Screen == TitleScreen {
 		// The desktop ESC exit is not an Android game-update error.
 		i.escape = false
