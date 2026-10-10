@@ -114,9 +114,20 @@ func (w *World) advanceFifthTile(actor *WorldActor) {
 		w.setSecondMapPatch(state.X/16, state.WorldY/16, patch)
 	}
 	if event.Shot {
+		// A full pool can reclaim this turret during its own shot allocation.
+		// Publish the callback's new clock/heading before the replacement reads it.
+		w.storeFifthTileResidue(actor)
 		if kind.Kind == 4 {
+			parentSlot := w.waveDamageSlot(actor)
 			for direction := 7; direction >= 0; direction-- {
-				w.spawnEnemyShot(event.ShotX, event.ShotY, EnemyShot{Direction: uint8(direction), Speed: event.ShotSpeed})
+				x, y := event.ShotX, event.ShotY
+				if parent, ok := w.readWorldResidue(parentSlot); ok {
+					// Each source iteration rereads the original physical entry,
+					// which may now contain the preceding shot's screen coordinates.
+					x = int(int16(int(parent.X) + 16))
+					y = int(int16(int(parent.Y) - w.ScrollY + 16))
+				}
+				w.spawnEnemyShot(x, y, EnemyShot{Direction: uint8(direction), Speed: event.ShotSpeed})
 				if w.Level.Rules != nil && len(w.Projectiles) != 0 && len(w.Level.Rules.RadialTileShotAnimation.Frames) != 0 {
 					clip := w.Level.Rules.RadialTileShotAnimation
 					shot := w.Projectiles[0]

@@ -191,6 +191,14 @@ source callback instead. Maps, scores, RNG and persistent flags still match.
 The isolated audit and resource-independent/race regressions pass; the stale
 fifth-stage practice recording remains a separate validation limit.
 
+All 22 fifth-stage scenery constructors also match four explicit capacity
+profiles: 88 cases, both constructor boundaries and 27,104 physical-slot rows.
+Following those births through 32 moving/projectile turns adds 528 sampled
+boundaries and 81,312 slot states. The lifecycle comparison corrects publication
+of a turret's firing state before self-reclamation and repeated coordinate reads
+inside saturated radial bursts. Original-resource and resource-independent
+regressions cover these cases; full-stage progression remains separate.
+
 Checkpoint restoration across alternating turns, the second guardian's
 crowded-scene direction, retained hatch/pod state, and death-image attachment
 centers now have explicit implementations and source comparisons. Accepted

@@ -2343,3 +2343,39 @@ preceding implementation fails these regressions and the independent state
 comparison. Ordinary engine/asset tests and focused race checks pass. The full
 original-resource suite retains the six already-stale fifth-stage practice
 failures; this audit does not validate a complete fifth-stage playthrough.
+
+## Crowded fifth-stage construction and live firing
+
+The 22 barrier and specialized-turret records now run their original
+constructors under four capacity conditions: two free slots, a full pool of
+actual point shots, a full pool with two correctly retired shots, and a full
+list of inert ordinary moving entries. All 88 cases match both constructor
+boundaries and 27,104 sampled physical-slot states, including allocation/list
+order, retained words, RNG, affected reward buckets, map writes and persistent
+flags.
+
+The same cases also execute 32 actual moving/projectile passes. Snapshots before
+and after construction and after both phases of the first and final turn match
+528 boundaries and 81,312 physical-slot states. The native recorder skips only
+the explicitly inert moving capacity holders; real projectile factories,
+animation, movement, deletion and allocation run normally. Player, scenery,
+equipment and stage-script phases remain isolated, and the player collider is
+outside the playfield.
+
+This found another publication-order issue. A turret can lose its entry during
+its own shot allocation, so the source publishes the updated firing accumulator,
+phase and heading before the projectile inherits those words. Go now does the
+same. Radial bursts also reread their original physical entry for each shot.
+When that entry is repeatedly reused by the burst, subsequent source shots read
+the preceding shot's screen coordinates as world coordinates. Go preserves this
+bounded allocation behaviour and the resulting ordinary out-of-view retirement;
+it does not cache the initial burst centre across the eight allocations.
+
+A resource-independent regression saturates moving storage, checks the inherited
+clock/phase for aiming, persistent and radial turrets, verifies the eight-shot
+coordinate sequence and then releases its final out-of-view replacement through
+the normal projectile callback. The preceding source fails this regression and
+the independent lifecycle trace. Ordinary engine/asset suites and focused race
+checks pass; the original-resource suite retains the same six stale fifth-stage
+practice failures. These fixtures do not establish a connected fifth-stage or
+complete campaign playthrough.

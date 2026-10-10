@@ -142,3 +142,51 @@ func TestFifthAdjacentTileChangesFollowLinearMapNeighboursAtOuterColumns(t *test
 		}
 	}
 }
+
+func TestFifthTurretFiringPublishesParentClockBeforeReclamation(t *testing.T) {
+	for _, kind := range []int{3, 4, 9} {
+		t.Run(fmt.Sprint(kind), func(t *testing.T) {
+			w, group := fifthSceneryFixture(t, kind)
+			actor := group[0]
+			slot, identity := actor.Binding.Slot, actor.ID
+			w.Level.Rules = &visualassets.LevelRules{DefaultEnemyShot: "point"}
+			actor.fixedTileArt.FireRate, actor.fixedTileArt.ShotSpeed = 2, 8
+			actor.fixedTileVariant.Frames = make([]visualassets.TilePatch, 8)
+			for index := range actor.fixedTileVariant.Frames {
+				actor.fixedTileVariant.Frames[index] = actor.fixedTileVariant.Initial
+			}
+			actor.fifthTile.Phase, actor.fifthTile.Accumulator = 8, 255
+			if kind == 4 {
+				actor.fifthTile.Phase = 0
+			}
+			w.storeFifthTileResidue(actor)
+			fillWaveDamageMovingTail(t, w)
+			random := w.RandomState()
+			reset := uint16(random.Next()&63) << 8
+			w.advanceFifthTile(actor)
+			w.finishActorUpdate(actor)
+			current := w.Pool.Slot(slot)
+			phase := int16(8)
+			if kind == 4 {
+				phase = 1
+			}
+			if w.poolError != nil || actor.Active || current.EntityID == identity || current.ResourceTag != 20 || current.Residue.EmitterClock != reset || current.Residue.Counter != phase {
+				t.Fatalf("kind %d shot inherited stale parent clock/phase: %+v, reset %d error %v", kind, current, reset, w.poolError)
+			}
+			if kind == 4 {
+				// Eight allocations reuse the same physical entry. The source
+				// rereads its new screen coordinates as world coordinates each time.
+				shot := w.Projectiles[0]
+				if len(w.Projectiles) != 8 || shot.X != 160 || shot.Y != -6072 || shot.Motion.Direction != 0 || !shot.Active {
+					t.Fatalf("saturated radial burst lost the source's repeated coordinate reads: %+v", shot)
+				}
+				if err := w.advancePooledProjectiles(Input{}); err != nil {
+					t.Fatal(err)
+				}
+				if shot.Active || w.Pool.Slot(slot).ResourceTag != 4 {
+					t.Fatal("the source out-of-view replacement did not retire on its first update")
+				}
+			}
+		})
+	}
+}
