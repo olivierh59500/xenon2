@@ -2187,3 +2187,46 @@ and survival requirements; this does not extend the public three-level tour.
 The complete original-resource engine and visual-asset suites, focused race
 checks, both real frontend admissions and the independent three-level scorecard
 pass. Both public tours finish without losing a ship or spending a continue.
+
+## Ordinary fixed sprites and specialized projectile publication
+
+All 43 actual placements of the four damageable ordinary fixed-sprite families
+now have complete damage-callback comparisons. Both bouncing attacker families,
+the third-stage horizontal sweeper and the fifth-stage vertical oscillator run
+at update boundaries zero, one, sixteen and sixty-four. Damage one and 127 are
+applied with available capacity, a full pool of actual point shots, and a full
+pool of inert moving entries. The 1,032 cases match 157,824 physical-slot states,
+score, RNG, sounds and all eight reward-cache buckets. The extending beam is
+scenery without an enemy-damage callback; its source contact and rendering
+comparisons remain separate.
+
+Updates execute the actual enemy factories, so the comparison also sees the
+specialized shots created before the hit. It exposed delayed publication of
+the turning projectile's coordinates, direction, movement budget and cleared
+counter. It also exposed missing constructor publication for guided animated
+projectiles: coordinates, heading, lifetime counter, health, weak-contact flag,
+score and cleared reward token. These are now written before another allocation
+can reclaim their entries.
+
+The fifth-stage guided updater changes integer coordinate words, its lifetime
+counter and heading. The source constructor and updater retain coordinate
+fractions and unrelated words. A dedicated Go writer preserves that distinction
+instead of sending this family through the generic fractional-motion writer.
+Resource-independent regressions cover all eight initial headings, damaged
+health across an update, retained fractions and reclamation before the first
+callback. The preceding source fails the new constructor/reuse checks and the
+independent fixed-sprite trace.
+
+These comparisons isolate the selected enemy's updates and damage; they do not
+run complete moving, projectile, player or drawing phases. The public three-level
+idle and explicit journeys still pass without ship losses or spent continues.
+
+The old private fifth-stage practice recording is now invalid. Its first
+changed outcome is frame 1,151, where a health bubble is collected one pass
+earlier. Later inherited emitter state changes the middle arena, and blindly
+replaying the old commands loses the ship before its recorded merchant boundary.
+The strict practice validator rejects the changed prediction instead of
+continuing that sequence. The optional tests expecting the old fifth-stage
+merchant/final replay therefore fail; their survival requirements have not been
+relaxed. A complete five-level playthrough remains unverified. The public expert
+tour remains limited to the first three levels.

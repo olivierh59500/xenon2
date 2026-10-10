@@ -38,6 +38,10 @@ func (w *World) spawnSpecializedFixedShot(event FixedSpriteEvents) bool {
 		shot := &WorldProjectile{ID: binding.EntityID, Binding: binding, X: float64(event.ShotX), Y: float64(event.ShotY),
 			PreviousX: float64(event.ShotX), PreviousY: float64(event.ShotY), Sprite: event.ShotSprite,
 			Atlas: "fixed", Active: true, turning: &state}
+		// The source clears its turn counter and publishes motion immediately;
+		// another allocation can reclaim this entry before its first update.
+		shot.Binding.Residue.Counter = 0
+		w.finishProjectileUpdate(shot)
 		w.poolProjectiles[binding.Slot] = shot
 		w.Projectiles = append([]*WorldProjectile{shot}, w.Projectiles...)
 	case "animated-aiming-projectile":
@@ -55,11 +59,30 @@ func (w *World) spawnSpecializedFixedShot(event FixedSpriteEvents) bool {
 			w.poolError = err
 			return true
 		}
+		residue := &actor.Binding.Residue
+		residue.Health, residue.PowerOrScore, residue.WaveBonusToken = uint16(art.Health), uint16(art.Score), 0
+		residue.StrongHealth = false
+		w.storeFixedAimingResidue(actor)
 		w.Actors = append([]*WorldActor{actor}, w.Actors...)
 	default:
 		return false
 	}
 	return true
+}
+
+func (w *World) storeFixedAimingResidue(actor *WorldActor) {
+	if actor.Binding.EntityID == 0 {
+		return
+	}
+	state, residue := actor.fixedAiming, &actor.Binding.Residue
+	// This integer-motion family retains coordinate fractions and unrelated
+	// words. Its lifetime counter and heading remain available on slot reuse.
+	residue.X, residue.Y = int16(state.X), int16(state.Y)
+	residue.Counter, residue.Direction, residue.Health = int16(state.Timer), int16(state.Direction), uint16(actor.Health)
+	w.storeWorldResidue(actor.Binding)
+	if !actor.Active {
+		w.retireWorldActor(actor.Binding)
+	}
 }
 
 func (w *World) advanceTurningFixedShot(shot *WorldProjectile) error {

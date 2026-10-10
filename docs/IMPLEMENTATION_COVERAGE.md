@@ -141,6 +141,13 @@ separate counting/death-effect flags reproduce eight explosions without includin
 the collision markers. These checks do not replace integrated full-stage or
 hardware drawing comparisons.
 
+The four damageable ordinary fixed-sprite families add all 43 actual placements
+at four update boundaries, under three capacity profiles and two damage values.
+The 1,032 cases match 157,824 physical-slot states and shared combat state. Actual
+emissions exposed missing immediate publication of turning and guided projectile
+constructors. Guided integer motion now retains the source coordinate fractions,
+lifetime counter and heading when its physical entry is reused.
+
 ## Validation boundaries
 
 Private source comparisons run only when the local decoded disk resources and
@@ -151,6 +158,12 @@ The build updates at 60 Hz and uses a separate gameplay clock. Ebitengine may
 draw at the monitor refresh rate; this does not accelerate gameplay.
 Integrated Amiga comparisons and a complete five-level run remain required.
 The current build is in development and is not yet a complete conversion.
+
+Corrected guided-projectile residue invalidates the old private fifth-stage
+practice recording: its merchant/final replay tests currently fail. The strict
+validator rejects the changed outcomes, and the public three-level journey gates
+still pass with unchanged survival requirements. This is a remaining validation
+limit; the old fifth-stage replay is not evidence for the current build.
 
 Checkpoint restoration across alternating turns, the second guardian's
 crowded-scene direction, retained hatch/pod state, and death-image attachment
