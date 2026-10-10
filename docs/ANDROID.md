@@ -68,16 +68,18 @@ messages, READY, shops, fades and pause do not count toward that deadline.
 
 ## Verification
 
-The APK built from runtime `2af306d` was installed and cold-launched on the
+The APK built from runtime `475a21e` was installed and cold-launched on the
 Pixel 10a on 10 October. Its SHA-256 is
-`90a1e24e563223b269262fa39417a912cef44923ded296a357b4fe174a723593`.
+`c9477e55d9dca62cda588b2e3567d84d3f283305b02974936ca9848ce3e4d0e0`;
+the installed APK has the same digest.
 Installation succeeds, launch reports `Status: ok` and the application process
 remains active. This build includes the corrected solo score display and system
-gesture handling. The public automatic tour still returns to the menu after
-stage three.
+gesture handling, plus continuous background phase across alternating players.
+The public automatic tour still returns to the menu after stage three.
 
-The same runtime now passes the complete default-intro five-stage reference on
-the physical Pixel's ARM64 logic runner in 362.54 seconds. It earns the preceding
+Runtime `2af306d`, before the two-player backdrop correction, passes the complete
+default-intro five-stage reference on the physical Pixel's ARM64 logic runner in
+362.54 seconds. It earns the preceding
 victories and merchants, defeats the fifth final guardian, collects all twenty
 exit coins, runs every ending phase and starts the next difficulty round with
 score 284,750, two ships and three continue credits. One ship is lost in the
@@ -85,6 +87,13 @@ final fight; no continue is spent. The system-gesture/resume, menu-tap release
 and reported-inset regressions also pass on the device in 1.41, 1.40 and 0.00
 seconds respectively. This is accelerated simulation with drawing disabled,
 not a frame-rate measurement or a real-time game duration.
+
+The current runtime also passes the two-player frontend check on the physical
+device in 1.84 seconds. Ordinary menu admission, directional controls and real
+collision deaths change turns in both directions. The shared background remains
+continuous through both READY directors and gameplay fades; each player's saved
+logic counter remains independent. The fresh-level reset is covered separately
+by the original-resource engine suite.
 
 After an application switch, Pixel captures showed a stationary ship at second
 level camera 3,962. The original terrain at that pose admits a normal exit;
@@ -100,7 +109,7 @@ To repeat the bounded checks on one explicitly selected device:
 
 ```sh
 ANDROID_SERIAL=your-device-serial ./scripts/check-android-logic.sh \
-  --run '^Test(CurrentFiveStageReferenceCompletesEndingAndStartsNextRoundOptional|MobileSystemGestureAndResumeKeepExpertInSameSession|MobileDemoCanvasTapAndReleaseKeepExpertAdmission|MobileGestureInsetsUseReportedViewCoordinates)$'
+  --run '^Test(CurrentFiveStageReferenceCompletesEndingAndStartsNextRoundOptional|MobileSystemGestureAndResumeKeepExpertInSameSession|MobileDemoCanvasTapAndReleaseKeepExpertAdmission|MobileGestureInsetsUseReportedViewCoordinates|AlternatingCollisionDeathsKeepSharedBackdropThroughReady)$'
 ```
 
 ### Earlier verification

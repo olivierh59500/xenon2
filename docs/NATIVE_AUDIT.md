@@ -2671,3 +2671,9 @@ The complete original-resource engine, artwork and merchant suites pass in
 pass in 1.844 seconds, including the unchanged sixty exact terrain rasters.
 This corrects two-player display-state continuity; it does not certify real-time
 hardware smoothness or complete two-player Amiga playthrough equivalence.
+
+The same ordinary collision/READY integration passes on the physical Pixel
+ARM64 runner in 1.84 seconds. Desktop and Android builds succeed. The APK from
+runtime `475a21e` is installed, its digest matches the local build, and cold
+launch reports success. The locked-device check draws no graphics; actual
+app switching, frame pacing and audio continuity remain separate live checks.
