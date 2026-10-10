@@ -85,3 +85,37 @@ residue or free-stack order across a complete original stage transition, every
 crowded two-player combat interaction, real-time frame pacing or audio continuity.
 The independent one-player native constructor, update and damage comparisons
 remain applicable to their documented states.
+
+## Android confirmation
+
+Runtime `2f771a3` passes the complete default-intro five-stage reference on the
+physical Pixel 10a in 145.94 seconds. The two-player collision/READY and final
+ending/next-round checks pass in 1.31 and 1.36 seconds. The built APK is installed,
+its digest matches the local build and cold launch succeeds. These are locked
+device logic checks; they do not measure frame pacing or audio output.
+
+## Remaining original stage-transition comparison
+
+A subsequent offline probe executes original cleanup, equipment restoration,
+player switching and level initialization at arranged completion boundaries.
+All five transitions, with one and two players, retain known fractional-position
+and counter values placed in a previously used free object record. File access,
+presentation drawing and the stopped audio device are isolated. No allocator,
+cleanup, equipment or level-actor routine is replaced.
+
+The one-player sparse boundaries also expose physical allocation differences:
+
+| Transition | Original free head | Original primary slot | Fresh Go primary slot |
+| --- | ---: | ---: | ---: |
+| 1 to 2 | 9 | 5 | 4 |
+| 2 to 3 | 7 | 5 | 4 |
+| 3 to 4 | 4 | 5 | 4 |
+| 4 to 5 | 5 | 4 | 4 |
+| 5 to next-round 1 | 6 | 4 | 4 |
+
+This is a sparse completion-boundary fixture, not an original campaign
+playthrough. It confirms that the original keeps physical storage across level
+loads; the current Go stage loader still creates a fresh shared reserve.
+Preserving its free-stack order, surviving records and reused named fields
+through those loads remains unfinished. Fresh-session matching and successful
+Go campaign progression must not be presented as proof of that behavior.

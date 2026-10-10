@@ -2701,3 +2701,18 @@ residue across original level transitions or every crowded two-player combat
 boundary. [SESSION_POOL_VALIDATION.md](SESSION_POOL_VALIDATION.md) records the
 scope and repeatable commands. No original program or resource is added to Git
 or executed by the Go game.
+
+The same runtime `2f771a3` now passes the full Pixel ARM64 campaign reference in
+145.94 seconds. Two-player collision/READY and final-ending/next-round checks
+pass in 1.31 and 1.36 seconds. Its installed APK matches the local digest and
+cold-launches successfully. These checks run without drawing on the locked phone.
+
+A subsequent original completion-boundary probe also confirms a remaining
+cross-level discrepancy: cleanup, weapon restoration and new-level actors retain
+the original physical reserve and its used free-record fields. Go still creates
+a fresh shared reserve on a level load. The sparse original one-player routes
+also place the next primary at slot five for transitions one-to-two, two-to-three
+and three-to-four, rather than the fresh Go slot four. This probe is not a full
+Amiga campaign, but establishes that fresh-session allocation matching cannot
+close cross-level storage fidelity. The remaining scope is explicit in
+[SESSION_POOL_VALIDATION.md](SESSION_POOL_VALIDATION.md).

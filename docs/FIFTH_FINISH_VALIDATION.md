@@ -60,8 +60,9 @@ contain directions and fire only; a single marked READY acknowledgement crosses
 the actual director after the ship loss. The controls contain no original artwork
 or executable bytes. The optional Android logic runner retains the game-flow
 assertions while omitting GPU captures. The physical Pixel 10a passes that
-complete reference in 362.54 seconds, including the same score, final reward
-drain, one ship loss, unchanged continue spending and next-round admission.
+complete reference in 145.94 seconds on runtime `2f771a3`, including the same
+score, final reward drain, one ship loss, unchanged continue spending and
+next-round admission.
 This locked-device check establishes ARM64 game-flow agreement; it does not
 measure frame pacing, sound output or touchscreen interaction.
 

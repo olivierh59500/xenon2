@@ -116,6 +116,9 @@ cover all five levels with one and two players. Capacity-pressure and forecast
 isolation regressions protect the inactive player's objects. Full cross-level
 slot-residue and crowded two-player combat comparisons remain separate; see
 [SESSION_POOL_VALIDATION.md](SESSION_POOL_VALIDATION.md).
+An original completion-boundary probe confirms retained physical storage across
+level loads. The current Go stage loader still creates a fresh shared reserve;
+matching cross-level free-stack order and residue remains required.
 
 Pending terrain rewind now continues across dive admission, including history
 restoration and crushing; diving suppresses new contacts only. The world and

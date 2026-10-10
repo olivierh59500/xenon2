@@ -68,32 +68,33 @@ messages, READY, shops, fades and pause do not count toward that deadline.
 
 ## Verification
 
-The APK built from runtime `475a21e` was installed and cold-launched on the
+The APK built from runtime `2f771a3` was installed and cold-launched on the
 Pixel 10a on 10 October. Its SHA-256 is
-`c9477e55d9dca62cda588b2e3567d84d3f283305b02974936ca9848ce3e4d0e0`;
+`367cdbbd16624196f98d3099427ad418e706db886978899554fe377baabfa980`;
 the installed APK has the same digest.
 Installation succeeds, launch reports `Status: ok` and the application process
 remains active. This build includes the corrected solo score display and system
 gesture handling, plus continuous background phase across alternating players.
+Both saved games now also use one physical 159-object reserve, with separate
+player lists and an independently copied reserve for predictions.
 The public automatic tour still returns to the menu after stage three.
 
-Runtime `2af306d`, before the two-player backdrop correction, passes the complete
-default-intro five-stage reference on the physical Pixel's ARM64 logic runner in
-362.54 seconds. It earns the preceding
+The current runtime passes the complete default-intro five-stage reference on
+the physical Pixel's ARM64 logic runner in 145.94 seconds. It earns the preceding
 victories and merchants, defeats the fifth final guardian, collects all twenty
 exit coins, runs every ending phase and starts the next difficulty round with
 score 284,750, two ships and three continue credits. One ship is lost in the
-final fight; no continue is spent. The system-gesture/resume, menu-tap release
-and reported-inset regressions also pass on the device in 1.41, 1.40 and 0.00
-seconds respectively. This is accelerated simulation with drawing disabled,
-not a frame-rate measurement or a real-time game duration.
+final fight; no continue is spent. This is accelerated simulation with drawing
+disabled, not a frame-rate measurement or a real-time game duration.
 
-The current runtime also passes the two-player frontend check on the physical
-device in 1.84 seconds. Ordinary menu admission, directional controls and real
-collision deaths change turns in both directions. The shared background remains
+The current runtime also passes the two-player collision/READY and fifth-ending
+frontend checks on the physical device in 1.31 and 1.36 seconds. Ordinary menu
+admission, directional controls and real collision deaths change turns in both
+directions. The shared background remains
 continuous through both READY directors and gameplay fades; each player's saved
-logic counter remains independent. The fresh-level reset is covered separately
-by the original-resource engine suite.
+logic counter remains independent. Both pool views retain the same physical
+reserve during turn admission and after the final merchant starts round two.
+The fresh-level reset is covered separately by the original-resource engine suite.
 
 After an application switch, Pixel captures showed a stationary ship at second
 level camera 3,962. The original terrain at that pose admits a normal exit;
@@ -109,10 +110,16 @@ To repeat the bounded checks on one explicitly selected device:
 
 ```sh
 ANDROID_SERIAL=your-device-serial ./scripts/check-android-logic.sh \
-  --run '^Test(CurrentFiveStageReferenceCompletesEndingAndStartsNextRoundOptional|MobileSystemGestureAndResumeKeepExpertInSameSession|MobileDemoCanvasTapAndReleaseKeepExpertAdmission|MobileGestureInsetsUseReportedViewCoordinates|AlternatingCollisionDeathsKeepSharedBackdropThroughReady)$'
+  --run '^Test(CurrentFiveStageReferenceCompletesEndingAndStartsNextRoundOptional|FifthStageMerchantEndingAndSharedNextStageBoundary|MobileSystemGestureAndResumeKeepExpertInSameSession|MobileDemoCanvasTapAndReleaseKeepExpertAdmission|MobileGestureInsetsUseReportedViewCoordinates|AlternatingCollisionDeathsKeepSharedBackdropThroughReady)$'
 ```
 
 ### Earlier verification
+
+Runtime `2af306d` passed the same five-stage Pixel logic journey in 362.54 seconds.
+Its system-gesture/resume, menu-tap-release and reported-inset regressions passed
+in 1.41, 1.40 and 0.00 seconds. Runtime `475a21e` subsequently passed the original
+two-player collision/READY check in 1.84 seconds before shared-pool assertions
+were added. These CPU execution times do not represent display frame rates.
 
 The earlier build from runtime `66568a0` was installed on the Pixel 10a. Its
 complete default-intro logic regression reaches the fifth final guardian in
