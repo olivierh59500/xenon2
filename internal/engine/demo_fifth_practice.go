@@ -97,7 +97,7 @@ func fifthPracticeMarker(w *World) uint64 {
 }
 
 func fifthPracticeWindow(w *World, pal int) bool {
-	return w != nil && w.Level.Number == 5 && w.Frame >= 1 &&
+	return w != nil && w.Level.Number == 5 &&
 		w.PlayerAlive && !w.GameOver && !w.Ready && !w.Cheats.Enabled() && w.Dive.Phase == 0 &&
 		w.ScreenClearFrames == 0 && !w.stepContinuation.active && !w.ShopReady && !w.ExitReady &&
 		!w.LevelFinished && w.FifthFinal == nil &&
@@ -114,7 +114,10 @@ func (p *PresentationPilot) fifthPracticedOpeningInput(w *World) (Input, bool) {
 		return Input{}, false
 	}
 	controls, markers, start := fifthOpeningControls[:], fifthOpeningMarkers[:], uint64(1)
-	if w.Frame >= fifthSecondPracticeStart && (p.fifthPractice == nil || p.fifthPractice.start == fifthSecondPracticeStart || w.Frame > uint64(len(fifthOpeningControls))) {
+	current := p.fifthPractice != nil && p.fifthPractice.start == 0 || w.Frame == 0 && fifthPracticeMarker(w) == fifthCurrentOpeningMarkers[0]
+	if current {
+		controls, markers, start = fifthCurrentOpeningControls[:], fifthCurrentOpeningMarkers[:], 0
+	} else if w.Frame >= fifthSecondPracticeStart && (p.fifthPractice == nil || p.fifthPractice.start == fifthSecondPracticeStart || w.Frame > uint64(len(fifthOpeningControls))) {
 		controls, markers, start = fifthSecondControls[:], fifthSecondMarkers[:], fifthSecondPracticeStart
 	}
 	index := int(w.Frame - start)

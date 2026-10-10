@@ -1014,3 +1014,43 @@ the separate frontend regression supplies that connected evidence. Completion
 of the fifth stage from this new profile and an integrated Amiga five-stage
 comparison remain unproven. Historical fifth frontend/profile assertions still
 require renewal for the new entry.
+
+## Current fifth opening from four earned victories
+
+The current extended reference tour now continues from its earned fifth READY
+profile through all three opening checkpoint gates and the original middle
+guardian admission. The public demonstration remains limited to three stages.
+No prior victory, inventory, health, money, random state or encounter gate is
+assigned by the connected frontend regression.
+
+A new 2,241-command opening starts at READY frame zero, retaining Forward 1 /
+Laser 0 / Rear 2, three ships and two continues. Its expected outcomes come from
+independent full-step replay. Every command is validated against the complete
+next-pass marker before being returned. Foreign owners, rear tiers, shield,
+wallet, RNG and checkpoint weapon serials are rejected without changing the
+live world. The current route stops at its verified endpoint; the older captured
+first/second-half routes retain their own entry markers and existing tests.
+
+| Current fifth checkpoint | Frame | Shield | Cash | Score |
+| --- | ---: | ---: | ---: | ---: |
+| 4,000 | 609 | 39 | 100 | 210,750 |
+| 3,424 | 1,185 | 39 | 300 | 226,650 |
+| 2,880 | 1,729 | 31 | 300 | 233,850 |
+| 2,368 / middle guardian | 2,241 | 31 | 300 | 238,350 |
+
+The first segment reaches a minimum of 15 shield before collecting an ordinary
+health bubble. The final admission retains the original 200-health middle core
+and RNG 648954619/661526534. Both the captured-source engine replay and the
+normal-intro frontend journey preserve all three ships and both continues.
+
+The first isolated fixture correctly reproduced the old gameplay failure but
+initially missed the checkpoint's saved weapon serials. Normal stage loading
+retains the pre-rebuild Primary15/Laser18/Rear17 loadout while live equipment
+has Primary19/Laser20/Rear21. The strict marker exposed that difference in the
+actual frontend. The captured fixture and outcomes now retain both versions;
+no marker field or rejection check is removed.
+
+This establishes current connected progression to the middle admission. The
+middle fight, real merchant return, second half, final fight, ending and next
+loop still need validation from this new carried profile. Earlier isolated
+victories and the historical five-stage records do not establish those results.

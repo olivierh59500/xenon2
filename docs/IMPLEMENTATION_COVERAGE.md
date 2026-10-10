@@ -24,6 +24,17 @@ and both continues. Stage five receives full shield, Forward 1 / Laser 0 / Rear 
 and score 203,700. The [fourth-stage validation](FOURTH_OPENING_VALIDATION.md)
 records the exact boundaries and remaining hardware/timing limits.
 
+The same current frontend journey now continues through the fifth-stage
+launcher/terrain checkpoints and reaches the real middle guardian at frame
+2,241 with 31 shield, three ships, two continues, 300 cash and score 238,350.
+A genuine health pickup restores full shield after an observed minimum of 15.
+The new opening is admitted only for its complete current READY profile, then
+rehearses each ordinary input through full callbacks before returning it. Its
+checkpoint loadout retains the original pre-rebuild weapon serials; the captured
+fixture now includes that distinction without relaxing the marker. The route
+ends at the verified middle admission. Completing this fight and the rest of
+stage five from the current carried state remains unproven.
+
 Historical fifth-stage records remain explicit captured-profile capabilities.
 Their renewed ordinary inputs reach the fifth final guardian, while a separate
 isolated final fight reaches the final merchant with a prepared loadout and five

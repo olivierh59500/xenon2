@@ -2510,3 +2510,25 @@ the local Xvfb/Mesa environment, covering 1,963.02 simulated seconds. No origina
 program executes in gameplay. This is connected Go progression evidence through
 the current fifth admission, not integrated Amiga drawing/audio/timing parity or
 a completed fifth stage. Earlier fifth records use a distinct captured profile.
+
+## Current carried fifth-stage middle admission
+
+The normal-intro frontend journey now earns the current fifth opening after its
+four genuine preceding victories and all merchants/loaders. Ordinary commands
+reach checkpoint 3424 at frame 1,185 with full shield, then checkpoint 2880 and
+the real middle admission at frame 2,241 with 31 shield. Three ships and two
+continue credits remain intact; the wallet has 300 and the score is 238,350.
+The original 200-health middle core and encounter gate are preserved.
+
+The 2,241 controls contain no game state, original artwork or original program.
+Independent full-step replay supplies the 2,242 expected outcome markers. Each
+live next pass uses the same callback rehearsal and strict owner/profile checks.
+Its initial marker retains pre-rebuild checkpoint weapon serials separately from
+the current live weapon serials. That distinction initially caused the real
+frontend to reject the isolated record; correcting the capture resolves it
+without omitting checkpoint state or changing any game rule.
+
+The historical fifth opening/second-half traces retain their separate entry
+profiles. Current connected evidence stops at the middle admission. Middle/final
+victory from this new state, ending/next-loop progression and integrated Amiga
+presentation comparison remain separate unproven requirements.

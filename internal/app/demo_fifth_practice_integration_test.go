@@ -18,7 +18,7 @@ func verifyPresentationFifthLauncherCheckpoint(t *testing.T) *Game {
 	t.Helper()
 	g := verifyPresentationFirstFourLevelsFromDefaultIntro(t)
 	w := g.Driver.(*worldDriver).world
-	if w.Equipment.Mounts[0].Item != engine.ItemLaser || w.Equipment.Mounts[1].Item != engine.ItemNone || w.Equipment.Rear.Tier != 1 {
+	if w.Equipment.Mounts[0].Item != engine.ItemLaser || w.Equipment.Mounts[1].Item != engine.ItemNone || w.Equipment.Rear.Tier != 2 {
 		t.Fatal("fourth final shop did not earn the left-laser profile")
 	}
 	minimum := 39
@@ -26,15 +26,15 @@ func verifyPresentationFifthLauncherCheckpoint(t *testing.T) *Game {
 		advanceFrontend(t, g, inputFrame{})
 		d := g.Driver.(*worldDriver)
 		w = d.world
-		if !g.DemoActive() || d.diagnostic || w.Cheats.Enabled() || !w.PlayerAlive || w.GameOver || w.Equipment.Lives != 1 || w.ContinueCredits != 2 || w.Level.Number != 5 || w.Rewind.Timer != 0 {
+		if !g.DemoActive() || d.diagnostic || w.Cheats.Enabled() || !w.PlayerAlive || w.GameOver || w.Equipment.Lives != 3 || w.ContinueCredits != 2 || w.Level.Number != 5 || w.Rewind.Timer != 0 {
 			t.Fatalf("ordinary fifth route lost its carried reserve: F%d C%d HP%d", w.Frame, w.ScrollY, w.Equipment.Shield)
 		}
 		minimum = min(minimum, w.Equipment.Shield)
 		if w.Checkpoint.ScrollY == 3424 {
-			if w.Frame != 1185 || w.ScrollY != 3423 || minimum != 23 || w.Equipment.Shield != 39 || w.Money != 150 || w.Score != 197280 || w.RandomState() != (engine.RandomState{A: 678879552, B: 2328483032}) {
+			if w.Frame != 1185 || w.ScrollY != 3423 || minimum != 15 || w.Equipment.Shield != 39 || w.Money != 300 || w.Score != 226650 || w.RandomState() != (engine.RandomState{A: 3819972131, B: 4135342466}) {
 				t.Fatalf("source fifth checkpoint differs: F%d C%d HP%d min%d cash%d score%d RNG%+v", w.Frame, w.ScrollY, w.Equipment.Shield, minimum, w.Money, w.Score, w.RandomState())
 			}
-			t.Logf("Complete intro reaches genuine fifth checkpoint3424 at frame%d: shield39 minimum%d same ship and two continues", w.Frame, minimum)
+			t.Logf("Complete intro reaches genuine fifth checkpoint3424 at frame%d: shield39 minimum%d all three ships and two continues", w.Frame, minimum)
 			return g
 		}
 	}
@@ -57,15 +57,15 @@ func verifyPresentationFifthTerrainCheckpoint(t *testing.T) *Game {
 		advanceFrontend(t, g, inputFrame{})
 		d := g.Driver.(*worldDriver)
 		w := d.world
-		if !g.DemoActive() || d.diagnostic || w.Cheats.Enabled() || !w.PlayerAlive || w.GameOver || w.Equipment.Lives != 1 || w.ContinueCredits != 2 || w.Level.Number != 5 || w.Rewind.Timer != 0 {
+		if !g.DemoActive() || d.diagnostic || w.Cheats.Enabled() || !w.PlayerAlive || w.GameOver || w.Equipment.Lives != 3 || w.ContinueCredits != 2 || w.Level.Number != 5 || w.Rewind.Timer != 0 {
 			t.Fatalf("terrain-defense route changed its earned reserve: F%d C%d HP%d", w.Frame, w.ScrollY, w.Equipment.Shield)
 		}
 		minimum = min(minimum, w.Equipment.Shield)
 		if w.Checkpoint.ScrollY == 2880 {
-			if w.Frame != 1729 || w.ScrollY != 2879 || w.Equipment.Shield != 23 || minimum != 23 || w.Money != 150 || w.Score != 203330 || w.RandomState() != (engine.RandomState{A: 3281101092, B: 3188931690}) {
+			if w.Frame != 1729 || w.ScrollY != 2879 || w.Equipment.Shield != 31 || minimum != 31 || w.Money != 300 || w.Score != 233850 || w.RandomState() != (engine.RandomState{A: 2474659900, B: 134657990}) {
 				t.Fatalf("native terrain checkpoint differs: F%d C%d HP%d min%d cash%d score%d RNG%+v", w.Frame, w.ScrollY, w.Equipment.Shield, minimum, w.Money, w.Score, w.RandomState())
 			}
-			t.Logf("Complete intro reaches genuine fifth checkpoint2880 at frame%d with23shield, same ship and two continues", w.Frame)
+			t.Logf("Complete intro reaches genuine fifth checkpoint2880 at frame%d with31shield, all three ships and two continues", w.Frame)
 			return g
 		}
 	}
@@ -83,20 +83,20 @@ func TestPresentationPilotReachesFifthMiddleGuardianFromDefaultIntroOptional(t *
 func verifyPresentationFifthMiddleAdmission(t *testing.T) *Game {
 	t.Helper()
 	g := verifyPresentationFifthTerrainCheckpoint(t)
-	minimum := 23
+	minimum := 31
 	for update := 0; update < 60*75; update++ {
 		advanceFrontend(t, g, inputFrame{})
 		d := g.Driver.(*worldDriver)
 		w := d.world
-		if !g.DemoActive() || d.diagnostic || w.Cheats.Enabled() || !w.PlayerAlive || w.GameOver || w.Equipment.Lives != 1 || w.ContinueCredits != 2 || w.Level.Number != 5 || w.Rewind.Timer != 0 {
+		if !g.DemoActive() || d.diagnostic || w.Cheats.Enabled() || !w.PlayerAlive || w.GameOver || w.Equipment.Lives != 3 || w.ContinueCredits != 2 || w.Level.Number != 5 || w.Rewind.Timer != 0 {
 			t.Fatalf("middle approach changed its carried reserve: F%d C%d HP%d", w.Frame, w.ScrollY, w.Equipment.Shield)
 		}
 		minimum = min(minimum, w.Equipment.Shield)
 		if w.Checkpoint.ScrollY == 2368 {
-			if w.FifthMiddle == nil || w.FifthMiddle.Defeated || w.Frame != 2241 || w.ScrollY != 2367 || w.Equipment.Shield != 23 || minimum != 23 || w.Money != 200 || w.Score != 206630 || w.RandomState() != (engine.RandomState{A: 168595658, B: 2245750478}) {
+			if w.FifthMiddle == nil || w.FifthMiddle.Defeated || w.Frame != 2241 || w.ScrollY != 2367 || w.Equipment.Shield != 31 || minimum != 31 || w.Money != 300 || w.Score != 238350 || w.RandomState() != (engine.RandomState{A: 648954619, B: 661526534}) {
 				t.Fatalf("genuine middle admission differs: F%d C%d HP%d min%d cash%d score%d RNG%+v", w.Frame, w.ScrollY, w.Equipment.Shield, minimum, w.Money, w.Score, w.RandomState())
 			}
-			t.Logf("Complete intro reaches genuine fifth middle at frame%d checkpoint2368, shield23, same ship and two continues", w.Frame)
+			t.Logf("Complete intro reaches genuine fifth middle at frame%d checkpoint2368, shield31, all three ships and two continues", w.Frame)
 			return g
 		}
 	}
