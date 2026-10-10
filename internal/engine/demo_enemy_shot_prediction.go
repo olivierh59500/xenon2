@@ -4,11 +4,25 @@ package engine
 // its animation-before-motion order, fixed-point fractions and native bounds.
 // scrollDelta is supplied by the caller; turning controllers remain separate.
 func demoEnemyShotPrediction(w *World, shot *WorldProjectile, passes, scrollDelta int) (demoActorView, bool) {
-	if w == nil || shot == nil || shot.turning != nil || passes < 0 || passes > 18 {
+	if passes < 0 || passes > 18 {
+		return demoActorView{}, false
+	}
+	var steps [18]int
+	for index := range passes {
+		steps[index] = scrollDelta
+	}
+	return demoEnemyShotPredictionSteps(w, shot, steps[:passes])
+}
+
+// demoEnemyShotPredictionSteps accepts the camera displacement used by each
+// future projectile phase. Reversing or clamped scrolling cannot be replaced
+// by repeating the live pass's displacement throughout the horizon.
+func demoEnemyShotPredictionSteps(w *World, shot *WorldProjectile, steps []int) (demoActorView, bool) {
+	if w == nil || shot == nil || shot.turning != nil || len(steps) > 18 {
 		return demoActorView{}, false
 	}
 	state := *shot
-	for range passes {
+	for _, scrollDelta := range steps {
 		if !state.Active {
 			break
 		}
@@ -44,4 +58,32 @@ func demoPublishedEnemyShotContact(w *World, shot *WorldProjectile, passes int, 
 	}
 	view, supported := demoEnemyShotPrediction(w, shot, passes, w.ScrollDelta)
 	return supported && view.Active && thirdMiddlePlayerBounds(w, player).Intersects(view.Bounds)
+}
+
+// demoProjectilePredictionSteps adds the separate turning controller while
+// preserving the collision image used before its heading/image change.
+func demoProjectilePredictionSteps(w *World, shot *WorldProjectile, steps []int) (demoActorView, bool) {
+	if shot == nil || shot.turning == nil {
+		return demoEnemyShotPredictionSteps(w, shot, steps)
+	}
+	if w == nil || len(steps) > 18 || w.Level.FixedSprites == nil || w.Level.FixedSprites.Projectile == nil {
+		return demoActorView{}, false
+	}
+	state := *shot.turning
+	bounds := CollisionRect{Right: -1, Bottom: -1}
+	for _, delta := range steps {
+		if state.Removed {
+			break
+		}
+		box, ok := w.enemyShotCollisionBox(state.Sprite, shot.Atlas)
+		if !ok {
+			return demoActorView{}, false
+		}
+		event, err := state.Advance(w.Level.FixedSprites.Projectile, FixedProjectileInputs{ScrollDelta: delta}, box)
+		if err != nil {
+			return demoActorView{}, false
+		}
+		bounds = event.Collision
+	}
+	return demoActorView{X: int(state.Motion.X >> 16), Y: int(state.Motion.Y >> 16), Sprite: state.Sprite, Active: shot.Active && !state.Removed, Visible: shot.Active && !state.Removed, Bounds: bounds}, true
 }

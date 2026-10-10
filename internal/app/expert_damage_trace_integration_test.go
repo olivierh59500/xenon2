@@ -14,10 +14,12 @@ func TestExpertThirdStageDamageTraceOptional(t *testing.T) {
 	if os.Getenv("XENON2_EXPERT_DAMAGE_TRACE") == "" {
 		t.Skip("enable the actual expert damage trace explicitly")
 	}
-	g, err := NewConfiguredGame(frontendGame(t).Bundle, Config{Level: 1, StartScreen: PresentationScreen, Mute: true, Demo: true, HumanDemo: true})
+	explicit := os.Getenv("XENON2_EXPERT_DAMAGE_IDLE") == ""
+	g, err := NewConfiguredGame(frontendGame(t).Bundle, Config{Level: 1, StartScreen: PresentationScreen, Mute: true, Demo: explicit, HumanDemo: explicit})
 	if err != nil {
 		t.Fatal(err)
 	}
+	t.Logf("Expert damage trace explicit admission %v", explicit)
 	var previous *engine.World
 	lastShop, third := false, false
 	for update := 0; update < 60*2400; update++ {

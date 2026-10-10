@@ -2278,3 +2278,28 @@ and scorecard checks fail. No survival gate is relaxed. The ordinary engine and
 asset tests without private resources, focused race regressions and the new
 native comparisons pass. Full-game fidelity and expert-controller adaptation
 remain open.
+
+## Camera-aware expert projectile forecasts
+
+The ordinary projectile predictor now accepts the camera displacement for each
+future update. Repeating the live displacement across the horizon was incorrect
+when the ship requested reverse scrolling, reached a scroll bound or returned to
+forward movement. Five arranged original-resource scenes compare eighteen
+successive World.Step passes each, including doubled reverse and clamps. The
+preceding predictor fails as soon as the first reversal changes the displacement.
+
+The turning-projectile predictor copies its own controller and preserves the
+collision image sampled before a heading/image change. Both predictors retain
+animation, fractional motion and removal boundaries without changing live
+state or randomness. Warm calls allocate no heap objects. The expert geometry
+selection uses these predictions and the ship prefix published before movement;
+its existing complete callback rehearsals still own combat and route validation.
+Ordinary-pilot and later-stage comfort policies keep their previous scope.
+
+Both real three-level frontend admissions and the independent scorecard now
+pass their unchanged survival gates. The idle and explicit tours retain all
+three ships and both continue credits, including the restored burst bullets and
+guardian residue. The idle damage diagnostic can also be selected explicitly
+with XENON2_EXPERT_DAMAGE_IDLE=1. These are three-level controller checks, not a
+complete five-level comparison. The six stale private fifth-stage replay tests
+remain failing in the original-resource engine suite.

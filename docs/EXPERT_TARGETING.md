@@ -23,17 +23,33 @@ Planning buffers retain occupancy data while clearing previous candidate routes.
 
 The mixed enemy/projectile audit restores first-stage burst artwork and the
 first guardian's physical constructor/curve state. Ordinary burst shots now
-have their intended collision prefix as well as their image. The current public
-journey checks fail their unchanged survival gates, so the controller needs
-further adaptation to the corrected simulation. The private fifth-stage
-practice recording is also stale; its existing replay checks remain failing.
+have their intended collision prefix as well as their image. Camera-aware
+projectile forecasts now restore the public journey and scorecard checks with
+no ship losses or spent continues. The idle tour finishes at 1,507.53 seconds
+with 167,270 points; explicit admission finishes at 1,464.07 seconds with 163,850
+points. Both retain three ships and two continue credits.
+
+Each forecast uses the displacement of its own future camera phase, retains
+animation and fractional travel, stops at the actual removal boundary and tests
+the ship rectangle published before movement. Turning shots retain their old
+collision image for the callback that selects the next heading/image. Expert
+geometric choices keep a two-pixel reaction gap and receive complete callback
+rehearsals. The ordinary pilot and later-stage policies retain their existing
+comfort rules.
+
+The private fifth-stage practice recording is still stale; its six existing
+replay checks remain failing. They are the remaining failures in the complete
+original-resource engine suite. No survival requirement is relaxed.
 
 The source comparisons and resource-independent regressions for these fixes
 pass, including the mixed phase/list boundaries and the ship prefix used by
-ordinary projectiles in all five stages. These checks do not establish current
-complete-journey survival.
+ordinary projectiles in all five stages. Ninety direct world passes also check
+successive forward, doubled-reverse and clamped camera displacements. Warm
+ordinary and turning predictions allocate no heap objects. Both complete
+frontend admissions and the independent scorecards establish three-level
+survival for these starts; they do not establish a complete five-level campaign.
 
-## Last verified three-level baseline
+## Previous three-level baseline
 
 Focused aiming, rear engagement, terrain-cannon, linked-damage and central-bonus
 regressions pass. Existing preparation/isolation and fourth-middle ownership
@@ -44,8 +60,8 @@ At `8146a5b`, both full frontend journey regressions finished the three levels
 with three ships and two continue credits intact. The idle-start journey finished at
 1,510.00 seconds with 159,970 points; explicit admission finishes at 1,463.60
 seconds with 164,350 points. The two independent scorecard observation runs also
-finished with no ship losses or spent continues. The figures below describe
-that baseline, before the mixed-phase fixes. Its original-resource engine suite
+finished with no ship losses or spent continues. Rows labelled "updated" below
+describe that baseline, before the mixed-phase fixes. Its original-resource engine suite
 already exposed the stale fifth-stage recording; it was not fully green.
 
 Nearby compound cannons receive candidate lanes at both edges and the center
@@ -82,8 +98,15 @@ counts complement the exact money totals rather than claiming every creation.
 | Updated explicit start | 1 | 57 / 49 / 8 | 7 / 5 / 2 |
 | Updated explicit start | 2 | 83 / 59 / 24 | 4 / 2 / 2 |
 | Updated explicit start | 3 | 96 / 78 / 18 | 7 / 6 / 1 |
+| Current idle start | 1 | 70 / 57 / 13 | 7 / 7 / 0 |
+| Current idle start | 2 | 86 / 53 / 33 | 5 / 4 / 1 |
+| Current idle start | 3 | 98 / 83 / 15 | 7 / 5 / 2 |
+| Current explicit start | 1 | 57 / 46 / 11 | 7 / 6 / 1 |
+| Current explicit start | 2 | 89 / 69 / 20 | 5 / 3 / 2 |
+| Current explicit start | 3 | 98 / 79 / 19 | 7 / 6 / 1 |
 
-Here, "published" identifies the preceding controller at `2c3a6a8`.
+Here, "published" identifies the controller at `2c3a6a8`, "updated" is the
+`8146a5b` baseline, and "current" includes the subsequent source and camera fixes.
 
 | Controller / admission | Scoring removals | Collected cash | Ship losses |
 | --- | ---: | ---: | ---: |
@@ -91,6 +114,8 @@ Here, "published" identifies the preceding controller at `2c3a6a8`.
 | Updated / idle | 723 | 13,900 | 0 |
 | Previous / explicit | 694 | 13,200 | 1 |
 | Updated / explicit | 744 | 13,800 | 0 |
+| Current / idle | 769 | 13,750 | 0 |
+| Current / explicit | 733 | 14,100 | 0 |
 
 The first level collects more observed rewards, while later levels still miss
 too many. In particular, second-level collection regresses even though both

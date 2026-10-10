@@ -173,6 +173,14 @@ scorecard checks now expose ship losses under the corrected simulation; their
 survival requirements remain unchanged. The preceding three-level zero-loss
 figures are historical, not current-build guarantees.
 
+Camera-aware projectile forecasts subsequently restore both public three-level
+journeys and their independent scorecard with no ship losses or spent continues.
+They retain the source-correct burst contacts and guardian residue. Ninety direct
+world passes across five arranged scenes verify successive camera changes;
+turning predictions also preserve collision-before-turn order. This resolves
+the public survival regression above, while the six stale fifth-stage replay
+tests and complete five-level validation remain outstanding.
+
 Checkpoint restoration across alternating turns, the second guardian's
 crowded-scene direction, retained hatch/pod state, and death-image attachment
 centers now have explicit implementations and source comparisons. Accepted

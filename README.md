@@ -63,13 +63,13 @@ control. Pause, fades, the cheat menu, interactive game messages and merchants
 do not count as menu inactivity.
 
 Both demonstration paths use the original merchants, guardian damage and exit
-rewards, then return to the original menu. Restoring missing burst-shot artwork
-and the first guardian's retained gameplay words invalidates the previous
-zero-loss results: the current expert journey checks expose ship losses and
-need controller work. Their survival requirements remain unchanged.
-[Targeting and collection results](docs/EXPERT_TARGETING.md) identify the last
-verified baseline and the current limits. No result establishes collection of
-every enemy or bonus under every starting state.
+rewards, then return to the original menu. Camera-aware projectile forecasts
+restore both complete three-level journeys with all three ships and both continue
+credits intact, including the source-correct burst bullets and guardian state.
+The independent scorecard also records no ship losses or spent continues.
+[Targeting and collection results](docs/EXPERT_TARGETING.md) identify the current
+measurements and limits. No result establishes collection of every enemy or
+bonus under every starting state.
 
 The pilot rehearses known formations and their actual callbacks, prepares its
 next decision while verified controls execute, and rejects a prepared plan if
@@ -115,8 +115,8 @@ Its MP4 contains 22,892 frames at 1280 × 800 and 60 FPS, with stereo AAC audio
 and embedded scene chapters. The current desktop graphics tests also pass.
 This capture was generated from runtime `0a9efa0`.
 Ordinary damage and purchases still apply. The first-three-stage validation uses
-the real intro, merchants, native guardian damage and exit drops. Its current
-survival checks fail after the mixed enemy/projectile fidelity corrections.
+the real intro, merchants, native guardian damage and exit drops. Both current
+starts pass their unchanged survival checks with three ships and two continues.
 Later-stage expert strategies remain experimental; the normal tour ends after level three. See
 [expert forecast design](docs/EXPERT_FORECAST.md) for the verified boundaries.
 Generated MP4, PNG poster and chapter JSON files stay

@@ -153,3 +153,88 @@ func TestOrdinaryShotPredictionRetiresAtNativeEdgeAndRejectsOtherScopesOptional(
 		t.Fatal("unsupported world admitted ordinary projectile contact prediction")
 	}
 }
+
+func TestOrdinaryShotPredictionFollowsActualCameraChangesAcrossFiveLevelsOptional(t *testing.T) {
+	for level := 1; level <= 5; level++ {
+		t.Run(fmt.Sprint(level), func(t *testing.T) {
+			w := publishedBulletScene(t, level)
+			// A narrow arranged scroll window reaches both source boundaries
+			// within the short horizon, without a full-stage traversal.
+			w.ScrollY, w.MinimumScrollY, w.MaximumScrollY, w.VisitedScrollY, w.ScrollDeviationPasses = 4592, 4592, 4596, 4596, 34
+			w.Player.X, w.Player.Y = 160, 176
+			w.Rewind = NewTerrainRewind(w.ScrollY, w.Player.X, w.Player.Y)
+			shot := w.Projectiles[0]
+			shot.X, shot.Y, shot.PreviousX, shot.PreviousY = 20, 20, 20, 20
+			shot.Motion = DirectionalProjectile{X: 20 << 16, Y: 20 << 16, Direction: 4, Speed: 2}
+			initial := *shot
+			var steps [18]int
+			displacements := make(map[int]bool)
+			for index := range steps {
+				steps[index] = w.ScrollDelta
+				displacements[w.ScrollDelta] = true
+				before := forecastIsolationDigest(w)
+				view, ok := demoEnemyShotPredictionSteps(w, &initial, steps[:index+1])
+				if !ok || forecastIsolationDigest(w) != before {
+					t.Fatal("variable-camera prediction changed live state or rejected an ordinary shot")
+				}
+				motion := MotionInput{Down: true}
+				if index >= 9 && index < 13 {
+					motion = MotionInput{Up: true}
+				} else if index >= 13 {
+					motion = MotionInput{Right: index&1 == 0, Left: index&1 != 0}
+				}
+				if err := w.Step(Input{Motion: motion}); err != nil {
+					t.Fatal(err)
+				}
+				if !w.PlayerAlive || w.Rewind.Timer != 0 || view.Active != shot.Active || view.X != int(shot.X) || view.Y != int(shot.Y) || view.Sprite != shot.Sprite {
+					t.Fatalf("camera pass %d differs: steps %v view %+v actual %v/%v active %v player alive %v rewind %d", index, steps[:index+1], view, shot.X, shot.Y, shot.Active, w.PlayerAlive, w.Rewind.Timer)
+				}
+			}
+			if !displacements[-2] || !displacements[0] || !displacements[1] {
+				t.Fatalf("camera fixture omitted doubled reverse, a clamp or ordinary scrolling: %v", displacements)
+			}
+			constant, ok := demoEnemyShotPrediction(w, &initial, len(steps), steps[0])
+			if !ok || constant.Y == int(shot.Y) {
+				t.Fatal("fixture no longer distinguishes the old repeated camera displacement")
+			}
+			if allocations := testing.AllocsPerRun(20, func() { demoEnemyShotPredictionSteps(w, &initial, steps[:]) }); allocations != 0 {
+				t.Fatalf("variable-camera shot prediction allocates %.0f objects", allocations)
+			}
+		})
+	}
+}
+
+func TestTurningShotPredictionKeepsPreTurnCollisionAndVariableScroll(t *testing.T) {
+	w, shot, _ := turningShotConstructionFixture(t)
+	w.PlayerAlive = false
+	w.Level.FixedSprites.Projectile.TurningSprites = [2]string{"left", "right"}
+	w.movingSpriteBoxes["turning"] = visualassets.CollisionBox{X: -7, Y: -5, Width: 15, Height: 11}
+	w.movingSpriteBoxes["left"] = visualassets.CollisionBox{X: -1, Y: -1, Width: 3, Height: 3}
+	w.movingSpriteBoxes["right"] = visualassets.CollisionBox{X: -2, Y: -2, Width: 5, Height: 5}
+	initial, motion := *shot, *shot.turning
+	frozen := motion
+	initial.turning = &motion
+	steps := []int{1, 0, -1, -2, 0, 1, 2, 0, -2, 1, 1, 0}
+	for index, delta := range steps {
+		before := *shot.turning
+		view, ok := demoProjectilePredictionSteps(w, &initial, steps[:index+1])
+		if !ok || *shot.turning != before || motion != frozen {
+			t.Fatal("turning prediction changed the source controller or rejected its camera history")
+		}
+		oldBox := w.movingSpriteBoxes[shot.Sprite]
+		w.ScrollDelta = delta
+		if err := w.advanceEnemyShot(shot); err != nil {
+			t.Fatal(err)
+		}
+		w.finishProjectileUpdate(shot)
+		if view.Active != shot.Active || view.Sprite != shot.Sprite || view.X != int(shot.X) || view.Y != int(shot.Y) || view.Bounds != ActorCollisionRect(oldBox, int(shot.X), int(shot.Y)) {
+			t.Fatalf("turning pass %d differs: view %+v actual %+v image %s", index, view, shot.turning, shot.Sprite)
+		}
+		if index == 0 && (view.Sprite != "left" || view.Bounds == ActorCollisionRect(w.movingSpriteBoxes[view.Sprite], view.X, view.Y)) {
+			t.Fatal("fixture lost the source's collision-before-turn distinction")
+		}
+	}
+	if allocations := testing.AllocsPerRun(20, func() { demoProjectilePredictionSteps(w, &initial, steps) }); allocations != 0 {
+		t.Fatalf("turning prediction allocates %.0f objects", allocations)
+	}
+}

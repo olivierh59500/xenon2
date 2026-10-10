@@ -203,6 +203,8 @@ func (p *DemoPilot) NormalInput(w *World) Input {
 		immediateThreat := false
 		damage, nativeRisk := p.fifthRisk.losses(w, motion, c.Lookahead, p.palRefreshes)
 		forecast := newDemoMotionForecast(w)
+		var shotSteps [18]int
+		shotDelta := w.ScrollDelta
 		for future := 1; future <= c.Lookahead; future++ {
 			if nativeRisk && damage[future-1] != 0 {
 				score += float64(damage[future-1]) * 100000 / float64(future)
@@ -229,6 +231,7 @@ func (p *DemoPilot) NormalInput(w *World) Input {
 					break
 				}
 			}
+			shotSteps[future-1], shotDelta = shotDelta, scroll.ActualStep
 			dx, dy := float64(player.X-x), float64(player.Y-y)
 			if route {
 				rx, ry := float64(player.X-routeX), float64(player.Y+scroll.Y-routeY)
@@ -264,6 +267,22 @@ func (p *DemoPilot) NormalInput(w *World) Input {
 			}
 			for _, shot := range w.Projectiles {
 				if !shot.Active {
+					continue
+				}
+				var view demoActorView
+				supported := false
+				if p.practicedRoute && w.Level.Number <= 3 {
+					view, supported = demoProjectilePredictionSteps(w, shot, shotSteps[:future])
+				}
+				if supported {
+					bounds := thirdMiddlePlayerBounds(w, previousPlayer)
+					// Expert routes receive complete callback rehearsals after
+					// this geometric choice, allowing a smaller reaction gap.
+					bounds.Left, bounds.Right, bounds.Top, bounds.Bottom = bounds.Left-2, bounds.Right+2, bounds.Top-2, bounds.Bottom+2
+					if view.Active && bounds.Intersects(view.Bounds) {
+						score += 100000 / float64(future)
+						immediateThreat = immediateThreat || future <= 2
+					}
 					continue
 				}
 				sx, sy, alive := demoProjectilePosition(w, shot, future, w.ScrollDelta)

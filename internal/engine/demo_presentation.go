@@ -352,6 +352,8 @@ func presentationMotionScoreWithRisk(w *World, motion MotionInput, x, y int, nat
 	scroll := ScrollState{Y: w.ScrollY, Minimum: w.MinimumScrollY, Maximum: w.MaximumScrollY, DeviationPasses: w.ScrollDeviationPasses}
 	const horizon = 6
 	damage, nativeRisk := native.losses(w, motion, horizon, pal)
+	var shotSteps [horizon]int
+	shotDelta := w.ScrollDelta
 	for future := 1; future <= horizon; future++ {
 		if nativeRisk && damage[future-1] != 0 {
 			risk += float64(damage[future-1]) * 100000 / float64(future)
@@ -363,6 +365,7 @@ func presentationMotionScoreWithRisk(w *World, motion MotionInput, x, y int, nat
 			return 10000000, 0
 		}
 		scroll.Advance(player.ScrollStep, w.BaseScrollStep, motion.Down)
+		shotSteps[future-1], shotDelta = shotDelta, scroll.ActualStep
 		if w.Coverage != nil && w.Level.PlayerStencil != nil && w.Coverage.Touches(player.X, player.Y, scroll.Y, *w.Level.PlayerStencil) {
 			return 10000000, 0
 		}
@@ -390,6 +393,19 @@ func presentationMotionScoreWithRisk(w *World, motion MotionInput, x, y int, nat
 			}
 		}
 		for _, shot := range w.Projectiles {
+			var view demoActorView
+			supported := false
+			if w.Level.Number <= 3 {
+				view, supported = demoProjectilePredictionSteps(w, shot, shotSteps[:future])
+			}
+			if supported {
+				bounds := thirdMiddlePlayerBounds(w, previousPlayer)
+				bounds.Left, bounds.Right, bounds.Top, bounds.Bottom = bounds.Left-2, bounds.Right+2, bounds.Top-2, bounds.Bottom+2
+				if view.Active && bounds.Intersects(view.Bounds) {
+					risk += 100000 / float64(future)
+				}
+				continue
+			}
 			sx, sy, alive := demoProjectilePosition(w, shot, future, w.ScrollDelta)
 			if alive && absDemo(player.X-sx) < 15 && absDemo(player.Y-sy) < 19 || w.Level.Number == 5 && demoPublishedEnemyShotContact(w, shot, future, previousPlayer) {
 				risk += 100000 / float64(future)
