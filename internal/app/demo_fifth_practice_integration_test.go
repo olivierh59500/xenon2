@@ -115,32 +115,32 @@ func verifyPresentationFifthMiddleMerchantReturn(t *testing.T) *Game {
 	t.Helper()
 	g := verifyPresentationFifthMiddleAdmission(t)
 	defeated, merchant := false, false
-	minimum := 23
+	minimum := 31
 	for update := 0; update < 60*300; update++ {
 		advanceFrontend(t, g, inputFrame{})
 		d := g.Driver.(*worldDriver)
 		w := d.world
-		if !g.DemoActive() || d.diagnostic || w.Cheats.Enabled() || !w.PlayerAlive || w.GameOver || w.Equipment.Lives != 1 || w.ContinueCredits != 2 || w.Level.Number != 5 {
+		if !g.DemoActive() || d.diagnostic || w.Cheats.Enabled() || !w.PlayerAlive || w.GameOver || w.Equipment.Lives != 3 || w.ContinueCredits != 2 || w.Level.Number != 5 {
 			t.Fatalf("fifth middle victory changed earned reserves: F%d HP%d", w.Frame, w.Equipment.Shield)
 		}
 		minimum = min(minimum, w.Equipment.Shield)
 		if w.FifthMiddle != nil && w.FifthMiddle.Defeated && !defeated {
-			if w.Frame != 3087 || w.ScrollY != 2314 || w.Equipment.Shield != 7 || w.PendingExitDrops != 10 || w.Score != 215930 || w.LevelFinished {
+			if w.Frame != 3193 || w.ScrollY != 2313 || w.Equipment.Shield != 3 || w.PendingExitDrops != 10 || w.Score != 248650 || w.LevelFinished {
 				t.Fatal("core victory omitted native damage, ten coins or same-stage status")
 			}
 			defeated = true
 		}
 		if g.Screen == ShopScreen && !merchant {
-			if !defeated || g.shopFinal || w.Frame != 3195 || w.ScrollY != 2206 || w.Equipment.Shield != 7 || w.Money != 500 || w.PendingExitDrops != 0 || !w.ShopReady || w.ExitReady || w.LevelFinished {
+			if !defeated || g.shopFinal || w.Frame != 3238 || w.ScrollY != 2268 || w.Equipment.Shield != 3 || w.Money != 1050 || w.PendingExitDrops != 0 || !w.ShopReady || w.ExitReady || w.LevelFinished {
 				t.Fatal("real middle merchant omitted native reward drain")
 			}
 			merchant = true
 		}
 		if merchant && g.Screen == LevelScreen && !w.Ready && !g.backdropOnly && (g.fade == nil || g.fade.Done) {
-			if w.Equipment.Shield != 39 || w.Money != 0 || minimum != 7 || !w.FifthMiddle.Defeated || w.LevelFinished {
+			if w.Equipment.Shield != 39 || w.Money != 550 || minimum != 3 || w.Equipment.Side.Item != engine.ItemSideShot || w.Equipment.Side.Tier != 1 || w.Equipment.Rear.Item != engine.ItemNone || w.Equipment.Mounts[0].Item != engine.ItemLaser || w.Equipment.Mounts[0].Tier != 2 || w.Equipment.Primary.Tier != 2 || !w.Equipment.Protection || w.Equipment.FirePeriod != 8 || !w.FifthMiddle.Defeated || w.LevelFinished {
 				t.Fatalf("native fifth repair/same-stage return differs: HP%d min%d cash%d", w.Equipment.Shield, minimum, w.Money)
 			}
-			t.Logf("Complete intro defeats fifth middle at3087, drains ten coins at3195, buys native500cost full repair and returns to fifth stage with same ship and two continues")
+			t.Logf("Current intro defeats fifth middle at3193, collects all750 exit cash by3238, sells Rear/Homing for5500, buys repair/Side/Protection/two power-ups for6000, then returns with three ships, two continues and550 cash; RNG%+v equipment%+v", w.RandomState(), w.Equipment)
 			return g
 		}
 	}

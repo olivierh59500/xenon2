@@ -31,9 +31,17 @@ A genuine health pickup restores full shield after an observed minimum of 15.
 The new opening is admitted only for its complete current READY profile, then
 rehearses each ordinary input through full callbacks before returning it. Its
 checkpoint loadout retains the original pre-rebuild weapon serials; the captured
-fixture now includes that distinction without relaxing the marker. The route
-ends at the verified middle admission. Completing this fight and the rest of
-stage five from the current carried state remains unproven.
+fixture now includes that distinction without relaxing the marker.
+
+The current route also defeats this middle guardian at frame 3,193 with three
+shield, all three ships and both continues. Its ten native coins add 750 cash;
+the real merchant opens at frame 3,238 with 1,050. The shop director sells the
+collected Homing Missile and Rear 2 through actual quotes and confirmations,
+then buys a full repair, Side Shot, Protection and two power-ups. Same-stage
+return retains 39 shield, Forward 2 / Laser 2 / Side 1, period eight and 550 cash.
+This extends connected evidence through the middle fight and merchant. The
+second half, final fight, ending and next loop still require renewal and
+validation from this current carried state.
 
 Historical fifth-stage records remain explicit captured-profile capabilities.
 Their renewed ordinary inputs reach the fifth final guardian, while a separate

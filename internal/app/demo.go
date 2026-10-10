@@ -217,9 +217,13 @@ func (g *Game) demoShopControls() inputFrame {
 	}
 	if s.Phase == shopui.Selling {
 		w := g.Driver.(*worldDriver).world
+		position, sell := demoFifthSideSale(w.Equipment, w.Money, s.Rules)
 		if g.shopFinal && w.Level.Number == 4 && demoFourthFinalLaserSale(w.Equipment, w.Money, s.Rules) {
+			position, sell = engine.SaleMount0, true
+		}
+		if sell {
 			for index, entry := range s.Entries {
-				if !entry.Available || entry.Sale != engine.SaleMount0 {
+				if !entry.Available || entry.Sale != position {
 					continue
 				}
 				if s.QuoteValid && s.Quoted == index {

@@ -2,6 +2,36 @@ package app
 
 import "xenon2/internal/engine"
 
+// demoFifthSideSale plans the original sale transactions before fitting flank
+// guns. A collected homing missile occupies their slot, while fitting Side Shot
+// would discard a Rear Shot without refunding its remaining sale value.
+func demoFifthSideSale(equipment engine.Equipment, money int, rules engine.ShopRules) (engine.SalePosition, bool) {
+	if rules.Level != 5 || equipment.SuperLoadoutActive || equipment.Mounts[0].Item != engine.ItemLaser || equipment.Side.Item != engine.ItemHomingMissile {
+		return 0, false
+	}
+	position := engine.SaleSide
+	probe, wallet := equipment, money
+	if equipment.Rear.Item == engine.ItemRearShot {
+		position = engine.SaleRear
+		if _, err := rules.Sell(&probe, &wallet, engine.SaleRear); err != nil {
+			return 0, false
+		}
+	}
+	if _, err := rules.Sell(&probe, &wallet, engine.SaleSide); err != nil {
+		return 0, false
+	}
+	if probe.Shield < 39 {
+		repair := demoShopPurchase(probe, wallet, rules)
+		if repair != engine.ItemHealth1 && repair != engine.ItemHealth2 {
+			return 0, false
+		}
+		if _, err := rules.Buy(&probe, &wallet, repair); err != nil || probe.Shield != 39 {
+			return 0, false
+		}
+	}
+	return position, rules.CanBuy(probe, wallet, engine.ItemSideShot) == nil
+}
+
 // The fifth launcher corridor benefits from a piercing left mount. Trade only
 // after the fourth guardian is defeated and a normal repair and laser fit in
 // the actual sale budget. The shop director executes the quote and purchase.
@@ -61,8 +91,17 @@ func demoShopPurchase(equipment engine.Equipment, money int, rules engine.ShopRu
 			return engine.ItemNone
 		}
 	}
+	// The fifth final guardian's horizontal armor requires flank firing lanes.
+	// Fit the affordable native Side Shot after repairs; the real shop handles
+	// its price and replacement of an installed Rear Shot.
+	if rules.Level == 5 && equipment.Mounts[0].Item == engine.ItemLaser && equipment.Side.Item == engine.ItemNone && affordable(engine.ItemSideShot) {
+		return engine.ItemSideShot
+	}
 	if affordable(engine.ItemProtection) {
 		return engine.ItemProtection
+	}
+	if rules.Level == 5 && equipment.Side.Item == engine.ItemSideShot && equipment.Mounts[0].Item == engine.ItemLaser && affordable(engine.ItemPowerup) {
+		return engine.ItemPowerup
 	}
 	if equipment.FireAdvance < 3 && affordable(engine.ItemAutofire) {
 		return engine.ItemAutofire

@@ -2529,6 +2529,27 @@ frontend to reject the isolated record; correcting the capture resolves it
 without omitting checkpoint state or changing any game rule.
 
 The historical fifth opening/second-half traces retain their separate entry
-profiles. Current connected evidence stops at the middle admission. Middle/final
-victory from this new state, ending/next-loop progression and integrated Amiga
-presentation comparison remain separate unproven requirements.
+profiles. The subsequent extension below supplies current middle-victory and
+merchant-return evidence; it does not establish the rest of the fifth stage.
+
+## Current fifth middle victory and merchant transactions
+
+The current earned opening now extends to 3,238 ordinary input commands and
+3,239 complete outcome markers. Independent full-step replay preserves the
+first 2,241 inputs, defeats the native middle core at frame 3,193 with three
+shield and score 248,650, and collects all ten exit coins. The merchant opens
+at frame 3,238 with 1,050 cash. All three ships and both continues remain intact;
+the route changes no native damage, enemy health, collision or reward rule.
+
+The actual Ebitengine frontend repeats the four preceding victories, fifth
+opening, middle death and coin collection from the default intro. Its merchant
+uses original sale/quote/confirmation controls to sell Rear 2 and a legitimately
+collected Homing Missile for 5,500 total. Repair, Side Shot, Protection and two
+power-ups cost 6,000; same-stage return retains 550, full shield, Forward 2 /
+Laser 2 / Side 1 and all reserves. Purchase policy and transaction regressions
+also check the limited-budget case and reject unrelated or temporary loadouts.
+
+This is connected Go progression through the current middle merchant. The
+second-half route, final victory, ending, next loop and integrated Amiga
+presentation comparison remain separate unproven requirements. The public
+desktop and Android expert tour still ends after level three.

@@ -36,10 +36,12 @@ time does not establish real-time display pacing or audible mixing.
 The captured-entry middle regression, existing recorded fourth cases, complete
 original-resource engine/artwork suite and focused race checks pass. This proves
 current carried admission to stage five. A subsequent connected check now reaches
-its genuine middle guardian at frame 2,241 with 31 shield and all reserves intact.
-Completing that fight and stage from the new profile, integrated Amiga playthrough
-comparison and current device drawing remain separate requirements. The
-historical fifth records use another profile.
+its genuine middle guardian at frame 2,241 with 31 shield and all reserves intact,
+defeats it at frame 3,193 and collects all ten exit coins. Actual merchant
+transactions repair and refit the same ship before returning to stage five.
+The remaining second half and final fight from the new profile, integrated Amiga
+playthrough comparison and current device drawing remain separate requirements.
+The historical fifth records use another profile.
 
 ## Previous single-ship reference
 
