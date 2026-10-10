@@ -63,18 +63,23 @@ control. Pause, fades, the cheat menu, interactive game messages and merchants
 do not count as menu inactivity.
 
 The complete original-intro and idle-start regressions both finish all three
-stages with two ships and both continue credits intact. Each loses one ship in
-level two and finishes level three without another loss or continue. Both paths
+stages with three ships and both continue credits intact, without losing a ship.
+Both paths
 use the original merchants, guardian damage and exit rewards, then return to the
-original menu. The current scorecard records 694 scoring enemy removals and
-13,200 collected cash for the explicit tour, and 706 removals and 13,650 cash for
-idle admission. These observations do not claim that every enemy
-or bonus is collected under every starting state.
+original menu. The current scorecard records 756 scoring enemy removals and
+13,450 collected cash for the explicit tour, and 737 removals and 13,850 cash for
+idle admission. [Targeting and collection results](docs/EXPERT_TARGETING.md)
+include the per-level reward census and comparison with the previous controller.
+These observations do not claim that every enemy or bonus is collected under
+every starting state.
 
 The pilot rehearses known formations and their actual callbacks, prepares its
 next decision while verified controls execute, and rejects a prepared plan if
 the live state differs. Rear and side guns retain useful firing windows alongside
-the forward weapon. Corridor forecasts keep the complete prepared turn, and the
+the forward weapon. Damageable plants and cannons drawn into the terrain remain
+aim targets. Reachable bubbles receive reserved planning candidates, while
+cannon attack positions yield to the terrain route when a rearward turn is
+needed. Corridor forecasts keep the complete prepared turn, and the
 final worm has a separate survival and aiming forecast.
 
 Existing later-stage code and reference fixtures remain in the project. They
