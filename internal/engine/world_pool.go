@@ -207,6 +207,10 @@ func (w *World) bindWorldActor(actor *WorldActor) error {
 }
 
 func (w *World) storeActorResidue(actor *WorldActor) {
+	if actor.firstSegment > 0 {
+		w.storeFirstGuardianSegmentResidue(actor)
+		return
+	}
 	if actor.fixedAiming != nil {
 		w.storeFixedAimingResidue(actor)
 		return

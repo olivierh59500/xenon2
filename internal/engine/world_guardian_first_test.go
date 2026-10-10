@@ -12,6 +12,50 @@ import (
 	"xenon2/internal/visualassets"
 )
 
+func TestFirstGuardianSegmentsPublishOnlyOriginalConstructorAndCurveWords(t *testing.T) {
+	w := testWorld(t)
+	w.Level.Guardians = &visualassets.Guardians{Visuals: []visualassets.GuardianVisual{{InitialHealth: 30, InitialWorldY: 16, BodyX: 112, SegmentSprite: "segment", Body: visualassets.TilePatch{Columns: 1, Rows: 1, Tiles: []uint16{0}}}}}
+	w.firstGuardianArt = &w.Level.Guardians.Visuals[0]
+	state := NewFirstGuardianState(30)
+	w.FirstGuardian = &state
+	w.firstGuardianActor = &WorldActor{Active: true, ActorList: "moving", firstGuardian: true, part: &visualassets.ActorPart{ResourceTag: 80}}
+	first := w.Pool.FreeFirst()
+	for slot := first; slot != NoActorSlot; slot = w.Pool.Slot(slot).freeNext {
+		w.Pool.Slot(slot).Residue = waveConstructorResidueFixture(slot)
+	}
+	w.Frame, w.ScrollY = 1, 448
+	w.advanceFirstGuardian()
+	if w.poolError != nil || w.FirstGuardianSegments == nil {
+		t.Fatalf("original articulated constructor failed: %v", w.poolError)
+	}
+	for index, actor := range w.firstGuardianParts {
+		want := waveConstructorResidueFixture(first + index)
+		want.Y, want.EmitterClock, want.StrongHealth = -100, 0, false
+		slot := w.Pool.Slot(actor.Binding.Slot)
+		if slot.Residue != want || !slot.AuxiliaryFlags[0] || actor.X != float64(want.X) || actor.Y != -100 {
+			t.Fatalf("segment %d constructor overwrote retained words: %+v, want %+v", index, slot.Residue, want)
+		}
+	}
+	if err := w.advanceFirstGuardianSegments(); err != nil {
+		t.Fatal(err)
+	}
+	for index, actor := range w.firstGuardianParts {
+		w.finishActorUpdate(actor)
+		want := waveConstructorResidueFixture(first + index)
+		want.X, want.Y, want.XFraction, want.YFraction = 160, -336, 0, 0
+		want.Counter, want.Direction, want.HorizontalDriftRemainder, want.MotionBudget = 100, 0, 0, 0
+		want.MountOffsetX, want.MountOffsetY, want.EmitterClock, want.StrongHealth = 0, 0, 0, false
+		if got := w.Pool.Slot(actor.Binding.Slot).Residue; got != want {
+			t.Fatalf("segment %d curve publication lost original fields: %+v, want %+v", index, got, want)
+		}
+		actor.Active = false
+		w.storeActorResidue(actor)
+		if got := w.Pool.Slot(actor.Binding.Slot); got.Residue != want || got.ResourceTag != 4 || got.AuxiliaryFlags[0] {
+			t.Fatal("segment retirement changed its last curve state or kept its live flag")
+		}
+	}
+}
+
 func TestFirstGuardianWorldCompletionWaitsForExitCash(t *testing.T) {
 	w := testWorld(t)
 	w.Level.Guardians = &visualassets.Guardians{Visuals: []visualassets.GuardianVisual{{InitialHealth: 30, BodyX: 112, Body: visualassets.TilePatch{Columns: 1, Rows: 1, Tiles: []uint16{0}}}}}

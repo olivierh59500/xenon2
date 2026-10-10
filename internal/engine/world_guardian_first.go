@@ -52,6 +52,13 @@ func (w *World) advanceFirstGuardian() {
 				w.poolError = err
 				return
 			}
+			// The constructor initializes only whole Y, firing
+			// state and contact strength. Other gameplay words survive reuse.
+			residue := &segment.Binding.Residue
+			residue.Y, residue.EmitterClock, residue.StrongHealth = -100, 0, false
+			segment.X, segment.PreviousX = float64(residue.X), float64(residue.X)
+			w.Pool.Slot(segment.Binding.Slot).AuxiliaryFlags[0] = true
+			w.storeWorldResidue(segment.Binding)
 			if i > 0 {
 				w.Pool.unlink(segment.Binding.Slot)
 				if err := w.Pool.AttachAfter(segment.Binding.Slot, ActorPoolMoving, segment.ID, int16(part.ResourceTag), group[i-1].Binding.Slot); err != nil {
@@ -64,6 +71,27 @@ func (w *World) advanceFirstGuardian() {
 		}
 		w.Actors = append(group, w.Actors...)
 	}
+}
+
+func (w *World) storeFirstGuardianSegmentResidue(actor *WorldActor) {
+	if actor.Binding.EntityID == 0 {
+		return
+	}
+	if !actor.Active {
+		w.retireWorldActor(actor.Binding)
+		return
+	}
+	index := actor.firstSegment - 1
+	motion, residue := w.FirstGuardianSegments.Pieces[index], &actor.Binding.Residue
+	residue.X, residue.Y = int16(actor.X), int16(actor.Y)
+	residue.XFraction, residue.YFraction = uint16(motion.X), uint16(motion.Y)
+	residue.Counter, residue.MotionBudget = int16(100-motion.Budget), int16(motion.Budget)
+	residue.Direction, residue.HorizontalDriftRemainder = int16(uint16(motion.AngleFixed)), uint16(uint32(motion.AngleFixed)>>16)
+	residue.MountOffsetX, residue.MountOffsetY = int16(motion.AngularVelocity), int16(motion.AngularAcceleration)
+	if index == 7 {
+		residue.SetFireState(w.FirstGuardianSegments.TailFire.Accumulator, residue.FireRate())
+	}
+	w.storeWorldResidue(actor.Binding)
 }
 
 func (w *World) advanceFirstGuardianSegments() error {

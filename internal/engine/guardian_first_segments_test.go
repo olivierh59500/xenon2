@@ -13,11 +13,20 @@ import (
 )
 
 func TestFirstGuardianSegmentsNativeTraceOptional(t *testing.T) {
+	compareFirstGuardianSegmentsNativeTrace(t, "guardian-first-segments-trace.csv", 10)
+}
+
+func TestFirstGuardianSegmentsNearDefeatNativeTraceOptional(t *testing.T) {
+	compareFirstGuardianSegmentsNativeTrace(t, "guardian-first-segments-near-death-trace.csv", 1)
+}
+
+func compareFirstGuardianSegmentsNativeTrace(t *testing.T, name string, finalHealth uint16) {
+	t.Helper()
 	dir := os.Getenv("XENON2_NATIVE_TRACE_DIR")
 	if dir == "" {
 		t.Skip("set XENON2_NATIVE_TRACE_DIR to compare local guardian traces")
 	}
-	f, err := os.Open(filepath.Join(dir, "guardian-first-segments-trace.csv"))
+	f, err := os.Open(filepath.Join(dir, name))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -36,7 +45,7 @@ func TestFirstGuardianSegmentsNativeTraceOptional(t *testing.T) {
 	}
 	controller := NewFirstGuardianState(30)
 	segments := FirstGuardianSegments{}
-	maximum, cursor := 4607, 1
+	maximum, cursor, shots := 4607, 1, 0
 	for frame := 1; frame <= 1200; frame++ {
 		scroll := 48
 		if frame < 40 {
@@ -69,6 +78,9 @@ func TestFirstGuardianSegmentsNativeTraceOptional(t *testing.T) {
 				if err != nil || used != len(random) {
 					t.Fatalf("guardian pass %d random use=%d/%d error=%v", frame, used, len(random), err)
 				}
+				if fired {
+					shots++
+				}
 				for i := range 8 {
 					row := rows[cursor+i]
 					var v [10]int64
@@ -91,7 +103,7 @@ func TestFirstGuardianSegmentsNativeTraceOptional(t *testing.T) {
 				cursor += 8
 			}
 		}
-		controller.Health = 10
+		controller.Health = finalHealth
 		if frame < 400 {
 			controller.Health = 30
 		} else if frame < 800 {
@@ -106,4 +118,8 @@ func TestFirstGuardianSegmentsNativeTraceOptional(t *testing.T) {
 	if cursor != len(rows) {
 		t.Fatalf("unconsumed guardian segment rows: %d", len(rows)-cursor)
 	}
+	if finalHealth == 1 && shots == 0 {
+		t.Fatal("near-defeat comparison omitted the tail's original aimed fire")
+	}
+	t.Logf("Compared %d articulated-segment states and %d aimed shots", cursor-1, shots)
 }

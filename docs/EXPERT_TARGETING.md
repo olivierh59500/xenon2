@@ -21,18 +21,32 @@ Planning buffers retain occupancy data while clearing previous candidate routes.
 
 ## Current validation
 
+The mixed enemy/projectile audit restores first-stage burst artwork and the
+first guardian's physical constructor/curve state. Ordinary burst shots now
+have their intended collision prefix as well as their image. The current public
+journey checks fail their unchanged survival gates, so the controller needs
+further adaptation to the corrected simulation. The private fifth-stage
+practice recording is also stale; its existing replay checks remain failing.
+
+The source comparisons and resource-independent regressions for these fixes
+pass, including the mixed phase/list boundaries and the ship prefix used by
+ordinary projectiles in all five stages. These checks do not establish current
+complete-journey survival.
+
+## Last verified three-level baseline
+
 Focused aiming, rear engagement, terrain-cannon, linked-damage and central-bonus
 regressions pass. Existing preparation/isolation and fourth-middle ownership
 checks also pass after keeping these improvements within the public three-level
 scope. Survival requirements in the complete journey tests remain unchanged.
 
-Both full frontend journey regressions now finish the three levels with three
-ships and two continue credits intact. The idle-start journey finishes at
+At `8146a5b`, both full frontend journey regressions finished the three levels
+with three ships and two continue credits intact. The idle-start journey finished at
 1,510.00 seconds with 159,970 points; explicit admission finishes at 1,463.60
 seconds with 164,350 points. The two independent scorecard observation runs also
-finish with no ship losses or spent continues. The complete original-resource
-engine and visual-asset suites pass, as do focused race checks covering private
-planning workers, prepared-state reuse, cannon windows and reward candidates.
+finished with no ship losses or spent continues. The figures below describe
+that baseline, before the mixed-phase fixes. Its original-resource engine suite
+already exposed the stale fifth-stage recording; it was not fully green.
 
 Nearby compound cannons receive candidate lanes at both edges and the center
 of their actual weak point. Screen-space attack goals yield to rearward terrain

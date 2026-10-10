@@ -38,7 +38,7 @@ func (w *World) advanceFixedSprite(actor *WorldActor) {
 		case "point", "point-burst":
 			for _, direction := range events.ShotDirections[:events.ShotCount] {
 				w.spawnEnemyShot(events.ShotX, events.ShotY, EnemyShot{Direction: uint8(direction), Speed: events.ShotSpeed})
-				if len(w.Projectiles) != 0 {
+				if events.ShotSprite != "" && len(w.Projectiles) != 0 {
 					w.Projectiles[0].Atlas = "fixed"
 					w.Projectiles[0].Sprite = events.ShotSprite
 				}

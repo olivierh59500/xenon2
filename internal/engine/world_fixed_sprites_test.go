@@ -27,7 +27,8 @@ func TestWorldFixedBeamContactUsesSourceDamageAndDiveSuppression(t *testing.T) {
 	}
 }
 
-func TestWorldFixedAttackTransfersBeforeItsShots(t *testing.T) {
+func fixedBurstFixture(t *testing.T, sprite string) (*World, *WorldActor) {
+	t.Helper()
 	w := testWorld(t)
 	w.Level.Rules = &visualassets.LevelRules{DefaultEnemyShot: "default"}
 	w.Player.Y = 100
@@ -37,12 +38,45 @@ func TestWorldFixedAttackTransfersBeforeItsShots(t *testing.T) {
 	kind := &visualassets.FixedSpriteKind{Behavior: "scroll-bounce-attack", ActorList: "moving",
 		MotionParameters: map[string]int{"clip_margin": 208, "attack_y_minimum": -30, "attack_y_maximum": 10, "attack_random_threshold": 256},
 		Variants: []visualassets.FixedSpriteVariant{{ID: 0, Animation: idle, AttackAnimation: attack,
-			ShotMode: "point-burst", ShotSprite: "shot", ShotDirections: []int{3, 2, 1}, ShotSpeed: 4}}}
+			ShotMode: "point-burst", ShotSprite: sprite, ShotDirections: []int{3, 2, 1}, ShotSpeed: 4}}}
 	actor := &WorldActor{ID: 1, Active: true, ActorList: "moving", fixedKind: kind, part: &visualassets.ActorPart{},
 		fixedState: FixedSpriteState{X: 40, Y: 100, VelocityY: 1, Animation: NewAnimation(idle)}}
 	w.nextActorID = 1
 	w.advanceFixedSprite(actor)
+	return w, actor
+}
+
+func TestWorldFixedAttackTransfersBeforeItsShots(t *testing.T) {
+	w, actor := fixedBurstFixture(t, "shot")
 	if actor.ActorList != "transient" || actor.Order != 2 || len(w.Projectiles) != 3 || w.Projectiles[0].ID != 5 || w.Projectiles[2].ID != 3 {
 		t.Fatal("attack transfer must retain identity and precede new burst shots")
+	}
+	for _, shot := range w.Projectiles {
+		if shot.Sprite != "shot" || shot.Atlas != "fixed" {
+			t.Fatal("explicit shot artwork must retain its fixed atlas")
+		}
+	}
+}
+
+func TestWorldFixedBurstKeepsDefaultArtworkAndPlayerContact(t *testing.T) {
+	w, _ := fixedBurstFixture(t, "")
+	if len(w.Projectiles) != 3 {
+		t.Fatal("ordinary burst lost one of its three shots")
+	}
+	for _, shot := range w.Projectiles {
+		if shot.Sprite != "default" || shot.Atlas != "enemy-shots" {
+			t.Fatal("omitted override erased the ordinary point-shot image or atlas")
+		}
+	}
+	w.InvulnerableFrames = 0
+	w.Equipment.Shield = 39
+	w.shotSpriteBoxes = map[string]visualassets.CollisionBox{"default": {Width: 1, Height: 1}}
+	w.playerCollision = CollisionRect{Left: 0, Top: 0, Right: 320, Bottom: 200}
+	shot := w.Projectiles[0]
+	if err := w.advanceEnemyShot(shot); err != nil {
+		t.Fatal(err)
+	}
+	if shot.Active || w.Equipment.Shield != 35 {
+		t.Fatal("the visible point shot lost its original four-point player contact")
 	}
 }

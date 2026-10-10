@@ -391,7 +391,7 @@ func presentationMotionScoreWithRisk(w *World, motion MotionInput, x, y int, nat
 		}
 		for _, shot := range w.Projectiles {
 			sx, sy, alive := demoProjectilePosition(w, shot, future, w.ScrollDelta)
-			if alive && absDemo(player.X-sx) < 15 && absDemo(player.Y-sy) < 19 || demoFifthEnemyShotContact(w, shot, future, previousPlayer) {
+			if alive && absDemo(player.X-sx) < 15 && absDemo(player.Y-sy) < 19 || w.Level.Number == 5 && demoPublishedEnemyShotContact(w, shot, future, previousPlayer) {
 				risk += 100000 / float64(future)
 			}
 		}

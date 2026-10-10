@@ -2230,3 +2230,51 @@ continuing that sequence. The optional tests expecting the old fifth-stage
 merchant/final replay therefore fail; their survival requirements have not been
 relaxed. A complete five-level playthrough remains unverified. The public expert
 tour remains limited to the first three levels.
+
+## Mixed fixed-enemy and projectile traversals
+
+All 43 ordinary damageable fixed placements now execute actual moving and
+projectile list traversals together for 160 turns. Cold and deliberately reused
+slot fixtures exercise 13,760 turns. Ten sampled turns retain both phase
+boundaries: 1,720 checkpoints and 263,040 physical-slot rows. They match list
+order, dead/free release, all named retained gameplay words, RNG, scores, sound
+requests, reward caches, live images and animation countdowns. Moving actors'
+collision bounds also match; the source's off-playfield sentinel is represented
+as an empty collider.
+
+Player, equipment and scenery phases, stage scripts, terrain contact and drawing
+remain isolated. Player aim coordinates change, but its collision rectangle is
+outside the playfield. The first-stage guardian controller is already in the
+moving list, so it activates its eight segments in the lower-map fixtures and
+participates in these comparisons.
+
+The audit found that first-stage bursting attackers replaced the ordinary shot
+image with an empty override. Go now retains the default shot image and atlas
+when no override exists. This restores both visible bullets and their original
+four-point ship contact; explicit second-stage artwork still selects its own
+atlas. A permanent resource-independent test verifies artwork, transfer/order
+and actual player damage.
+
+The guardian's segment constructor now publishes whole Y, cleared emission
+clock, weak contact strength and the live flag while retaining other reused
+words. Curve publication preserves the source fractions, angle, angular
+velocity, acceleration, budget and remaining counter, without erasing unrelated
+health, reward or owner words. Retirement preserves the last curve state. Cold
+and reused native snapshots and a resource-independent regression cover these
+boundaries. A second isolated guardian recording extends the existing curve
+comparison to one health point: 9,280 segment states and 46 aimed shots match.
+
+Ordinary bullet contact uses the previously published ship rectangle in the
+common source routine, independently of the level. Five-stage tests exercise
+all nine movement inputs: the impending contact still occurs when the new
+movement endpoint would look clear. The shared read-only predictor now exposes
+that rule across all stages. These single-pass checks do not validate a complete
+tactical horizon with changing cameras, banking and newly emitted bullets.
+
+The original-resource engine suite still fails the six stale fifth-stage
+practice tests. Restored burst contacts and guardian residue also invalidate the
+public controller's preceding zero-loss results: its current frontend journey
+and scorecard checks fail. No survival gate is relaxed. The ordinary engine and
+asset tests without private resources, focused race regressions and the new
+native comparisons pass. Full-game fidelity and expert-controller adaptation
+remain open.

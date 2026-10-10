@@ -165,6 +165,14 @@ validator rejects the changed outcomes, and the public three-level journey gates
 still pass with unchanged survival requirements. This is a remaining validation
 limit; the old fifth-stage replay is not evidence for the current build.
 
+Mixed fixed-enemy/projectile traversals add 1,720 sampled phase boundaries and
+263,040 physical-slot states over all 43 ordinary damageable placements. These
+restore missing first-stage burst images/contact and correct the first guardian
+segments' retained constructor and curve fields. The public expert journey and
+scorecard checks now expose ship losses under the corrected simulation; their
+survival requirements remain unchanged. The preceding three-level zero-loss
+figures are historical, not current-build guarantees.
+
 Checkpoint restoration across alternating turns, the second guardian's
 crowded-scene direction, retained hatch/pod state, and death-image attachment
 centers now have explicit implementations and source comparisons. Accepted

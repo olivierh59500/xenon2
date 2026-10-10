@@ -62,16 +62,14 @@ mouse action or touch immediately returns the same active session to manual
 control. Pause, fades, the cheat menu, interactive game messages and merchants
 do not count as menu inactivity.
 
-The complete original-intro and idle-start regressions both finish all three
-stages with three ships and both continue credits intact, without losing a ship.
-Both paths
-use the original merchants, guardian damage and exit rewards, then return to the
-original menu. The current scorecard records 744 scoring enemy removals and
-13,800 collected cash for the explicit tour, and 723 removals and 13,900 cash for
-idle admission. [Targeting and collection results](docs/EXPERT_TARGETING.md)
-include the per-level reward census and comparison with the previous controller.
-These observations do not claim that every enemy or bonus is collected under
-every starting state.
+Both demonstration paths use the original merchants, guardian damage and exit
+rewards, then return to the original menu. Restoring missing burst-shot artwork
+and the first guardian's retained gameplay words invalidates the previous
+zero-loss results: the current expert journey checks expose ship losses and
+need controller work. Their survival requirements remain unchanged.
+[Targeting and collection results](docs/EXPERT_TARGETING.md) identify the last
+verified baseline and the current limits. No result establishes collection of
+every enemy or bonus under every starting state.
 
 The pilot rehearses known formations and their actual callbacks, prepares its
 next decision while verified controls execute, and rejects a prepared plan if
@@ -116,10 +114,10 @@ and exit drops, then stops before playing level two. The latest recording is
 Its MP4 contains 22,892 frames at 1280 × 800 and 60 FPS, with stereo AAC audio
 and embedded scene chapters. The current desktop graphics tests also pass.
 This capture was generated from runtime `0a9efa0`.
-Ordinary damage and purchases still apply. The current controller's first-three-stage
-validation uses the real intro, merchants, native guardian damage and exit drops;
-both supported starts now finish the third stage without losing their carried ship. Later-stage expert
-strategies remain experimental; the normal tour ends after level three. See
+Ordinary damage and purchases still apply. The first-three-stage validation uses
+the real intro, merchants, native guardian damage and exit drops. Its current
+survival checks fail after the mixed enemy/projectile fidelity corrections.
+Later-stage expert strategies remain experimental; the normal tour ends after level three. See
 [expert forecast design](docs/EXPERT_FORECAST.md) for the verified boundaries.
 Generated MP4, PNG poster and chapter JSON files stay
 under locally excluded `recordings/`. The export command requires Go 1.26 or

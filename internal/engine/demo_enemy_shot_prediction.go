@@ -36,10 +36,10 @@ func demoEnemyShotPrediction(w *World, shot *WorldProjectile, passes, scrollDelt
 	return view, true
 }
 
-// The fifth-level projectile phase uses the ship prefix published before this
-// pass moves it. Other levels retain their existing controller policies.
-func demoFifthEnemyShotContact(w *World, shot *WorldProjectile, passes int, player PlayerMotionState) bool {
-	if w == nil || w.Level.Number != 5 {
+// All ordinary projectile callbacks use the ship prefix published before this
+// pass moves it. A clear movement endpoint cannot undo that earlier contact.
+func demoPublishedEnemyShotContact(w *World, shot *WorldProjectile, passes int, player PlayerMotionState) bool {
+	if w == nil || w.Level.Number < 1 || w.Level.Number > 5 {
 		return false
 	}
 	view, supported := demoEnemyShotPrediction(w, shot, passes, w.ScrollDelta)

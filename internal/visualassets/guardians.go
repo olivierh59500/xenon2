@@ -188,6 +188,7 @@ func DecodeGuardianArt(number int, level []byte, palette [16][4]uint8) (*Guardia
 		return nil, nil, err
 	}
 	images = append(images, segment)
+	names[0x59e28] = segment.Name
 	guardian.SegmentSprite = segment.Name
 	guardian.SegmentCount = 8
 	for heading := range 8 {
@@ -198,6 +199,7 @@ func DecodeGuardianArt(number int, level []byte, palette [16][4]uint8) (*Guardia
 			return nil, nil, err
 		}
 		images = append(images, picture)
+		names[address] = name
 		guardian.TailHeadingFrames = append(guardian.TailHeadingFrames, name)
 	}
 	flame, err := decodeActorAnimation(level, 0x552b0-levelBase, func(address int) (string, error) {
@@ -207,13 +209,16 @@ func DecodeGuardianArt(number int, level []byte, palette [16][4]uint8) (*Guardia
 			return "", err
 		}
 		images = append(images, picture)
+		names[address] = name
 		return name, nil
 	})
 	if err != nil {
 		return nil, nil, err
 	}
 	guardian.FlameAnimation = flame
-	return &Guardians{Visuals: []GuardianVisual{guardian}, Atlas: packSprites(images)}, extra, nil
+	atlas := packSprites(images)
+	atlas.SourceSpriteNames = names
+	return &Guardians{Visuals: []GuardianVisual{guardian}, Atlas: atlas}, extra, nil
 }
 
 func RemapGuardianTiles(guardians *Guardians, ids map[uint16]uint16) error {
