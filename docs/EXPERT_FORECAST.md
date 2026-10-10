@@ -897,15 +897,15 @@ merchants, guardians, rewards and final menu. The current results are:
 
 | Start | Level | Ships lost | Scoring enemy removals | Collected cash |
 | --- | ---: | ---: | ---: | ---: |
-| Menu inactivity | 1 | 0 | 199 | 3,050 |
-| Menu inactivity | 2 | 1 | 283 | 4,600 |
-| Menu inactivity | 3 | 0 | 224 | 6,000 |
-| Explicit demonstration | 1 | 0 | 183 | 2,700 |
-| Explicit demonstration | 2 | 1 | 277 | 4,900 |
-| Explicit demonstration | 3 | 0 | 234 | 5,600 |
+| Menu inactivity | 1 | 0 | 221 | 4,150 |
+| Menu inactivity | 2 | 0 | 285 | 3,800 |
+| Menu inactivity | 3 | 0 | 231 | 5,900 |
+| Explicit demonstration | 1 | 0 | 219 | 3,500 |
+| Explicit demonstration | 2 | 0 | 301 | 4,450 |
+| Explicit demonstration | 3 | 0 | 236 | 5,500 |
 
-Both tours retain two ships and their two continue credits. The explicit tour
-finishes with score 153,130; the idle-start tour finishes with score 159,590.
+Both tours retain three ships and their two continue credits. The explicit tour
+finishes with score 166,650; the idle-start tour finishes with score 162,970.
 These results include the corrected original inward-facing plant constructors
 and animations, and the third level's corrected right-entry images and collisions.
 Their shots and collision outcomes affect the shared RNG, enemy damage and
@@ -913,6 +913,11 @@ subsequent carried loadouts. A scoring removal counts a damageable actor's final
 not both phases of one compound cannon. These are earned observations, not
 maximum-clearance claims or resource grants. Both menu-return tests also verify
 another level-one admission after sixty seconds without input.
+
+The [targeting audit](EXPERT_TARGETING.md) also records observed cash and equipment
+bubbles. It distinguishes increased destruction from collection quality:
+second-level collection still regresses against the earlier controller despite
+slightly higher full-tour cash totals and no ship losses.
 
 On the USB Pixel 10a, a warm full opening decision measures 30.18 ms over 100
 iterations. This calculation now runs ahead of the live controls. Validating a

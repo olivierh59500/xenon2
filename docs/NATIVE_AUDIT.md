@@ -2034,3 +2034,31 @@ Go fixture also reproduces this right-entry case without disk resources.
 These checks validate bounded isolated wave behavior. They do not establish
 collision outcomes with a live player, later random-branch states, the original
 hardware drawing or projectile allocation under a crowded full-game scene.
+
+## Wave creation under shared-pool pressure
+
+A further recorder runs the original startup, level initializer and point-shot
+factory before each of the 601 actual moving-wave constructors. Three explicit
+capacity fixtures leave two slots free, fill the pool, or fill it and mark two
+projectiles dead. Initial free slots contain distinguishable retained words.
+The original allocator handles reclamation; no allocation result is prescribed.
+
+All 1,803 cases match before and after wave dispatch: 3,606 boundaries and
+551,664 sampled physical slots across the five levels. Comparisons cover the
+initially free/reused region, occupied and free-list links, resource/dead tags,
+link flags, coordinates and fractions, timers, directions, health, movement
+budgets, emission clocks, owner/follower slots, RNG and affected reward buckets.
+Startup objects retain their original allocations, but their cold unassigned
+words are outside this comparison.
+
+The comparison found delayed publication of enemy point-shot constructor fields.
+The original writes whole coordinates, direction and speed immediately while
+retaining coordinate fractions and unrelated words. Go now publishes those
+values at creation, before another constructor can reclaim the slot. A permanent
+resource-independent regression saturates storage and reclaims the new shot
+before its first update. The previous source fails both that regression and the
+original field comparison.
+
+These are constructor/allocator comparisons under explicit pressure, with no
+moving, projectile, player or drawing updates. They do not establish every
+crowded combat lifecycle or an integrated five-stage playthrough.

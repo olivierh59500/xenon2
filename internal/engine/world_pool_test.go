@@ -30,6 +30,40 @@ func TestWorldPoolSharesCapacityAndEvictsWithoutReward(t *testing.T) {
 	}
 }
 
+func TestNewEnemyShotPublishesFieldsBeforeImmediatePoolReclaim(t *testing.T) {
+	w := testWorld(t)
+	w.Level.Rules = &visualassets.LevelRules{DefaultEnemyShot: "enemy-shot"}
+	first := w.Pool.FreeFirst()
+	w.Pool.Slot(first).Residue = ActorResidue{X: 11, Y: 23, XFraction: 0x1234, YFraction: 0x5678,
+		Counter: 65, Direction: 81, MotionBudget: 9, VerticalVelocity: -19, EmitterClock: 0xa55a}
+	player, equipment, random, frame := w.Player, w.Equipment, w.RandomState(), w.Frame
+	w.spawnEnemyShot(90, 100, EnemyShot{Direction: 3, Speed: 7})
+	shot := w.Projectiles[0]
+	// Saturate the remaining storage without updating the newborn projectile.
+	for w.Pool.FreeFirst() != NoActorSlot {
+		if _, err := w.reserveWorldActor(220, ActorPoolMoving, false); err != nil {
+			t.Fatal(err)
+		}
+	}
+	replacement := &WorldActor{Active: true, ActorList: "moving", part: &visualassets.ActorPart{ResourceTag: 200}}
+	if err := w.bindWorldActor(replacement); err != nil {
+		t.Fatal(err)
+	}
+	if replacement.Binding.Slot != first || shot.Active || shot.Binding.EntityID != 0 {
+		t.Fatal("full-pool construction did not reclaim the newborn shot")
+	}
+	r := replacement.Binding.Residue
+	if r.X != 90 || r.Y != 100 || r.Direction != 3 || r.MotionBudget != 7 {
+		t.Fatalf("replacement inherited the preceding owner instead of the newborn shot: %+v", r)
+	}
+	if r.XFraction != 0x1234 || r.YFraction != 0x5678 || r.Counter != 65 || r.VerticalVelocity != -19 || r.EmitterClock != 0xa55a {
+		t.Fatalf("shot constructor replaced untouched retained words: %+v", r)
+	}
+	if w.Player != player || w.Equipment != equipment || w.RandomState() != random || w.Frame != frame || w.Score != 0 || w.Money != 0 {
+		t.Fatal("capacity fixture advanced gameplay or awarded an eviction reward")
+	}
+}
+
 func TestWorldPoolDeathWaitsForOwningPhase(t *testing.T) {
 	w := testWorld(t)
 	actor := &WorldActor{Active: true, ActorList: "moving", Health: 1,

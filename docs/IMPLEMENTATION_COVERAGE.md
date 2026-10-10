@@ -12,10 +12,10 @@ and an explicit demo launch, the real third guardian/rewards/merchant sequence,
 menu return and a fresh ordinary level-one READY admission.
 
 The current complete-intro and idle-start expert tours finish all three supported
-demonstration stages with two ships and two continue credits intact. Each loses
-one ship in level two and keeps its carried ships throughout level three. Both use real guardian deaths,
-rewards and merchants before returning to the menu. The measured scorecard is
-recorded in [EXPERT_FORECAST.md](EXPERT_FORECAST.md).
+demonstration stages with three ships and two continue credits intact, without
+losing a ship. Both use real guardian deaths, rewards and merchants before
+returning to the menu. The measured scorecard and remaining collection limits
+are recorded in [EXPERT_TARGETING.md](EXPERT_TARGETING.md).
 
 Later-stage reference fixtures remain available but use an explicit test-only
 tour limit. Their earlier carried loadouts and random states are capability
@@ -103,6 +103,15 @@ later slot owners. Unrelated stage callbacks, player combat and projectile
 allocation are isolated; these are bounded wave comparisons, not complete-stage
 playthroughs or projectile-pool pressure tests.
 
+A separate crowded-constructor comparison now covers all 601 waves with two
+free slots, a full pool, and a full pool containing two dead shots. Across 1,803
+cases, 551,664 physical-slot states match source list order, reclamation and
+written/retained gameplay words before and after creation. It corrected delayed
+publication of a newborn enemy shot's coordinates, direction and speed. The
+ordinary engine now retains those source values if another actor reclaims the
+shot before its first update. These explicit capacity fixtures do not replace
+full moving/projectile/player phase comparisons under real combat pressure.
+
 ## Validation boundaries
 
 Private source comparisons run only when the local decoded disk resources and
@@ -150,10 +159,9 @@ table during flash callbacks. A real basic-gun hit also passes the production
 GPU pixel check for the final body.
 
 The practiced presentation and the development reference controller are distinct.
-The current public three-level tour has connected near-lossless observations:
-one second-stage ship loss for each admission path, with no third-stage loss.
-Neither spends a continue. These results do not establish every starting state,
-maximum enemy/bonus clearance or complete five-level fidelity.
+The current public three-level tour has connected lossless observations for
+both admission paths. Neither spends a continue. These results do not establish
+every starting state, maximum enemy/bonus clearance or complete five-level fidelity.
 
 The latest first-stage presentation MP4 is 381.53 seconds and includes the production
 intro, known left junction, both genuine merchants, final guardian destruction

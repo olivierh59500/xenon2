@@ -1012,6 +1012,10 @@ func (w *World) spawnEnemyShot(x, y int, shot EnemyShot) {
 		Sprite: w.Level.Rules.DefaultEnemyShot, Atlas: "enemy-shots", Active: true,
 		// The native constructor replaces only the whole coordinate words.
 		Motion: DirectionalProjectile{X: int32(x)<<16 | int32(binding.Residue.XFraction), Y: int32(y)<<16 | int32(binding.Residue.YFraction), Direction: shot.Direction, Speed: shot.Speed}}
+	// A later constructor can reclaim this physical entry before its first
+	// update. Publish the shot's initialized words immediately, retaining the
+	// inherited fractions and every word the original factory leaves untouched.
+	w.finishProjectileUpdate(p)
 	w.poolProjectiles[binding.Slot] = p
 	w.Projectiles = append([]*WorldProjectile{p}, w.Projectiles...)
 }
