@@ -255,4 +255,7 @@ func TestFifthStageMerchantEndingAndSharedNextStageBoundary(t *testing.T) {
 	if s.Difficulty != 2 || s.Current != 0 || s.Completed != ([2]bool{}) || s.Players[0].Level.Number != 1 || s.Players[1].Level.Number != 1 || s.Players[0].ContinueCredits != 3 || s.Players[1].ContinueCredits != 3 || s.Players[1].Equipment.Mounts[0].Item != engine.ItemNone || s.Players[1].Equipment.Primary.Item != engine.ItemForwardShot {
 		t.Fatal("merchant ending did not reset ordinary weapons and admit both players to the next campaign round")
 	}
+	if s.Players[0].Pool.Slot(0) != s.Players[1].Pool.Slot(0) {
+		t.Fatal("second difficulty round created separate actor reserves for the saved games")
+	}
 }

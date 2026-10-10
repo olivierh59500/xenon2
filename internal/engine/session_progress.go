@@ -62,15 +62,29 @@ func (s *Session) CompleteStage(next LevelData) (StageTransition, error) {
 	}
 	random := s.ActiveWorld().RandomState()
 	replacements := s.Players
+	pool := NewActorPool()
 	for index, old := range s.Players {
 		if old == nil {
 			continue
 		}
-		world, err := advanceStageWorld(old, next, random, difficulty)
+		world, err := advanceStageWorldUsingPool(old, next, random, difficulty, pool, false)
 		if err != nil {
 			return LoadedNextStage, err
 		}
 		replacements[index] = world
+		if index+1 < s.PlayerCount {
+			pool = newActorPoolView(pool)
+		}
+	}
+	for _, world := range replacements {
+		if world == nil {
+			continue
+		}
+		if err := world.initializeLevelActors(); err != nil {
+			return LoadedNextStage, err
+		}
+		world.captureRenderTerrain()
+		world.captureActorRenderTerrain()
 	}
 	s.Players, s.Completed, s.Difficulty = replacements, [2]bool{}, difficulty
 	s.hasPlayed = [2]bool{true, s.PlayerCount == 2}
@@ -84,6 +98,10 @@ func (s *Session) CompleteStage(next LevelData) (StageTransition, error) {
 }
 
 func advanceStageWorld(old *World, data LevelData, random RandomState, difficulty int) (*World, error) {
+	return advanceStageWorldUsingPool(old, data, random, difficulty, NewActorPool(), true)
+}
+
+func advanceStageWorldUsingPool(old *World, data LevelData, random RandomState, difficulty int, pool *ActorPool, initializeActors bool) (*World, error) {
 	equipment := old.Equipment
 	equipment.RestoreSuperLoadout()
 	loadout := equipment.WeaponLoadout
@@ -98,7 +116,7 @@ func advanceStageWorld(old *World, data LevelData, random RandomState, difficult
 		rules.StrongHealthMultiplier *= difficulty
 		data.Rules = &rules
 	}
-	world, err := NewWorld(data)
+	world, err := newWorldWithPool(data, pool, initializeActors)
 	if err != nil {
 		return nil, err
 	}

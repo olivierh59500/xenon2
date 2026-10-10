@@ -12,6 +12,9 @@ import (
 func TestAlternatingCollisionDeathsKeepSharedBackdropThroughReady(t *testing.T) {
 	g := menuAdmittedGame(t, 1, 2)
 	d := g.Driver.(*worldDriver)
+	if d.session.Players[0].Pool.Slot(0) != d.session.Players[1].Pool.Slot(0) {
+		t.Fatal("two-player menu admission created separate physical reserves")
+	}
 	for turn := 0; turn < 2; turn++ {
 		outgoing, player := d.world, d.session.Current
 		deathSeen := false
@@ -25,6 +28,9 @@ func TestAlternatingCollisionDeathsKeepSharedBackdropThroughReady(t *testing.T) 
 			t.Fatalf("collision turn%d resumed stale backdrop: player%d phase%d view%g previous%g", turn, d.session.Current, phase, g.View.BackgroundY, g.previous.BackgroundY)
 		}
 		incoming := d.world
+		if incoming.Pool.Slot(0) != outgoing.Pool.Slot(0) {
+			t.Fatal("collision turn admission detached the shared physical reserve")
+		}
 		awaitFrontendBoundary(t, g, 800, "incoming player's waiting READY", func() bool {
 			return g.director.Phase == presentation.ReadyMessage && g.director.Data.MessageSteps[g.director.Step] == 17
 		})

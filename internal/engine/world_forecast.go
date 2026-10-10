@@ -233,6 +233,10 @@ func (f *WorldForecast) Load(source *World) error {
 	world.ActorRenderTerrainMap = forecastActorSliceReuse(&storage.actorRenderMap, source.ActorRenderTerrainMap)
 	if source.Pool != nil {
 		storage.pool = *source.Pool
+		if source.Pool.shared != nil {
+			storage.pool.actorPoolStorage = *source.Pool.storage()
+			storage.pool.shared = nil
+		}
 		world.Pool = &storage.pool
 	}
 	if source.BackgroundStars != nil {

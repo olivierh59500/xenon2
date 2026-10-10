@@ -110,6 +110,13 @@ terrain coverage, cash and carrier rewards, checkpoint recovery, alternating
 players and the shared 159-slot allocator have source comparisons. Terrain and
 sprite transparency use their distinct original coverage formats.
 
+The actor reserve is also shared across both alternating saved games. Fifteen
+original initialization observations and 2,385 physical resource-tag comparisons
+cover all five levels with one and two players. Capacity-pressure and forecast
+isolation regressions protect the inactive player's objects. Full cross-level
+slot-residue and crowded two-player combat comparisons remain separate; see
+[SESSION_POOL_VALIDATION.md](SESSION_POOL_VALIDATION.md).
+
 Pending terrain rewind now continues across dive admission, including history
 restoration and crushing; diving suppresses new contacts only. The world and
 movement forecast agree with 648 original ship/scroll boundaries on the first

@@ -72,16 +72,23 @@ type ActorAllocation struct {
 	Stolen                 bool
 }
 
+type actorPoolStorage struct {
+	slots        [ActorPoolCapacity]ActorPoolSlot
+	freeFirst    int
+	nextEntityID int
+	sharedIDs    bool
+}
+
 // ActorPool reproduces shared capacity, list order and eviction priorities.
 // Player/equipment entries use capacity but are never selected for stealing.
 type ActorPool struct {
-	slots       [ActorPoolCapacity]ActorPoolSlot
+	actorPoolStorage
+	shared      *actorPoolStorage
 	first, last [7]int
-	freeFirst   int
 }
 
 func NewActorPool() *ActorPool {
-	p := &ActorPool{freeFirst: 0}
+	p := &ActorPool{}
 	for i := range p.first {
 		p.first[i], p.last[i] = NoActorSlot, NoActorSlot
 	}
@@ -94,11 +101,33 @@ func NewActorPool() *ActorPool {
 	return p
 }
 
+// A saved player owns its list heads, while both turns retain the same physical
+// records, free stack and creation identities. Inactive lists are not stealable.
+func newActorPoolView(pool *ActorPool) *ActorPool {
+	p := &ActorPool{shared: pool.storage()}
+	p.shared.sharedIDs = true
+	for i := range p.first {
+		p.first[i], p.last[i] = NoActorSlot, NoActorSlot
+	}
+	return p
+}
+
+func (p *ActorPool) storage() *actorPoolStorage {
+	if p.shared != nil {
+		return p.shared
+	}
+	return &p.actorPoolStorage
+}
+
+func (p *ActorPool) sameState(other *ActorPool) bool {
+	return other != nil && p.first == other.first && p.last == other.last && *p.storage() == *other.storage()
+}
+
 func (p *ActorPool) Slot(index int) *ActorPoolSlot {
 	if index < 0 || index >= len(p.slots) {
 		return nil
 	}
-	return &p.slots[index]
+	return &p.storage().slots[index]
 }
 
 func (p *ActorPool) First(list ActorPoolList) int {
@@ -115,7 +144,7 @@ func (p *ActorPool) Last(list ActorPoolList) int {
 	return p.last[list]
 }
 
-func (p *ActorPool) FreeFirst() int { return p.freeFirst }
+func (p *ActorPool) FreeFirst() int { return p.storage().freeFirst }
 
 func (p *ActorPool) Next(index int) int {
 	if slot := p.Slot(index); slot != nil {
@@ -128,13 +157,14 @@ func (p *ActorPool) Next(index int) int {
 // projectile, scenery, ordinary moving enemies, and finally the moving head.
 // A stolen entry is unlinked without invoking its gameplay removal callback.
 func (p *ActorPool) Allocate() (ActorAllocation, error) {
-	index := p.freeFirst
+	storage := p.storage()
+	index := storage.freeFirst
 	stolen := index == NoActorSlot
 	if !stolen {
-		p.freeFirst = p.slots[index].freeNext
+		storage.freeFirst = storage.slots[index].freeNext
 	} else {
-		for candidate := p.first[ActorPoolProjectile]; candidate != NoActorSlot; candidate = p.slots[candidate].next {
-			tag := p.slots[candidate].ResourceTag
+		for candidate := p.first[ActorPoolProjectile]; candidate != NoActorSlot; candidate = storage.slots[candidate].next {
+			tag := storage.slots[candidate].ResourceTag
 			if tag == 4 || tag == 12 || tag == 16 {
 				index = candidate
 				break
@@ -147,8 +177,8 @@ func (p *ActorPool) Allocate() (ActorAllocation, error) {
 			index = p.first[ActorPoolScenery]
 		}
 		if index == NoActorSlot {
-			for candidate := p.first[ActorPoolMoving]; candidate != NoActorSlot; candidate = p.slots[candidate].next {
-				tag := p.slots[candidate].ResourceTag
+			for candidate := p.first[ActorPoolMoving]; candidate != NoActorSlot; candidate = storage.slots[candidate].next {
+				tag := storage.slots[candidate].ResourceTag
 				if tag >= 200 || tag == 4 {
 					index = candidate
 					break
@@ -162,7 +192,7 @@ func (p *ActorPool) Allocate() (ActorAllocation, error) {
 	if index == NoActorSlot {
 		return ActorAllocation{}, fmt.Errorf("actor pool has no stealable entry")
 	}
-	node := &p.slots[index]
+	node := &storage.slots[index]
 	result := ActorAllocation{Slot: index, AllocationPhase: node.AllocationPhase, PreviousEntityID: node.EntityID, PreviousList: node.list, PreviousTag: node.ResourceTag, Stolen: stolen}
 	if stolen {
 		p.unlink(index)
@@ -174,19 +204,20 @@ func (p *ActorPool) Allocate() (ActorAllocation, error) {
 }
 
 func (p *ActorPool) unlink(index int) {
-	n := &p.slots[index]
+	storage := p.storage()
+	n := &storage.slots[index]
 	if n.list == ActorPoolNone {
 		return
 	}
 	if n.previous == NoActorSlot {
 		p.first[n.list] = n.next
 	} else {
-		p.slots[n.previous].next = n.next
+		storage.slots[n.previous].next = n.next
 	}
 	if n.next == NoActorSlot {
 		p.last[n.list] = n.previous
 	} else {
-		p.slots[n.next].previous = n.previous
+		storage.slots[n.next].previous = n.previous
 	}
 	n.list, n.previous, n.next = ActorPoolNone, NoActorSlot, NoActorSlot
 }
@@ -223,6 +254,7 @@ func (p *ActorPool) Move(index int, list ActorPoolList, tail bool) error {
 }
 
 func (p *ActorPool) attach(index int, list ActorPoolList, entityID int, tag int16, predecessor int) error {
+	storage := p.storage()
 	n := p.Slot(index)
 	if n == nil || !n.allocated || n.list != ActorPoolNone || list == ActorPoolNone || int(list) >= len(p.first) {
 		return fmt.Errorf("invalid actor attachment")
@@ -235,15 +267,15 @@ func (p *ActorPool) attach(index int, list ActorPoolList, entityID int, tag int1
 	}
 	next := p.first[list]
 	if predecessor != NoActorSlot {
-		next = p.slots[predecessor].next
-		p.slots[predecessor].next = index
+		next = storage.slots[predecessor].next
+		storage.slots[predecessor].next = index
 	} else {
 		p.first[list] = index
 	}
 	if next == NoActorSlot {
 		p.last[list] = index
 	} else {
-		p.slots[next].previous = index
+		storage.slots[next].previous = index
 	}
 	n.list, n.EntityID, n.ResourceTag = list, entityID, tag
 	n.previous, n.next = predecessor, next
@@ -259,7 +291,8 @@ func (p *ActorPool) Release(index int) error {
 	}
 	p.unlink(index)
 	n.ResourceTag, n.allocated = 0, false
-	n.freeNext, p.freeFirst = p.freeFirst, index
+	storage := p.storage()
+	n.freeNext, storage.freeFirst = storage.freeFirst, index
 	return nil
 }
 
@@ -275,8 +308,9 @@ func (p *ActorPool) MarkDead(index int) error {
 }
 
 func (p *ActorPool) EntityIDs(list ActorPoolList, dst []int) []int {
-	for index := p.First(list); index != NoActorSlot; index = p.slots[index].next {
-		dst = append(dst, p.slots[index].EntityID)
+	storage := p.storage()
+	for index := p.First(list); index != NoActorSlot; index = storage.slots[index].next {
+		dst = append(dst, storage.slots[index].EntityID)
 	}
 	return dst
 }

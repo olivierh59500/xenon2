@@ -19,16 +19,28 @@ func NewSession(level LevelData, players int, random RandomState) (*Session, err
 		return nil, fmt.Errorf("a session needs one or two alternating players")
 	}
 	s := &Session{PlayerCount: players, Difficulty: 1}
+	pool := NewActorPool()
 	for i := range players {
 		data := level
 		data.InitialRandom = &random
-		world, err := NewWorld(data)
+		world, err := newWorldWithPool(data, pool, false)
 		if err != nil {
 			return nil, err
 		}
 		world.SetRandomState(random)
 		world.Ready = true
 		s.Players[i] = world
+		if i+1 < players {
+			pool = newActorPoolView(pool)
+		}
+	}
+	for i := range players {
+		world := s.Players[i]
+		if err := world.initializeLevelActors(); err != nil {
+			return nil, err
+		}
+		world.captureRenderTerrain()
+		world.captureActorRenderTerrain()
 	}
 	s.hasPlayed[0] = true
 	return s, nil

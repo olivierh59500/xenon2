@@ -2677,3 +2677,27 @@ ARM64 runner in 1.84 seconds. Desktop and Android builds succeed. The APK from
 runtime `475a21e` is installed, its digest matches the local build, and cold
 launch reports success. The locked-device check draws no graphics; actual
 app switching, frame pacing and audio continuity remain separate live checks.
+
+## One physical actor reserve for both saved games
+
+The original complete game/level initializers now provide fifteen saved-player
+observations across all five levels and both player counts. They confirm one
+159-object free stack, independent player list heads and initialization of both
+players' equipment before either game's level actors. The old Go sessions had
+two reserves and repeated physical positions for the second player. The new
+shared pool views match every observed free/list head, shadow/weapon position
+and all 2,385 physical resource tags.
+
+Separate regressions fill the combined reserve, reclaim only an active enemy,
+preserve inactive protected records and verify unique creation identities after
+turn admission. Predictions from either player's view own an independent copy
+of physical storage. Shared next-stage loading and the existing real collision,
+READY and fifth-ending frontend checks pass. The connected five-stage solo
+reference retains its exact final balances and next-round admission.
+
+The complete original-resource engine/artwork/merchant suites pass in 38.770,
+0.720 and 0.931 seconds. Fresh-session layout does not establish retained slot
+residue across original level transitions or every crowded two-player combat
+boundary. [SESSION_POOL_VALIDATION.md](SESSION_POOL_VALIDATION.md) records the
+scope and repeatable commands. No original program or resource is added to Git
+or executed by the Go game.

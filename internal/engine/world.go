@@ -308,6 +308,10 @@ type World struct {
 }
 
 func NewWorld(data LevelData) (*World, error) {
+	return newWorldWithPool(data, NewActorPool(), true)
+}
+
+func newWorldWithPool(data LevelData, pool *ActorPool, initializeActors bool) (*World, error) {
 	if data.Number < 1 || data.Number > 5 || data.Terrain == nil || data.Paths == nil || data.Encounters == nil || data.Actors == nil {
 		return nil, fmt.Errorf("level needs its complete decoded data")
 	}
@@ -342,7 +346,7 @@ func NewWorld(data LevelData) (*World, error) {
 		}
 	}
 	w.ContinueCredits = 2
-	if err := w.initializeWorldPool(); err != nil {
+	if err := w.initializeWorldPoolUsing(pool); err != nil {
 		return nil, err
 	}
 	w.WaveBonuses = NewWaveBonusCache()
@@ -422,6 +426,19 @@ func NewWorld(data LevelData) (*World, error) {
 			return nil, fmt.Errorf("wave references unknown kind or path")
 		}
 	}
+	if initializeActors {
+		if err := w.initializeLevelActors(); err != nil {
+			return nil, err
+		}
+	}
+	w.captureRenderTerrain()
+	w.captureActorRenderTerrain()
+	return w, nil
+}
+
+// Initial player equipment precedes the level actors of either saved game.
+func (w *World) initializeLevelActors() error {
+	data := w.Level
 	if data.Number == 1 && data.Guardians != nil && len(data.Guardians.Visuals) != 0 {
 		w.firstGuardianArt = &data.Guardians.Visuals[0]
 		w.firstGuardianBody = w.firstGuardianArt.Body
@@ -445,31 +462,29 @@ func NewWorld(data LevelData) (*World, error) {
 		w.Actors = append(w.Actors, w.secondGuardianActor)
 	}
 	if err := w.initializeSecondArena(); err != nil {
-		return nil, err
+		return err
 	}
 	if err := w.initializeThirdStage(); err != nil {
-		return nil, err
+		return err
 	}
 	if err := w.initializeFourthStage(); err != nil {
-		return nil, err
+		return err
 	}
 	if err := w.initializeFirstMiddle(); err != nil {
-		return nil, err
+		return err
 	}
 	for i := len(w.Actors) - 1; i >= 0; i-- {
 		if err := w.bindWorldActor(w.Actors[i]); err != nil {
-			return nil, err
+			return err
 		}
 		if w.Actors[i].secondNode != nil {
 			w.initializeSecondNodeResidue(w.Actors[i])
 		}
 	}
 	if err := w.initializeFifthStage(); err != nil {
-		return nil, err
+		return err
 	}
-	w.captureRenderTerrain()
-	w.captureActorRenderTerrain()
-	return w, nil
+	return nil
 }
 
 // NextUIRandom shares the original random stream with shop animations and

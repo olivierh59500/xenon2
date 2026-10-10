@@ -69,7 +69,7 @@ func (e *expertEncounterPilot) takePrepared(w *World, pal int) (*expertEncounter
 // and rebound function closures do not define gameplay equivalence.
 func expertPreparedWorldMatches(w, q *World) bool {
 	if q == nil || retainedGuardStateKey(w) != retainedGuardStateKey(q) || fifthPracticeMarker(w) != fifthPracticeMarker(q) ||
-		w.Pool == nil || q.Pool == nil || *w.Pool != *q.Pool || w.Checkpoint != q.Checkpoint || w.WaveBonuses != q.WaveBonuses ||
+		w.Pool == nil || !w.Pool.sameState(q.Pool) || w.Checkpoint != q.Checkpoint || w.WaveBonuses != q.WaveBonuses ||
 		w.ThirdStage != q.ThirdStage || w.EffectActive != q.EffectActive || w.shipTrail != q.shipTrail {
 		return false
 	}

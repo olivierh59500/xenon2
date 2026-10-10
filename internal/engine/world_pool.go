@@ -1,7 +1,11 @@
 package engine
 
 func (w *World) initializeWorldPool() error {
-	w.Pool = NewActorPool()
+	return w.initializeWorldPoolUsing(NewActorPool())
+}
+
+func (w *World) initializeWorldPoolUsing(pool *ActorPool) error {
+	w.Pool = pool
 	w.poolBindings = make(map[int]ActorPoolBinding, ActorPoolCapacity)
 	for i := range w.poolShadows {
 		binding, err := w.reserveWorldActor(196, ActorPoolPlayer, true)
@@ -33,6 +37,11 @@ func (w *World) reserveWorldActor(tag int16, list ActorPoolList, tail bool) (Act
 	w.poolSmallShots[allocation.Slot] = nil
 	w.poolCollectibles[allocation.Slot] = nil
 	w.nextActorID++
+	storage := w.Pool.storage()
+	if storage.sharedIDs && w.nextActorID <= storage.nextEntityID {
+		w.nextActorID = storage.nextEntityID + 1
+	}
+	storage.nextEntityID = w.nextActorID
 	slot := w.Pool.Slot(allocation.Slot)
 	binding := ActorPoolBinding{Slot: allocation.Slot, EntityID: w.nextActorID, Residue: slot.Residue, AllocationPhase: slot.AllocationPhase}
 	if tail {
