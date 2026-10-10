@@ -1070,10 +1070,8 @@ sale value, while buying Side before selling Homing is correctly rejected.
 
 The captured-source replay validates all 3,239 markers, including the unchanged
 first 2,241 inputs. The normal-intro frontend test supplies the separate connected
-evidence through both real sale and purchase pages. Final victory, ending and
-the next loop still need validation from this new carried profile.
-Earlier isolated victories and the historical five-stage records do not
-establish those results.
+evidence through both real sale and purchase pages. The later connected finish
+below validates final victory, ending and next-round admission from this state.
 
 ### Current second half and final admission
 
@@ -1097,5 +1095,29 @@ Independent replay and the normal-intro frontend both retain all 39 shield,
 three ships and two continues throughout the second half. Final admission has
 all eighteen defenses, core health 20 and RNG 1906578826/683871768. No enemy
 health, guardian completion or extra resources are assigned. This proves current
-connected admission to the final encounter, not its defeat or integrated Amiga
-presentation parity.
+connected admission to the final encounter. The subsequent reference below
+supplies final-victory evidence; integrated Amiga presentation parity remains
+under review.
+
+### Current complete campaign, final rewards and next round
+
+The ordinary default-intro frontend now continues through recorded final inputs
+at the genuine final admission. It defeats all eighteen defenses and the core
+at frame 6,562, with two ships, nine shield, 850 cash and score 284,750. A single
+real ship loss runs the native death and READY presentation; no continue is
+spent. The subsequent 43 ordinary movements collect all twenty coins and their
+1,500 cash before the final merchant at frame 6,605.
+
+Every merchant ending phase is observed before the ordinary next-level loader,
+level-one READY and first gameplay pass of difficulty round two. The source
+reset retains the score, surviving ships and shield, restores the basic weapon
+and awards the third continue credit. The persistent Ebitengine reference test
+passes in 44.30 seconds locally and captures four actual GPU frames. It contains
+ordinary controls only and assigns no world state or resources.
+
+The earlier captured final-entry fixture also wins with its regular loadout,
+but has 19 shield afterward. Its omitted frontend presentation changes post-death
+RNG and reward motion; that result is not the connected nine-shield result.
+The [complete finish validation](FIFTH_FINISH_VALIDATION.md) records these limits.
+The public expert tour still stops after stage three, and integrated Amiga
+audiovisual equivalence and hardware smoothness remain separate checks.

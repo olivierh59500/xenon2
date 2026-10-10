@@ -11,8 +11,9 @@ replays the original soundtrack. It includes source-derived weapons,
 carrier rewards, checkpoint recovery, alternating players, and both sections
 of the five levels, including their compound guardians. Original shop, attract,
 HUD, loading and ending presentation are connected. All fixed encounter families
-are implemented. Shared-state and artwork audits and full-game validation remain
-in progress; this build is not yet the complete playable game.
+are implemented. A current ordinary-input reference journey completes the five
+stages, collects the complete final reward, shows the ending and starts a second
+round. Integrated Amiga audiovisual and timing comparisons remain in progress.
 
 **Original resources are prepared from your own Amiga game disks.** The original
 ADF, recovered programs and exported game assets are not included in the
@@ -86,8 +87,12 @@ The controller reconsiders a retained escape if it predicts another shield loss
 and values actual partial damage while clearing a stationary emitter.
 
 Existing later-stage code and reference fixtures remain in the project. They
-are outside the three-level demonstration tour; full-game fidelity and a
-five-stage expert campaign are not established.
+are outside the three-level demonstration tour. The separate
+[five-stage reference validation](docs/FIFTH_FINISH_VALIDATION.md) starts at the
+ordinary intro and retains earned equipment throughout. It loses one ship in
+the last fight, spends no continue and enters round two with two ships. It uses
+recorded controls after final admission; it does not extend the public expert
+tour beyond stage three. Full-game audiovisual equivalence remains under review.
 
 ## MP4 recording
 

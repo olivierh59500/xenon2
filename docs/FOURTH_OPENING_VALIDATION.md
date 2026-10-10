@@ -40,9 +40,11 @@ its genuine middle guardian at frame 2,241 with 31 shield and all reserves intac
 defeats it at frame 3,193 and collects all ten exit coins. Actual merchant
 transactions repair and refit the same ship before returning to stage five.
 The same connected journey subsequently reaches the genuine fifth final at
-frame 5,507 with full shield and all reserves. Its final fight from the new
-profile, integrated Amiga playthrough comparison and current device drawing
-remain separate requirements. The historical fifth records use another profile.
+frame 5,507 with full shield and all reserves. The
+[connected finish validation](FIFTH_FINISH_VALIDATION.md) subsequently completes
+the final fight, ending and next-round gameplay with two surviving ships.
+Integrated Amiga playthrough comparison and current device drawing remain
+separate requirements. The historical fifth records use another profile.
 
 ## Previous single-ship reference
 

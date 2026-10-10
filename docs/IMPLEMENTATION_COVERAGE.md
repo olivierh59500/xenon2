@@ -44,15 +44,25 @@ shield or rewinding into terrain. Genuine final admission occurs at frame 5,507
 with 39 shield, three ships, two continues, 850 cash and score 280,050. All
 eighteen defenses and the 20-health core retain their original admission state.
 Both captured-profile replay and the default-intro Ebitengine journey validate
-this continuation. Final victory, ending and next-loop progression still
-require validation from the current carried state.
+this continuation.
+
+The same connected reference now continues through ordinary recorded final
+controls. A real ship loss uses the original death/READY director. All eighteen
+defenses and the core fall at frame 6,562, with two ships, nine shield and both
+continues intact. All twenty exit coins add 1,500 cash; the final merchant opens
+at frame 6,605 with 2,350. Every original ending phase then runs before the
+ordinary level-one READY and first gameplay pass of difficulty round two.
+The score remains 284,750, two ships survive and the native victory credit raises
+the continue balance to three. The [complete finish validation](FIFTH_FINISH_VALIDATION.md)
+records the input and graphics evidence and its fidelity limits.
 
 Historical fifth-stage records remain explicit captured-profile capabilities.
 Their renewed ordinary inputs reach the fifth final guardian, while a separate
 isolated final fight reaches the final merchant with a prepared loadout and five
 ships. Neither establishes fifth-stage completion from the newly earned profile.
-Integrated Amiga playthrough equivalence and a connected five-stage victory
-remain unfinished. Ordinary demonstration launches do not enter level four.
+The separate connected five-stage check above establishes current Go progression.
+Integrated Amiga playthrough equivalence remains under review. Ordinary
+demonstration launches do not enter level four.
 
 ## Fixed encounters and scripted arenas
 
@@ -186,8 +196,12 @@ from Git. Ordinary tests verify the independent logic without an emulator.
 
 The build updates at 60 Hz and uses a separate gameplay clock. Ebitengine may
 draw at the monitor refresh rate; this does not accelerate gameplay.
-Integrated Amiga comparisons and a complete five-level run remain required.
-The current build is in development and is not yet a complete conversion.
+The current complete five-level Go reference run now reaches the next round.
+Integrated Amiga comparisons and real-time audiovisual review remain required;
+the conversion is still in development.
+
+The sections below preserve earlier audit results. Their prior failures and
+captured-profile results do not supersede the current connected reference above.
 
 Corrected guided-projectile residue invalidates the old private fifth-stage
 practice recording: its merchant/final replay tests currently fail. The strict
@@ -345,11 +359,12 @@ the current completion evidence is recorded below. See the
 are included in movement scoring with their native growth and pre-movement ship
 prefix; isolated source tests establish avoidance, not a complete fifth boss.
 
-The remaining live checks are:
+The current five-stage reference now covers the normal intro, all preceding
+victories and merchants, final rewards, ending and next-round gameplay. Its
+single final-fight loss also exercises the ordinary death/READY sequence. The
+remaining live checks are:
 
-- Play all five stages from the normal menu, including both shop boundaries,
-  ending and the next difficulty loop.
-- Exercise actual deaths, score entry, accepted/refused continues and alternating
+- Exercise score entry, accepted/refused continues and alternating
   two-player checkpoints.
 - Compare integrated artwork, palette fades, sound transitions and elapsed
   cadence with the Amiga reference.

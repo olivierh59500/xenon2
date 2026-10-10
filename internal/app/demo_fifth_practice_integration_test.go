@@ -190,6 +190,11 @@ func TestPresentationPilotReachesFifthFinalFromDefaultIntroOptional(t *testing.T
 	if os.Getenv("XENON2_HUMAN_PRESENTATION_CHECK") == "" {
 		t.Skip("enable the complete earned final approach explicitly")
 	}
+	verifyPresentationFifthFinalAdmission(t)
+}
+
+func verifyPresentationFifthFinalAdmission(t *testing.T) *Game {
+	t.Helper()
 	g := verifyPresentationFifthSecondHalfCheckpoint(t)
 	for update := 0; update < 60*100; update++ {
 		advanceFrontend(t, g, inputFrame{})
@@ -203,8 +208,9 @@ func TestPresentationPilotReachesFifthFinalFromDefaultIntroOptional(t *testing.T
 				t.Fatalf("original final constructor differs: F%d C%d HP%d score%d RNG%+v", w.Frame, w.ScrollY, w.Equipment.Shield, w.Score, w.RandomState())
 			}
 			t.Logf("Complete intro reaches genuine fifth final at frame5507 with all39shield, all18defenses and20corehealth, three ships and two continues")
-			return
+			return g
 		}
 	}
 	t.Fatal("bounded earned final approach never admitted the original guardian")
+	return nil
 }
