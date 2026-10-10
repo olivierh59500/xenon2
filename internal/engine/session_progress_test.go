@@ -36,6 +36,7 @@ func TestTwoPlayersFinishBeforeAdvancingWithIndependentState(t *testing.T) {
 		t.Fatal(err)
 	}
 	first, second := s.Players[0], s.Players[1]
+	first.BackgroundY, second.BackgroundY = 42, 88
 	first.Equipment.ApplyItem(ItemDoubleShot)
 	first.Equipment.Primary.Tier = 1
 	first.Score = 4320
@@ -58,6 +59,9 @@ func TestTwoPlayersFinishBeforeAdvancingWithIndependentState(t *testing.T) {
 		t.Fatal("both players did not advance together")
 	}
 	first, second = s.Players[0], s.Players[1]
+	if first.BackgroundY != 0 || second.BackgroundY != 0 || first.PreviousBackgroundY != 0 || second.PreviousBackgroundY != 0 {
+		t.Fatal("fresh shared level retained the previous level's background phase")
+	}
 	if first.Level.Number != 2 || second.Level.Number != 2 || first.Score != 4320 || second.Score != 1200 || first.Equipment.Primary.Item != ItemDoubleShot || first.Equipment.Primary.Tier != 1 || second.Equipment.Rear.Item != ItemRearShot {
 		t.Fatal("stage reconstruction discarded saved player state")
 	}

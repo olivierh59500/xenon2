@@ -91,10 +91,13 @@ func (s *Session) switchTurn() bool {
 		return false
 	}
 	random := s.ActiveWorld().RandomState()
+	background := s.ActiveWorld().BackgroundY
 	s.ActiveWorld().suspendTurn()
 	s.Current = next
 	world := s.ActiveWorld()
 	world.SetRandomState(random)
+	// The backdrop offset is shared display state outside the saved players.
+	world.BackgroundY, world.PreviousBackgroundY = background, background
 	world.RestartCheckpoint()
 	world.LevelFinished = s.Completed[next]
 	s.hasPlayed[next] = true

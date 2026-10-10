@@ -2649,3 +2649,25 @@ The phone was locked with its display off; the independent logic runner draws
 no graphics. These checks establish current ARM64 progression and input-policy
 logic, not real-time frame pacing, audio continuity or an actual app-switch
 gesture. See [ANDROID.md](ANDROID.md) for the APK digest and repeatable command.
+
+## Shared background phase during alternating turns
+
+Eighty executions of the original turn-swap routine, including each of the five
+levels' unmodified return callbacks, keep the backdrop offset shared while
+restoring the incoming player's independent frame counter. The Go session had
+retained a separate offset per player, so a turn switch could jump backward to
+an earlier visual phase. Admission now carries the outgoing offset and resets
+the incoming interpolation history to the same value.
+
+The new regression failed before this correction on the original reference and
+all four admission routes: ship loss, accepted continue, declined continue and
+stage completion while the opponent still has to finish. They now pass, including
+READY acknowledgement, the first ordinary incoming logic pass and the separate
+phase-zero reset on a fresh stage. A frontend integration also passes both
+directions through actual collision deaths, ordinary READY directors and fades.
+
+The complete original-resource engine, artwork and merchant suites pass in
+37.564, 0.371 and 0.696 seconds respectively. The focused frontend/GPU checks
+pass in 1.844 seconds, including the unchanged sixty exact terrain rasters.
+This corrects two-player display-state continuity; it does not certify real-time
+hardware smoothness or complete two-player Amiga playthrough equivalence.

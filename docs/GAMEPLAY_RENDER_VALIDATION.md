@@ -53,6 +53,39 @@ The original first-level window capture also confirms that the exported
 background artwork matches the original at a different retained scroll phase;
 that phase must not be imposed on every new Go game.
 
+## Shared background across alternating players
+
+The original turn-swap routine keeps the background offset outside the saved
+player blocks. Each player's gameplay counter is restored independently, but
+the displayed background continues from the outgoing turn. Eighty original
+swaps, including all five real level-return callbacks, confirm this separation.
+
+Go previously resumed the incoming player's old background phase. It now carries
+the outgoing phase into the incoming world and snaps interpolation history to
+that phase. Regressions cover ship loss, accepted/refused continues and waiting
+for the other player after a stage victory. A newly loaded level still starts
+with phase zero. No player's camera, inventory, wallet or logic counter is shared.
+
+A frontend check starts a real two-player game through the ordinary menu,
+causes collision deaths with directional input, and crosses both players' READY
+directors. The displayed phase remains continuous in both turn directions and
+through their gameplay fades. Its first subsequent logic pass advances from
+the retained phase using the incoming player's saved frame parity.
+
+```sh
+GOWORK=off \
+XENON2_NATIVE_TRACE_DIR="$PWD/.local/analysis" \
+go test ./internal/engine \
+  -run '^(TestTurnBackgroundMatchesOriginalSwapOptional|TestSessionBackgroundContinuesAcrossAllTurnAdmissionRoutes|TestTwoPlayersFinishBeforeAdvancingWithIndependentState)$' \
+  -count=1 -v
+
+GOWORK=off \
+XENON2_RUNTIME_TEST_DIR="$PWD/assets/runtime" \
+go test ./internal/app \
+  -run '^TestAlternatingCollisionDeathsKeepSharedBackdropThroughReady$' \
+  -count=1 -v
+```
+
 With the prepared runtime resources and private references, run:
 
 ```sh
