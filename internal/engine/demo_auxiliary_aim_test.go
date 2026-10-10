@@ -50,3 +50,36 @@ func TestAuxiliaryAimRejectsImmuneAndClippedShots(t *testing.T) {
 		t.Fatal("immune formation justified auxiliary fire")
 	}
 }
+
+func TestFirstLevelRearOpportunitySurvivesForwardBurstRest(t *testing.T) {
+	w := testWorld(t)
+	w.Player.X, w.Player.Y = 160, 100
+	w.Equipment.ApplyItem(ItemRearShot)
+	w.Actors = []*WorldActor{presentationTestEnemy(1, 160, 160)}
+	p := PresentationPilot{restUntil: 100}
+	before := forecastDigest(w)
+	if presentationShotOpportunity(w) || !p.selectiveFireForMotion(w, MotionInput{}) {
+		t.Fatal("a real rear target was suppressed by the empty forward ray or burst rest")
+	}
+	if forecastDigest(w) != before {
+		t.Fatal("auxiliary firing decision changed the live world")
+	}
+	w.Actors[0].Active = false
+	if p.selectiveFireForMotion(w, MotionInput{}) {
+		t.Fatal("retired rear target caused empty fire")
+	}
+}
+
+func TestRearEngagementGoalKeepsRoomForItsMuzzle(t *testing.T) {
+	w := testWorld(t)
+	w.Player.X, w.Player.Y = 160, 100
+	w.Actors = []*WorldActor{presentationTestEnemy(1, 160, 160)}
+	if goal := presentationChooseGoal(w); goal.actor != nil {
+		t.Fatal("forward-only loadout selected a rear engagement")
+	}
+	w.Equipment.ApplyItem(ItemRearShot)
+	goal := presentationChooseGoal(w)
+	if goal.actor != w.Actors[0] || !goal.rear || goal.y > 150 || !goal.valid(w) {
+		t.Fatalf("trailing formation was excluded from rear engagement: %+v", goal)
+	}
+}

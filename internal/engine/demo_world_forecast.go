@@ -45,6 +45,12 @@ func (p *PresentationPilot) forecastCombatGuard(w *World, planned Input) (answer
 	}
 	var sequence [6]MotionInput
 	useSequence := false
+	horizon := 6
+	if w.Level.Number <= 2 {
+		// An opportunistic attack or collection turn must leave time to
+		// escape the formation that follows it, not only its nearest bullet.
+		horizon = 12
+	}
 	if corridor || final || fourthOpening {
 		sequence, useSequence = p.planner.nativeMotion.guardSequence(w, planned.Motion)
 	}
@@ -53,7 +59,7 @@ func (p *PresentationPilot) forecastCombatGuard(w *World, planned Input) (answer
 		return planned
 	}
 	unsafe := false
-	for pass := 0; pass < 6; pass++ {
+	for pass := 0; pass < horizon; pass++ {
 		for range pal {
 			forecast.AdvancePALTick()
 		}
@@ -74,7 +80,7 @@ func (p *PresentationPilot) forecastCombatGuard(w *World, planned Input) (answer
 		if fourthOpening && pass == 5 && fourthOpeningTerminalContactUnsafe(forecast.State()) {
 			break
 		}
-		if r.Boundary != ForecastRunning || pass == 5 {
+		if r.Boundary != ForecastRunning || pass == horizon-1 {
 			if unsafe {
 				break
 			}
@@ -98,7 +104,7 @@ func (p *PresentationPilot) forecastCombatGuard(w *World, planned Input) (answer
 		input.Motion = motion
 		var r ForecastResult
 		safe := true
-		for pass := 0; pass < 6; pass++ {
+		for pass := 0; pass < horizon; pass++ {
 			for range pal {
 				forecast.AdvancePALTick()
 			}

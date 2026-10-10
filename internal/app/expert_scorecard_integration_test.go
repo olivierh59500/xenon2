@@ -20,6 +20,45 @@ func TestExpertThreeLevelScorecardOptional(t *testing.T) {
 			t.Fatal(err)
 		}
 		var losses, cash, defeats [4]int
+		var seenRewards, collectedRewards, missedRewards [4][2]int
+		type rewardObservation struct {
+			item        *engine.WorldCollectible
+			level, kind int
+			counted     bool
+		}
+		var rewards []rewardObservation
+		knownRewards := make(map[*engine.WorldCollectible]bool)
+		observeRewards := func(w *engine.World) {
+			if w == nil || w.Level.Number < 1 || w.Level.Number > 3 {
+				return
+			}
+			for _, item := range w.Collectibles {
+				if !item.Active || knownRewards[item] {
+					continue
+				}
+				knownRewards[item] = true
+				kind := 0 // Cash and equipment bubbles are reported separately.
+				if item.Cash == 0 {
+					kind = 1
+				}
+				rewards = append(rewards, rewardObservation{item: item, level: w.Level.Number, kind: kind})
+				seenRewards[w.Level.Number][kind]++
+			}
+			for i := range rewards {
+				r := &rewards[i]
+				if r.counted || r.item.Active {
+					continue
+				}
+				r.counted = true
+				// Original cash/pickup animations loop or hold. A known live
+				// bubble retires through collection, Y=200 expiry or eviction.
+				if r.item.Binding.EntityID != 0 && r.item.Motion.Y < 200 {
+					collectedRewards[r.level][r.kind]++
+				} else {
+					missedRewards[r.level][r.kind]++
+				}
+			}
+		}
 		continues := 0
 		finished := false
 		for update := 0; update < 60*2400; update++ {
@@ -32,6 +71,7 @@ func TestExpertThreeLevelScorecardOptional(t *testing.T) {
 			var health [engine.ActorPoolCapacity]int
 			count := 0
 			if before != nil {
+				observeRewards(before)
 				oldMoney, oldScore, oldCredits, oldFrame, alive = before.Money, before.Score, before.ContinueCredits, before.Frame, before.PlayerAlive
 				for _, actor := range before.Actors {
 					if actor.Active && actor.ActorList == "moving" && int16(uint16(actor.Health)) > 0 && count < len(actors) {
@@ -47,6 +87,7 @@ func TestExpertThreeLevelScorecardOptional(t *testing.T) {
 				continue
 			}
 			w := d.world
+			observeRewards(w)
 			level := w.Level.Number
 			if level < 1 || level > 3 || w.Cheats.Enabled() || d.diagnostic {
 				t.Fatal("scorecard left ordinary three-level gameplay")
@@ -73,6 +114,8 @@ func TestExpertThreeLevelScorecardOptional(t *testing.T) {
 				}
 				for level := 1; level <= 3; level++ {
 					t.Logf("EXPERT_SCORECARD explicit%v level%d shipsLost%d scoringDefeats%d collectedCash%d", explicit, level, losses[level], defeats[level], cash[level])
+					t.Logf("EXPERT_OBSERVED_BUBBLES explicit%v level%d cashSeen%d cashCollected%d cashMissed%d equipmentSeen%d equipmentCollected%d equipmentMissed%d", explicit, level,
+						seenRewards[level][0], collectedRewards[level][0], missedRewards[level][0], seenRewards[level][1], collectedRewards[level][1], missedRewards[level][1])
 				}
 				if continues != 0 || losses[3] != 0 || losses[1]+losses[2]+losses[3] > 1 {
 					t.Fatal("expert tour exceeded one ordinary ship loss or spent a continue")

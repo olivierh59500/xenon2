@@ -39,6 +39,7 @@ type presentationGoal struct {
 	actor   *WorldActor
 	bonus   *WorldCollectible
 	arrival int
+	rear    bool
 }
 
 func (p *PresentationPilot) NormalInput(w *World) Input {
@@ -129,6 +130,11 @@ func (p *PresentationPilot) NormalInput(w *World) Input {
 	}
 	input = p.forecastThirdMiddleInput(w, input)
 	input = p.forecastThirdFinalInput(w, input)
+	if w.Level.Number <= 3 && !w.blockedFireUntilRelease && w.Dive.Phase == 0 && presentationAuxiliaryShotOpportunity(w, input.Motion) {
+		// The final dodge or boss policy may expose a rear/side target even
+		// when the previously evaluated forward firing window was empty.
+		input.Fire = true
+	}
 	return input
 }
 
@@ -147,11 +153,14 @@ func (g presentationGoal) valid(w *World) bool {
 		return w.ScrollY > g.arrival && w.ScrollY-g.arrival <= 48 && presentationClearPoint(w, g.x, g.y)
 	}
 	if g.bonus != nil {
-		return g.bonus.Active && g.bonus.Y >= 12 && g.bonus.Y <= 172 && g.bonus.Y >= float64(w.Player.Y-65)
+		return g.bonus.Active && g.bonus.Y >= 12 && g.bonus.Y <= 184 && (w.Level.Number <= 3 || g.bonus.Y <= 172 && g.bonus.Y >= float64(w.Player.Y-65))
 	}
 	if g.actor != nil {
-		_, ok := presentationTargetBounds(w, g.actor)
-		return ok && g.actor.Collision.Top < w.Player.Y-12
+		bounds, ok := presentationTargetBounds(w, g.actor)
+		if g.rear {
+			return ok && w.Equipment.Rear.Item == ItemRearShot && bounds.Top >= w.Player.Y+12 && bounds.Top < 192
+		}
+		return ok && bounds.Top < w.Player.Y-12
 	}
 	return false
 }
@@ -160,10 +169,17 @@ func presentationChooseGoal(w *World) presentationGoal {
 	goal, best := presentationGoal{}, math.Inf(1)
 	for _, actor := range w.Actors {
 		bounds, ok := presentationTargetBounds(w, actor)
-		if !ok || bounds.Bottom < 0 || bounds.Top >= w.Player.Y-12 || bounds.Top > 156 {
+		if !ok || bounds.Bottom < 0 || bounds.Top >= 192 {
+			continue
+		}
+		rear := bounds.Top >= w.Player.Y-12
+		if rear && (w.Level.Number > 3 || w.Equipment.Rear.Item != ItemRearShot) || !rear && bounds.Top > 156 {
 			continue
 		}
 		flight := max(1, min(12, (w.Player.Y-(bounds.Top+bounds.Bottom)/2-6)/9))
+		if rear {
+			flight = max(1, min(12, (bounds.Top-w.Player.Y-18)/9))
+		}
 		if predicted, supported := demoActorPrediction(w, actor, flight, w.ScrollY-flight*w.BaseScrollStep); supported && predicted.Active && predicted.Visible && !predicted.Bounds.Empty() {
 			bounds = predicted.Bounds
 		} else {
@@ -173,6 +189,10 @@ func presentationChooseGoal(w *World) presentationGoal {
 		}
 		x := (bounds.Left + bounds.Right) / 2
 		y := max(88, min(152, bounds.Bottom+72))
+		if rear {
+			// Leave room for the rear muzzle and its first unclipped step.
+			y = max(32, min(150, bounds.Top-36))
+		}
 		x = max(24, min(296, x))
 		if !presentationClearPoint(w, x, y) {
 			y = w.Player.Y
@@ -184,12 +204,17 @@ func presentationChooseGoal(w *World) presentationGoal {
 		if actor.part != nil && actor.part.DamageMode == "drop-equipment" {
 			score -= 25
 		}
+		if w.Level.Number <= 3 && (actor.fixedTileState != nil || actor.thirdCannon != nil) {
+			// Clearing a stationary emitter removes its later volleys as well
+			// as earning the ordinary destruction reward.
+			score -= 35
+		}
 		if score < best {
-			goal, best = presentationGoal{x: x, y: y, actor: actor}, score
+			goal, best = presentationGoal{x: x, y: y, actor: actor, rear: rear}, score
 		}
 	}
 	for _, bonus := range w.Collectibles {
-		if !bonus.Active || bonus.Y < 16 || bonus.Y > 164 || bonus.Y < float64(w.Player.Y-65) {
+		if !bonus.Active || bonus.Y < 12 || bonus.Y > 184 || w.Level.Number > 3 && (bonus.Y < 16 || bonus.Y > 164 || bonus.Y < float64(w.Player.Y-65)) {
 			continue
 		}
 		x, y := presentationBonusIntercept(w, bonus)
@@ -399,6 +424,11 @@ func presentationTargetBounds(w *World, actor *WorldActor) (CollisionRect, bool)
 	if actor != nil && actor.Active && actor.thirdCannon != nil {
 		return actor.Collision, actor.Health > 0 && !actor.Collision.Empty()
 	}
+	if w.Level.Number <= 3 && actor != nil && actor.Active && actor.fixedTileState != nil && actor.fixedTileArt != nil {
+		// These damageable cannons animate the terrain directly. Their missing
+		// standalone sprite does not make their moving-list collider immune.
+		return actor.Collision, actor.Health > 0 && !actor.Collision.Empty()
+	}
 	if actor != nil && actor.Active && actor.secondNode != nil {
 		return actor.Collision, w.secondScheduler != nil && w.secondScheduler.DefenseFlags != 3 && actor.Health > 0 && !actor.Collision.Empty()
 	}
@@ -422,7 +452,9 @@ func presentationTargetBounds(w *World, actor *WorldActor) (CollisionRect, bool)
 		return CollisionRect{}, false
 	}
 	if actor.part != nil && actor.part.Linked && actor.leader != nil {
-		return CollisionRect{}, false
+		if w.Level.Number > 3 || actor.part.DamageMode != "group" || !actor.leader.Active || int16(uint16(actor.leader.Health)) <= 0 {
+			return CollisionRect{}, false
+		}
 	}
 	return actor.Collision, true
 }
@@ -432,6 +464,9 @@ func (p *PresentationPilot) selectiveFire(w *World) bool {
 }
 
 func (p *PresentationPilot) selectiveFireForMotion(w *World, motion MotionInput) bool {
+	if w.Level.Number <= 3 && presentationAuxiliaryShotOpportunity(w, motion) {
+		return true
+	}
 	if w.Level.Number == 2 || w.Level.Number == 3 && w.ThirdMiddle != nil && w.ThirdMiddle.Defeated {
 		// These weapons do not spend ammunition. Keep a useful firing window
 		// open, including rear and side intersections, until the target leaves.

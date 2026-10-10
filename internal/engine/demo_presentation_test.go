@@ -169,7 +169,7 @@ func TestPresentationPilotOriginalOpeningTrajectoryOptional(t *testing.T) {
 		}
 		input := p.NormalInput(w)
 		leftJunction = leftJunction || w.ScrollY >= 3160 && w.ScrollY <= 3344 && w.Player.X < 140
-		opportunity := presentationShotOpportunityForMotion(w, input.Motion)
+		opportunity := presentationShotOpportunityForMotion(w, input.Motion) || presentationAuxiliaryShotOpportunity(w, input.Motion)
 		if !w.Ready {
 			if input.Fire {
 				fired++

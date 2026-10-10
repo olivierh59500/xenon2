@@ -160,6 +160,12 @@ func (worker *expertEncounterWorker) evaluate(w *World, goal expertEncounterGoal
 	navigation := worker.policy.navigation
 	if navigation != nil {
 		navigation.path = navigation.path[:0]
+		// A reused forecast has the same address but a different planning
+		// history. Keep occupancy buffers, not a previous candidate's route.
+		navigation.goal, navigation.frame = 0, 0
+		navigation.retreat = false
+		navigation.targetX, navigation.pathTargetX, navigation.pointTargetX = 0, 0, 0
+		clear(navigation.pointClosed)
 	}
 	worker.policy = DemoPilot{practicedRoute: true, navigation: navigation, palRefreshes: pal}
 	worker.policy.Config.DisableBonuses = true
