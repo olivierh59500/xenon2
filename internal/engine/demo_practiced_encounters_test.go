@@ -38,6 +38,81 @@ func TestPostMiddleEncounterPracticeKeepsCannonRouteBetweenFormations(t *testing
 	}
 }
 
+func TestPostMiddlePracticeRehearsesNearbyCannonFiringLanes(t *testing.T) {
+	w := testWorld(t)
+	w.Level.Number, w.ScrollY = 3, 1000
+	w.Player.X, w.Player.Y = 160, 150
+	w.ThirdMiddle = &ThirdGuardianState{Defeated: true}
+	w.Coverage, w.Level.PlayerStencil = &TerrainCoverage{}, &visualassets.PlayerTerrainStencil{}
+	a := &WorldActor{Active: true, Health: 24, thirdCannon: &ThirdCannonState{},
+		Collision: CollisionRect{Left: 144, Right: 175, Top: 60, Bottom: 87}}
+	w.Actors = []*WorldActor{a}
+	if !practicedEncounterWindow(w) {
+		t.Fatal("nearby cannon did not receive full callback anticipation")
+	}
+	var pilot expertEncounterPilot
+	count := pilot.prepareGoals(w)
+	for _, x := range []int{145, 159, 174} {
+		for _, y := range []int{144, 172} {
+			found := false
+			for _, goal := range pilot.goals[:count] {
+				found = found || goal.x == x && goal.y == y && !goal.route
+			}
+			if !found {
+				t.Fatalf("weak-point firing lane %d,%d was displaced by generic goals", x, y)
+			}
+		}
+	}
+	w.Player.X = 260
+	if practicedEncounterWindow(w) {
+		t.Fatal("distant cannon displaced the route to its firing lane")
+	}
+	w.Player.X, w.Player.Y = 160, 50
+	if practicedEncounterWindow(w) {
+		t.Fatal("passed cannon below the ship kept forward engagement control")
+	}
+	w.Player.Y = 176
+	if practicedEncounterWindow(w) {
+		t.Fatal("cannon firing goals replaced a rearward terrain leg")
+	}
+	w.Player.Y, w.Player.ScrollReverseRequested = 150, true
+	if practicedEncounterWindow(w) {
+		t.Fatal("cannon firing goals interrupted reverse scrolling")
+	}
+	w.Player.ScrollReverseRequested = false
+	w.Player.Y, a.Active = 150, false
+	if practicedEncounterWindow(w) {
+		t.Fatal("destroyed cannon kept its encounter window")
+	}
+}
+
+func TestEncounterGoalsReserveReachableBubblesInCrowdedCannonRow(t *testing.T) {
+	w := testWorld(t)
+	w.Player.X, w.Player.Y, w.Equipment.SpeedTier = 160, 150, 2
+	for i := range 4 {
+		w.Actors = append(w.Actors, &WorldActor{Active: true, Health: 24, thirdCannon: &ThirdCannonState{},
+			Collision: CollisionRect{Left: 32 + i*64, Right: 63 + i*64, Top: 60, Bottom: 87}})
+	}
+	for i := range 4 {
+		w.Collectibles = append(w.Collectibles, &WorldCollectible{ID: i + 1, Active: true, Cash: 100,
+			X: float64(140 + i*10), Y: 130, Motion: CashMotion{X: 140 + i*10, Y: 130, Mode: 7}})
+	}
+	var pilot expertEncounterPilot
+	count := pilot.prepareGoals(w)
+	for _, item := range w.Collectibles {
+		found := false
+		for _, goal := range pilot.goals[:count] {
+			found = found || goal.cash == item.ID
+		}
+		if !found {
+			t.Fatalf("reachable bubble %d was displaced by the crowded cannon row", item.ID)
+		}
+		if !item.Active || item.Motion.X != int(item.X) || item.Motion.Y != int(item.Y) {
+			t.Fatal("planning collected or moved the live reward")
+		}
+	}
+}
+
 func TestEncounterPracticeMatchesSerialCallbacksAndKeepsLiveWorldOptional(t *testing.T) {
 	w, err := NewWorld(playableOriginalWorldData(t, 3))
 	if err != nil {

@@ -47,14 +47,16 @@ type expertEncounterGoal struct {
 
 type expertEncounterScore struct {
 	alive            bool
+	shield           int
 	damage, contacts int
 	value            int
 }
 
 func (a expertEncounterScore) better(b expertEncounterScore) bool {
 	return a.alive && !b.alive || a.alive == b.alive &&
-		(a.damage < b.damage || a.damage == b.damage &&
-			(a.contacts < b.contacts || a.contacts == b.contacts && a.value > b.value))
+		(a.shield > b.shield || a.shield == b.shield &&
+			(a.damage < b.damage || a.damage == b.damage &&
+				(a.contacts < b.contacts || a.contacts == b.contacts && a.value > b.value)))
 }
 
 func practicedEncounterWindow(w *World) bool {
@@ -67,6 +69,13 @@ func practicedEncounterWindow(w *World) bool {
 		// changes, while keeping the existing cannon route between encounters.
 		for _, actor := range w.Actors {
 			if actor.Active && actor.part != nil && actor.part.MotionMode == "path-entry-edge-frames" && actor.X >= -48 && actor.X <= 368 && actor.Y >= -48 && actor.Y <= 240 {
+				section = true
+				break
+			}
+			// Screen-space firing goals cannot replace the route's rearward
+			// terrain leg. Let that leg reach the next firing lane first.
+			if w.Player.Y < 168 && !w.Player.ScrollReverseRequested && actor.Active && actor.thirdCannon != nil && !actor.Collision.Empty() && actor.Collision.Top >= 0 && actor.Collision.Bottom < w.Player.Y &&
+				absDemo(w.Player.X-(actor.Collision.Left+actor.Collision.Right)/2) <= 64 && w.Player.Y-actor.Collision.Bottom <= 120 {
 				section = true
 				break
 			}
@@ -170,8 +179,17 @@ func (worker *expertEncounterWorker) evaluate(w *World, goal expertEncounterGoal
 	worker.policy = DemoPilot{practicedRoute: true, navigation: navigation, palRefreshes: pal}
 	worker.policy.Config.DisableBonuses = true
 	result.score.alive = true
+	collectedEquipment := 0
 	for pass := 0; pass < expertEncounterHorizon; pass++ {
 		q := worker.forecast.State()
+		var rewards [ActorPoolCapacity]*WorldCollectible
+		rewardCount := 0
+		for _, item := range q.Collectibles {
+			if item.Active && item.Cash == 0 && rewardCount < len(rewards) {
+				rewards[rewardCount] = item
+				rewardCount++
+			}
+		}
 		x, y := goal.position(q)
 		input := Input{Motion: expertEncounterMotion(q, x, y)}
 		if goal.route {
@@ -190,6 +208,11 @@ func (worker *expertEncounterWorker) evaluate(w *World, goal expertEncounterGoal
 			return result
 		}
 		result.score.damage += max(0, shield-r.Shield)
+		for _, item := range rewards[:rewardCount] {
+			if !item.Active && item.Binding.EntityID != 0 && item.Motion.Y < 200 {
+				collectedEquipment++
+			}
+		}
 		q = worker.forecast.State()
 		if q.Rewind.Timer != 0 {
 			result.score.contacts++
@@ -206,7 +229,11 @@ func (worker *expertEncounterWorker) evaluate(w *World, goal expertEncounterGoal
 	}
 	q := worker.forecast.State()
 	x, y := goal.position(q)
-	result.score.value = (q.Score-w.Score)*4 + (q.Money-w.Money)*20 + (w.ScrollY-q.ScrollY)*20 - absDemo(q.Player.X-x) - absDemo(q.Player.Y-y)
+	// A real health pickup can make a slightly exposed route safer overall.
+	// Rank the remaining shield before accumulated damage, then reward actual
+	// collections and destruction without assigning any equipment directly.
+	result.score.shield = q.Equipment.Shield
+	result.score.value = (q.Score-w.Score)*4 + (q.Money-w.Money)*20 + collectedEquipment*3000 + (w.ScrollY-q.ScrollY)*20 - absDemo(q.Player.X-x) - absDemo(q.Player.Y-y)
 	result.ok = true
 	return result
 }
@@ -244,6 +271,53 @@ func (e *expertEncounterPilot) prepareGoals(w *World) int {
 	}
 	add(expertEncounterGoal{x: w.Player.X, y: 120})
 	add(expertEncounterGoal{route: true})
+	// Reserve four opportunities for reachable bubbles before the fixed bank
+	// fills with generic flight positions and cannon firing lanes.
+	var rewards [4]expertEncounterGoal
+	var distances [4]int
+	rewardCount := 0
+	for _, item := range w.Collectibles {
+		if !item.Active || item.Y < 12 || item.Y > 184 {
+			continue
+		}
+		x, y := presentationBonusIntercept(w, item)
+		if !presentationReachableBonus(w, x, y) {
+			continue
+		}
+		distance := absDemo(x-w.Player.X) + absDemo(y-w.Player.Y)*2
+		index := rewardCount
+		for index > 0 && distance < distances[index-1] {
+			index--
+		}
+		if index == len(rewards) {
+			continue
+		}
+		if rewardCount < len(rewards) {
+			rewardCount++
+		}
+		copy(rewards[index+1:rewardCount], rewards[index:rewardCount-1])
+		copy(distances[index+1:rewardCount], distances[index:rewardCount-1])
+		rewards[index] = expertEncounterGoal{x: x, y: y, cash: item.ID}
+		distances[index] = distance
+	}
+	for _, goal := range rewards[:rewardCount] {
+		add(goal)
+	}
+	// A nearby emitter is a future source of volleys. Include both edges of
+	// its actual weak point before generic placement goals fill the bank.
+	for _, actor := range w.Actors {
+		if actor.thirdCannon == nil && actor.fixedTileState == nil {
+			continue
+		}
+		bounds, ok := presentationTargetBounds(w, actor)
+		if !ok || bounds.Top < 0 || bounds.Bottom >= w.Player.Y {
+			continue
+		}
+		for _, x := range []int{bounds.Left + 1, (bounds.Left + bounds.Right) / 2, bounds.Right - 1} {
+			add(expertEncounterGoal{x: x, y: 144})
+			add(expertEncounterGoal{x: x, y: 172})
+		}
+	}
 	for _, y := range []int{172, 120, 56} {
 		for _, x := range []int{48, 104, 160, 216, 272} {
 			add(expertEncounterGoal{x: x, y: y})
