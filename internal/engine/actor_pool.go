@@ -55,7 +55,8 @@ type ActorPoolSlot struct {
 	EntityID                 int
 	AllocationPhase          uint8
 	ResourceTag              int16
-	Linked                   bool
+	Linked                   bool // Any nonzero group flag participates in counting.
+	SkipDeathEffect          bool // Only the sign bit suppresses a body explosion.
 	AuxiliaryFlags           [2]bool
 	Residue                  ActorResidue
 	list                     ActorPoolList
@@ -166,7 +167,7 @@ func (p *ActorPool) Allocate() (ActorAllocation, error) {
 	if stolen {
 		p.unlink(index)
 	}
-	node.allocated, node.Linked = true, false
+	node.allocated, node.Linked, node.SkipDeathEffect = true, false, false
 	node.AuxiliaryFlags = [2]bool{}
 	node.previous, node.next, node.freeNext = NoActorSlot, NoActorSlot, NoActorSlot
 	return result, nil
@@ -269,7 +270,7 @@ func (p *ActorPool) MarkDead(index int) error {
 	if n == nil || !n.allocated {
 		return fmt.Errorf("actor slot is not allocated")
 	}
-	n.ResourceTag, n.Linked, n.AuxiliaryFlags[0] = 4, false, false
+	n.ResourceTag, n.Linked, n.SkipDeathEffect, n.AuxiliaryFlags[0] = 4, false, false, false
 	return nil
 }
 

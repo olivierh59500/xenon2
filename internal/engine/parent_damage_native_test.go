@@ -4,7 +4,7 @@ import "testing"
 
 // Tail entries are explicit inert capacity holders. The hit target always comes
 // from the real wave constructor and retains its production damage callback.
-func newParentDamageReferenceWorld(t *testing.T, data LevelData, record, profile, amount int) (*World, int, int) {
+func newWaveDamagePartReferenceWorld(t *testing.T, data LevelData, record, profile, amount, bodyOrder int) (*World, int, int) {
 	t.Helper()
 	w, err := NewWorld(data)
 	if err != nil {
@@ -20,9 +20,12 @@ func newParentDamageReferenceWorld(t *testing.T, data LevelData, record, profile
 	}
 	var target *WorldActor
 	for slot := w.Pool.First(ActorPoolMoving); slot != NoActorSlot; slot = w.Pool.Next(slot) {
-		if slot >= first {
-			target = w.poolActors[slot]
-			break
+		if slot >= first && (bodyOrder < 0 || w.poolActors[slot].part.DamageMode == "group") {
+			if bodyOrder <= 0 {
+				target = w.poolActors[slot]
+				break
+			}
+			bodyOrder--
 		}
 	}
 	if target == nil {
@@ -48,22 +51,35 @@ func newParentDamageReferenceWorld(t *testing.T, data LevelData, record, profile
 }
 
 func TestActualWaveParentDamageUnderPressureNativeTraceOptional(t *testing.T) {
+	compareWaveDamageNativeTrace(t, "parent-death.csv", false, 3600, 550746, [5]int{672, 522, 894, 618, 894})
+}
+
+func TestEveryCompoundWavePartDamageUnderPressureNativeTraceOptional(t *testing.T) {
+	compareWaveDamageNativeTrace(t, "compound-part-damage.csv", true, 2502, 383682, [5]int{240, 0, 1386, 876, 0})
+}
+
+func compareWaveDamageNativeTrace(t *testing.T, name string, compound bool, wantCases, wantRows int, wantLevels [5]int) {
+	t.Helper()
 	data, _, _ := nativeWaveReferenceData(t)
 	var w *World
 	first, target := 0, 0
-	previous := [4]int{-1, -1, -1, -1}
+	previous := [5]int{-1, -1, -1, -1, -1}
 	nextSlot := ActorPoolCapacity
-	seen := make(map[[4]int]bool)
+	seen := make(map[[5]int]bool)
 	var levels [5]int
 	cases, rows := 0, 0
-	nativeCombatRows(t, "parent-death.csv", func(v []int64) {
-		key := [4]int{int(v[0]), int(v[1]), int(v[2]), int(v[3])}
+	nativeCombatRows(t, name, func(v []int64) {
+		order := -1
+		if compound {
+			order = int(v[58])
+		}
+		key := [5]int{int(v[0]), int(v[1]), int(v[2]), int(v[3]), order}
 		if key != previous {
-			if nextSlot != ActorPoolCapacity || key[0] < 1 || key[0] > 5 || key[1] < 0 || key[1] >= len(data[key[0]-1].Encounters.Moving) || key[2] < 0 || key[2] > 2 || key[3] != 1 && key[3] != 127 || seen[key] {
+			if nextSlot != ActorPoolCapacity || key[0] < 1 || key[0] > 5 || key[1] < 0 || key[1] >= len(data[key[0]-1].Encounters.Moving) || key[2] < 0 || key[2] > 2 || key[3] != 1 && key[3] != 127 || compound && order < 0 || seen[key] {
 				t.Fatalf("invalid, duplicated or incomplete original damage case %v after %v", key, previous)
 			}
 			seen[key] = true
-			w, first, target = newParentDamageReferenceWorld(t, data[key[0]-1], key[1], key[2], key[3])
+			w, first, target = newWaveDamagePartReferenceWorld(t, data[key[0]-1], key[1], key[2], key[3], key[4])
 			if target != int(v[4]) || first != int(v[6]) || w.Pool.FreeFirst() != int(v[7]) {
 				t.Fatalf("damage %v: target/first/free %d/%d/%d, original %d/%d/%d", key, target, first, w.Pool.FreeFirst(), v[4], v[6], v[7])
 			}
@@ -85,7 +101,7 @@ func TestActualWaveParentDamageUnderPressureNativeTraceOptional(t *testing.T) {
 		}
 		nextSlot++
 		slot := w.Pool.Slot(index)
-		if slot.ResourceTag != int16(v[11]) || int(slot.list) != int(v[8]) || slot.Linked != (v[12] != 0) || slot.AuxiliaryFlags != ([2]bool{v[13] != 0, v[14] != 0}) || slot.list != ActorPoolNone && (slot.previous != int(v[9]) || slot.next != int(v[10])) || slot.list == ActorPoolNone && slot.freeNext != int(v[9]) {
+		if slot.ResourceTag != int16(v[11]) || int(slot.list) != int(v[8]) || slot.Linked != (v[12] != 0) || slot.SkipDeathEffect != (v[12]&128 != 0) || slot.AuxiliaryFlags != ([2]bool{v[13] != 0, v[14] != 0}) || slot.list != ActorPoolNone && (slot.previous != int(v[9]) || slot.next != int(v[10])) || slot.list == ActorPoolNone && slot.freeNext != int(v[9]) {
 			t.Fatalf("damage %v slot%d: physical type/list/flags %+v, original%v", key, index, slot, v[8:15])
 		}
 		r := slot.Residue
@@ -98,7 +114,7 @@ func TestActualWaveParentDamageUnderPressureNativeTraceOptional(t *testing.T) {
 		}
 		rows++
 	})
-	if cases != 3600 || rows != 550746 || nextSlot != ActorPoolCapacity || levels != [5]int{672, 522, 894, 618, 894} {
+	if cases != wantCases || rows != wantRows || nextSlot != ActorPoolCapacity || levels != wantLevels {
 		t.Fatalf("incomplete actual-wave damage coverage: cases%d rows%d levels%v", cases, rows, levels)
 	}
 	t.Logf("Compared %d actual-wave damage/capacity cases and %d physical-slot states", cases, rows)

@@ -899,13 +899,13 @@ merchants, guardians, rewards and final menu. The current results are:
 | --- | ---: | ---: | ---: | ---: |
 | Menu inactivity | 1 | 0 | 221 | 4,250 |
 | Menu inactivity | 2 | 0 | 285 | 3,700 |
-| Menu inactivity | 3 | 0 | 230 | 5,650 |
+| Menu inactivity | 3 | 0 | 217 | 5,950 |
 | Explicit demonstration | 1 | 0 | 219 | 3,650 |
 | Explicit demonstration | 2 | 0 | 301 | 4,450 |
-| Explicit demonstration | 3 | 0 | 230 | 5,700 |
+| Explicit demonstration | 3 | 0 | 224 | 5,700 |
 
 Both tours retain three ships and their two continue credits. The explicit tour
-finishes with score 164,850; the idle-start tour finishes with score 162,970.
+finishes with score 164,350; the idle-start tour finishes with score 159,970.
 These results include the corrected original inward-facing plant constructors
 and animations, and the third level's corrected right-entry images and collisions.
 Their shots and collision outcomes affect the shared RNG, enemy damage and

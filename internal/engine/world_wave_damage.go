@@ -110,9 +110,7 @@ func (w *World) damageWaveActor(actor *WorldActor, amount uint16) {
 		target = actor.leader
 	}
 	index := w.waveDamageSlot(target)
-	// Scripted extending chains use their controller's member array, not the
-	// common formation's physical following links.
-	physicalGroup := group && target.thirdChain == nil && index != NoActorSlot && w.Pool.Slot(index).Residue.OwnerSlot == index
+	physicalGroup := group && index != NoActorSlot && w.Pool.Slot(index).Residue.OwnerSlot == index
 	result := ApplyEnemyDamage(uint16(target.Health), amount)
 	target.Health, target.Flash = int(result.Health), true
 	if index != NoActorSlot {
@@ -135,7 +133,7 @@ func (w *World) damageWaveActor(actor *WorldActor, amount uint16) {
 	}
 	if physicalGroup {
 		for member, count := w.Pool.Slot(index).Residue.FollowingSlot, 0; member != NoActorSlot && count < ActorPoolCapacity; count++ {
-			if !w.Pool.Slot(member).Linked {
+			if !w.Pool.Slot(member).SkipDeathEffect {
 				w.spawnWaveDeathEffect(target, member, w.Pool.Slot(index).Residue.StrongHealth)
 			}
 			next := w.Pool.Slot(member).Residue.FollowingSlot
@@ -143,8 +141,8 @@ func (w *World) damageWaveActor(actor *WorldActor, amount uint16) {
 			member = next
 		}
 	} else if group {
-		// Scripted chains and diagnostic groups expose logical members rather
-		// than the common constructor's physical following chain.
+		// Diagnostic groups may expose only logical members, without the
+		// constructors' physical following links.
 		for _, member := range append([]*WorldActor(nil), w.Actors...) {
 			if member != target && member.leader == target {
 				if !member.part.Linked {

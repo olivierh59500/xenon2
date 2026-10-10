@@ -6,6 +6,66 @@ import (
 	"xenon2/internal/visualassets"
 )
 
+func TestThirdChainEveryPartDamageMatchesOriginalCallbackOptional(t *testing.T) {
+	data := originalWorldData(t, 3)
+	rows := 0
+	nativeCombatRows(t, "third-chain-damage.csv", func(v []int64) {
+		w, err := NewWorld(data)
+		if err != nil {
+			t.Fatal(err)
+		}
+		w.ScrollY, w.ScrollDelta, w.Player.Y = 2700, 0, 120
+		w.spawnThirdChain(visualassets.FixedEncounter{EnemyKind: 1, Variant: int(v[0]), X: 128, Y: 2850})
+		var head *WorldActor
+		for _, actor := range w.Actors {
+			if actor.thirdChainPart == 1 {
+				head = actor
+			}
+		}
+		if head == nil {
+			t.Fatal("original chain constructor did not create its head")
+		}
+		relative := func(slot int) int {
+			if slot == NoActorSlot {
+				return -1
+			}
+			return slot - head.Binding.Slot + 1
+		}
+		headSlot := w.Pool.Slot(head.Binding.Slot)
+		hitSlot := w.Pool.Slot(head.thirdChainMembers[v[1]].Binding.Slot)
+		if relative(headSlot.Residue.FollowingSlot) != int(v[9]) || relative(hitSlot.Residue.FollowingSlot) != int(v[11]) || headSlot.Linked != (v[10] != 0) || headSlot.SkipDeathEffect != (v[10]&128 != 0) || hitSlot.Linked != (v[12] != 0) || hitSlot.SkipDeathEffect != (v[12]&128 != 0) {
+			t.Fatalf("chain constructor lost original member links or signed flags: %v", v)
+		}
+		for w.Pool.FreeFirst() != NoActorSlot && v[13] != 0 {
+			if v[13] == 1 {
+				w.spawnEnemyShot(80, 48, EnemyShot{Speed: 4})
+			} else if _, err := w.reserveWorldActor(200, ActorPoolMoving, true); err != nil {
+				t.Fatal(err)
+			}
+		}
+		w.damageActor(head.thirdChainMembers[v[1]], uint16(v[2]))
+		live, effects := 0, 0
+		for _, actor := range head.thirdChainMembers {
+			if actor.Active {
+				live++
+			}
+		}
+		for slot := w.Pool.First(ActorPoolProjectile); slot != NoActorSlot; slot = w.Pool.Next(slot) {
+			actor := w.poolActors[slot]
+			if actor != nil && actor.ID == w.Pool.Slot(slot).EntityID && actor.ActorList == "transient" && actor.part != nil && actor.part.MotionMode == "finite-effect" {
+				effects++
+			}
+		}
+		if head.Health != int(v[4]) || w.Score != int(v[5]) || w.Pool.Slot(head.Binding.Slot).ResourceTag != int16(v[6]) || live != int(v[7]) || effects != int(v[8]) {
+			t.Fatalf("chain variant%d part%d damage%d: HP%d score%d tag%d live%d effects%d; original%v", v[0], v[1], v[2], head.Health, w.Score, w.Pool.Slot(head.Binding.Slot).ResourceTag, live, effects, v)
+		}
+		rows++
+	})
+	if rows != 96 {
+		t.Fatalf("incomplete original chain damage coverage: %d", rows)
+	}
+}
+
 func TestThirdChainDeathRetiresAllLinkedMembersBeforeCountingOptional(t *testing.T) {
 	for variant := range 2 {
 		w, err := NewWorld(originalWorldData(t, 3))

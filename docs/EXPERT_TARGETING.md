@@ -28,8 +28,8 @@ scope. Survival requirements in the complete journey tests remain unchanged.
 
 Both full frontend journey regressions now finish the three levels with three
 ships and two continue credits intact. The idle-start journey finishes at
-1,547.02 seconds with 162,970 points; explicit admission finishes at 1,487.27
-seconds with 164,850 points. The two independent scorecard observation runs also
+1,538.68 seconds with 159,970 points; explicit admission finishes at 1,453.58
+seconds with 164,350 points. The two independent scorecard observation runs also
 finish with no ship losses or spent continues. The complete original-resource
 engine and visual-asset suites pass, as do focused race checks covering private
 planning workers, prepared-state reuse, cannon windows and reward candidates.
@@ -64,25 +64,26 @@ counts complement the exact money totals rather than claiming every creation.
 | Published explicit start | 3 | 95 / 77 / 18 | 6 / 4 / 2 |
 | Updated idle start | 1 | 67 / 58 / 9 | 7 / 7 / 0 |
 | Updated idle start | 2 | 83 / 51 / 32 | 5 / 3 / 2 |
-| Updated idle start | 3 | 97 / 78 / 19 | 7 / 6 / 1 |
+| Updated idle start | 3 | 95 / 83 / 12 | 7 / 6 / 1 |
 | Updated explicit start | 1 | 57 / 49 / 8 | 7 / 5 / 2 |
 | Updated explicit start | 2 | 83 / 59 / 24 | 4 / 2 / 2 |
-| Updated explicit start | 3 | 96 / 80 / 16 | 7 / 6 / 1 |
+| Updated explicit start | 3 | 95 / 77 / 18 | 7 / 6 / 1 |
 
 Here, "published" identifies the preceding controller at `2c3a6a8`.
 
 | Controller / admission | Scoring removals | Collected cash | Ship losses |
 | --- | ---: | ---: | ---: |
 | Previous / idle | 706 | 13,650 | 1 |
-| Updated / idle | 736 | 13,600 | 0 |
+| Updated / idle | 723 | 13,900 | 0 |
 | Previous / explicit | 694 | 13,200 | 1 |
-| Updated / explicit | 750 | 13,800 | 0 |
+| Updated / explicit | 744 | 13,800 | 0 |
 
 The first level collects more observed rewards, while later levels still miss
 too many. In particular, second-level collection regresses even though both
 complete tours destroy more actors without ship losses. Cash improves on the
-explicit tour and is slightly lower on idle admission. Changed combat also
-changes which bubbles are created. These figures
+explicit and idle tours. Changed combat also changes which bubbles are created;
+the current simulation includes all eight original extending-chain explosions.
+These figures
 do not establish that every destructible or reward is reached.
 
 The fixed bank still contains at most 24 candidates over 72 simulation passes,

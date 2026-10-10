@@ -2097,10 +2097,9 @@ retired the parent early and could leave a replacement explosion or cash alive.
 The production callback now publishes nonlethal health immediately, preserves
 allocation order, reads the current slot after replacement, and retires that
 physical entry at the source boundary. Common compound waves visit their
-following chain in source order. The third-stage scripted extending chain keeps
-its separate member representation; treating it as a common formation would
-leave live linked bodies behind a dead head and violate the native group skipper's
-assumption. No change to the source counting rule is required.
+following chain in source order. A later constructor audit also restores these
+links for the third-stage extending chain, allowing its original common damage
+callback to retire every member. No change to the source counting rule is required.
 
 Resource-independent regressions exercise immediate health visibility, carrier
 allocation, self-reclaimed explosion/cash retirement and next-phase release.
@@ -2111,3 +2110,37 @@ These checks invoke one actual wave-head callback per fixture without actor,
 player or rendering phases. Arbitrary body hits, mixed later-stage scripted
 damage callbacks and a complete integrated five-stage comparison remain distinct
 from this bounded damage/allocator coverage.
+
+## Every compound-wave part and extending-chain effects
+
+The common compound descriptors occur in 90 actual wave records in levels one,
+three and four. All 417 constructed parts, including the followers and multiple
+independent groups within a wave, now receive original damage-callback comparisons.
+Two damage values and the three existing capacity profiles produce 2,502 cases
+and 383,682 physical-slot rows. Health forwarding, score, all reward buckets,
+sound, RNG, list links and retained words match. Levels two and five contain no
+common compound-wave descriptor; their scripted guardians have separate tests.
+
+The third-stage extending chain has an additional 96 comparisons: both variants,
+all eight hit members, both damage values, and available/full-shot/full-moving
+capacity. These compare constructor following links, signed group flags, forwarded
+head health, score, dead tags, surviving members and current explosion counts.
+The local analysis fixture uses 64 entries and Go uses its normal 159; both have
+the same available/full priority conditions. These summary checks do not compare
+absolute physical slot numbers or every retained word of the scripted chain.
+
+The original chain flag is positive one, while the common compound-wave flag is
+0xff. Both are nonzero for group counting, but only a negative flag suppresses
+the follower's explosion. Go now keeps counting and death-effect selection as
+separate semantic flags. Allocation and dead marking clear both flags normally.
+Its missing following links are also restored. Consequently the real common
+damage callback creates all eight original chain explosions and excludes the two
+collision markers; the earlier logical-member fallback produced marker effects
+and omitted the body effects.
+
+The original register-defined recordings reproduce the same results. A permanent
+resource-independent regression verifies that positive and negative group flags
+produce the same count but different explosion selection. The original-resource
+engine suite, focused race checks and both genuine three-level frontend journeys
+pass. These fixtures still isolate damage callbacks from player combat, moving
+updates and hardware drawing; complete five-stage fidelity remains unproven.

@@ -819,6 +819,7 @@ func (w *World) spawnWave(wave visualassets.Wave) error {
 			}
 			group = append(group, actor)
 			w.Pool.Slot(actor.Binding.Slot).Linked = part.Linked
+			w.Pool.Slot(actor.Binding.Slot).SkipDeathEffect = part.Linked
 			w.initializeWaveActorResidue(actor, leader)
 			if partIndex > 0 {
 				previous := group[len(group)-2]

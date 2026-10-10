@@ -120,7 +120,7 @@ func (w *World) spawnThirdChain(record visualassets.FixedEncounter) {
 	var group [8]*WorldActor
 	for index := range 8 {
 		part := state.Parts[index]
-		actor := &WorldActor{Active: true, ActorList: "moving", Atlas: "fixed", Health: art.Health, Score: 400, thirdChain: &state, thirdChainPart: index + 1, part: &visualassets.ActorPart{ResourceTag: tag, DamageMode: "group", Linked: index > 0}, Collision: CollisionRect{Right: -1, Bottom: -1}}
+		actor := &WorldActor{Active: true, ActorList: "moving", Atlas: "fixed", Health: art.Health, Score: 400, thirdChain: &state, thirdChainPart: index + 1, part: &visualassets.ActorPart{ResourceTag: tag, DamageMode: "group"}, Collision: CollisionRect{Right: -1, Bottom: -1}}
 		actor.X, actor.Y = float64(part.X), float64(part.Y)
 		actor.PreviousX, actor.PreviousY = actor.X, actor.Y
 		actor.Sprite = art.Bodies[variant]
@@ -167,6 +167,11 @@ func (w *World) spawnThirdChain(record visualassets.FixedEncounter) {
 		w.storeActorResidue(actor)
 		w.updateSecondActorCollision(actor)
 		group[index] = actor
+		if index > 0 {
+			previous := group[index-1]
+			previous.Binding.Residue.FollowingSlot = actor.Binding.Slot
+			w.storeWorldResidue(previous.Binding)
+		}
 	}
 	leader.thirdChainMembers = group
 	sentinel.leader = leader

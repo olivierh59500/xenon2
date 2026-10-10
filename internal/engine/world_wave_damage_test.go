@@ -91,3 +91,44 @@ func TestCarrierKeepsItsLiveTagUntilRewardAllocation(t *testing.T) {
 		t.Fatal("early carrier retirement changed reclamation, lost its gift or granted equipment")
 	}
 }
+
+func TestPositiveGroupFlagKeepsBodyExplosionWhileNegativeFlagSuppressesIt(t *testing.T) {
+	for _, skip := range []bool{false, true} {
+		w := testWorld(t)
+		w.Level.Rules = &visualassets.LevelRules{OrdinaryHealthMultiplier: 3}
+		w.commonAnimations["explosion-small"] = visualassets.NamedActorAnimation{Ending: "hold", Animation: visualassets.ActorAnimation{Frames: []visualassets.AnimationFrame{{Sprite: "fx"}}}}
+		clip := visualassets.ActorAnimation{Frames: []visualassets.AnimationFrame{{Sprite: "enemy"}}}
+		w.kinds[2] = &visualassets.WaveActor{Kind: 2, Parts: []visualassets.ActorPart{
+			{ResourceTag: 200, MotionMode: "path", DamageMode: "group", Animation: clip},
+			{ResourceTag: 204, MotionMode: "follow-leader", DamageMode: "group", Animation: clip},
+		}}
+		if err := w.spawnWave(visualassets.Wave{EnemyKind: 2, PathID: 1, Count: 1, MotionBudget: 3}); err != nil {
+			t.Fatal(err)
+		}
+		head, body := w.Actors[0], w.Actors[1]
+		// Both source flags are nonzero for counting; only the negative one
+		// changes the damage callback's explosion selection.
+		for _, actor := range []*WorldActor{head, body} {
+			w.Pool.Slot(actor.Binding.Slot).Linked = true
+		}
+		w.Pool.Slot(body.Binding.Slot).SkipDeathEffect = skip
+		w.countSourceMovingActors()
+		if w.MovingEnemyCount != 1 {
+			t.Fatal("signed death-effect selection changed group counting")
+		}
+		w.damageActor(body, 3)
+		effects := 0
+		for _, actor := range w.Actors {
+			if actor.ActorList == "transient" {
+				effects++
+			}
+		}
+		want := 2
+		if skip {
+			want = 1
+		}
+		if effects != want || head.Active || body.Active {
+			t.Fatalf("sign flag %v produced%d explosions, expected%d", skip, effects, want)
+		}
+	}
+}

@@ -52,7 +52,8 @@ the live world; the preceding route controller fails it.
 
 The fixtures validate constructors and isolated callbacks. A subsequent
 [parent-damage audit](NATIVE_AUDIT.md#damage-callbacks-while-allocations-replace-their-parent)
-adds 3,600 actual-wave head callbacks under capacity pressure. Arbitrary body hits,
-mixed scripted combat, hardware drawing, audible mixing and a complete five-stage
-playthrough remain separate evidence. The original resources and reference traces
-stay local.
+adds 3,600 actual-wave head callbacks under capacity pressure. Another 2,502 cases
+cover every common compound part, and 96 summaries verify scripted-chain damage
+and explosions. Mixed scripted combat, hardware drawing, audible mixing and a
+complete five-stage playthrough remain separate evidence. The original resources
+and reference traces stay local.
