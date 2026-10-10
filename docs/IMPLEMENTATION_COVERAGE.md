@@ -181,6 +181,16 @@ turning predictions also preserve collision-before-turn order. This resolves
 the public survival regression above, while the six stale fifth-stage replay
 tests and complete five-level validation remain outstanding.
 
+Fifth-stage scenery adds all 22 barrier/specialized-turret placements and every
+barrier part under three capacity profiles: 384 damage cases, full restoration
+maps and 59,136 sampled physical-slot states. Constructor selectors, immediate
+health publication, reclaimed-parent retirement and linear map-edge neighbours
+are corrected. Twenty original list-header corruptions deliberately retain valid
+Go list/cohort state; twenty member-retirement tags match the same unsaturated
+source callback instead. Maps, scores, RNG and persistent flags still match.
+The isolated audit and resource-independent/race regressions pass; the stale
+fifth-stage practice recording remains a separate validation limit.
+
 Checkpoint restoration across alternating turns, the second guardian's
 crowded-scene direction, retained hatch/pod state, and death-image attachment
 centers now have explicit implementations and source comparisons. Accepted

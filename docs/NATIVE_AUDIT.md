@@ -2303,3 +2303,43 @@ guardian residue. The idle damage diagnostic can also be selected explicitly
 with XENON2_EXPERT_DAMAGE_IDLE=1. These are three-level controller checks, not a
 complete five-level comparison. The six stale private fifth-stage replay tests
 remain failing in the original-resource engine suite.
+
+## Fifth-stage scenery damage under shared-pool pressure
+
+All 22 actual barrier and specialized-turret placements now have complete
+damage-callback comparisons. Every barrier part is targeted, including its
+immune linking band. Two damage values, available/full-shot/full-moving
+capacity and damage before/after the target's first update produce 384 cases
+and 59,136 physical-slot rows. All 6,000 terrain cells are compared through
+their original tile codes, including conditional neighbour restoration.
+Score, RNG, queued sound, reward caches and both persistent-turret flags match.
+
+The comparison corrects immediate health publication, selector/sentinel words
+retained by the aiming, radial and persistent constructors, and final retirement
+of a hit entry reclaimed by its explosion. It also found a map-edge error:
+native neighbour addresses are linear, so a neighbour beyond the outer column
+belongs to the next or preceding row. Fifth-stage conditional patch writes now
+normalize that address before applying the recovered one-column patch.
+
+There is a deliberate safe restoration for an original saturation bug. Barrier
+damage follows the hit post's list links after explosion allocation. If that
+allocation moved a post to the projectile list, the callback can mark a moving
+or projectile list header dead. Twenty source cases exhibit this header
+corruption. In ten of them, the two remaining barrier parts also stay alive and
+can repaint the restored passage.
+
+Go retires the original barrier cohort by saved physical identities without
+following replacement links into another list. A replacement explosion survives
+when it occupies an unrelated post; the callback still retires the hit physical
+entry. The map matches all 384 original callbacks. Of the 59,136 sampled rows,
+59,116 match the pressured source directly; twenty retirement tags use the same
+original callback with free capacity. The trace explicitly verifies which
+source header was corrupted, so no unexpected list mismatch is skipped.
+
+Resource-independent regressions cover constructor words, immediate nonlethal
+health, both saturated post deaths, replacement-effect lifetime, next-phase
+release, persistent re-entry and both outer-column neighbour directions. The
+preceding implementation fails these regressions and the independent state
+comparison. Ordinary engine/asset tests and focused race checks pass. The full
+original-resource suite retains the six already-stale fifth-stage practice
+failures; this audit does not validate a complete fifth-stage playthrough.

@@ -65,6 +65,13 @@ func (w *World) spawnFifthTile(record visualassets.FixedEncounter) bool {
 	// The shared aiming/radial constructors preserve the reused strength byte.
 	actor.part.StrongHealth = actor.Binding.Residue.StrongHealth
 	actor.Binding.Residue.EmitterClock = 0
+	if kind.Kind == 3 {
+		actor.Binding.Residue.VerticalFraction = 0xffff
+	} else if kind.Kind == 4 {
+		actor.Binding.Residue.VerticalFraction = 0
+	} else if kind.Kind == 9 {
+		actor.Binding.Residue.VerticalFraction = uint16(record.State2)
+	}
 	w.storeActorResidue(actor)
 	w.replaceFifthAdjacentTiles(state.X/16, state.WorldY/16, kind.InitialChanges)
 	w.setSecondMapPatch(state.X/16, state.WorldY/16, variant.Initial)
@@ -76,7 +83,9 @@ func (w *World) replaceFifthAdjacentTiles(column, row int, changes []visualasset
 	for _, change := range changes {
 		position := row*w.Level.Terrain.Columns + column + change.ColumnOffset
 		if position >= 0 && position < len(w.Level.Terrain.Map) && w.Level.Terrain.Map[position] == change.Before {
-			w.setSecondMapPatch(column+change.ColumnOffset, row, change.After)
+			// Native neighbours are linear map addresses. At an outer column
+			// the adjacent entry belongs to the preceding or following row.
+			w.setSecondMapPatch(position%w.Level.Terrain.Columns, position/w.Level.Terrain.Columns, change.After)
 		}
 	}
 }
@@ -133,6 +142,11 @@ func (w *World) damageFifthTile(actor *WorldActor, amount uint16) {
 	if kind.Kind == 1 && !kind.Parts[state.Part].Damageable {
 		return
 	}
+	index := w.waveDamageSlot(actor)
+	var groupSlots [3]int
+	for i, member := range actor.fifthTileGroup {
+		groupSlots[i] = w.waveDamageSlot(member)
+	}
 	result := ApplyEnemyDamage(uint16(actor.Health), amount)
 	actor.Health = int(result.Health)
 	actor.Visible, actor.Flash = true, true
@@ -141,6 +155,9 @@ func (w *World) damageFifthTile(actor *WorldActor, amount uint16) {
 	} else {
 		actor.Patch = &kind.Variants[0].Initial
 	}
+	// Publish subtraction while the parent still owns its live entry. An
+	// explosion can reclaim it and inherit the already updated health word.
+	w.storeFifthTileResidue(actor)
 	if !result.Destroyed {
 		return
 	}
@@ -153,10 +170,15 @@ func (w *World) damageFifthTile(actor *WorldActor, amount uint16) {
 	}
 	if kind.Kind == 1 {
 		w.spawnSecondNamedExplosion(state.X+8, state.WorldY-w.ScrollY+8, "explosion-small")
-		for _, part := range actor.fifthTileGroup {
+		for i, part := range actor.fifthTileGroup {
 			part.Active, part.Visible = false, false
-			w.storeActorResidue(part)
+			// A replacement effect is no longer a barrier member. Do not
+			// follow its new list links into another list's sentinel.
+			if slot := w.Pool.Slot(groupSlots[i]); slot != nil && slot.EntityID == part.ID {
+				w.retireWaveDamageSlot(groupSlots[i])
+			}
 		}
+		w.retireWaveDamageSlot(index)
 		origin := state.X - kind.Parts[state.Part].OffsetX
 		w.setSecondMapPatch(origin/16, state.WorldY/16, kind.Variants[0].Destroyed)
 		w.Score += 200
@@ -169,7 +191,7 @@ func (w *World) damageFifthTile(actor *WorldActor, amount uint16) {
 		} else {
 			w.Score += 400
 		}
-		w.storeActorResidue(actor)
+		w.retireWaveDamageSlot(index)
 	}
 }
 
