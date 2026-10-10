@@ -119,6 +119,14 @@ terminal countdown and reward audio routing. Both genuine three-level expert
 journeys pass with the corrected simulation; details and bounds are recorded in
 [REWARD_CONSTRUCTORS.md](REWARD_CONSTRUCTORS.md).
 
+Complete damage callbacks also run on every nonempty wave's actual head under
+three capacity conditions, for damage one and 127. The 3,600 cases match 550,746
+physical-slot states, score, RNG, sound and all reward-cache buckets. Corrections
+preserve the original order when an explosion or cash reclaims the dying parent,
+including the final dead write and immediate nonlethal health publication.
+Scripted extending chains retain their separate member representation. This
+coverage does not replace arbitrary body-hit or integrated full-stage comparisons.
+
 ## Validation boundaries
 
 Private source comparisons run only when the local decoded disk resources and

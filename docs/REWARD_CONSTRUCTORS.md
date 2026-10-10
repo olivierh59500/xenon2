@@ -50,6 +50,9 @@ Matching state keys alone previously allowed a known damaging escape to remain
 committed. A real-projectile regression rejects that commitment without changing
 the live world; the preceding route controller fails it.
 
-The fixtures validate constructors and isolated callbacks, not every crowded
-parent-death interaction, hardware drawing, audible mixing or a complete
-five-stage playthrough. The original resources and reference traces stay local.
+The fixtures validate constructors and isolated callbacks. A subsequent
+[parent-damage audit](NATIVE_AUDIT.md#damage-callbacks-while-allocations-replace-their-parent)
+adds 3,600 actual-wave head callbacks under capacity pressure. Arbitrary body hits,
+mixed scripted combat, hardware drawing, audible mixing and a complete five-stage
+playthrough remain separate evidence. The original resources and reference traces
+stay local.

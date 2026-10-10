@@ -2077,3 +2077,37 @@ The idle and explicit expert tours have been revalidated with the corrected
 simulation and unchanged survival requirements. Their current observations are
 recorded in [EXPERT_TARGETING.md](EXPERT_TARGETING.md); a complete five-level
 playthrough and crowded parent-death callbacks remain separate work.
+
+## Damage callbacks while allocations replace their parent
+
+All 600 nonempty actual moving-wave records now have complete head-damage
+callback comparisons. Damage values one and 127 run with available capacity,
+a pool filled by actual point-shot factories, and a pool filled by explicitly
+inert moving-tail entries. These are 3,600 cases and 550,746 physical-slot rows
+across the five levels, including all eight affected reward-cache buckets,
+RNG, score, queued sounds, physical list links and retained gameplay words.
+
+The original keeps the hit object's resource tag live during allocation. A
+carrier therefore creates its reward before becoming dead. An ordinary enemy
+can instead have its own entry reclaimed by its explosion; subsequent cash
+creation reads the replacement's coordinates, and the callback's final dead
+write affects whichever object now owns that physical slot. Go previously
+retired the parent early and could leave a replacement explosion or cash alive.
+
+The production callback now publishes nonlethal health immediately, preserves
+allocation order, reads the current slot after replacement, and retires that
+physical entry at the source boundary. Common compound waves visit their
+following chain in source order. The third-stage scripted extending chain keeps
+its separate member representation; treating it as a common formation would
+leave live linked bodies behind a dead head and violate the native group skipper's
+assumption. No change to the source counting rule is required.
+
+Resource-independent regressions exercise immediate health visibility, carrier
+allocation, self-reclaimed explosion/cash retirement and next-phase release.
+The preceding source fails all these cases and the independent original trace.
+Original-chain regressions ensure every linked member retires before counting.
+
+These checks invoke one actual wave-head callback per fixture without actor,
+player or rendering phases. Arbitrary body hits, mixed later-stage scripted
+damage callbacks and a complete integrated five-stage comparison remain distinct
+from this bounded damage/allocator coverage.

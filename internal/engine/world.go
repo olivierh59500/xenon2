@@ -941,48 +941,7 @@ func (w *World) damageActor(actor *WorldActor, amount uint16) {
 	if actor.part != nil && actor.part.DamageMode == "block-shot" {
 		return
 	}
-	if actor.part != nil && actor.part.DamageMode == "drop-equipment" {
-		actor.Active = false
-		w.storeActorResidue(actor)
-		w.spawnPickup(actor.CarriedReward, int(actor.X), int(actor.Y))
-		return
-	}
-	target := actor
-	if actor.part != nil && actor.part.DamageMode == "group" && actor.leader != nil {
-		target = actor.leader
-	}
-	result := ApplyEnemyDamage(uint16(target.Health), amount)
-	target.Health = int(result.Health)
-	target.Flash = true
-	if !result.Destroyed {
-		return
-	}
-	target.Active = false
-	w.storeActorResidue(target)
-	if actor.part != nil && actor.part.DamageMode == "group" {
-		var effects [159]*WorldActor
-		count := 0
-		for _, member := range w.Actors {
-			if (member == target || member.leader == target) && (member == target || !member.part.Linked) {
-				if count < len(effects) {
-					effects[count] = member
-					count++
-				}
-			}
-		}
-		for _, member := range effects[:count] {
-			w.spawnActorDeathEffect(member)
-		}
-	} else {
-		w.spawnActorDeathEffect(target)
-	}
-	w.Score += target.Score
-	if w.WaveBonuses.Defeat(target.WaveToken) {
-		w.spawnWaveCash(int(target.X), int(target.Y), target.part.StrongHealth)
-	}
-	if actor.part != nil && actor.part.DamageMode == "group" {
-		w.despawnGroup(target)
-	}
+	w.damageWaveActor(actor, amount)
 }
 
 func (w *World) despawnGroup(actor *WorldActor) {

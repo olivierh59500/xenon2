@@ -6,6 +6,34 @@ import (
 	"xenon2/internal/visualassets"
 )
 
+func TestThirdChainDeathRetiresAllLinkedMembersBeforeCountingOptional(t *testing.T) {
+	for variant := range 2 {
+		w, err := NewWorld(originalWorldData(t, 3))
+		if err != nil {
+			t.Fatal(err)
+		}
+		w.spawnThirdChain(visualassets.FixedEncounter{EnemyKind: 1, Variant: variant, X: 128, Y: 2850})
+		var head *WorldActor
+		for _, actor := range w.Actors {
+			if actor.thirdChainPart == 1 {
+				head = actor
+			}
+		}
+		if head == nil {
+			t.Fatal("original chain constructor did not create its head")
+		}
+		w.damageActor(head, 127)
+		for _, actor := range head.thirdChainMembers {
+			if actor.Active || w.Pool.Slot(actor.Binding.Slot).ResourceTag != 4 || w.Pool.Slot(actor.Binding.Slot).Linked {
+				t.Fatalf("variant%d left a live linked chain member after head death", variant)
+			}
+		}
+		// The source group skipper assumes that a dead head leaves no live
+		// linked body behind. It must not revisit an orphan after this callback.
+		w.countSourceMovingActors()
+	}
+}
+
 // Whole-pixel chains retain coordinate fractions while publishing their native
 // phase/speed/base-X/spacing words at 0x28/0x2a/0x2e/0x30.
 func TestOriginalThirdChainPublishesBodyStateAndPreservesFractionsOptional(t *testing.T) {
