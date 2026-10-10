@@ -1,6 +1,14 @@
-# Complete current campaign and ending validation
+# Earlier complete campaign and ending validation
 
-The current independent Go game has a connected ordinary-input reference
+These connected campaign results apply to runtime `2f771a3`, before the latest
+correction to retained actor storage and ship positions across level changes.
+They are not a passing campaign check for the current source. The latest pilot
+reaches level three without losing a ship, then fails its corridor survival
+regression. The later recorded profiles and connected campaign need renewal.
+Current original transition evidence is documented in
+[SESSION_POOL_VALIDATION.md](SESSION_POOL_VALIDATION.md).
+
+That independent Go build has a connected ordinary-input reference
 journey from the default intro through all five stages, the final merchant,
 every ending phase and the first playable pass of the second difficulty round.
 The public desktop and Android expert tour remains limited to the first three
@@ -54,7 +62,7 @@ go test ./internal/app \
   -count=1 -v -timeout=5m
 ```
 
-The current Ebitengine/Xvfb/Mesa run passes in 44.30 seconds. This is accelerated
+The earlier Ebitengine/Xvfb/Mesa run passes in 44.30 seconds. This is accelerated
 test execution, not the duration of real-time gameplay. Its 1,099 final inputs
 contain directions and fire only; a single marked READY acknowledgement crosses
 the actual director after the ship loss. The controls contain no original artwork
@@ -73,7 +81,7 @@ resources and diagnostic captures remain excluded from Git.
 
 ## Scope and fidelity limits
 
-This proves connected current Go progression through the complete campaign and
+This proves connected Go progression in that earlier build through the complete campaign and
 ending. The preceding captured-entry final fixture also wins, but its missing
 frontend presentation timing produces a different post-death random stream,
 shield balance and reward motion. Its 19-shield result must not replace the

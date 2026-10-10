@@ -79,7 +79,7 @@ Both saved games now also use one physical 159-object reserve, with separate
 player lists and an independently copied reserve for predictions.
 The public automatic tour still returns to the menu after stage three.
 
-The current runtime passes the complete default-intro five-stage reference on
+That installed runtime passes the complete default-intro five-stage reference on
 the physical Pixel's ARM64 logic runner in 145.94 seconds. It earns the preceding
 victories and merchants, defeats the fifth final guardian, collects all twenty
 exit coins, runs every ending phase and starts the next difficulty round with
@@ -87,7 +87,7 @@ score 284,750, two ships and three continue credits. One ship is lost in the
 final fight; no continue is spent. This is accelerated simulation with drawing
 disabled, not a frame-rate measurement or a real-time game duration.
 
-The current runtime also passes the two-player collision/READY and fifth-ending
+That installed runtime also passes the two-player collision/READY and fifth-ending
 frontend checks on the physical device in 1.31 and 1.36 seconds. Ordinary menu
 admission, directional controls and real collision deaths change turns in both
 directions. The shared background remains
@@ -105,6 +105,13 @@ cursor resets, menu-tap release and deliberate manual takeover in the same
 session. The corrected APK is installed. The device was locked with its screen
 off during these checks, so the actual foreground/background gesture sequence,
 rendering smoothness and sound continuity remain unverified.
+
+The latest source corrections preserve physical actor storage and ship positions
+across level changes. They have not replaced the installed `2f771a3` APK: the
+current pilot completes levels one and two, but its third-level survival
+regression fails. The installed build's complete campaign result does not
+validate that newer source. See
+[SESSION_POOL_VALIDATION.md](SESSION_POOL_VALIDATION.md).
 
 To repeat the bounded checks on one explicitly selected device:
 

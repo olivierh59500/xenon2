@@ -11,9 +11,12 @@ replays the original soundtrack. It includes source-derived weapons,
 carrier rewards, checkpoint recovery, alternating players, and both sections
 of the five levels, including their compound guardians. Original shop, attract,
 HUD, loading and ending presentation are connected. All fixed encounter families
-are implemented. A current ordinary-input reference journey completes the five
-stages, collects the complete final reward, shows the ending and starts a second
-round. Integrated Amiga audiovisual and timing comparisons remain in progress.
+are implemented. The latest correction preserves the original actor storage,
+equipment allocation order and ship positions across level changes. Original
+comparisons cover all five transitions, including alternating players. The
+automatic pilot currently completes levels one and two without losing a ship;
+its later routes need renewal after those corrections. Integrated Amiga
+audiovisual and timing comparisons remain partial.
 
 **Original resources are prepared from your own Amiga game disks.** The original
 ADF, recovered programs and exported game assets are not included in the
@@ -49,8 +52,8 @@ are included under `tools/presentation/`; no extra font installation is needed.
 GOWORK=off go run ./cmd/xenon2 -demo
 ```
 
-DEMO MODE, the desktop flag and Android's automatic demonstration play levels
-one through three. After the third guardian, the original exit rewards and
+DEMO MODE, the desktop flag and Android's automatic demonstration are configured
+for levels one through three. After the third guardian, the original exit rewards and
 final merchant, the tour returns through the original menu animation. Sixty
 seconds without input on that menu starts a new level-one tour. The automatic
 startup deadline also applies throughout the passive logo, credits and scores
@@ -64,13 +67,13 @@ control. Pause, fades, the cheat menu, interactive game messages and merchants
 do not count as menu inactivity.
 
 Both demonstration paths use the original merchants, guardian damage and exit
-rewards, then return to the original menu. Camera-aware projectile forecasts
-restore both complete three-level journeys with all three ships and both continue
-credits intact, including the source-correct burst bullets and guardian state.
-The independent scorecard also records no ship losses or spent continues.
-[Targeting and collection results](docs/EXPERT_TARGETING.md) identify the current
-measurements and limits. No result establishes collection of every enemy or
-bonus under every starting state.
+rewards. With the latest level-transition corrections, the explicit-start pilot
+reaches third-level READY with all three ships, both continue credits and score
+100,910. The third-level survival regression then fails in the later corridor;
+the complete automatic return to the menu is not currently validated.
+[Targeting and collection results](docs/EXPERT_TARGETING.md) retain the earlier
+three-level measurements and their limits. No result establishes collection of
+every enemy or bonus under every starting state.
 
 The pilot rehearses known formations and their actual callbacks, prepares its
 next decision while verified controls execute, and rejects a prepared plan if
@@ -88,11 +91,12 @@ and values actual partial damage while clearing a stationary emitter.
 
 Existing later-stage code and reference fixtures remain in the project. They
 are outside the three-level demonstration tour. The separate
-[five-stage reference validation](docs/FIFTH_FINISH_VALIDATION.md) starts at the
-ordinary intro and retains earned equipment throughout. It loses one ship in
-the last fight, spends no continue and enters round two with two ships. It uses
-recorded controls after final admission; it does not extend the public expert
-tour beyond stage three. Full-game audiovisual equivalence remains under review.
+[five-stage reference validation](docs/FIFTH_FINISH_VALIDATION.md) completed the
+ending and next round on runtime `2f771a3`, also installed on the Pixel 10a.
+That recording predates the latest level-transition corrections and does not
+validate the current later-stage pilot. It uses recorded controls after final
+admission; it does not extend the public expert tour beyond stage three.
+Full-game audiovisual equivalence remains under review.
 
 ## MP4 recording
 
@@ -119,10 +123,10 @@ and exit drops, then stops before playing level two. The latest recording is
 Its MP4 contains 22,892 frames at 1280 × 800 and 60 FPS, with stereo AAC audio
 and embedded scene chapters. The current desktop graphics tests also pass.
 This capture was generated from runtime `0a9efa0`.
-Ordinary damage and purchases still apply. The first-three-stage validation uses
-the real intro, merchants, native guardian damage and exit drops. Both current
-starts pass their unchanged survival checks with three ships and two continues.
-Later-stage expert strategies remain experimental; the normal tour ends after level three. See
+Ordinary damage and purchases still apply. The journey validations use the real
+intro, merchants, native guardian damage and exit drops. The current pilot has
+verified completion through level two; later-stage strategies remain experimental.
+The configured tour ends after level three. See
 [expert forecast design](docs/EXPERT_FORECAST.md) for the verified boundaries.
 Generated MP4, PNG poster and chapter JSON files stay
 under locally excluded `recordings/`. The export command requires Go 1.26 or

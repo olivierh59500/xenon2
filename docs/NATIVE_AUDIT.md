@@ -2707,12 +2707,53 @@ The same runtime `2f771a3` now passes the full Pixel ARM64 campaign reference in
 pass in 1.31 and 1.36 seconds. Its installed APK matches the local digest and
 cold-launches successfully. These checks run without drawing on the locked phone.
 
-A subsequent original completion-boundary probe also confirms a remaining
+A subsequent original completion-boundary probe identified a
 cross-level discrepancy: cleanup, weapon restoration and new-level actors retain
-the original physical reserve and its used free-record fields. Go still creates
+the original physical reserve and its used free-record fields. Go then created
 a fresh shared reserve on a level load. The sparse original one-player routes
 also place the next primary at slot five for transitions one-to-two, two-to-three
 and three-to-four, rather than the fresh Go slot four. This probe is not a full
 Amiga campaign, but establishes that fresh-session allocation matching cannot
-close cross-level storage fidelity. The remaining scope is explicit in
+close cross-level storage fidelity. The comparison scope is explicit in
 [SESSION_POOL_VALIDATION.md](SESSION_POOL_VALIDATION.md).
+
+## Retained level-transition storage, equipment and ship positions
+
+The Go stage loader now keeps the original physical reserve, free-stack order,
+protected shadows and reused record fields. Completion cleanup releases actors
+in original list order. The outgoing player's weapons are restored before the
+current game's level actors, followed by the other game's actors and the ordinary
+post-load cleanup and READY restoration. First admission of an unplayed saved
+game also retains the original initial-weapon replacement order.
+
+Fifteen basic boundaries, 75 equipment boundaries and 45 ship-pose observations
+match executions of the original routines across all five transitions, including
+the second difficulty round and both player counts. Equipment coverage includes
+the temporary Nashwan suite. Arranged used-free records keep their known
+fractional-position and counter words. A generic capture's uninitialized
+temporary-suite timer is explicitly cleared in the reference setup; its value
+is not inferred as an active saved loadout.
+
+Level loading preserves outgoing X and saved checkpoint Y. The admitted READY
+ship moves to Y=176 and resets all four thrust-history poses. Third-level
+persistent scenery survives checkpoint cleanup and remains independently owned
+inside forecasts. The complete original-resource engine, artwork and merchant
+suites pass in 44.182, 0.792 and 1.024 seconds. Focused race checks pass in
+9.838 seconds, and the desktop executable compiles.
+
+Bounded Xvfb/Mesa frontend checks pass in 1.664 seconds for ordinary menu/READY/
+gameplay/pause, actual collision turn changes, and the arranged fifth-stage
+ending/next-round boundary. That ending fixture assigns completion explicitly;
+it does not renew the complete campaign reference.
+
+The second-level pilot guard also covers the late corridor and final flanks.
+Explicit ordinary-intro play now completes levels one and two with all three
+ships and both continue credits, reaching third READY with full shield and score
+100,910. Its later third-corridor survival regression fails at frame 9,159,
+camera 714. Earlier connected four/five-stage profiles predate these corrections
+and need renewal. The installed Pixel APK remains runtime `2f771a3`; its earlier
+complete campaign is not evidence for the newer source.
+
+These native comparisons use arranged offline completion states rather than a
+full Amiga campaign. Integrated audiovisual equivalence, every crowded
+two-player interaction and real-time device smoothness remain unverified.

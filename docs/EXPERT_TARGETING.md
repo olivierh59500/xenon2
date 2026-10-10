@@ -1,5 +1,11 @@
 # Expert targeting improvements
 
+The three-level scores below predate the latest retained-storage and ship-position
+corrections. The current pilot completes levels one and two without ship loss,
+then fails the third-level corridor survival regression. These historical
+scorecards are not a passing current three-level journey. See
+[SESSION_POOL_VALIDATION.md](SESSION_POOL_VALIDATION.md) for the latest scope.
+
 The expert controller clears destructible emitters, uses its installed rear and
 side weapons, and plans cash and equipment collection alongside combat. These
 changes apply to the public three-level tour. A Rear Shot and a Side Shot replace

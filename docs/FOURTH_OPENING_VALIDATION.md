@@ -1,6 +1,14 @@
 # Fourth-level opening validation
 
-## Current status
+## Validation scope
+
+The connected campaign measurements below describe runtime `2f771a3`, before
+the latest retained-storage and ship-position corrections. Their later-stage
+profiles have not been renewed. The current pilot is verified through level two;
+its third-level survival regression fails. These figures do not certify the
+current source's automatic fourth-level journey.
+
+## Earlier connected validation
 
 The current default-intro reference tour completes all four stages with three
 ships and both continue credits intact. It uses a test-only five-stage tour

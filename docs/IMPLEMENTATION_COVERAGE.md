@@ -5,26 +5,44 @@ This inventory distinguishes integrated game behavior from extracted artwork
 and isolated controller comparisons. A resource export does not by itself
 establish that the corresponding encounter is playable.
 
-The desktop and Android expert demonstration is limited to levels one through
+The desktop and Android expert demonstration is configured for levels one through
 three. Its completed third-level final merchant returns to the original menu;
 sixty idle seconds start another tour. Tests cover both automatic idle admission
 and an explicit demo launch, the real third guardian/rewards/merchant sequence,
 menu return and a fresh ordinary level-one READY admission.
 
-The current complete-intro and idle-start expert tours finish all three supported
+## Latest validation status
+
+Original level-transition comparisons now cover retained physical storage,
+equipment restoration and ship positions through all five stages, with one and
+two players. The complete engine, artwork and merchant suites pass. The current
+explicit-start pilot completes the first two stages and reaches third-level
+READY with three ships and two continue credits. Its third-level survival
+regression fails in the later corridor. The configured three-level tour and
+recorded four/five-stage routes therefore need renewal. Full original
+audiovisual equivalence remains unverified.
+
+The following campaign measurements describe the earlier runtime `2f771a3`,
+before the level-transition correction. They remain historical evidence, not
+successful current campaign regressions. See
+[SESSION_POOL_VALIDATION.md](SESSION_POOL_VALIDATION.md) for current results.
+
+## Earlier connected campaign validation
+
+The earlier complete-intro and idle-start expert tours finish all three supported
 demonstration stages with three ships and two continue credits intact, without
 losing a ship. Both use real guardian deaths, rewards and merchants before
 returning to the menu. The measured scorecard and remaining collection limits
 are recorded in [EXPERT_TARGETING.md](EXPERT_TARGETING.md).
 
-A separate current reference tour uses a test-only five-stage limit and earns
+A separate reference tour uses a test-only five-stage limit and earns
 all four preceding victories, real reward drains, merchants, repairs and the
 fifth READY loader from the ordinary intro. It retains all three starting ships
 and both continues. Stage five receives full shield, Forward 1 / Laser 0 / Rear 2
 and score 203,700. The [fourth-stage validation](FOURTH_OPENING_VALIDATION.md)
 records the exact boundaries and remaining hardware/timing limits.
 
-The same current frontend journey now continues through the fifth-stage
+The same frontend journey continues through the fifth-stage
 launcher/terrain checkpoints and reaches the real middle guardian at frame
 2,241 with 31 shield, three ships, two continues, 300 cash and score 238,350.
 A genuine health pickup restores full shield after an observed minimum of 15.
@@ -33,13 +51,13 @@ rehearses each ordinary input through full callbacks before returning it. Its
 checkpoint loadout retains the original pre-rebuild weapon serials; the captured
 fixture now includes that distinction without relaxing the marker.
 
-The current route also defeats this middle guardian at frame 3,193 with three
+That route also defeats this middle guardian at frame 3,193 with three
 shield, all three ships and both continues. Its ten native coins add 750 cash;
 the real merchant opens at frame 3,238 with 1,050. The shop director sells the
 collected Homing Missile and Rear 2 through actual quotes and confirmations,
 then buys a full repair, Side Shot, Protection and two power-ups. Same-stage
 return retains 39 shield, Forward 2 / Laser 2 / Side 1, period eight and 550 cash.
-The current continuation then crosses the entire second half without losing
+The continuation then crosses the entire second half without losing
 shield or rewinding into terrain. Genuine final admission occurs at frame 5,507
 with 39 shield, three ships, two continues, 850 cash and score 280,050. All
 eighteen defenses and the 20-health core retain their original admission state.
@@ -60,7 +78,8 @@ Historical fifth-stage records remain explicit captured-profile capabilities.
 Their renewed ordinary inputs reach the fifth final guardian, while a separate
 isolated final fight reaches the final merchant with a prepared loadout and five
 ships. Neither establishes fifth-stage completion from the newly earned profile.
-The separate connected five-stage check above establishes current Go progression.
+The separate connected five-stage check above establishes that earlier build's
+Go progression.
 Integrated Amiga playthrough equivalence remains under review. Ordinary
 demonstration launches do not enter level four.
 

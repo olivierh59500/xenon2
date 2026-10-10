@@ -50,6 +50,46 @@ the live free stack. Prepared encounter validation compares physical state rathe
 than the identity of a shared-storage pointer. Ordinary single-player predictions
 retain their existing value-copy path.
 
+## Retained storage across level changes
+
+Original cleanup, equipment restoration, player switching and level initialization
+retain the physical reserve across all five level transitions. The Go stage
+loader now retains that same storage, its free stack and reused record fields.
+Each new world gets its own list view over the surviving reserve.
+
+Completion first performs ordinary turn cleanup, then releases remaining moving
+actors, scenery and projectiles. The four ship shadows survive. Before building
+the next level actors, the outgoing current player's saved weapons are restored.
+The current game is initialized before the other saved game. Post-load cleanup
+and READY then restore the admitted player. A player's first-ever turn restores
+over its initial equipment without an extra outgoing cleanup.
+
+Fifteen basic transition observations, 75 equipment observations and 45 ship-pose
+observations match the original. Equipment cases cover basic weapons, cannon,
+rear shot, laser, side shot, protection and the temporary Nashwan suite. An
+arranged previously used free record retains its fractional position and counter.
+The sparse one-player boundaries now agree:
+
+| Transition | Free head, original and Go | Primary slot, original and Go |
+| --- | ---: | ---: |
+| 1 to 2 | 9 | 5 |
+| 2 to 3 | 7 | 5 |
+| 3 to 4 | 4 | 5 |
+| 4 to 5 | 5 | 4 |
+| 5 to next-round 1 | 6 | 4 |
+
+New levels preserve the outgoing ship's X and save its previous Y in the
+checkpoint. The admitted ship enters READY at Y=176; the other saved game's
+pending position remains independent. READY also resets all four thrust-history
+positions. Third-level persistent scenery now survives checkpoint cleanup and
+has its own isolated forecast copy.
+
+The offline fixtures initialize the known inactive temporary-suite timer before
+original game setup. Uninitialized memory from a generic capture must not be
+treated as an active saved loadout. File access, presentation drawing and the
+stopped audio device are isolated; allocator, cleanup, weapon and level-actor
+routines execute unchanged.
+
 ## Reproducible checks
 
 With prepared runtime resources and the local original references:
@@ -59,32 +99,43 @@ GOWORK=off \
 XENON2_RUNTIME_ASSET_DIR="$PWD/assets/runtime" \
 XENON2_NATIVE_TRACE_DIR="$PWD/.local/analysis" \
 go test ./internal/engine \
-  -run '^(TestSessionPoolsMatchOriginalInitializersOptional|TestTwoPlayerPoolHasOneCapacityAndProtectsInactiveLists|TestTwoPlayerForecastOwnsPhysicalStorageForEitherActivePlayer|TestNextStageRetainsOneArenaForBothSavedGames)$' \
+  -run '^(TestSessionPoolsMatchOriginalInitializersOptional|TestStagePoolRetentionMatchesOriginalTransitionsOptional|TestStagePoolEquipmentMatchesOriginalTransitionsOptional|TestStagePlayerPosesMatchOriginalAdmissionOptional|TestThirdScenerySurvivesCheckpointAndForecastRestorationOptional|TestTwoPlayerPoolHasOneCapacityAndProtectsInactiveLists|TestTwoPlayerForecastOwnsPhysicalStorageForEitherActivePlayer|TestNextStageRetainsOneArenaForBothSavedGames)$' \
   -count=1 -v
 ```
 
-The native references and helper remain excluded locally. Ordinary capacity and
-forecast-isolation tests also run without original resources. The complete
-original-resource engine, artwork and merchant suites pass in 38.770, 0.720 and
-0.931 seconds respectively. The connected default-intro five-stage frontend
-reference still completes the ending and next-round admission with score
-284,750, two surviving ships and no continue spent. Its accelerated GPU run
-passes in 42.60 seconds. Focused two-player collision/READY, final merchant/ending
-and Android input-policy frontend checks pass in 1.529 seconds.
-Focused race checks cover shared capacity, both forecast views and asynchronous
-encounter preparation. Strengthened frontend assertions also check that ordinary
-menu admission, collision turn changes and the second difficulty round retain
-one physical reserve; that focused graphics run passes in 0.961 seconds.
+The native references and helpers remain excluded locally. Ordinary capacity and
+forecast-isolation tests also run without original resources. The latest complete
+original-resource engine, artwork and merchant suites pass in 44.182, 0.792 and
+1.024 seconds respectively. Focused race checks pass for the transition,
+equipment, pose, persistent-scenery, second-level guard and forecast-isolation
+regressions. The desktop game compiles successfully.
+
+Bounded graphics/frontend checks pass in 1.664 seconds for normal menu/READY/
+gameplay/pause, two-player collision turn changes, and the arranged fifth-stage
+ending/next-round boundary. The last fixture assigns stage completion and does
+not constitute a campaign playthrough.
+
+The explicit-start pilot completes the first two stages through real guardians,
+rewards and merchants, reaching third-level READY with score 100,910, full shield,
+three ships and both continue credits. Its second-level safety forecast now also
+covers the late corridor and both final flanks. Unsafe final dodges use the
+actual firing lane rather than a forecast endpoint blocked by the rock.
+
+The current three-level frontend regression fails later in the third corridor,
+at frame 9,159 and camera 714. The earlier four/five-stage recorded admission
+profiles also predate the corrected transition behavior. No current complete
+three-level or five-level automatic journey is claimed. The configured public
+tour remains three levels; its survival and reliable menu return need renewal.
 
 ## Fidelity boundaries
 
-The original comparisons establish fresh-session allocation layout and physical
-resource tags. Saturation, forecast isolation, shared stage loading and frontend
-flow have separate Go regressions. These checks do not establish retained slot
-residue or free-stack order across a complete original stage transition, every
-crowded two-player combat interaction, real-time frame pacing or audio continuity.
-The independent one-player native constructor, update and damage comparisons
-remain applicable to their documented states.
+The original comparisons establish fresh-session layout and sparse completion
+boundaries, including retained fields, list/free-stack order, equipment and ship
+poses. They are arranged offline states, not an original full campaign. They do
+not establish every crowded two-player combat interaction, real-time frame
+pacing, audio continuity or integrated audiovisual equivalence. Independent
+one-player native constructor, update and damage comparisons remain applicable
+to their documented states.
 
 ## Android confirmation
 
@@ -94,28 +145,6 @@ ending/next-round checks pass in 1.31 and 1.36 seconds. The built APK is install
 its digest matches the local build and cold launch succeeds. These are locked
 device logic checks; they do not measure frame pacing or audio output.
 
-## Remaining original stage-transition comparison
-
-A subsequent offline probe executes original cleanup, equipment restoration,
-player switching and level initialization at arranged completion boundaries.
-All five transitions, with one and two players, retain known fractional-position
-and counter values placed in a previously used free object record. File access,
-presentation drawing and the stopped audio device are isolated. No allocator,
-cleanup, equipment or level-actor routine is replaced.
-
-The one-player sparse boundaries also expose physical allocation differences:
-
-| Transition | Original free head | Original primary slot | Fresh Go primary slot |
-| --- | ---: | ---: | ---: |
-| 1 to 2 | 9 | 5 | 4 |
-| 2 to 3 | 7 | 5 | 4 |
-| 3 to 4 | 4 | 5 | 4 |
-| 4 to 5 | 5 | 4 | 4 |
-| 5 to next-round 1 | 6 | 4 | 4 |
-
-This is a sparse completion-boundary fixture, not an original campaign
-playthrough. It confirms that the original keeps physical storage across level
-loads; the current Go stage loader still creates a fresh shared reserve.
-Preserving its free-stack order, surviving records and reused named fields
-through those loads remains unfinished. Fresh-session matching and successful
-Go campaign progression must not be presented as proof of that behavior.
+That installed runtime predates the cross-level storage and position corrections
+described above. Its passing campaign must not be used to certify the newer
+source. The newer source has not replaced the installed APK.

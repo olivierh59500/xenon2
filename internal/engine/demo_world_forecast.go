@@ -32,8 +32,7 @@ func (p *PresentationPilot) forecastCombatGuard(w *World, planned Input) (answer
 	fourthMiddle := w.Level.Number == 4 && w.FourthMiddle != nil && !w.FourthMiddle.Defeated
 	fourthLater := w.Level.Number == 4 && w.FourthMiddle != nil && w.FourthMiddle.Defeated && w.ScrollY > 176
 	early := w.Level.Number == 1
-	second := w.Level.Number == 2 && (w.ScrollY > 1280 || w.ScrollY < 800 && w.ScrollY > 352 ||
-		w.SecondGuardian != nil && !w.SecondGuardian.BodyCollision.Empty() && w.Player.X >= 124 && w.Player.X <= 196)
+	second := w.Level.Number == 2 && (w.ScrollY > 1280 || w.secondMiddleReleased)
 	if !early && !second && !third && !fourthOpening && !fourthMiddle && !fourthLater || w.Ready || !w.PlayerAlive {
 		return planned
 	}
@@ -92,6 +91,15 @@ func (p *PresentationPilot) forecastCombatGuard(w *World, planned Input) (answer
 	}
 	intended := forecast.State()
 	intendedX, intendedY := intended.Player.X, intended.Player.Y+intended.ScrollY
+	if second && w.secondMiddleReleased && w.ScrollY <= 352 {
+		// An unsafe held-direction rehearsal may end against the rock or in a
+		// rewind. Keep the actual firing lane as the objective for alternative
+		// dodges, and return below the rock before crossing from either side.
+		intendedX, intendedY = 160, 416
+		if absDemo(w.Player.X-160) > 36 {
+			intendedY = 448
+		}
+	}
 	if recoverCorridor {
 		if input, ok := p.chooseThirdCorridorBranch(w, planned, sequence, useSequence); ok {
 			return input

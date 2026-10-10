@@ -1,5 +1,11 @@
 # Expert gameplay forecast
 
+The latest original level-transition correction changes retained storage,
+equipment allocation and ship positions. Current explicit-start validation
+completes levels one and two, but the third-level corridor survival check fails.
+Later campaign recordings and their exact admission profiles need renewal;
+earlier successes below do not establish a current complete expert tour.
+
 The public demonstration tour plays the first three levels through ordinary
 controls, using known terrain routes, encounter tables, carrier rewards and boss
 paths. Damage, weapon emissions, money, rewards and merchants remain owned by the
