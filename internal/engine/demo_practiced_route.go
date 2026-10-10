@@ -142,11 +142,14 @@ func (g *expertRouteGuard) continuePlan(w *World, pal int) (Input, bool) {
 		return Input{}, false
 	}
 	for pass := index; pass < plan.count; pass++ {
+		shield := plan.forecast.State().Equipment.Shield
 		for range pal {
 			plan.forecast.AdvancePALTick()
 		}
 		r, err := plan.forecast.Advance(plan.input[pass])
-		if err != nil || !r.Alive || retainedGuardStateKey(plan.forecast.State()) != plan.before[pass+1] {
+		if err != nil || !r.Alive || r.Shield < shield || retainedGuardStateKey(plan.forecast.State()) != plan.before[pass+1] {
+			// A least-damaging initial escape is not a safe commitment. Reassess
+			// its remainder before accepting another predicted shield loss.
 			plan.count = 0
 			return Input{}, false
 		}

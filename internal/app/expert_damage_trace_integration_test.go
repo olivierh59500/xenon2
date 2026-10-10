@@ -77,6 +77,11 @@ func TestExpertThirdStageDamageTraceOptional(t *testing.T) {
 				motion, fire, dive = g.demo.controls.gameMotion, g.demo.controls.fire, g.demo.controls.divePressed
 			}
 			t.Logf("DAMAGE F%d C%d->%d P%+v->%+v HP%d->%d prefix%+v motion%+v fire%v dive%v rewind%+v", oldFrame, camera, w.ScrollY, player, w.Player, oldHP, w.Equipment.Shield, prefix, motion, fire, dive, w.Rewind)
+			for _, actor := range w.Actors {
+				if actor.Active && !actor.Visible && actor.Sprite == "" && actor.Health > 0 && !actor.Collision.Empty() && actor.Collision.Top >= -64 && actor.Collision.Bottom <= 256 {
+					t.Logf("LIVE_TERRAIN_TARGET id%d xy%.0f,%.0f HP%d bounds%+v", actor.ID, actor.X, actor.Y, actor.Health, actor.Collision)
+				}
+			}
 			for i, actor := range actors[:ac] {
 				if bounds[i].Intersects(prefix) || !bounds[i].Empty() && bounds[i].Left <= player.X+36 && bounds[i].Right >= player.X-36 && bounds[i].Top <= player.Y+40 && bounds[i].Bottom >= player.Y-40 {
 					t.Logf("NEAR_ACTOR id%d sprite%s atlas%s health%d before%+v after%+v", actor.ID, actor.Sprite, actor.Atlas, actor.Health, bounds[i], actor.Collision)

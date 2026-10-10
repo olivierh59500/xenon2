@@ -178,6 +178,15 @@ func (worker *expertEncounterWorker) evaluate(w *World, goal expertEncounterGoal
 	}
 	worker.policy = DemoPilot{practicedRoute: true, navigation: navigation, palRefreshes: pal}
 	worker.policy.Config.DisableBonuses = true
+	var emitters [ActorPoolCapacity]*WorldActor
+	var health [ActorPoolCapacity]int
+	emitterCount := 0
+	for _, actor := range worker.forecast.State().Actors {
+		if emitterCount < len(emitters) && actor.Active && actor.Health > 0 && (actor.thirdCannon != nil || actor.fixedTileState != nil) {
+			emitters[emitterCount], health[emitterCount] = actor, int(int16(uint16(actor.Health)))
+			emitterCount++
+		}
+	}
 	result.score.alive = true
 	collectedEquipment := 0
 	for pass := 0; pass < expertEncounterHorizon; pass++ {
@@ -233,7 +242,16 @@ func (worker *expertEncounterWorker) evaluate(w *World, goal expertEncounterGoal
 	// Rank the remaining shield before accumulated damage, then reward actual
 	// collections and destruction without assigning any equipment directly.
 	result.score.shield = q.Equipment.Shield
-	result.score.value = (q.Score-w.Score)*4 + (q.Money-w.Money)*20 + collectedEquipment*3000 + (w.ScrollY-q.ScrollY)*20 - absDemo(q.Player.X-x) - absDemo(q.Player.Y-y)
+	emitterDamage := 0
+	for index, actor := range emitters[:emitterCount] {
+		if actor.Binding.EntityID != 0 {
+			// Clearing an emitter can take longer than one forecast. Credit
+			// actual partial damage as well as its eventual destruction score;
+			// eviction and path retirement are not damage.
+			emitterDamage += max(0, health[index]-max(0, int(int16(uint16(actor.Health)))))
+		}
+	}
+	result.score.value = (q.Score-w.Score)*4 + emitterDamage*150 + (q.Money-w.Money)*20 + collectedEquipment*3000 + (w.ScrollY-q.ScrollY)*20 - absDemo(q.Player.X-x) - absDemo(q.Player.Y-y)
 	result.ok = true
 	return result
 }

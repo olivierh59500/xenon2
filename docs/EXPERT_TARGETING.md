@@ -28,8 +28,8 @@ scope. Survival requirements in the complete journey tests remain unchanged.
 
 Both full frontend journey regressions now finish the three levels with three
 ships and two continue credits intact. The idle-start journey finishes at
-1,495.42 seconds with 162,970 points; explicit admission finishes at 1,446.45
-seconds with 166,650 points. The two independent scorecard observation runs also
+1,547.02 seconds with 162,970 points; explicit admission finishes at 1,487.27
+seconds with 164,850 points. The two independent scorecard observation runs also
 finish with no ship losses or spent continues. The complete original-resource
 engine and visual-asset suites pass, as do focused race checks covering private
 planning workers, prepared-state reuse, cannon windows and reward candidates.
@@ -42,6 +42,12 @@ fill the fixed planning bank. Rehearsals rank real remaining shield, damage and
 terrain contact before destruction, cash, equipment collection and progression.
 This allows an ordinary health pickup to improve a route's safety; it does not
 grant health or change pickup behavior.
+
+The current simulation includes original inherited bubble headings and effect
+voices, verified separately in [REWARD_CONSTRUCTORS.md](REWARD_CONSTRUCTORS.md).
+The controller credits real partial emitter damage before a destruction award
+and reconsiders a retained route if its next callbacks predict shield loss.
+Earlier scorecards therefore differ in simulation fidelity as well as controls.
 
 The scorecard also distinguishes observed cash and equipment bubbles. It tracks
 known live objects until collection, expiry at Y=200 or eviction. A bubble born
@@ -56,33 +62,34 @@ counts complement the exact money totals rather than claiming every creation.
 | Published explicit start | 1 | 47 / 37 / 10 | 6 / 6 / 0 |
 | Published explicit start | 2 | 84 / 66 / 18 | 5 / 5 / 0 |
 | Published explicit start | 3 | 95 / 77 / 18 | 6 / 4 / 2 |
-| Updated idle start | 1 | 67 / 57 / 10 | 7 / 7 / 0 |
-| Updated idle start | 2 | 83 / 52 / 31 | 5 / 3 / 2 |
-| Updated idle start | 3 | 97 / 82 / 15 | 7 / 6 / 1 |
-| Updated explicit start | 1 | 57 / 47 / 10 | 7 / 5 / 2 |
+| Updated idle start | 1 | 67 / 58 / 9 | 7 / 7 / 0 |
+| Updated idle start | 2 | 83 / 51 / 32 | 5 / 3 / 2 |
+| Updated idle start | 3 | 97 / 78 / 19 | 7 / 6 / 1 |
+| Updated explicit start | 1 | 57 / 49 / 8 | 7 / 5 / 2 |
 | Updated explicit start | 2 | 83 / 59 / 24 | 4 / 2 / 2 |
-| Updated explicit start | 3 | 98 / 76 / 22 | 7 / 6 / 1 |
+| Updated explicit start | 3 | 96 / 80 / 16 | 7 / 6 / 1 |
 
 Here, "published" identifies the preceding controller at `2c3a6a8`.
 
 | Controller / admission | Scoring removals | Collected cash | Ship losses |
 | --- | ---: | ---: | ---: |
 | Previous / idle | 706 | 13,650 | 1 |
-| Updated / idle | 737 | 13,850 | 0 |
+| Updated / idle | 736 | 13,600 | 0 |
 | Previous / explicit | 694 | 13,200 | 1 |
-| Updated / explicit | 756 | 13,450 | 0 |
+| Updated / explicit | 750 | 13,800 | 0 |
 
 The first level collects more observed rewards, while later levels still miss
 too many. In particular, second-level collection regresses even though both
-complete tours earn slightly more cash and destroy more actors without ship
-losses. Changed combat also changes which bubbles are created. These figures
+complete tours destroy more actors without ship losses. Cash improves on the
+explicit tour and is slightly lower on idle admission. Changed combat also
+changes which bubbles are created. These figures
 do not establish that every destructible or reward is reached.
 
 The fixed bank still contains at most 24 candidates over 72 simulation passes,
 and only three verified commands are retained before reassessment. A warm
-20-decision third-opening sample measures 3.09 ms per decision on an M4 Max;
+20-decision third-opening sample at `cf9f9c7` measured 3.09 ms per decision on an M4 Max;
 it is a scene-specific CPU measurement, not a Pixel frame-rate result.
 
-Gameplay rules, health, money, collisions and the shared random stream remain
-unchanged. Further collection improvements need complete-journey validation as
-well as local aiming and interception tests.
+The controller assigns no health, money, collision changes or random values.
+Further collection improvements need complete-journey validation as well as
+local aiming and interception tests.

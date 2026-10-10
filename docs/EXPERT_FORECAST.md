@@ -897,15 +897,15 @@ merchants, guardians, rewards and final menu. The current results are:
 
 | Start | Level | Ships lost | Scoring enemy removals | Collected cash |
 | --- | ---: | ---: | ---: | ---: |
-| Menu inactivity | 1 | 0 | 221 | 4,150 |
-| Menu inactivity | 2 | 0 | 285 | 3,800 |
-| Menu inactivity | 3 | 0 | 231 | 5,900 |
-| Explicit demonstration | 1 | 0 | 219 | 3,500 |
+| Menu inactivity | 1 | 0 | 221 | 4,250 |
+| Menu inactivity | 2 | 0 | 285 | 3,700 |
+| Menu inactivity | 3 | 0 | 230 | 5,650 |
+| Explicit demonstration | 1 | 0 | 219 | 3,650 |
 | Explicit demonstration | 2 | 0 | 301 | 4,450 |
-| Explicit demonstration | 3 | 0 | 236 | 5,500 |
+| Explicit demonstration | 3 | 0 | 230 | 5,700 |
 
 Both tours retain three ships and their two continue credits. The explicit tour
-finishes with score 166,650; the idle-start tour finishes with score 162,970.
+finishes with score 164,850; the idle-start tour finishes with score 162,970.
 These results include the corrected original inward-facing plant constructors
 and animations, and the third level's corrected right-entry images and collisions.
 Their shots and collision outcomes affect the shared RNG, enemy damage and
@@ -917,7 +917,10 @@ another level-one admission after sixty seconds without input.
 The [targeting audit](EXPERT_TARGETING.md) also records observed cash and equipment
 bubbles. It distinguishes increased destruction from collection quality:
 second-level collection still regresses against the earlier controller despite
-slightly higher full-tour cash totals and no ship losses.
+no ship losses. The current figures include source-corrected inherited reward
+directions and audio routing. Stationary-emitter rehearsal credits actual partial
+damage before the final score award. Retained route controls are reconsidered
+when their remaining callbacks predict shield loss, even if their keys match.
 
 On the USB Pixel 10a, a warm full opening decision measures 30.18 ms over 100
 iterations. This calculation now runs ahead of the live controls. Validating a

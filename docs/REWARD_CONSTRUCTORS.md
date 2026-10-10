@@ -41,10 +41,14 @@ all ten pairs, but one coin is already collected during the lethal projectile
 pass. It now checks twenty original coin records, nineteen pending coins and
 conservation of all 1,500 cash across live rewards and the wallet.
 
-Complete engine/artwork comparisons and focused race checks pass. The public
-idle-start expert tour currently needs adaptation to the corrected trajectories;
-its unchanged third-stage survival assertion detects the regression. These
-changes remain on the development branch until both admission journeys pass.
+Complete engine/artwork comparisons and focused race checks pass. Both public
+expert-tour admission journeys now finish all three levels with their three
+ships and two continue credits intact. Their survival assertions are unchanged.
+The controller values real partial emitter damage before destruction and
+reconsiders a retained escape if its remaining callbacks predict shield loss.
+Matching state keys alone previously allowed a known damaging escape to remain
+committed. A real-projectile regression rejects that commitment without changing
+the live world; the preceding route controller fails it.
 
 The fixtures validate constructors and isolated callbacks, not every crowded
 parent-death interaction, hardware drawing, audible mixing or a complete

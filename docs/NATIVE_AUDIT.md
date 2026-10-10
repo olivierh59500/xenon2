@@ -2062,3 +2062,18 @@ original field comparison.
 These are constructor/allocator comparisons under explicit pressure, with no
 moving, projectile, player or drawing updates. They do not establish every
 crowded combat lifecycle or an integrated five-stage playthrough.
+
+## Reward and common-effect constructors
+
+The [reward constructor audit](REWARD_CONSTRUCTORS.md) covers both cash sizes,
+nineteen equipment selectors, five exit-pair batches and both common explosion
+sizes, under three explicit capacity conditions. All 84 cases and their first
+twelve isolated callbacks match 3,081 original image/state rows. Collection audio
+for all nineteen selectors also matches the original effect voice.
+
+This corrects lost sixteen-bit bubble headings, missing inherited directions,
+delayed publication of initialized reward/effect state and reward sound routing.
+The idle and explicit expert tours have been revalidated with the corrected
+simulation and unchanged survival requirements. Their current observations are
+recorded in [EXPERT_TARGETING.md](EXPERT_TARGETING.md); a complete five-level
+playthrough and crowded parent-death callbacks remain separate work.

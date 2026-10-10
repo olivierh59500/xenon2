@@ -112,6 +112,13 @@ ordinary engine now retains those source values if another actor reclaims the
 shot before its first update. These explicit capacity fixtures do not replace
 full moving/projectile/player phase comparisons under real combat pressure.
 
+Reward and common-explosion construction also has original empty/two-free/full
+pool comparisons: 84 cases and 3,081 initialized/update image-state rows. These
+corrected inherited bubble headings, immediate reward/effect state publication,
+terminal countdown and reward audio routing. Both genuine three-level expert
+journeys pass with the corrected simulation; details and bounds are recorded in
+[REWARD_CONSTRUCTORS.md](REWARD_CONSTRUCTORS.md).
+
 ## Validation boundaries
 
 Private source comparisons run only when the local decoded disk resources and

@@ -66,8 +66,8 @@ The complete original-intro and idle-start regressions both finish all three
 stages with three ships and both continue credits intact, without losing a ship.
 Both paths
 use the original merchants, guardian damage and exit rewards, then return to the
-original menu. The current scorecard records 756 scoring enemy removals and
-13,450 collected cash for the explicit tour, and 737 removals and 13,850 cash for
+original menu. The current scorecard records 750 scoring enemy removals and
+13,800 collected cash for the explicit tour, and 736 removals and 13,600 cash for
 idle admission. [Targeting and collection results](docs/EXPERT_TARGETING.md)
 include the per-level reward census and comparison with the previous controller.
 These observations do not claim that every enemy or bonus is collected under
@@ -81,6 +81,11 @@ aim targets. Reachable bubbles receive reserved planning candidates, while
 cannon attack positions yield to the terrain route when a rearward turn is
 needed. Corridor forecasts keep the complete prepared turn, and the
 final worm has a separate survival and aiming forecast.
+
+[Original reward and explosion comparisons](docs/REWARD_CONSTRUCTORS.md) cover
+creation under shared-pool pressure, inherited bubble motion and effect voices.
+The controller reconsiders a retained escape if it predicts another shield loss
+and values actual partial damage while clearing a stationary emitter.
 
 Existing later-stage code and reference fixtures remain in the project. They
 are outside the three-level demonstration tour; full-game fidelity and a
