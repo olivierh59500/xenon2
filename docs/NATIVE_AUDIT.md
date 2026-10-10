@@ -2617,3 +2617,20 @@ palettes: 5,760 exact pixels covering score, lives and shield. No gameplay state
 life count or player control changes. The references remain excluded locally.
 See [GAMEPLAY_RENDER_VALIDATION.md](GAMEPLAY_RENDER_VALIDATION.md) for scope and
 the reproducible test command.
+
+## Original background and map rasterization across all five levels
+
+The original background/map draw routine now supplies sixty independent planar
+rasters, twelve camera/background pairs per level. A restricted offline hardware
+adapter resolves the original copy, clear and masked blits. Expected output
+comes directly from the original map and graphics bytes, without the Go tile
+atlas or renderer. The actual production GPU output matches all 3,686,400 RGBA
+pixels, including tile boundaries, clipped first/last rows and background wrap.
+The focused Xvfb/Mesa check passes in 0.559 seconds.
+
+The first-level capture's different background phase is not a new-game offset:
+its HUD already shows two remaining ships, and its earlier inputs are unknown.
+No starting state was changed to fit that picture. Static terrain composition
+does not establish combat drawing, mutable-map evolution, temporal interpolation
+or physical blitter timing. The private rasters and analysis helper stay excluded
+from Git; the persistent optional GPU regression contains no original resources.

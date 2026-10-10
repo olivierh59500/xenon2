@@ -3,9 +3,10 @@
 The first-level reference is a window-only PNG capture of ordinary Amiga
 gameplay. It uses the original 960-by-628 emulator window and the viewport
 calibration already established for that window. The twenty-pass Go scene
-retains default equipment and ordinary controls. The comparison below concerns
-the HUD; it does not infer the original player's inputs or certify a complete
-scene match.
+retains default equipment and ordinary controls. The capture's HUD shows two
+remaining ships; its preceding controls and background phase are not known.
+The capture comparison concerns the scores and flat HUD colors. It does not
+equate those two gameplay states or certify a complete scene match.
 
 ## Solo score fields
 
@@ -30,6 +31,28 @@ HUD region in all five level palettes: 5,760 exact RGBA pixels. This confirms
 that the solo correction preserves an active second player's displayed state.
 The original planar raster and capture remain local and excluded from Git.
 
+## Background and terrain rasterization
+
+A separate offline reference executes the original game's background/map draw
+routine for sixty views across all five levels. Its hardware adapter implements
+only the synchronous copy, clear and masked blits requested by that routine.
+The reference reads original map and planar graphics bytes directly; it does
+not construct expected pixels from the exported Go tile atlas.
+
+Each level contributes twelve camera/background pairs. They include the opening,
+middle and final areas, camera positions on both sides of a sixteen-pixel tile
+boundary, and background offsets zero, one, 190 and 191. The renderer's full
+320-by-192 output matches every reference pixel: 3,686,400 exact RGBA comparisons.
+This covers palette selection, opaque and masked terrain, top/bottom clipping
+and circular background copying. There is no image fitting or color tolerance.
+
+These arranged draw states establish static background/map composition. They
+do not establish enemy drawing, mutable terrain during combat, interpolation
+between frames, previous player inputs or physical Amiga blitter timing.
+The original first-level window capture also confirms that the exported
+background artwork matches the original at a different retained scroll phase;
+that phase must not be imposed on every new Go game.
+
 With the prepared runtime resources and private references, run:
 
 ```sh
@@ -42,6 +65,18 @@ go test ./internal/app \
   -count=1 -v
 ```
 
+After generating the private terrain rasters under the same trace directory:
+
+```sh
+GOWORK=off \
+XENON2_RUNTIME_TEST_DIR="$PWD/assets/runtime" \
+XENON2_NATIVE_TRACE_DIR="$PWD/.local/analysis" \
+go test ./internal/app \
+  -run '^TestOriginalTerrainRastersMatchProductionGPUOptional$' \
+  -count=1 -v
+```
+
 The checks require an active graphics context. Their current Xvfb/Mesa run
-passes in 1.038 seconds. These are bounded gameplay/HUD comparisons; other
-integrated artwork, animation, audio and real-time pacing checks remain separate.
+passes in 1.038 seconds for the HUD and 0.559 seconds for all terrain rasters.
+These are bounded rendering comparisons; integrated actors, animation, audio
+and real-time pacing checks remain separate.

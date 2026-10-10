@@ -196,6 +196,12 @@ from Git. Ordinary tests verify the independent logic without an emulator.
 
 The build updates at 60 Hz and uses a separate gameplay clock. Ebitengine may
 draw at the monitor refresh rate; this does not accelerate gameplay.
+All five levels also have sixty original background/map raster comparisons.
+The production GPU matches 3,686,400 exact pixels across opaque and masked
+terrain, clipped tile boundaries and circular background copying. These static
+draw fixtures do not replace combat, interpolation or complete scene comparisons;
+see [GAMEPLAY_RENDER_VALIDATION.md](GAMEPLAY_RENDER_VALIDATION.md).
+
 The current complete five-level Go reference run now reaches the next round.
 Integrated Amiga comparisons and real-time audiovisual review remain required;
 the conversion is still in development.
