@@ -31,6 +31,8 @@ type ForecastResult struct {
 // WorldForecast owns an isolated mutable state graph. Level artwork, path tables
 // and animation descriptors remain shared immutable data. Load replaces the
 // previous prediction; no rollback or speculative updates touch the live world.
+// Do not copy a loaded WorldForecast: its graph points into its own storage.
+// Use Load to create an independent branch and retain stable forecast addresses.
 type WorldForecast struct {
 	world   *World
 	storage forecastWorldStorage

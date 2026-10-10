@@ -44,9 +44,10 @@ controls replay also destroys every defense and the core, then collects the full
 1,500 cash and opens the final merchant. Its prepared loadout and five ships are
 explicit capability fixtures; three ships are lost during that isolated fight.
 
-Resource-independent engine/artwork suites, focused native comparisons and
-race checks pass. The original-resource suite retains six stale fifth-stage
-practice-recording failures after the projectile-state corrections. Both public
+Resource-independent and original-resource engine/artwork suites, focused
+native comparisons and race checks pass after renewal of the captured
+fifth-stage practice records. Their unchanged admission/survival checks now
+accept the corrected callback outcomes. Both public
 expert-tour admission journeys now finish all three levels with their three
 ships and two continue credits intact. Their survival assertions are unchanged.
 The controller values real partial emitter damage before destruction and

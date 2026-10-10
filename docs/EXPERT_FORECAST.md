@@ -14,6 +14,10 @@ and path descriptors and terrain coverage lookup masks may be shared. Mutable
 terrain, the 159-slot pool, weapons, entities, controllers, RNG, encounter cursor,
 reward cache and transition flags must be copied.
 
+A loaded `WorldForecast` must retain its address: its graph refers to its own
+storage. Use `Load` to branch rather than copying loaded forecast values or
+moving them inside sortable value arrays.
+
 Actor identity needs a two-pass remap so leaders, articulated chains, guardian
 arrays and marker groups retain their original relationships. Shared controller
 pointers need typed memo tables. Per-instance actor parts and writable tile patch
@@ -927,3 +931,41 @@ iterations. This calculation now runs ahead of the live controls. Validating a
 prepared state measures 0.700 ms over 100 iterations, with 24,456 bytes and 15
 allocations. The matched M4 Max validation measures 0.058 ms. These are isolated
 CPU measurements; they do not by themselves establish rendered frame pacing.
+
+## Renewed captured fifth-stage route
+
+The projectile-state corrections made the earlier fifth-stage records obsolete.
+The first changed next-pass outcome collects the health bubble at gameplay
+frame 1,151 instead of one pass later. Replaying the old controls without
+validation then loses the last ship during the intermediate fight. The old
+second-half commands also reach the final arena with seven shield instead of
+the required 35. Neither result was accepted as a replacement reference.
+
+The renewed records use five short ordinary-motion excursions: two during the
+intermediate fight and three in the second half. They change 43 directional
+inputs across the existing 5,401-input route; fire cadence, level rules, enemy
+health, damage, rewards, initial equipment and reserves remain unchanged.
+Each excursion returns to its original route pose through ordinary movement.
+Independent fresh-world replay supplies every expected per-pass marker.
+
+| Captured route boundary | Gameplay frame | Shield / minimum | Cash | Score | Ships / continues |
+| --- | ---: | --- | ---: | ---: | --- |
+| Intermediate merchant after 3,194 inputs | 3,195 | 7 / 7 | 500 | 215,830 | 1 / 2 |
+| Final guardian admission after 2,207 more inputs | 5,402 | 35 / 35 | 200 | 241,630 | 1 / 2 |
+
+The intermediate purchase spends the actual 500 cash on the original full
+repair and starts the second half with 39 shield. Both recorded boundaries
+retain their previous RNG words: 1956010882/2539081256 at the intermediate
+merchant and 4235635824/2611229262 at final admission. The six previously failing
+checks now pass, including original rear-passage geometry and reverse scrolling.
+Changed projectiles, guardian health, owner/world identity, equipment, cash,
+RNG, loader state and repeated same-frame lookups remain covered. A regression
+retains the obsolete health-outcome marker separately and verifies that the
+same next-pass validator rejects it without changing the live game.
+
+The original-resource and resource-independent engine/artwork suites and focused
+race checks pass. The records still begin from an explicitly captured historical
+fifth-stage profile, with recorded loader/star timing at the intermediate return.
+They do not establish current carried admission from the preceding four stages,
+a current full frontend journey, a lossless final fight or integrated Amiga
+playthrough equivalence. The public demonstration remains a three-stage tour.

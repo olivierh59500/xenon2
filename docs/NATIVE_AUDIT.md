@@ -2452,5 +2452,36 @@ in-flight-projectile boundary fixture. Three ship losses, a prepared loadout and
 an isolated admission remain material limits: it does not establish a lossless
 expert fight, current carried fifth-stage admission, hardware presentation or a
 complete integrated five-stage comparison. The six older fifth-stage practice
-recordings still require renewal after the projectile-state corrections; their
-strict admission checks remain unchanged.
+checks required renewal after the projectile-state corrections at this boundary;
+the following section records their restoration without relaxed admission.
+
+## Renewed fifth-stage practice controls
+
+The captured fifth-stage records now replay the corrected engine rather than
+accepting the old expected outcome. Five short excursions change 43 directional
+inputs without altering fire cadence, native health/damage, terrain, rewards,
+equipment or reserves. The first segment reaches the real intermediate merchant
+at frame 3,195 with one ship, seven shield and 500 cash. Its ordinary 500-credit
+repair restores full shield. The second segment reaches the source final
+constructor at frame 5,402 with 35 shield, one ship and both continues intact.
+Final scores are 215,830 and 241,630 respectively; both boundary RNG pairs match
+the previous records.
+
+The complete original-resource engine/artwork suite now passes, including the
+six previously stale route checks and all native callback comparisons. Focused
+race checks also pass. Per-pass outcome markers come from independent full-step
+replay. A separate regression retains the obsolete health marker and requires
+the same next-pass validator to reject it, while the current ordinary input is
+accepted without mutating the live world. Foreign-state and lifecycle checks
+remain intact.
+
+Ebitengine checks also pass for the final core's flash and the frontend
+merchant/ending/next-loop boundary. The column renderer matches 160 original
+shaft rasters with and without their caps: 19,660,800 actual GPU pixels. These
+checks run in the local Xvfb/Mesa display. Desktop and Android builds succeed;
+the Android APK is compiled without another device installation.
+
+This is captured-profile Go progression evidence. It does not execute the
+original program during gameplay or claim a new Amiga battle comparison. Current
+admission from the preceding four victories, integrated hardware timing/drawing
+and a complete five-stage campaign remain separate unproven requirements.

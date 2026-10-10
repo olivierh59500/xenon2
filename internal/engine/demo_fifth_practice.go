@@ -9,6 +9,20 @@ type fifthOpeningPractice struct {
 	start    uint64
 }
 
+// acceptsNext checks the recorded outcome through a complete ordinary pass.
+// The expected marker belongs to the recording, never to a simulated shortcut.
+func (q *fifthOpeningPractice) acceptsNext(w *World, input Input, expected uint64, last bool) bool {
+	if q.forecast.Load(w) != nil {
+		return false
+	}
+	for range 3 {
+		q.forecast.AdvancePALTick()
+	}
+	result, err := q.forecast.Advance(input)
+	boundary := result.Boundary == ForecastRunning || last && result.Boundary == ForecastShop
+	return err == nil && boundary && result.Alive && result.Lives == w.Equipment.Lives && fifthPracticeMarker(q.forecast.State()) == expected
+}
+
 func fifthPracticeMarker(w *World) uint64 {
 	h := uint64(14695981039346656037)
 	word := func(v uint64) {
@@ -115,17 +129,8 @@ func (p *PresentationPilot) fifthPracticedOpeningInput(w *World) (Input, bool) {
 		p.fifthPractice = &fifthOpeningPractice{world: w, start: start}
 	}
 	q := p.fifthPractice
-	if q.world != w || q.forecast.Load(w) != nil {
-		p.fifthPractice = nil
-		return Input{}, false
-	}
 	input := fifthPracticeControl(controls[index])
-	for range 3 {
-		q.forecast.AdvancePALTick()
-	}
-	result, err := q.forecast.Advance(input)
-	boundary := result.Boundary == ForecastRunning || index+1 == len(controls) && result.Boundary == ForecastShop
-	if err != nil || !boundary || !result.Alive || result.Lives != w.Equipment.Lives || fifthPracticeMarker(q.forecast.State()) != markers[index+1] {
+	if q.world != w || !q.acceptsNext(w, input, markers[index+1], index+1 == len(controls)) {
 		p.fifthPractice = nil
 		return Input{}, false
 	}

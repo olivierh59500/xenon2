@@ -179,9 +179,9 @@ Camera-aware projectile forecasts subsequently restore both public three-level
 journeys and their independent scorecard with no ship losses or spent continues.
 They retain the source-correct burst contacts and guardian residue. Ninety direct
 world passes across five arranged scenes verify successive camera changes;
-turning predictions also preserve collision-before-turn order. This resolves
-the public survival regression above, while the six stale fifth-stage replay
-tests and complete five-level validation remain outstanding.
+turning predictions also preserve collision-before-turn order. This resolved
+the public survival regression above; the fifth-stage records were subsequently
+renewed as described below. Complete five-level validation remains outstanding.
 
 Fifth-stage scenery adds all 22 barrier/specialized-turret placements and every
 barrier part under three capacity profiles: 384 damage cases, full restoration
@@ -190,8 +190,9 @@ health publication, reclaimed-parent retirement and linear map-edge neighbours
 are corrected. Twenty original list-header corruptions deliberately retain valid
 Go list/cohort state; twenty member-retirement tags match the same unsaturated
 source callback instead. Maps, scores, RNG and persistent flags still match.
-The isolated audit and resource-independent/race regressions pass; the stale
-fifth-stage practice recording remains a separate validation limit.
+The isolated audit and resource-independent/race regressions pass. The
+subsequently renewed fifth-stage recording is described below; captured-profile
+replay remains separate from complete campaign admission.
 
 All 22 fifth-stage scenery constructors also match four explicit capacity
 profiles: 88 cases, both constructor boundaries and 27,104 physical-slot rows.
@@ -357,6 +358,19 @@ acknowledgements and checkpoint recovery are part of the recording. This is a
 Go weapon-capability and lifecycle regression, not an earned inventory, lossless
 expert fight, frontend rendering comparison or connected five-stage victory.
 The public expert tour remains limited to the first three stages.
+
+The captured fifth-stage opening and second-half records are now renewed under
+the corrected projectile and guardian callbacks. Five short excursions change
+43 ordinary directional inputs while retaining the original trigger cadence.
+The independently replayed opening reaches the intermediate merchant at frame
+3,195 with the same ship, seven shield points and 500 cash. The real 500-credit
+repair restores 39 shield; the second half reaches the native final constructor
+at frame 5,402 with 35 shield and both continue credits. Per-pass expected state
+is regenerated from full callbacks, and the obsolete earlier-health outcome
+still fails the same next-pass validator. The six formerly failing replay
+checks, the complete original-resource engine/artwork suite and focused race
+checks now pass. These records still start from an explicit captured admission
+and loader timing; they do not establish a current connected five-stage tour.
 
 Fifth guardian event traces now independently check 2,700 complete frames,
 1,007 ordinary mount shots and 1,513 final queued sound requests. Per-component

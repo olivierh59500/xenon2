@@ -37,9 +37,12 @@ geometric choices keep a two-pixel reaction gap and receive complete callback
 rehearsals. The ordinary pilot and later-stage policies retain their existing
 comfort rules.
 
-The private fifth-stage practice recording is still stale; its six existing
-replay checks remain failing. They are the remaining failures in the complete
-original-resource engine suite. No survival requirement is relaxed.
+The private captured fifth-stage practice records have now been renewed after
+the projectile-state corrections. Their six formerly failing checks pass with
+the same ship, continue, terrain and shield requirements. The complete
+original-resource engine/artwork suite is green. This validates the captured
+fifth-stage profile, not a current connected five-stage campaign. See the
+[renewal results](EXPERT_FORECAST.md#renewed-captured-fifth-stage-route).
 
 The source comparisons and resource-independent regressions for these fixes
 pass, including the mixed phase/list boundaries and the ship prefix used by

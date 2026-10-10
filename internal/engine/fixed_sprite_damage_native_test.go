@@ -108,23 +108,25 @@ func TestFifthPracticeRejectsOutcomeChangedByCorrectedProjectileResidueOptional(
 		}
 	}
 	before := forecastIsolationDigest(w)
-	if _, ok := p.fifthPracticedOpeningInput(w); ok || p.fifthPractice != nil {
-		t.Fatal("stale fifth-stage outcome admitted after corrected projectile publication")
+	// Preserve the obsolete post-pass outcome independently of the renewed
+	// recording. Its delayed health pickup must still fail the same validator.
+	const obsoleteHealthOutcome uint64 = 0x3a4f9835846f45c2
+	input := fifthPracticeControl(fifthOpeningControls[1149])
+	stale := fifthOpeningPractice{world: w}
+	if stale.acceptsNext(w, input, obsoleteHealthOutcome, false) {
+		t.Fatal("obsolete fifth-stage outcome admitted after corrected projectile publication")
 	}
 	if forecastIsolationDigest(w) != before {
 		t.Fatal("rejecting the obsolete recording changed the live game")
 	}
-	var forecast WorldForecast
-	if err := forecast.Load(w); err != nil {
-		t.Fatal(err)
+	actual := stale.forecast.State()
+	if actual.Frame != 1151 || actual.Equipment.Shield != 39 || fifthPracticeMarker(actual) == obsoleteHealthOutcome || fifthPracticeMarker(actual) != fifthOpeningMarkers[1150] || w.Frame != 1150 || w.Equipment.Shield != 23 {
+		t.Fatal("the real earlier health collection no longer distinguishes the obsolete outcome")
 	}
-	for range 3 {
-		forecast.AdvancePALTick()
+	if renewed, ok := p.fifthPracticedOpeningInput(w); !ok || renewed != input || p.fifthPractice == nil {
+		t.Fatal("renewed ordinary control did not admit the corrected outcome")
 	}
-	if _, err := forecast.Advance(fifthPracticeControl(fifthOpeningControls[1149])); err != nil {
-		t.Fatal(err)
-	}
-	if forecast.State().Frame != 1151 || forecast.State().Equipment.Shield != 39 || fifthPracticeMarker(forecast.State()) == fifthOpeningMarkers[1150] || w.Frame != 1150 || w.Equipment.Shield != 23 {
-		t.Fatal("the real earlier health collection no longer explains the stale recording")
+	if forecastIsolationDigest(w) != before {
+		t.Fatal("renewed validation changed the live game")
 	}
 }

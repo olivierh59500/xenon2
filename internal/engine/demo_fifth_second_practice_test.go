@@ -2,8 +2,9 @@ package engine
 
 import "testing"
 
-// This fixture reproduces the recorded merchant return. The full frontend
-// regression separately earns the victory, coins, purchase and loader.
+// This fixture earns the intermediate victory and repair from the captured
+// fifth-stage admission. Loader/star timing is explicit reference input; this
+// does not establish a current carried five-stage frontend playthrough.
 func fifthSecondPracticeSourceFixture(t testing.TB) *World {
 	t.Helper()
 	w := fifthPracticeSourceFixture(t)
@@ -61,7 +62,7 @@ func TestFifthSecondPracticeReplaysOriginalFinalApproachOptional(t *testing.T) {
 			t.Fatalf("second-half native replay diverged at%d", i)
 		}
 	}
-	if w.Frame != 5402 || w.FifthFinal == nil || w.FifthFinal.OuterRemaining != 18 || w.FifthFinal.CoreHealth != 20 || w.Equipment.Shield != 35 || minimum != 35 || w.RandomState() != (RandomState{A: 4235635824, B: 2611229262}) {
+	if w.Frame != 5402 || w.FifthFinal == nil || w.FifthFinal.OuterRemaining != 18 || w.FifthFinal.CoreHealth != 20 || w.Equipment.Shield != 35 || minimum != 35 || w.Money != 200 || w.Score != 241630 || w.RandomState() != (RandomState{A: 4235635824, B: 2611229262}) {
 		t.Fatal("real final admission differs from the original route")
 	}
 	if _, ok := p.fifthPracticedOpeningInput(w); ok {

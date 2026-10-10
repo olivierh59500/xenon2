@@ -2,9 +2,9 @@ package engine
 
 import "testing"
 
-// The original-resource fixture reproduces the recorded fifth admission, not
-// the previous four victories. The app regression separately earns this state
-// through the full intro, guardians, real shops and normal READY director.
+// This original-resource fixture reproduces a captured fifth-stage admission.
+// It does not replay the preceding victories or establish current campaign
+// admission. The ordinary-input route remains scoped to this complete profile.
 func fifthPracticeSourceFixture(t testing.TB) *World {
 	t.Helper()
 	e := Equipment{WeaponLoadout: WeaponLoadout{
@@ -67,7 +67,7 @@ func TestFifthPracticeReplaysOriginalCallbacksAndDoesNotConsumeRepeatedInputsOpt
 			t.Fatalf("native route diverged at%d", index)
 		}
 	}
-	if w.Frame != 3195 || w.Checkpoint.ScrollY != 2368 || w.Equipment.Shield != 7 || minimum != 7 || !w.FifthMiddle.Defeated || !w.ShopReady || w.PendingExitDrops != 0 || w.Money != 500 {
+	if w.Frame != 3195 || w.Checkpoint.ScrollY != 2368 || w.Equipment.Shield != 7 || minimum != 7 || !w.FifthMiddle.Defeated || !w.ShopReady || w.PendingExitDrops != 0 || w.Money != 500 || w.Score != 215830 || w.RandomState() != (RandomState{A: 1956010882, B: 2539081256}) {
 		t.Fatal("source route omitted its real checkpoint or native health pickup")
 	}
 	if _, ok := p.fifthPracticedOpeningInput(w); ok || p.fifthPractice != nil {
