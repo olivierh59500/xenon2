@@ -1,0 +1,190 @@
+package engine
+
+import "fmt"
+
+// The carrier payload uses this original nineteen-entry reward catalogue,
+// independently of the twenty-five entries offered by the shop.
+var carrierItems = [19]Item{
+	ItemSpeedup, ItemAutofire, ItemHealth1, ItemHealth2, ItemRearShot,
+	ItemSideShot, ItemPowerup, ItemCannon, ItemDrone, ItemLaser,
+	ItemElectroBall, ItemMineSmall, ItemMissileLauncher, ItemHomingMissile,
+	ItemFlamer, ItemBomb, ItemNone, ItemDive, ItemNone,
+}
+
+func (w *World) spawnWaveCash(x, y int, heavy bool) {
+	name := "cash-small"
+	if heavy {
+		name = "cash-large"
+	}
+	animation, ok := w.commonAnimations[name]
+	if !ok {
+		return
+	}
+	tag := int16(96)
+	if heavy {
+		tag = 24
+	}
+	binding, err := w.reserveWorldActor(tag, ActorPoolProjectile, false)
+	if err != nil {
+		w.poolError = err
+		return
+	}
+	p := &WorldCollectible{ID: binding.EntityID, Binding: binding, Cash: CashValue(heavy), X: float64(x), Y: float64(y), PreviousX: float64(x), PreviousY: float64(y), Active: true,
+		Motion: CashMotion{X: x, Y: y, Mode: 7, Direction: uint16(w.random.Next())}, animation: animation, animationState: NewAnimation(animation.Animation)}
+	p.Sprite = p.animationState.Sprite(animation.Animation)
+	w.finishCollectibleUpdate(p)
+	w.poolCollectibles[binding.Slot] = p
+	w.Collectibles = append([]*WorldCollectible{p}, w.Collectibles...)
+}
+
+// spawnExitCash appends both coins in each source pair to the projectile tail.
+// Allocation precedes the two position draws for each independent coin.
+func (w *World) spawnExitCash(pairs int) {
+	for range pairs {
+		for _, heavy := range []bool{false, true} {
+			name := "cash-small"
+			if heavy {
+				name = "cash-large"
+			}
+			animation, ok := w.commonAnimations[name]
+			if !ok {
+				continue
+			}
+			tag := int16(96)
+			if heavy {
+				tag = 24
+			}
+			binding, err := w.reserveWorldActor(tag, ActorPoolProjectile, true)
+			if err != nil {
+				w.poolError = err
+				return
+			}
+			x, _ := w.random.Below(300)
+			y, _ := w.random.Below(180)
+			p := &WorldCollectible{ID: binding.EntityID, Binding: binding, Cash: CashValue(heavy), X: float64(x + 10), Y: float64(y + 6), Active: true,
+				Motion: CashMotion{X: int(x) + 10, Y: int(y) + 6, Mode: 7, Direction: uint16(binding.Residue.Direction)}, animation: animation, animationState: NewAnimation(animation.Animation)}
+			p.PreviousX, p.PreviousY = p.X, p.Y
+			p.Sprite = p.animationState.Sprite(animation.Animation)
+			w.finishCollectibleUpdate(p)
+			w.poolCollectibles[binding.Slot] = p
+			w.PendingExitDrops++
+			w.nextTailOrder--
+			p.Order = w.nextTailOrder
+			w.Collectibles = append(w.Collectibles, p)
+		}
+	}
+}
+
+func (w *World) spawnPickup(reward, x, y int) {
+	if reward < 0 || reward >= len(carrierItems) {
+		return
+	}
+	animation, ok := w.commonAnimations[fmt.Sprintf("pickup-%d", reward)]
+	if !ok {
+		return
+	}
+	binding, err := w.reserveWorldActor(int16(animation.ResourceTag), ActorPoolProjectile, false)
+	if err != nil {
+		w.poolError = err
+		return
+	}
+	p := &WorldCollectible{ID: binding.EntityID, Binding: binding, Reward: reward, X: float64(x), Y: float64(y), PreviousX: float64(x), PreviousY: float64(y), Active: true,
+		Motion: CashMotion{X: x, Y: y, Mode: 7, Direction: uint16(binding.Residue.Direction)}, animation: animation, animationState: NewAnimation(animation.Animation)}
+	p.Sprite = p.animationState.Sprite(animation.Animation)
+	p.Binding.Residue.VerticalFraction = uint16(reward)
+	w.finishCollectibleUpdate(p)
+	w.poolCollectibles[binding.Slot] = p
+	w.Collectibles = append([]*WorldCollectible{p}, w.Collectibles...)
+	w.SoundRequests[2] = "synthesized-effect-17"
+}
+
+func (w *World) advanceCollectible(p *WorldCollectible) {
+	if !p.Active {
+		return
+	}
+	p.PreviousX, p.PreviousY = p.X, p.Y
+	if !p.animationState.AdvanceNamed(p.animation) {
+		p.Active = false
+		return
+	}
+	p.Active = p.Motion.Advance()
+	if !p.Active {
+		w.consumeExitDrop()
+	}
+	p.X, p.Y = float64(p.Motion.X), float64(p.Motion.Y)
+	p.Sprite = p.animationState.Sprite(p.animation.Animation)
+	if !p.Active || !w.PlayerAlive || w.Dive.Phase != 0 {
+		return
+	}
+	box, ok := w.movingSpriteBoxes[p.Sprite]
+	if !ok || !ActorCollisionRect(box, p.Motion.X, p.Motion.Y).Intersects(w.playerCollision) {
+		return
+	}
+	p.Active = false
+	if p.Cash > 0 {
+		w.Money += p.Cash
+		w.SoundRequests[2] = "synthesized-effect-05"
+		w.consumeExitDrop()
+		return
+	}
+	if p.animation.SoundEffect != "" {
+		w.SoundRequests[2] = p.animation.SoundEffect
+	}
+	// Publish retirement before an initializer can allocate from a full pool.
+	w.finishCollectibleUpdate(p)
+	w.applyCarrierReward(p.Reward)
+}
+
+func (w *World) consumeExitDrop() {
+	if w.PendingExitDrops > 0 {
+		w.PendingExitDrops--
+		if w.PendingExitDrops == 0 {
+			w.ShopReady = true
+			w.ExitReady = w.LevelFinished
+		}
+	}
+}
+
+func (w *World) applyCarrierReward(reward int) {
+	if reward < 0 || reward >= len(carrierItems) {
+		return
+	}
+	switch reward {
+	case 16:
+		w.beginInvulnerability()
+	case 18:
+		w.ScreenClearFrames = 31
+		w.ScreenClearPaletteMask = uint16(w.random.Next())
+		w.SoundRequests[2] = "synthesized-effect-02"
+	default:
+		w.Equipment.ApplyItem(carrierItems[reward])
+		// Original pickup initializers construct changed mounts immediately,
+		// while the consumed pickup still owns its list entry. Deferring this
+		// to the next equipment pass changes the physical allocation order.
+		if w.Weapons != nil {
+			if err := w.Weapons.SynchronizeEquipment(w.weaponContext(Input{}, false)); err != nil {
+				w.poolError = err
+			}
+		}
+	}
+}
+
+// AdvancePALTick advances display-timed effects at fifty ticks per second.
+// The original palette strobe pauses ordinary gameplay for thirty-one VBLs.
+func (w *World) AdvancePALTick() {
+	if w.ScreenClearFrames == 0 {
+		return
+	}
+	w.ScreenClearFrames--
+	if w.ScreenClearFrames != 0 {
+		w.ScreenClearPaletteMask = uint16(w.random.Next())
+		return
+	}
+	w.ScreenClearPaletteMask = 0
+	w.finishSupernova()
+	if w.stepContinuation.active {
+		if err := w.finishStep(); err != nil {
+			w.poolError = err
+		}
+	}
+}

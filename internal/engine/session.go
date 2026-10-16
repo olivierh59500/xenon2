@@ -1,0 +1,142 @@
+package engine
+
+import "fmt"
+
+// Session keeps one independent saved game per alternating player while
+// carrying the shared random stream across turns and shop interactions.
+type Session struct {
+	Completed        [2]bool
+	Difficulty       int
+	Players          [2]*World
+	PlayerCount      int
+	Current          int
+	hasPlayed        [2]bool
+	completedReentry bool
+	pendingAudio     AudioRequests
+	audioPending     bool
+}
+
+func NewSession(level LevelData, players int, random RandomState) (*Session, error) {
+	if players != 1 && players != 2 {
+		return nil, fmt.Errorf("a session needs one or two alternating players")
+	}
+	s := &Session{PlayerCount: players, Difficulty: 1}
+	pool, err := newActorPoolWithInitialization(level.InitialActors)
+	if err != nil {
+		return nil, err
+	}
+	for i := range players {
+		data := level
+		data.InitialRandom = &random
+		world, err := newWorldWithPool(data, pool, false)
+		if err != nil {
+			return nil, err
+		}
+		world.SetRandomState(random)
+		world.Ready = true
+		s.Players[i] = world
+		if i+1 < players {
+			pool = newActorPoolView(pool)
+		}
+	}
+	for i := range players {
+		world := s.Players[i]
+		if err := world.initializeLevelActors(); err != nil {
+			return nil, err
+		}
+		world.captureRenderTerrain()
+		world.captureActorRenderTerrain()
+	}
+	s.hasPlayed[0] = true
+	return s, nil
+}
+
+func (s *Session) ActiveWorld() *World { return s.Players[s.Current] }
+
+// TakeAudioRequests consumes the global sound boundary after a session update.
+func (s *Session) TakeAudioRequests() AudioRequests {
+	if s.audioPending {
+		requests := s.pendingAudio
+		s.pendingAudio, s.audioPending = AudioRequests{}, false
+		return requests
+	}
+	return s.ActiveWorld().TakeAudioRequests()
+}
+
+// Advance changes turns after a nonfinal ship loss. Final losses remain on the
+// current player until the director finishes score entry and the continue offer.
+func (s *Session) Advance(input Input) (turnChanged bool, err error) {
+	world := s.ActiveWorld()
+	other := s.Current ^ 1
+	world.deferCheckpointRestart = s.PlayerCount == 2 && !s.Completed[other] && !s.Players[other].GameOver && s.Players[other].Equipment.Lives > 0
+	err = world.Step(input)
+	world.deferCheckpointRestart = false
+	if err != nil {
+		return false, err
+	}
+	if world.shipLossCompleted && !world.GameOver {
+		if s.Completed[s.Current^1] {
+			return false, nil
+		}
+		return s.switchTurn(), nil
+	}
+	return false, nil
+}
+
+// DeclineContinue is called after the original director's offer expires or is
+// refused. It admits the other player if that game still has ships remaining.
+func (s *Session) DeclineContinue() (turnChanged bool) {
+	if !s.ActiveWorld().GameOver {
+		return false
+	}
+	changed := s.switchTurn()
+	s.completedReentry = changed && s.Completed[s.Current]
+	return changed
+}
+
+// AcceptContinue records the new ships on the accepting player's saved game,
+// then follows ordinary turn admission. A live incomplete opponent plays next.
+func (s *Session) AcceptContinue() bool {
+	w := s.ActiveWorld()
+	next := s.Current ^ 1
+	change := s.PlayerCount == 2 && !s.Completed[next] && !s.Players[next].GameOver && s.Players[next].Equipment.Lives > 0
+	w.deferCheckpointRestart = change
+	accepted := w.AcceptContinue()
+	w.deferCheckpointRestart = false
+	if accepted && change {
+		s.switchTurn()
+	}
+	return accepted
+}
+
+func (s *Session) switchTurn() bool {
+	if s.PlayerCount != 2 {
+		return false
+	}
+	next := s.Current ^ 1
+	if s.Players[next].GameOver || s.Players[next].Equipment.Lives == 0 {
+		return false
+	}
+	random := s.ActiveWorld().RandomState()
+	background := s.ActiveWorld().BackgroundY
+	s.ActiveWorld().suspendTurn()
+	// The replay driver and its queued effects are shared state outside the
+	// saved players. Retain the outgoing cleanup before changing the owner.
+	s.pendingAudio, s.audioPending = s.ActiveWorld().TakeAudioRequests(), true
+	s.Current = next
+	world := s.ActiveWorld()
+	world.SetRandomState(random)
+	// The backdrop offset is shared display state outside the saved players.
+	world.BackgroundY, world.PreviousBackgroundY = background, background
+	world.renderedBackgroundY = background
+	if !s.hasPlayed[next] {
+		// The original first admission restores over the already constructed
+		// initial equipment; it does not run an outgoing cleanup on that game.
+		world.turnPrepared = true
+	}
+	world.RestartCheckpoint()
+	world.LevelFinished = s.Completed[next]
+	s.hasPlayed[next] = true
+	world.Ready = true
+	return true
+}

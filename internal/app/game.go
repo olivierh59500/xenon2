@@ -1,0 +1,725 @@
+package app
+
+import (
+	"fmt"
+	"image"
+	"image/png"
+	"os"
+	"strings"
+	"sync"
+
+	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/olivierh59500/democonstructionkit/sound/output"
+
+	"xenon2/internal/audio"
+	"xenon2/internal/engine"
+	"xenon2/internal/presentation"
+	"xenon2/internal/shopui"
+	"xenon2/internal/visualassets"
+)
+
+const (
+	ScreenWidth     = 320
+	ScreenHeight    = 200
+	PlayfieldHeight = 192
+)
+
+type Screen uint8
+
+const (
+	TitleScreen Screen = iota
+	LevelScreen
+	ShopScreen
+	PresentationScreen
+	CheatScreen
+)
+
+// Input is sampled at the display rate and consumed by the simulation driver.
+type Input struct {
+	Motion      engine.MotionInput
+	Fire        bool
+	DivePressed bool
+}
+
+// SpriteView identifies exported artwork and screen-space anchor coordinates.
+type SpriteView struct {
+	Materializing        bool
+	Order                int
+	Tier, Length         int
+	Kind                 string
+	Patch                visualassets.TilePatch
+	Flash                bool
+	Layer                string
+	ID                   int
+	Atlas                string
+	Sprite               string
+	X, Y                 float64
+	PreviousX, PreviousY float64
+	Interpolate          bool
+}
+
+// SceneFrame is a presentation snapshot, independent of original memory.
+type SceneFrame struct {
+	BackgroundStars                          *engine.BackgroundStarfield
+	PlayerNumber, PlayerCount                int
+	PlayerScores, PlayerLives, PlayerShields [2]int
+	ContinueCredits                          int
+	DivePhase                                int
+	PlayerSprite                             string
+	PlayerFlash                              bool
+	Ready, GameOver                          bool
+	FreezeInterpolation                      bool
+	PaletteMask                              uint16
+	Shades                                   bool
+	Level                                    int
+	CameraY, BackgroundX, BackgroundY        float64
+	Player                                   engine.PlayerMotionState
+	Sprites                                  []SpriteView
+	HUD                                      []SpriteView
+	Score, Money, Shield, Lives              int
+	Diagnostic                               bool
+	PlayerAlive                              bool
+	TerrainMap                               []uint16
+	ActorTerrainMap                          []uint16
+	ActorCameraY                             float64
+}
+
+// Driver is the boundary between the pure Go game rules and their renderer.
+type Driver interface {
+	Advance(Input) error
+	Frame() SceneFrame
+}
+
+type Config struct {
+	Level             int
+	Frames            int
+	Screenshot        string
+	Mute              bool
+	StartScreen       Screen
+	LogicPALRefreshes int
+	Demo              bool
+	HumanDemo         bool
+	Cheats            engine.CheatOptions
+}
+
+type Game struct {
+	cheatHelp                bool
+	cheatRow                 int
+	cheatReturn              Screen
+	demo                     *demoDirector
+	demoLastLevel            int
+	titleIdleUpdates         int
+	pointerX, pointerY       int
+	pointerKnown             bool
+	paused                   bool
+	pauseFraction            float64
+	fade                     *presentation.PaletteFade
+	whenFadeEnds             func() error
+	backdropOnly             bool
+	headerAction             headerAction
+	shopFinal                bool
+	pendingPlayers           int
+	gameOverRunning          bool
+	presentationStarPhase    presentation.Phase
+	continueAfterScores      bool
+	presentationInput        presentation.Input
+	director                 *presentation.Director
+	onContinue               func() error
+	readyRunning             bool
+	readyLevelEntry          bool
+	starfield                *presentation.Starfield
+	menuClock                engine.FrameClock
+	creditClock              engine.FrameClock
+	shop                     *shopui.State
+	palClock                 engine.FrameClock
+	Bundle                   *Bundle
+	Config                   Config
+	Screen                   Screen
+	View                     SceneFrame
+	previous                 SceneFrame
+	Driver                   Driver
+	clock                    engine.FrameClock
+	graphics                 graphics
+	stream                   *audio.Stream
+	player                   *output.Player
+	music                    bool
+	soundtrack               string
+	gameMusicRunning         bool
+	gameMusicAfterFade       bool
+	menu                     int
+	updates                  int
+	pendingFire, pendingDive bool
+	done                     bool
+	capturePending           bool
+	err                      error
+}
+
+// New prepares the original artwork, audio and presentation directors and
+// attaches an independent gameplay driver for the initial reference level.
+func New(bundle *Bundle) (*Game, error) {
+	if err := bundle.Validate(); err != nil {
+		return nil, err
+	}
+	stream, err := audio.NewA500Stream(bundle.AudioBank, bundle.Waveforms, 44100)
+	if err != nil {
+		return nil, err
+	}
+	g := &Game{Bundle: bundle, Screen: TitleScreen, clock: engine.NewRationalFrameClock(50, 3, 60), stream: stream, music: true, demoLastLevel: 3}
+	g.graphics = prepareGraphics(bundle)
+	complete := false
+	defer func() {
+		if !complete {
+			g.Close()
+		}
+	}()
+	g.palClock = engine.NewFrameClock(50, 60)
+	random := engine.NewRandomState()
+	g.starfield = presentation.NewStarfield(&random, bundle.Presentation.StarColors)
+	g.director = presentation.NewDirector(&bundle.Presentation)
+	g.menuClock = engine.NewFrameClock(25, 60)
+	g.creditClock = engine.NewRationalFrameClock(31, 2, 60)
+	shader, err := ebiten.NewShader([]byte(paletteShaderSource))
+	if err != nil {
+		return nil, err
+	}
+	g.graphics.paletteShader = shader
+	sparkShader, err := ebiten.NewShader([]byte(sparkShaderSource))
+	if err != nil {
+		return nil, err
+	}
+	g.graphics.sparkShader = sparkShader
+	g.graphics.sparkScratch = g.graphics.newImage(4, 4)
+	for index := range g.graphics.sparkRegions {
+		g.graphics.sparkRegions[index] = g.graphics.sparkScratch.SubImage(image.Rect(0, 0, 3, 3+index)).(*ebiten.Image)
+	}
+	materialShader, err := ebiten.NewShader([]byte(terrainClippedSpriteShaderSource))
+	if err != nil {
+		return nil, err
+	}
+	g.graphics.materialShader = materialShader
+	backgroundStarShader, err := ebiten.NewShader([]byte(backgroundStarShaderSource))
+	if err != nil {
+		return nil, err
+	}
+	g.graphics.backgroundStarShader = backgroundStarShader
+	fadeShader, err := ebiten.NewShader([]byte(fadeShaderSource))
+	if err != nil {
+		return nil, err
+	}
+	g.graphics.fadeShader = fadeShader
+	g.ResetDiagnosticLevel(1)
+	if err = g.StartLevel(1); err != nil {
+		return nil, err
+	}
+	complete = true
+	return g, nil
+}
+
+// SetDriver replaces diagnostics with a snapshot from the verified game engine.
+func (g *Game) SetDriver(driver Driver) {
+	g.Driver = driver
+	if driver != nil {
+		g.View = driver.Frame()
+		g.rememberFrameHistory()
+	}
+}
+
+func (g *Game) ResetDiagnosticLevel(level int) {
+	if level < 1 || level > len(g.Bundle.Levels) {
+		level = 1
+	}
+	l := g.Bundle.Levels[level-1]
+	g.View = SceneFrame{Level: level, CameraY: float64(l.Terrain.Rows*l.Terrain.TileSize - PlayfieldHeight), Player: engine.PlayerMotionState{X: 160, Y: 176}, Shield: 39, Lives: 3, Diagnostic: true, PlayerAlive: true}
+	g.rememberFrameHistory()
+	g.clock = g.newLogicClock()
+}
+
+func (g *Game) Update() error { return g.advanceWithInput(sampleInput()) }
+
+func (g *Game) advanceWithInput(controls inputFrame) error {
+	if g.err != nil {
+		return g.err
+	}
+	if g.done {
+		return ebiten.Termination
+	}
+	g.updates++
+	if !controls.pointerFromTouch && g.pointerKnown && (controls.mouseX != g.pointerX || controls.mouseY != g.pointerY) {
+		controls.deviceActivity = true
+	}
+	g.pointerX, g.pointerY, g.pointerKnown = controls.mouseX, controls.mouseY, !controls.pointerFromTouch
+	g.advanceTitleIdle(controls)
+	controls = g.demoControls(controls)
+	if g.fade != nil && !g.fade.Done {
+		for ticks := g.palClock.Advance(); ticks > 0; ticks-- {
+			g.fade.AdvancePAL()
+		}
+		if g.fade.Done && g.whenFadeEnds != nil {
+			after := g.whenFadeEnds
+			g.fade = nil
+			g.whenFadeEnds = nil
+			if err := after(); err != nil {
+				return err
+			}
+		}
+		if g.Config.Frames > 0 && g.updates >= g.Config.Frames {
+			g.capturePending = true
+		}
+		return nil
+	}
+	if controls.cheatMenu && (g.fade == nil || g.fade.Done) {
+		if g.Screen == CheatScreen {
+			g.closeCheatMenu()
+		} else {
+			g.openCheatMenu()
+		}
+	}
+	if controls.escape && g.Screen == CheatScreen {
+		if g.cheatHelp {
+			g.cheatHelp = false
+		} else {
+			g.closeCheatMenu()
+		}
+		return nil
+	}
+	if controls.escape {
+		g.paused = false
+		if g.Screen == TitleScreen {
+			return ebiten.Termination
+		}
+		g.pendingFire, g.pendingDive = false, false
+		g.stream.StopEffects()
+		g.BeginAttract()
+	}
+	if controls.music {
+		g.music = !g.music
+		g.selectMusic()
+	}
+	if g.paused && g.Screen != CheatScreen {
+		if controls.anyKey || controls.mousePressed {
+			g.paused = false
+		}
+		if g.Config.Frames > 0 && g.updates >= g.Config.Frames {
+			g.capturePending = true
+		}
+		return nil
+	}
+	if g.Screen == LevelScreen && !g.View.Ready && !g.View.GameOver && controls.pause {
+		g.paused, g.pauseFraction = true, g.clock.Fraction()
+		if g.Config.Frames > 0 && g.updates >= g.Config.Frames {
+			g.capturePending = true
+		}
+		return nil
+	}
+	switch g.Screen {
+	case CheatScreen:
+		g.updateCheatMenu(controls)
+	case PresentationScreen:
+		if err := g.updatePresentation(controls); err != nil {
+			return err
+		}
+	case TitleScreen:
+		for ticks := g.menuClock.Advance(); ticks > 0; ticks-- {
+			g.starfield.Advance()
+			for i, star := range g.starfield.Stars {
+				if g.menuPixelOccupied(star.ScreenX, star.ScreenY) {
+					g.starfield.Covered(i)
+				}
+			}
+		}
+		g.updateTitle(controls)
+	case ShopScreen:
+		if err := g.updateShop(controls); err != nil {
+			return err
+		}
+	case LevelScreen:
+		if g.beginPendingWorldPresentation() {
+			break
+		}
+		if g.Config.Cheats.KeyFunctions {
+			if driver, ok := g.Driver.(*worldDriver); ok {
+				if controls.cheatItem != engine.ItemNone {
+					driver.world.ApplyCheatItem(controls.cheatItem)
+				}
+				if controls.cheatEnergy != 0 {
+					g.Config.Cheats.InfiniteEnergy = controls.cheatEnergy > 0
+					g.applyCheatOptions()
+				}
+			}
+		}
+		demoPassResumed := false
+		for ticks := g.palClock.Advance(); ticks > 0; ticks-- {
+			if source, ok := g.Driver.(interface{ AdvancePALTick() }); ok {
+				driver, worldDriven := g.Driver.(*worldDriver)
+				wasClearing := worldDriven && driver.world.ScreenClearFrames != 0
+				source.AdvancePALTick()
+				demoPassResumed = demoPassResumed || wasClearing && driver.world.ScreenClearFrames == 0
+				if err := g.consumeDriverAudio(); err != nil {
+					return err
+				}
+				g.View = g.Driver.Frame()
+				if source, ok := g.Driver.(interface{ ConsumeTurnChange() bool }); ok && source.ConsumeTurnChange() {
+					g.rememberFrameHistory()
+					g.readyRunning = false
+					g.gameOverRunning = false
+				}
+				if g.beginPendingWorldPresentation() {
+					break
+				}
+			}
+		}
+		if g.Screen != LevelScreen {
+			break
+		}
+		if demoPassResumed && g.Config.Demo {
+			clock := g.clock
+			if clock.Advance() > 0 {
+				// A one-PAL cadence can run the next pass on the resume update.
+				controls = g.demoControls(inputFrame{})
+			}
+		}
+		if g.View.Diagnostic && !g.Config.Cheats.KeyFunctions && controls.referenceShop {
+			if err := g.EnterShop(false); err != nil {
+				return err
+			}
+			break
+		}
+		if g.View.Diagnostic && controls.referenceLevel > 0 {
+			if err := g.StartLevel(controls.referenceLevel); err != nil {
+				return err
+			}
+		}
+
+		g.pendingFire = g.pendingFire || controls.firePressed
+		g.pendingDive = g.pendingDive || controls.divePressed
+		input := Input{Motion: controls.gameMotion, Fire: controls.fire || g.pendingFire, DivePressed: g.pendingDive}
+		for steps := g.clock.Advance(); steps > 0; steps-- {
+			g.rememberFrameHistory()
+			if g.Driver != nil {
+				g.deliverEffectActivity()
+				if err := g.Driver.Advance(input); err != nil {
+					return err
+				}
+				if err := g.consumeDriverAudio(); err != nil {
+					return err
+				}
+				g.View = g.Driver.Frame()
+				if source, ok := g.Driver.(interface{ ConsumeTurnChange() bool }); ok && source.ConsumeTurnChange() {
+					g.rememberFrameHistory()
+					g.readyRunning = false
+					g.gameOverRunning = false
+				}
+				if g.beginPendingWorldPresentation() {
+					break
+				}
+			}
+			g.pendingFire, g.pendingDive = false, false
+			if driver, ok := g.Driver.(*worldDriver); ok && driver.world.ShopReady {
+				if err := g.requestShop(); err != nil {
+					return err
+				}
+				break
+			}
+		}
+	}
+	if g.Config.Frames > 0 && g.updates >= g.Config.Frames {
+		g.capturePending = true
+	}
+	return nil
+}
+
+func (g *Game) menuPixelOccupied(x, y int) bool {
+	p := &g.Bundle.Presentation
+	if fontPixelOccupied(p.Font, p.MenuHeading, 0, 4, p.Font.Width, x, y) {
+		return true
+	}
+	for i, line := range p.Menu {
+		text := line.Text
+		if i == g.menu {
+			text = line.SelectedText
+		}
+		if line.ID == "music" {
+			if g.music {
+				text = p.MusicOn
+				if i == g.menu {
+					text = p.MusicOnSelected
+				}
+			} else {
+				text = p.MusicOff
+				if i == g.menu {
+					text = p.MusicOffSelected
+				}
+			}
+		}
+		if fontPixelOccupied(p.Font, text, 0, line.CenterY-8, p.Font.Width, x, y) {
+			return true
+		}
+	}
+	return fontPixelOccupied(g.Bundle.Font, g.creditCaption(3), 176, 184, 8, x, y)
+}
+
+func fontPixelOccupied(font visualassets.Font, text string, left, top, advance, x, y int) bool {
+	if x < left || y < top || y >= top+font.Height {
+		return false
+	}
+	characterIndex := (x - left) / advance
+	if characterIndex < 0 || characterIndex >= len(text) {
+		return false
+	}
+	character := rune(text[characterIndex])
+	glyph := strings.IndexRune(font.Characters, character)
+	if glyph < 0 {
+		return false
+	}
+	px := (glyph%font.Columns)*font.Width + (x - left - characterIndex*advance)
+	py := (glyph/font.Columns)*font.Height + y - top
+	c := font.Image.NRGBAAt(px, py)
+	return c.R != 0 || c.G != 0 || c.B != 0
+}
+
+func (g *Game) rememberFrameHistory() {
+	g.previous = g.View
+	// Actor interpolation uses the world's own previous coordinates. History
+	// keeps only scalar presentation fields, never reused actor/map slices.
+	g.previous.Sprites = nil
+	g.previous.HUD = nil
+	g.previous.TerrainMap = nil
+	g.previous.ActorTerrainMap = nil
+}
+
+func (g *Game) deliverEffectActivity() {
+	if target, ok := g.Driver.(interface{ SetEffectActivity([4]bool) }); ok {
+		var active [4]bool
+		for channel := range active {
+			active[channel] = g.stream.EffectActive(channel)
+		}
+		target.SetEffectActivity(active)
+	}
+}
+
+func (g *Game) consumeDriverAudio() error {
+	if source, ok := g.Driver.(interface{ ConsumeAudioRequests() engine.AudioRequests }); ok {
+		requests := source.ConsumeAudioRequests()
+		if g.Config.Mute {
+			return nil
+		}
+		return g.stream.ApplyRequests(requests)
+	}
+	if source, ok := g.Driver.(interface{ ConsumeEffectStop() bool }); ok {
+		if source.ConsumeEffectStop() && !g.Config.Mute {
+			g.stream.QueueStopEffects()
+		}
+	}
+
+	if source, ok := g.Driver.(interface{ ConsumeImmediateSounds() [4]string }); ok {
+		for channel, id := range source.ConsumeImmediateSounds() {
+			if id != "" && !g.Config.Mute {
+				if err := g.stream.PlayEffect(id, channel); err != nil {
+					return err
+				}
+			}
+		}
+	}
+	if source, ok := g.Driver.(interface{ ConsumeSoundRequests() [4]string }); ok {
+		for channel, id := range source.ConsumeSoundRequests() {
+			if id != "" && !g.Config.Mute {
+				if err := g.stream.QueueEffect(id, channel); err != nil {
+					return err
+				}
+			}
+		}
+	}
+	return nil
+}
+
+func (g *Game) updateTitle(controls inputFrame) {
+	if controls.upPressed {
+		g.menu = (g.menu + 4) % 5
+	}
+	if controls.downPressed {
+		g.menu = (g.menu + 1) % 5
+	}
+	if controls.mousePressed {
+		x, y := controls.mouseX, controls.mouseY
+		if x >= 0 && x < 320 {
+			for i, line := range g.Bundle.Presentation.Menu {
+				if y >= line.CenterY-8 && y < line.CenterY+14 {
+					g.menu = i
+					g.activateMenu()
+					break
+				}
+			}
+		}
+	}
+	if controls.mousePressed && controls.mouseX >= 0 && controls.mouseX < 320 && controls.mouseY >= 136 && controls.mouseY < 162 {
+		g.menu = 3
+		g.activateMenu()
+	}
+	if controls.mousePressed && controls.mouseX >= 0 && controls.mouseX < 320 && controls.mouseY >= 164 && controls.mouseY < 180 {
+		g.menu = 4
+		g.activateMenu()
+	}
+	if controls.menuConfirm {
+		g.activateMenu()
+	}
+}
+
+func (g *Game) activateMenu() {
+	if g.menu == 4 {
+		g.beginTitleDemo()
+		return
+	}
+	if g.menu == 3 {
+		g.openCheatMenu()
+		return
+	}
+	if g.menu == 2 {
+		g.music = !g.music
+		g.selectMusic()
+		return
+	}
+	g.pendingPlayers = g.menu + 1
+	g.director.BeginStart()
+	g.Screen = PresentationScreen
+	g.selectMusic()
+}
+
+var audioContext struct {
+	sync.Once
+	context *output.Context
+}
+
+func (g *Game) EnableAudio() error {
+	if g.Config.Mute {
+		return nil
+	}
+	audioContext.Do(func() { audioContext.context = output.NewContext(44100) })
+	player, err := audioContext.context.NewPlayer(g.stream)
+	if err != nil {
+		return err
+	}
+	g.player = player
+	player.Play()
+	g.selectMusic()
+	return nil
+}
+
+func (g *Game) Draw(screen *ebiten.Image) {
+	if g.fade != nil && g.fade.Deduction > 0 {
+		g.graphics.fadeScene.Clear()
+		g.drawScreen(g.graphics.fadeScene)
+		g.graphics.fadeAmount[0] = float32(g.fade.Deduction)
+		op := ebiten.DrawRectShaderOptions{Uniforms: g.graphics.fadeUniforms}
+		op.Images[0] = g.graphics.fadeScene
+		screen.DrawRectShader(ScreenWidth, ScreenHeight, g.graphics.fadeShader, &op)
+	} else {
+		g.drawScreen(screen)
+	}
+	if g.capturePending {
+		if g.Config.Screenshot != "" {
+			g.err = saveScreenshot(screen, g.Config.Screenshot)
+		}
+		g.done = true
+		g.capturePending = false
+	}
+}
+
+func (g *Game) Layout(int, int) (int, int) { return ScreenWidth, ScreenHeight }
+
+func saveScreenshot(screen *ebiten.Image, path string) error {
+	picture := image.NewNRGBA(image.Rect(0, 0, ScreenWidth, ScreenHeight))
+	screen.ReadPixels(picture.Pix)
+	file, err := os.Create(path)
+	if err != nil {
+		return err
+	}
+	if err = png.Encode(file, picture); err != nil {
+		file.Close()
+		return err
+	}
+	return file.Close()
+}
+
+// NewGameFromConfig loads local embedded resources without opening a device or
+// starting an engine loop. Mobile hosts call it after their graphics setup.
+func NewGameFromConfig(config Config) (*Game, error) {
+	bundle, err := LoadEmbedded()
+	if err != nil {
+		return nil, err
+	}
+	return NewConfiguredGame(bundle, config)
+}
+
+// NewConfiguredGame shares ordinary scene/session initialization between the
+// desktop, Android and offline recorder. Audio activation belongs to the host.
+func NewConfiguredGame(bundle *Bundle, config Config) (*Game, error) {
+	if config.Demo && (config.StartScreen == LevelScreen || config.StartScreen == ShopScreen) {
+		config.StartScreen = TitleScreen
+	}
+	if config.Level == 0 {
+		config.Level = 1
+	}
+	if config.Level < 1 || config.Level > 5 || config.Frames < 0 || config.LogicPALRefreshes < 0 || config.LogicPALRefreshes > 5 {
+		return nil, fmt.Errorf("invalid level or frame limit")
+	}
+	g, err := New(bundle)
+	if err != nil {
+		return nil, err
+	}
+	g.Config = config
+	g.ResetDiagnosticLevel(config.Level)
+	if err = g.StartLevel(config.Level); err != nil {
+		g.Close()
+		return nil, err
+	}
+	if driver, ok := g.Driver.(*worldDriver); ok {
+		driver.diagnostic = config.StartScreen == LevelScreen || config.StartScreen == ShopScreen
+		g.View = driver.Frame()
+		g.rememberFrameHistory()
+	}
+	g.Screen = config.StartScreen
+	if config.StartScreen == CheatScreen {
+		g.cheatReturn = TitleScreen
+	}
+	if config.StartScreen == LevelScreen {
+		g.gameMusicRunning = true
+	}
+	if config.StartScreen == PresentationScreen {
+		g.BeginAttract()
+	}
+	if config.StartScreen == ShopScreen {
+		if err = g.EnterShop(false); err != nil {
+			g.Close()
+			return nil, err
+		}
+	}
+	return g, nil
+}
+
+// Close releases the game's PCM player, shaders and parent image allocations.
+func (g *Game) Close() error {
+	var err error
+	if g.player != nil {
+		err = g.player.Close()
+		g.player = nil
+	}
+	g.graphics.dispose()
+	return err
+}
+
+// Run keeps display updates at sixty per second; driver steps use their own clock.
+func Run(bundle *Bundle, config Config) error {
+	g, err := NewConfiguredGame(bundle, config)
+	if err != nil {
+		return err
+	}
+	defer g.Close()
+	if err = g.EnableAudio(); err != nil {
+		return err
+	}
+	ebiten.SetTPS(60)
+	ebiten.SetWindowSize(ScreenWidth*3, ScreenHeight*3)
+	ebiten.SetWindowTitle("Xenon 2 Go")
+	ebiten.SetWindowResizingMode(ebiten.WindowResizingModeEnabled)
+	return ebiten.RunGame(g)
+}

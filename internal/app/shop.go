@@ -1,0 +1,142 @@
+package app
+
+import (
+	"fmt"
+
+	"xenon2/internal/engine"
+	"xenon2/internal/presentation"
+	"xenon2/internal/shopui"
+)
+
+// EnterShop retains the world's current weapons, upgrades and accumulated cash.
+func (g *Game) EnterShop(endOfLevel bool) error {
+	driver, ok := g.Driver.(*worldDriver)
+	if !ok {
+		return fmt.Errorf("shop needs an active game world")
+	}
+	w := driver.world
+	stock := w.Level.Terrain.MidShopStockLimit
+	if endOfLevel {
+		stock = w.Level.Terrain.EndShopStockLimit
+	}
+	if endOfLevel && w.AdviceIndex < 12 {
+		w.AdviceIndex = 12
+	}
+	g.shop = shopui.New(&w.Equipment, &w.Money, w.PrepareShop(engine.ShopRules{Level: w.Level.Number, StockLimit: stock}), &g.Bundle.Shop, &g.Bundle.ShopScene, w.NextUIRandom)
+	g.shop.AdviceIndex = &w.AdviceIndex
+	g.shop.Ending = endOfLevel && w.Level.Number == 5
+	g.shopFinal = endOfLevel
+	g.Screen = ShopScreen
+	g.clock = engine.NewFrameClock(25, 60)
+	g.stopGameplayMusic()
+	g.startFade(presentation.NewPaletteFadeIn(), func() error {
+		if !g.Config.Mute {
+			return g.stream.QueueEffect("shop-synthesized-effect-08", 2)
+		}
+		return nil
+	})
+	return nil
+}
+
+func (g *Game) updateShop(controls inputFrame) error {
+	if g.shop == nil {
+		return fmt.Errorf("shop state unavailable")
+	}
+	driver, ok := g.Driver.(*worldDriver)
+	if !ok {
+		return fmt.Errorf("shop transaction needs an active world")
+	}
+	before := driver.world.Equipment
+	if controls.leftPressed {
+		g.shop.Move(-1, 0)
+	}
+	if controls.rightPressed {
+		g.shop.Move(1, 0)
+	}
+	if controls.upPressed {
+		g.shop.Move(0, -1)
+	}
+	if controls.downPressed {
+		g.shop.Move(0, 1)
+	}
+	confirm := controls.confirm
+	if !g.shop.Busy() && controls.mousePressed {
+		x, y := controls.mouseX, controls.mouseY
+		matched := false
+		for _, cell := range g.Bundle.ShopScene.Cells {
+			if x >= cell.X-4 && x < cell.X+36 && y >= cell.Y-4 && y < cell.Y+36 {
+				g.shop.Column, g.shop.Row = cell.Column, cell.Row
+				matched = true
+				break
+			}
+		}
+		if !matched && y >= 168 && y < 196 {
+			if x >= 4 && x < 36 {
+				g.shop.Column, g.shop.Row = 0, 4
+				matched = true
+			} else if x >= 45 && x < 77 {
+				g.shop.Column, g.shop.Row = 1, 4
+				matched = true
+			}
+		}
+		confirm = confirm || matched
+	}
+	if confirm {
+		if err := g.shop.Confirm(); err != nil {
+			return err
+		}
+	}
+	for ticks := g.clock.Advance(); ticks > 0; ticks-- {
+		g.shop.Advance()
+	}
+	// Sales complete on confirmation; purchases install after their last
+	// payment wait. Publish either change before the next shop input.
+	if before != driver.world.Equipment && (g.shop.Phase == shopui.Selling || g.shop.Phase == shopui.Buying) {
+		if err := driver.world.SynchronizeShopEquipment(); err != nil {
+			return err
+		}
+	}
+	if err := g.dispatchShopAudio(); err != nil {
+		return err
+	}
+	switch g.shop.Phase {
+	case shopui.EndingFade:
+		g.startFade(presentation.NewPaletteFadeOut(2), func() error {
+			g.shop.BeginEndingDot()
+			return g.dispatchShopAudio()
+		})
+	case shopui.EndingDotFade:
+		g.startFade(presentation.NewPaletteFadeOut(4), func() error {
+			g.shop.BeginEndingWait()
+			return g.dispatchShopAudio()
+		})
+	}
+	if g.shop.Done {
+		return g.leaveShop()
+	}
+
+	return nil
+}
+
+// Fade returns admit the following cue before that phase's first display wait,
+// just as ordinary shop updates submit their requests before returning.
+func (g *Game) dispatchShopAudio() error {
+	if g.shop.StopEffectsRequested {
+		g.shop.StopEffectsRequested = false
+		g.stream.QueueStopEffects()
+	}
+	for _, cue := range g.shop.TakeCues() {
+		if !g.Config.Mute {
+			var err error
+			if cue.Immediate {
+				err = g.stream.PlayEffect(cue.ID, cue.Channel)
+			} else {
+				err = g.stream.QueueEffect(cue.ID, cue.Channel)
+			}
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}

@@ -1,0 +1,2 @@
+Local runtime artwork and data are generated from a user-supplied original ADF.
+The source repository contains no original game data or executable.

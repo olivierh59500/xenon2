@@ -1,0 +1,21 @@
+[
+  {"Start":0,"End":9,"Lines":["Xenon 2: Megablast - Go / Ebitengine remake","An expert-play presentation with the game's own music and effects."]},
+  {"Start":9,"End":20,"Lines":["The original intro and credits","Original Amiga graphics, with independent game logic and audio replay in Go."]},
+  {"Start":20,"End":33,"Lines":["A familiar Amiga presentation","The menus, scrolling backgrounds and soundtrack keep their own timing."]},
+  {"Start":33,"End":41.467,"Lines":["From the intro to the original menu","A normal single-player session is about to begin."]},
+  {"Start":41.467,"End":46.633,"Lines":["The demonstration selects one-player mode","Cheats are disabled; loading and READY follow the normal game flow."]},
+  {"Start":46.633,"End":62,"Lines":["The expert player takes control","Movement, shots, collisions and rewards follow the normal game rules."]},
+  {"Start":62,"End":80,"Lines":["Tracking the next enemy formation","The pilot changes lanes to line up its firing bursts."]},
+  {"Start":80,"End":98,"Lines":["Play it yourself: arrow keys, Space or Control to fire","During a normal demo, a key or touch returns control to you."]},
+  {"Start":98,"End":116,"Lines":["Collecting cash for the merchant","The pilot moves toward reachable bonuses left by defeated enemies."]},
+  {"Start":116,"End":138,"Lines":["Working through the first stage","Positioning matters as much as firepower in the narrow passages."]},
+  {"Start":138,"End":155,"Lines":["Keeping clear of the scenery","Reverse scrolling is available when a passage is blocked."]},
+  {"Start":155,"End":164.233,"Lines":["The first section leads to the merchant","The ship keeps its remaining shield and earned cash."]},
+  {"Start":164.233,"End":175.683,"Lines":["The original merchant: equipment, sales and repairs","Purchases use cash earned during the game."]},
+  {"Start":175.683,"End":197,"Lines":["Back in the level after the merchant","The same ship continues through the second section."]},
+  {"Start":197,"End":220,"Lines":["Different formations need different firing positions","The pilot anticipates enemy paths before opening fire."]},
+  {"Start":220,"End":246,"Lines":["The original terrain and enemy-wave layouts","Display runs at 60 frames per second with separate gameplay timing."]},
+  {"Start":246,"End":273,"Lines":["Also available on Android","The same Go game has a virtual joystick and separate fire and dive controls."]},
+  {"Start":273,"End":290,"Lines":["A remake in development, with a three-level expert tour","Original resources are prepared from your own Amiga game disks."]},
+  {"Start":290,"End":300,"Lines":["Xenon 2 Go | Malakh Software","Source and setup: github.com/olivierh59500/xenon2"]}
+]
